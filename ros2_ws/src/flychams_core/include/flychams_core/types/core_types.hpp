@@ -107,23 +107,28 @@ namespace flychams::core
      */
     enum class ElementType
     {
+        None,    // No type assigned
         Agent,   // Aerial vehicle (UAV)
         Target,  // Target to track
         Cluster  // Group of targets
     };
 
     /**
-     * @brief Framework enumeration
+     * @brief Simulation framework enumeration
      */
-    enum class Framework
+    enum class SimulationFramework
     {
-        None,
-        AirSim
+        None,    // No framework assigned
+        AirSim,  // AirSim framework
+        Gazebo,  // Gazebo framework
+        IsaacSim // IsaacSim framework
     };
-    inline Framework frameworkFromString(const std::string& framework)
+    inline SimulationFramework simulationFrameworkFromString(const std::string& framework)
     {
-        if (framework == "AirSim") return Framework::AirSim;
-        return Framework::None;
+        if (framework == "AirSim") return SimulationFramework::AirSim;
+        if (framework == "Gazebo") return SimulationFramework::Gazebo;
+        if (framework == "IsaacSim") return SimulationFramework::IsaacSim;
+        return SimulationFramework::None;
     }
 
     /**
@@ -132,7 +137,7 @@ namespace flychams::core
     enum class Autopilot
     {
         None,           // No type assigned
-        SimpleFlight,   // Simple flight autopilot (AirSim default)
+        SimpleFlight,   // Simple flight autopilot (AirSim's default)
         PX4             // PX4 autopilot
     };
     inline Autopilot autopilotFromString(const std::string& autopilot_type)
@@ -147,33 +152,55 @@ namespace flychams::core
      */
     enum class TrackingMode
     {
-        None,                   // No tracking
+        None,                   // No tracking mode assigned
         MultiCamera,            // Multiple orientable and zoom-adjustable cameras tracking targets
         MultiWindow,            // Multiple tracking windows in a single ultra-high-resolution camera
-        PriorityHybrid          // Hybrid tracking based on priorities
+        MultiHybrid             // Hybrid tracking based on multiple cameras and windows
     };
-    inline TrackingMode trackingModeFromString(const std::string& tracking_mode)
+    inline std::string trackingModeToString(const TrackingMode& tracking_mode)
     {
-        if (tracking_mode == "MultiCamera") return TrackingMode::MultiCamera;
-        if (tracking_mode == "MultiWindow") return TrackingMode::MultiWindow;
-        if (tracking_mode == "PriorityHybrid") return TrackingMode::PriorityHybrid;
-        return TrackingMode::None;
+        if (tracking_mode == TrackingMode::MultiCamera) return "MultiCamera";
+        if (tracking_mode == TrackingMode::MultiWindow) return "MultiWindow";
+        if (tracking_mode == TrackingMode::MultiHybrid) return "MultiHybrid";
+        return "None";
     }
 
     /**
-     * Enum for tracking roles
+     * Enum for observation unit types
      */
-    enum class TrackingRole
+    enum class ObservationType
+    {
+        None,     // No type assigned
+        Camera,   // Camera type
+        Window  // Window type
+    };
+    inline std::string observationTypeToString(const ObservationType& observation_type)
+    {
+        if (observation_type == ObservationType::Camera) return "Camera";
+        if (observation_type == ObservationType::Window) return "Window";
+        return "None";
+    }
+
+    /**
+     * Enum for observation unit roles
+     */
+    enum class ObservationRole
     {
         None,     // No role assigned
         Central,  // Central role
         Tracking  // Tracking role
     };
-    inline TrackingRole trackingRoleFromString(const std::string& tracking_role)
+    inline ObservationRole observationRoleFromString(const std::string& observation_role)
     {
-        if (tracking_role == "Central") return TrackingRole::Central;
-        if (tracking_role == "Tracking") return TrackingRole::Tracking;
-        return TrackingRole::None;
+        if (observation_role == "Central") return ObservationRole::Central;
+        if (observation_role == "Tracking") return ObservationRole::Tracking;
+        return ObservationRole::None;
+    }
+    inline std::string observationRoleToString(const ObservationRole& observation_role)
+    {
+        if (observation_role == ObservationRole::Central) return "Central";
+        if (observation_role == ObservationRole::Tracking) return "Tracking";
+        return "None";
     }
 
     /**
@@ -269,61 +296,48 @@ namespace flychams::core
     // ════════════════════════════════════════════════════════════════
 
     /**
-     * Head parameters
+     * Camera parameters (for multi-camera units)
      */
-    struct HeadParameters
+    struct CameraParameters
     {
-        // Head ID
-        std::string id;
-        // Head role
-        TrackingRole role;
-        // Focal lengths (m)
-        float f_min;
-        float f_max;
-        float f_ref;
-        // Image resolution (pix)
+        // Camera resolution (pix)
         int width;
         int height;
         // Sensor dimensions (m)
         float sensor_width;
         float sensor_height;
-        // Regularized pixel size (m/pix)
-        float rho_x;
-        float rho_y;
-        float rho;
         // Camera intrinsic matrix K
         Matrix3r K;
-        // Apparent target sizes (pix)
-        float s_min_pix;
-        float s_max_pix;
-        float s_ref_pix;
-        // Apparent target sizes (m)
-        float s_min;
-        float s_max;
-        float s_ref;
     };
 
     /**
-     * Window parameters
+     * Window parameters (for multi-window units)
      */
     struct WindowParameters
     {
-        // Window ID
-        std::string id;
-        // Window role
-        TrackingRole role;
-        // Source camera ID
-        std::string source_id;
-        // Resolution factors (0-1)
-        float lambda_min;
-        float lambda_max;
-        float lambda_ref;
         // Full resolution (pix)
         int full_width;
         int full_height;
         // Tracking resolution (pix)
         int tracking_width;
         int tracking_height;
+    };
+
+    /**
+     * Observation unit parameters (either multi-camera or multi-window units)
+     */
+    struct ObservationUnitParameters
+    {
+        // Unit ID
+        std::string id;
+        // Unit type
+        ObservationType type;
+        // Unit role
+        ObservationRole role;
+        // Zoom factor limits
+        float upsilon_min;
+        float upsilon_max;
+        float upsilon_ref;
         // Regularized pixel size (m/pix)
         float rho_x;
         float rho_y;
@@ -336,6 +350,12 @@ namespace flychams::core
         float s_min;
         float s_max;
         float s_ref;
+
+        // Camera parameters (only for Camera type)
+        CameraParameters camera_params;
+
+        // Window parameters (only for Window type)
+        WindowParameters window_params;
     };
 
     /**
@@ -343,11 +363,15 @@ namespace flychams::core
      */
     struct TrackingParameters
     {
+        // Tracking mode
         TrackingMode mode;
-        int n_heads;                                      // Number of heads
-        int n_windows;                                    // Number of windows
-        std::vector<HeadParameters> head_params;          // Parameters for each head
-        std::vector<WindowParameters> window_params;      // Parameters for each window
+        // Number of units
+        int n_o;                                          // Number of observation units (n_t + 1)
+        int n_t;                                          // Number of tracking units (n_c + n_w)
+        int n_c;                                          // Number of tracking cameras
+        int n_w;                                          // Number of tracking windows
+        // Parameters for each unit (vector of n_o elements)
+        std::vector<ObservationUnitParameters> observation_units_params;
     };
 
     // ════════════════════════════════════════════════════════════════

@@ -344,13 +344,9 @@ namespace flychams::core
 
 						agent->tracking_id = getCellValue<std::string>(row.findCell(4));
 
-						agent->head_set_id = getCellValue<std::string>(row.findCell(5));
+						agent->drone_id = getCellValue<std::string>(row.findCell(5));
 
-						agent->window_set_id = getCellValue<std::string>(row.findCell(6));
-
-						agent->drone_id = getCellValue<std::string>(row.findCell(7));
-
-						auto position_str = getCellValue<std::string>(row.findCell(8));
+						auto position_str = getCellValue<std::string>(row.findCell(6));
 						auto position_vec = parseVector<float>(position_str, 3, ',');
 						if (position_vec.size() >= 3)
 						{
@@ -359,7 +355,7 @@ namespace flychams::core
 							agent->position(2) = position_vec[2];
 						}
 
-						auto orientation_str = getCellValue<std::string>(row.findCell(9));
+						auto orientation_str = getCellValue<std::string>(row.findCell(7));
 						auto orientation_vec = parseVector<float>(orientation_str, 3, ',');
 						if (orientation_vec.size() >= 3)
 						{
@@ -368,20 +364,20 @@ namespace flychams::core
 							agent->orientation(2) = MathUtils::degToRad(orientation_vec[2]);
 						}
 
-						agent->max_altitude = getCellValue<float>(row.findCell(10));
+						agent->max_altitude = getCellValue<float>(row.findCell(8));
 
-						agent->safety_radius = getCellValue<float>(row.findCell(11));
+						agent->safety_radius = getCellValue<float>(row.findCell(9));
 
-						agent->battery_capacity = getCellValue<float>(row.findCell(12));
+						agent->battery_capacity = getCellValue<float>(row.findCell(10));
 
 						// Parse tracking
 						parseTracking(book, agent);
 
-						// Parse head set
-						parseHeadSet(book, agent);
+						// Parse multi-camera set
+						parseMultiCameraSet(book, agent);
 
-						// Parse window set
-						parseWindowSet(book, agent);
+						// Parse multi-window set
+						parseMultiWindowSet(book, agent);
 
 						// Parse drone model
 						parseDroneModel(book, agent);
@@ -430,8 +426,7 @@ namespace flychams::core
 
 						tracking.name = getCellValue<std::string>(row.findCell(2));
 
-						const std::string& tracking_mode_str = getCellValue<std::string>(row.findCell(3));
-						tracking.mode = trackingModeFromString(tracking_mode_str);
+						tracking.observation_set_id = getCellValue<std::string>(row.findCell(3));
 
 						tracking.min_target_size = getCellValue<float>(row.findCell(4));
 
@@ -451,10 +446,10 @@ namespace flychams::core
 			}
 		}
 
-		static void parseHeadSet(OpenXLSX::XLWorkbook& book, AgentConfigPtr agent_ptr)
+		static void parseMultiCameraSet(OpenXLSX::XLWorkbook& book, AgentConfigPtr agent_ptr)
 		{
-			// Open Head sheet
-			auto sheet = book.worksheet("Head");
+			// Open MultiCamera sheet
+			auto sheet = book.worksheet("MultiCamera");
 
 			// Iterate through data rows
 			for (auto& row : sheet.rows())
@@ -467,75 +462,75 @@ namespace flychams::core
 				{
 					// Verify row is not empty
 					if (isCellEmpty(row.findCell(1)))
-						return; // Return filled head set
+						return; // Return filled multi-camera set
 
-					// Read foreign key and verify if the head belongs to the head set selected
+					// Read foreign key and verify if the multi-camera belongs to the observation set selected
 					std::string FK = getCellValue<std::string>(row.findCell(3));
 
-					if (FK == agent_ptr->head_set_id)
+					if (FK == agent_ptr->tracking.observation_set_id)
 					{
 						// Create instance
-						HeadConfigPtr head = std::make_shared<HeadConfig>();
+						MultiCameraConfigPtr multi_camera = std::make_shared<MultiCameraConfig>();
 
 						// Populate fields
-						head->id = getCellValue<std::string>(row.findCell(1));
+						multi_camera->id = getCellValue<std::string>(row.findCell(1));
 
-						head->name = getCellValue<std::string>(row.findCell(2));
+						multi_camera->name = getCellValue<std::string>(row.findCell(2));
 
-						head->head_set_id = FK;
+						multi_camera->observation_set_id = FK;
 
-						head->gimbal_id = getCellValue<std::string>(row.findCell(4));
+						multi_camera->camera_id = getCellValue<std::string>(row.findCell(4));
 
-						head->camera_id = getCellValue<std::string>(row.findCell(5));
+						multi_camera->gimbal_id = getCellValue<std::string>(row.findCell(5));
 
 						const std::string& role_str = getCellValue<std::string>(row.findCell(6));
-						head->role = trackingRoleFromString(role_str);
+						multi_camera->role = observationRoleFromString(role_str);
 
 						auto position_str = getCellValue<std::string>(row.findCell(7));
 						auto position_vec = parseVector<float>(position_str, 3, ',');
 						if (position_vec.size() >= 3)
 						{
-							head->position(0) = position_vec[0];
-							head->position(1) = position_vec[1];
-							head->position(2) = position_vec[2];
+							multi_camera->position(0) = position_vec[0];
+							multi_camera->position(1) = position_vec[1];
+							multi_camera->position(2) = position_vec[2];
 						}
 
 						auto orientation_str = getCellValue<std::string>(row.findCell(8));
 						auto orientation_vec = parseVector<float>(orientation_str, 3, ',');
 						if (orientation_vec.size() >= 3)
 						{
-							head->orientation(0) = MathUtils::degToRad(orientation_vec[0]);
-							head->orientation(1) = MathUtils::degToRad(orientation_vec[1]);
-							head->orientation(2) = MathUtils::degToRad(orientation_vec[2]);
+							multi_camera->orientation(0) = MathUtils::degToRad(orientation_vec[0]);
+							multi_camera->orientation(1) = MathUtils::degToRad(orientation_vec[1]);
+							multi_camera->orientation(2) = MathUtils::degToRad(orientation_vec[2]);
 						}
 
-						head->min_focal = getCellValue<float>(row.findCell(9)) / 1000.0f;
+						multi_camera->min_focal = getCellValue<float>(row.findCell(9)) / 1000.0f;
 
-						head->max_focal = getCellValue<float>(row.findCell(10)) / 1000.0f;
+						multi_camera->max_focal = getCellValue<float>(row.findCell(10)) / 1000.0f;
 
-						head->ref_focal = getCellValue<float>(row.findCell(11)) / 1000.0f;
-
-						// Parse gimbal model
-						parseGimbalModel(book, head);
+						multi_camera->ref_focal = getCellValue<float>(row.findCell(11)) / 1000.0f;
 
 						// Parse camera model
-						parseCameraModel(book, head);
+						parseCameraModel(book, multi_camera);
+
+						// Parse gimbal model
+						parseGimbalModel(book, multi_camera);
 
 						// Store setting
-						agent_ptr->head_set.insert({ head->id, head });
+						agent_ptr->tracking.multi_camera_set.insert({ multi_camera->id, multi_camera });
 					}
 				}
 				catch (const std::exception& e)
 				{
-					throw std::runtime_error("Error loading head config at row " + std::to_string(row.rowNumber()) + ": " + e.what());
+					throw std::runtime_error("Error loading multi-camera config at row " + std::to_string(row.rowNumber()) + ": " + e.what());
 				}
 			}
 		}
 
-		static void parseWindowSet(OpenXLSX::XLWorkbook& book, AgentConfigPtr agent_ptr)
+		static void parseMultiWindowSet(OpenXLSX::XLWorkbook& book, AgentConfigPtr agent_ptr)
 		{
-			// Open Window sheet
-			auto sheet = book.worksheet("Window");
+			// Open MultiWindow sheet
+			auto sheet = book.worksheet("MultiWindow");
 
 			// Iterate through data rows
 			for (auto& row : sheet.rows())
@@ -548,47 +543,44 @@ namespace flychams::core
 				{
 					// Verify row is not empty
 					if (isCellEmpty(row.findCell(1)))
-						return; // Return filled window set
+						return; // Return filled multi-window set
 
-					// Read foreign key and verify if the window belongs to the window set selected
+					// Read foreign key and verify if the window belongs to the observation set selected
 					std::string FK = getCellValue<std::string>(row.findCell(3));
 
-					if (FK == agent_ptr->window_set_id)
+					if (FK == agent_ptr->tracking.observation_set_id)
 					{
 						// Create instance
-						WindowConfigPtr window = std::make_shared<WindowConfig>();
+						MultiWindowConfigPtr multi_window = std::make_shared<MultiWindowConfig>();
 
 						// Populate fields
-						window->id = getCellValue<std::string>(row.findCell(1));
+						multi_window->id = getCellValue<std::string>(row.findCell(1));
 
-						window->name = getCellValue<std::string>(row.findCell(2));
+						multi_window->name = getCellValue<std::string>(row.findCell(2));
 
-						window->window_set_id = FK;
+						multi_window->observation_set_id = FK;
 
-						const std::string& role_str = getCellValue<std::string>(row.findCell(4));
-						window->role = trackingRoleFromString(role_str);
-
-						auto resolution_str = getCellValue<std::string>(row.findCell(5));
+						auto resolution_str = getCellValue<std::string>(row.findCell(4));
 						auto resolution_vec = parseVector<int>(resolution_str, 2, 'x');
 						if (resolution_vec.size() >= 2)
 						{
-							window->resolution(0) = resolution_vec[0];
-							window->resolution(1) = resolution_vec[1];
+							multi_window->resolution(0) = resolution_vec[0];
+							multi_window->resolution(1) = resolution_vec[1];
 						}
 
-						window->min_lambda = getCellValue<float>(row.findCell(6));
+						multi_window->min_lambda = getCellValue<float>(row.findCell(5));
 
-						window->max_lambda = getCellValue<float>(row.findCell(7));
+						multi_window->max_lambda = getCellValue<float>(row.findCell(6));
 
-						window->ref_lambda = getCellValue<float>(row.findCell(8));
+						multi_window->ref_lambda = getCellValue<float>(row.findCell(7));
 
 						// Store setting
-						agent_ptr->window_set.insert({ window->id, window });
+						agent_ptr->tracking.multi_window_set.insert({ multi_window->id, multi_window });
 					}
 				}
 				catch (const std::exception& e)
 				{
-					throw std::runtime_error("Error loading window config at row " + std::to_string(row.rowNumber()) + ": " + e.what());
+					throw std::runtime_error("Error loading multi-window config at row " + std::to_string(row.rowNumber()) + ": " + e.what());
 				}
 			}
 		}
@@ -696,91 +688,7 @@ namespace flychams::core
 			}
 		}
 
-		static void parseGimbalModel(OpenXLSX::XLWorkbook& book, HeadConfigPtr head_ptr)
-		{
-			// Open Gimbal sheet
-			auto sheet = book.worksheet("Gimbal");
-
-			// Iterate through data rows
-			for (auto& row : sheet.rows())
-			{
-				// Skip first two header rows
-				if (row.rowNumber() < 3)
-					continue;
-
-				try
-				{
-					// Verify row is not empty. If empty, throw error
-					if (isCellEmpty(row.findCell(1)))
-					{
-						throw std::runtime_error("Gimbal config not found");
-					}
-
-					// Read primary key and verify if the gimbal model is selected
-					std::string PK = getCellValue<std::string>(row.findCell(1));
-
-					if (PK == head_ptr->gimbal_id)
-					{
-						// Create instance
-						GimbalConfig gimbal;
-
-						// Populate fields
-						gimbal.id = PK;
-
-						gimbal.name = getCellValue<std::string>(row.findCell(2));
-
-						gimbal.enable_roll = getCellValue<bool>(row.findCell(3));
-
-						auto roll_str = getCellValue<std::string>(row.findCell(4));
-						auto roll_vec = parseVector<float>(roll_str, 3, ',');
-						if (roll_vec.size() >= 3)
-						{
-							gimbal.roll.min_angle = roll_vec[0];
-							gimbal.roll.max_angle = roll_vec[1];
-							gimbal.roll.max_speed = roll_vec[2];
-						}
-
-						gimbal.enable_pitch = getCellValue<bool>(row.findCell(5));
-
-						auto pitch_str = getCellValue<std::string>(row.findCell(6));
-						auto pitch_vec = parseVector<float>(pitch_str, 3, ',');
-						if (pitch_vec.size() >= 3)
-						{
-							gimbal.pitch.min_angle = pitch_vec[0];
-							gimbal.pitch.max_angle = pitch_vec[1];
-							gimbal.pitch.max_speed = pitch_vec[2];
-						}
-
-						gimbal.enable_yaw = getCellValue<bool>(row.findCell(7));
-
-						auto yaw_str = getCellValue<std::string>(row.findCell(8));
-						auto yaw_vec = parseVector<float>(yaw_str, 3, ',');
-						if (yaw_vec.size() >= 3)
-						{
-							gimbal.yaw.min_angle = yaw_vec[0];
-							gimbal.yaw.max_angle = yaw_vec[1];
-							gimbal.yaw.max_speed = yaw_vec[2];
-						}
-
-						gimbal.weight = getCellValue<float>(row.findCell(9));
-
-						gimbal.idle_power = getCellValue<float>(row.findCell(10));
-
-						gimbal.active_power = getCellValue<float>(row.findCell(11));
-
-						// Only first found gimbal is loaded
-						head_ptr->gimbal = gimbal;
-						return;
-					}
-				}
-				catch (const std::exception& e)
-				{
-					throw std::runtime_error("Error loading gimbal config at row " + std::to_string(row.rowNumber()) + ": " + e.what());
-				}
-			}
-		}
-
-		static void parseCameraModel(OpenXLSX::XLWorkbook& book, HeadConfigPtr head_ptr)
+		static void parseCameraModel(OpenXLSX::XLWorkbook& book, MultiCameraConfigPtr multi_camera_ptr)
 		{
 			// Open Camera sheet
 			auto sheet = book.worksheet("Camera");
@@ -803,7 +711,7 @@ namespace flychams::core
 					// Read primary key and verify if the camera model is selected
 					std::string PK = getCellValue<std::string>(row.findCell(1));
 
-					if (PK == head_ptr->camera_id)
+					if (PK == multi_camera_ptr->camera_id)
 					{
 						// Create instance
 						CameraConfig camera;
@@ -861,13 +769,97 @@ namespace flychams::core
 						camera.active_power = getCellValue<float>(row.findCell(11));
 
 						// Only first found camera is loaded
-						head_ptr->camera = camera;
+						multi_camera_ptr->camera = camera;
 						return;
 					}
 				}
 				catch (const std::exception& e)
 				{
 					throw std::runtime_error("Error loading camera config at row " + std::to_string(row.rowNumber()) + ": " + e.what());
+				}
+			}
+		}
+
+		static void parseGimbalModel(OpenXLSX::XLWorkbook& book, MultiCameraConfigPtr multi_camera_ptr)
+		{
+			// Open Gimbal sheet
+			auto sheet = book.worksheet("Gimbal");
+
+			// Iterate through data rows
+			for (auto& row : sheet.rows())
+			{
+				// Skip first two header rows
+				if (row.rowNumber() < 3)
+					continue;
+
+				try
+				{
+					// Verify row is not empty. If empty, throw error
+					if (isCellEmpty(row.findCell(1)))
+					{
+						throw std::runtime_error("Gimbal config not found");
+					}
+
+					// Read primary key and verify if the gimbal model is selected
+					std::string PK = getCellValue<std::string>(row.findCell(1));
+
+					if (PK == multi_camera_ptr->gimbal_id)
+					{
+						// Create instance
+						GimbalConfig gimbal;
+
+						// Populate fields
+						gimbal.id = PK;
+
+						gimbal.name = getCellValue<std::string>(row.findCell(2));
+
+						gimbal.enable_roll = getCellValue<bool>(row.findCell(3));
+
+						auto roll_str = getCellValue<std::string>(row.findCell(4));
+						auto roll_vec = parseVector<float>(roll_str, 3, ',');
+						if (roll_vec.size() >= 3)
+						{
+							gimbal.roll.min_angle = roll_vec[0];
+							gimbal.roll.max_angle = roll_vec[1];
+							gimbal.roll.max_speed = roll_vec[2];
+						}
+
+						gimbal.enable_pitch = getCellValue<bool>(row.findCell(5));
+
+						auto pitch_str = getCellValue<std::string>(row.findCell(6));
+						auto pitch_vec = parseVector<float>(pitch_str, 3, ',');
+						if (pitch_vec.size() >= 3)
+						{
+							gimbal.pitch.min_angle = pitch_vec[0];
+							gimbal.pitch.max_angle = pitch_vec[1];
+							gimbal.pitch.max_speed = pitch_vec[2];
+						}
+
+						gimbal.enable_yaw = getCellValue<bool>(row.findCell(7));
+
+						auto yaw_str = getCellValue<std::string>(row.findCell(8));
+						auto yaw_vec = parseVector<float>(yaw_str, 3, ',');
+						if (yaw_vec.size() >= 3)
+						{
+							gimbal.yaw.min_angle = yaw_vec[0];
+							gimbal.yaw.max_angle = yaw_vec[1];
+							gimbal.yaw.max_speed = yaw_vec[2];
+						}
+
+						gimbal.weight = getCellValue<float>(row.findCell(9));
+
+						gimbal.idle_power = getCellValue<float>(row.findCell(10));
+
+						gimbal.active_power = getCellValue<float>(row.findCell(11));
+
+						// Only first found gimbal is loaded
+						multi_camera_ptr->gimbal = gimbal;
+						return;
+					}
+				}
+				catch (const std::exception& e)
+				{
+					throw std::runtime_error("Error loading gimbal config at row " + std::to_string(row.rowNumber()) + ": " + e.what());
 				}
 			}
 		}

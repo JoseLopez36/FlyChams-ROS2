@@ -217,16 +217,16 @@ namespace flychams::core
         // Helper method: Populate cameras
         static void populateInternalCameras(const ID& agent_id, const MissionConfigPtr& config_ptr, nlohmann::ordered_json& cameras)
         {
-            for (const auto& [head_id, head_ptr] : config_ptr->agent_team[agent_id]->head_set)
+            for (const auto& [multi_camera_id, multi_camera_ptr] : config_ptr->agent_team[agent_id]->tracking.multi_camera_set)
             {
                 // Get relevant config
-                const auto& gimbal = head_ptr->gimbal;
-                const auto& camera = head_ptr->camera;
+                const auto& gimbal = multi_camera_ptr->gimbal;
+                const auto& camera = multi_camera_ptr->camera;
                 const auto& distortion = camera.distortion;
-                const auto& mount_pos = head_ptr->position;
-                const auto& mount_ori = head_ptr->orientation;
+                const auto& mount_pos = multi_camera_ptr->position;
+                const auto& mount_ori = multi_camera_ptr->orientation;
 
-                cameras[head_id] = {
+                cameras[multi_camera_id] = {
                     {"CaptureSettings", {
                         {
                             {"ImageType", 0},
@@ -234,7 +234,7 @@ namespace flychams::core
                             {"Height", camera.resolution(1)},
                             {"SensorWidth", camera.sensor_size(0)},
                             {"SensorHeight", camera.sensor_size(1)},
-                            {"FOV_Degrees", MathUtils::radToDeg(MathUtils::computeFov(head_ptr->ref_focal, camera.sensor_size(0)))},
+                            {"FOV_Degrees", MathUtils::radToDeg(MathUtils::computeFov(multi_camera_ptr->ref_focal, camera.sensor_size(0)))},
                             {"K1", distortion.K1},
                             {"K2", distortion.K2},
                             {"K3", distortion.K3},

@@ -29,7 +29,7 @@ namespace flychams::core
     struct SystemParameters
     {
         // Simulation settings
-        Framework framework;
+        SimulationFramework framework;
         float clock_speed;
 
         // Path settings
@@ -111,24 +111,6 @@ namespace flychams::core
     // HARDWARE TYPES: Hardware-related configuration types
     // ════════════════════════════════════════════════════════════════
 
-    struct CameraConfig
-    {
-        // Identifiers
-        ID id;
-        Name name;
-
-        // Internal config
-        CameraType type;
-        Vector2i resolution;
-        Vector2r sensor_size;
-        Distortion distortion;
-        bool enable_sensor_noise;
-        SensorNoise sensor_noise;
-        float weight;
-        float idle_power;
-        float active_power;
-    };
-
     struct GimbalConfig
     {
         // Identifiers
@@ -142,6 +124,24 @@ namespace flychams::core
         Link pitch;
         bool enable_yaw;
         Link yaw;
+        float weight;
+        float idle_power;
+        float active_power;
+    };
+
+    struct CameraConfig
+    {
+        // Identifiers
+        ID id;
+        Name name;
+
+        // Internal config
+        CameraType type;
+        Vector2i resolution;
+        Vector2r sensor_size;
+        Distortion distortion;
+        bool enable_sensor_noise;
+        SensorNoise sensor_noise;
         float weight;
         float idle_power;
         float active_power;
@@ -176,34 +176,33 @@ namespace flychams::core
     // AGENT TYPES: Agent-related configuration types
     // ════════════════════════════════════════════════════════════════
 
-    struct WindowConfig
+    struct MultiWindowConfig
     {
         // Identifiers
         ID id;
         Name name;
-        ID window_set_id;
+        ID observation_set_id;
 
         // Internal config
-        TrackingRole role;
         Vector2i resolution;
         float min_lambda;
         float max_lambda;
         float ref_lambda;
     };
-    using WindowConfigPtr = std::shared_ptr<WindowConfig>;
-    using WindowSetConfig = std::map<ID, WindowConfigPtr>;
+    using MultiWindowConfigPtr = std::shared_ptr<MultiWindowConfig>;
+    using MultiWindowSetConfig = std::map<ID, MultiWindowConfigPtr>;
 
-    struct HeadConfig
+    struct MultiCameraConfig
     {
         // Identifiers
         ID id;
         Name name;
-        ID head_set_id;
+        ID observation_set_id;
 
         // Internal config
-        ID gimbal_id;
         ID camera_id;
-        TrackingRole role;
+        ID gimbal_id;
+        ObservationRole role;
         Vector3r position;
         Vector3r orientation;
         float min_focal;
@@ -211,11 +210,11 @@ namespace flychams::core
         float ref_focal;
 
         // External config
-        GimbalConfig gimbal;
         CameraConfig camera;
+        GimbalConfig gimbal;
     };
-    using HeadConfigPtr = std::shared_ptr<HeadConfig>;
-    using HeadSetConfig = std::map<ID, HeadConfigPtr>;
+    using MultiCameraConfigPtr = std::shared_ptr<MultiCameraConfig>;
+    using MultiCameraSetConfig = std::map<ID, MultiCameraConfigPtr>;
 
     struct TrackingConfig
     {
@@ -224,10 +223,14 @@ namespace flychams::core
         Name name;
 
         // Internal config
-        TrackingMode mode;
+        ID observation_set_id;
         float min_target_size;
         float max_target_size;
         float ref_target_size;
+
+        // External config
+        MultiCameraSetConfig multi_camera_set;
+        MultiWindowSetConfig multi_window_set;
     };
 
     struct AgentConfig
@@ -239,8 +242,6 @@ namespace flychams::core
 
         // Internal config
         ID tracking_id;
-        ID head_set_id;
-        ID window_set_id;
         ID drone_id;
         Vector3r position;
         Vector3r orientation;
@@ -251,8 +252,6 @@ namespace flychams::core
         // External config
         DroneConfig drone;
         TrackingConfig tracking;
-        HeadSetConfig head_set;
-        WindowSetConfig window_set;
     };
     using AgentConfigPtr = std::shared_ptr<AgentConfig>;
     using AgentTeamConfig = std::map<ID, AgentConfigPtr>;
