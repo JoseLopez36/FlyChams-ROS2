@@ -88,7 +88,7 @@ def generate_launch_description():
         # Control nodes
         'drone_state': launch.get('drone_state', [True, 'info']),
         'drone_control': launch.get('drone_control', [True, 'info']),
-        'head_control': launch.get('head_control', [True, 'info']),
+        'camera_control': launch.get('camera_control', [True, 'info']),
         # Perception nodes
         'target_clustering': launch.get('target_clustering', [True, 'info']),
         'cluster_analysis': launch.get('cluster_analysis', [True, 'info']),
@@ -148,16 +148,16 @@ def generate_launch_description():
             )
         )
 
-    # Conditionally add Head Control node
-    if nodes['head_control'][0]:
+    # Conditionally add Camera Control node
+    if nodes['camera_control'][0]:
         ld.append(
             Node(
                 package='flychams_control',
-                executable='head_control_node',
-                name='head_control_node',
+                executable='camera_control_node',
+                name='camera_control_node',
                 output='screen',
                 namespace='flychams',
-                arguments=['--ros-args', '--log-level', nodes['head_control'][1]],
+                arguments=['--ros-args', '--log-level', nodes['camera_control'][1]],
                 parameters=[
                     system_path, 
                     topics_path, 

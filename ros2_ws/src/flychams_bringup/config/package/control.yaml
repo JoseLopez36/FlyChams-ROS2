@@ -20,6 +20,6 @@
       max_distance: 20.0        # (m)
       max_acceleration: 0.5     # (m/s^2)
       
-    # Head control parameters
-    head_control:
+    # Camera control parameters
+    camera_control:
       update_rate: 20.0 # (Hz)

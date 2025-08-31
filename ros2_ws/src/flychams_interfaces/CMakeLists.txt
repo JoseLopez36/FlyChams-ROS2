@@ -24,7 +24,7 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   "msg/AgentStatus.msg"
   "msg/AgentAssignment.msg"
   "msg/AgentClusters.msg"
-  "msg/AgentTrackingSetpoints.msg"
+  "msg/AgentObservationSetpoints.msg"
   "msg/AgentMetrics.msg"
   # Target messages
   "msg/TargetMetrics.msg"

@@ -75,7 +75,7 @@ namespace flychams::core
         std::string agent_clusters;
         std::string agent_position_setpoint;
         std::string agent_optimization_duration;
-        std::string agent_tracking_setpoints;
+        std::string agent_observation_setpoints;
         std::string agent_metrics;
         std::string agent_markers;
 

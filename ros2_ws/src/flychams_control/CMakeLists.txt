@@ -15,7 +15,7 @@ find_package(flychams_core REQUIRED)
 set(CONTROL_SRC
   src/drone/drone_state.cpp
   src/drone/drone_control.cpp
-  src/head/head_control.cpp
+  src/camera/camera_control.cpp
 )
 add_library(${PROJECT_NAME} SHARED ${CONTROL_SRC})
 target_include_directories(${PROJECT_NAME} PUBLIC
@@ -43,10 +43,10 @@ add_executable(drone_control_node src/drone_control_node.cpp)
 target_link_libraries(drone_control_node ${PROJECT_NAME})
 ament_target_dependencies(drone_control_node rclcpp flychams_core)
 
-# Create executable for head control node
-add_executable(head_control_node src/head_control_node.cpp)
-target_link_libraries(head_control_node ${PROJECT_NAME})
-ament_target_dependencies(head_control_node rclcpp flychams_core)
+# Create executable for camera control node
+add_executable(camera_control_node src/camera_control_node.cpp)
+target_link_libraries(camera_control_node ${PROJECT_NAME})
+ament_target_dependencies(camera_control_node rclcpp flychams_core)
 
 # Install targets and headers
 install(TARGETS ${PROJECT_NAME}
@@ -57,7 +57,7 @@ install(TARGETS ${PROJECT_NAME}
   INCLUDES DESTINATION include
 )
 
-install(TARGETS drone_state_node drone_control_node head_control_node
+install(TARGETS drone_state_node drone_control_node camera_control_node
   RUNTIME DESTINATION lib/${PROJECT_NAME}
 )
 
