@@ -315,6 +315,8 @@ namespace flychams::core
      */
     struct WindowParameters
     {
+        // Central camera focal length (m)
+        float f_ref;
         // Full resolution (pix)
         int full_width;
         int full_height;
@@ -351,10 +353,10 @@ namespace flychams::core
         float s_max;
         float s_ref;
 
-        // Camera parameters (only for Camera type)
+        // Camera parameters (for Camera and Window (central camera parameters) types)
         CameraParameters camera_params;
 
-        // Window parameters (only for Window type)
+        // Window parameters (for Window type)
         WindowParameters window_params;
     };
 

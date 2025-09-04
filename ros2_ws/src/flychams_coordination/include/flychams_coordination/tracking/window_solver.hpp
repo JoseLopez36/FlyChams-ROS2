@@ -8,7 +8,7 @@ namespace flychams::coordination
 {
     /**
      * ════════════════════════════════════════════════════════════════
-     * @brief Solver for agent tracking. Specific for head tracking
+     * @brief Solver for agent tracking. Specific for window tracking
      * ════════════════════════════════════════════════════════════════
      * @author Jose Francisco Lopez Ruiz
      * @date 2025-04-28
@@ -27,33 +27,32 @@ namespace flychams::coordination
         }
 
         // Runtime methods
-        std::tuple<core::Crop, float, float> runWindow(const core::Vector3r& z, const float& r, const core::Matrix4r& central_head_T, const core::HeadParameters& central_head_params, const core::WindowParameters& window_params)
+        std::tuple<float, core::Crop> run(const core::Vector3r& z, const float& r, const core::Matrix4r& T, const core::ObservationUnitParameters& unit_params)
         {
             // Args:
             // z: Target position in world frame (m)
             // r: Equivalent radius of the target's area of interest (m)
-            // central_head_T: Central head pose in world frame
-            // central_head_params: Central head parameters
-            // window_params: Window parameters
+            // T: C0 in world frame (frame of central camera)
+            // unit_params: Observation unit parameters
 
             // Extract camera position
-            const core::Vector3r x = central_head_T.block<3, 1>(0, 3);
+            const core::Vector3r x = T.block<3, 1>(0, 3);
 
-            // Project target position onto source camera
-            core::Vector2r p = core::MathUtils::projectPoint(z, central_head_T, central_head_params.K);
+            // Project target position onto central camera
+            core::Vector2r p = core::MathUtils::projectPoint(z, T, unit_params.camera_params.K);
 
             // Compute window size
-            const auto [size, lambda, s_proj_pix] = computeWindowSize(z, r, x, p, central_head_params, window_params);
+            const auto [size, lambda] = computeWindowSize(z, r, x, p, unit_params);
 
             // Compute window corner
             const core::Vector2i corner = computeWindowCorner(p, size);
 
             // Check if crop is out of bounds (i.e. if the crop is completely outside the image)
             bool is_out_of_bounds =
-                (corner(0) + size(0) <= 0) ||                   // Completely to the left
-                (corner(1) + size(1) <= 0) ||                   // Completely above
-                (corner(0) >= central_head_params.width) ||     // Completely to the right
-                (corner(1) >= central_head_params.height);      // Completely below
+                (corner(0) + size(0) <= 0) ||                               // Completely to the left
+                (corner(1) + size(1) <= 0) ||                               // Completely above
+                (corner(0) >= unit_params.window_params.full_width) ||      // Completely to the right
+                (corner(1) >= unit_params.window_params.full_height);       // Completely below
 
             // Make crop struct
             core::Crop crop;
@@ -63,33 +62,31 @@ namespace flychams::coordination
             crop.h = size.y();
             crop.is_out_of_bounds = is_out_of_bounds;
 
-            // Return window size, corner, resolution factor and projected size
-            return std::make_tuple(crop, lambda, s_proj_pix);
+            // Return resolution factor and crop
+            return std::make_tuple(lambda, crop);
         }
 
     private: // Implementation
-        std::tuple<core::Vector2i, float, float> computeWindowSize(const core::Vector3r& z, const float& r, const core::Vector3r& x, const core::Vector2r& p, const core::HeadParameters& central_params, const core::WindowParameters& window_params)
+        std::tuple<core::Vector2i, float> computeWindowSize(const core::Vector3r& z, const float& r, const core::Vector3r& x, const core::Vector2r& p, const core::ObservationUnitParameters& unit_params)
         {
             // Args:
             // z: Target position in world frame (m)
             // r: Equivalent radius of the target's area of interest (m)
-            // x: Source camera position in world frame (m)
+            // x: Central camera position in world frame (m)
             // p: Projected point on central camera (pix)
-            // central_params: Central head parameters
-            // window_params: Window parameters
+            // unit_params: Observation unit parameters
 
             // Extract parameters
-            const auto& f = central_params.f_ref;
-            const auto& full_width = window_params.full_width;
-            const auto& full_height = window_params.full_height;
-            const auto& tracking_width = window_params.tracking_width;
-            const auto& tracking_height = window_params.tracking_height;
-            const auto& lambda_min = window_params.lambda_min;
-            const auto& lambda_max = window_params.lambda_max;
-            const auto& rho_x = window_params.rho_x;
-            const auto& rho_y = window_params.rho_y;
-            const auto& rho = window_params.rho;
-            const auto& s_ref = window_params.s_ref;
+            const auto& f = unit_params.window_params.f_ref;
+            const auto& full_width = unit_params.window_params.full_width;
+            const auto& full_height = unit_params.window_params.full_height;
+            const auto& tracking_width = unit_params.window_params.tracking_width;
+            const auto& tracking_height = unit_params.window_params.tracking_height;
+            const auto& lambda_min = unit_params.upsilon_min;
+            const auto& lambda_max = unit_params.upsilon_max;
+            const auto& rho_x = unit_params.rho_x;
+            const auto& rho_y = unit_params.rho_y;
+            const auto& s_ref = unit_params.s_ref;
 
             // Compute distance between target and camera
             float d = (x - z).norm();
@@ -110,11 +107,8 @@ namespace flychams::coordination
             size(0) = static_cast<int>(std::round(static_cast<float>(tracking_width) / lambda));
             size(1) = static_cast<int>(std::round(static_cast<float>(tracking_height) / lambda));
 
-            // Compute actual projected size after clamping
-            float s_proj_pix = (lambda * r * std::sqrt(std::pow(f, 2) + std::pow(l, 2))) / (d * rho);
-
-            // Return window size, resolution factor and projected size
-            return std::make_tuple(size, lambda, s_proj_pix);
+            // Return window size and resolution factor
+            return std::make_tuple(size, lambda);
         }
 
         core::Vector2i computeWindowCorner(const core::Vector2r& p, const core::Vector2i& size)

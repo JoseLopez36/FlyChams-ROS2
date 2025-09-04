@@ -47,7 +47,7 @@ namespace flychams::coordination
             core::RowVectorXr tab_r;
 
             // Cost function parameters
-            CostFunctions::Parameters cost_params;
+            CostFunctions::CostParameters cost_params;
         };
 
     private: // Parameters
@@ -62,7 +62,7 @@ namespace flychams::coordination
         std::normal_distribution<float> normal_dist_;
 
     public: // Public methods
-        void init(const Parameters& params, const CostFunctions::Parameters& cost_params)
+        void init(const Parameters& params, const CostFunctions::CostParameters& cost_params)
         {
             // Check parameters
             if ((params.x_min.array() > params.x_max.array()).any() || params.tol <= 0.0f || params.max_iter <= 0)
@@ -75,8 +75,8 @@ namespace flychams::coordination
             data_.cost_params = cost_params;
 
             // Initialize data
-            data_.tab_P = core::Matrix3Xr::Zero(3, data_.cost_params.n);
-            data_.tab_r = core::RowVectorXr::Zero(data_.cost_params.n);
+            data_.tab_P = core::Matrix3Xr::Zero(3, data_.cost_params.n_o);
+            data_.tab_r = core::RowVectorXr::Zero(data_.cost_params.n_o);
 
             // Initialize random number generator
             rng_ = std::mt19937(std::random_device{}());

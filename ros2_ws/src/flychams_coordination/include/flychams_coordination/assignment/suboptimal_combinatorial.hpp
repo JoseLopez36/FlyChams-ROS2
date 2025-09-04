@@ -71,7 +71,7 @@ namespace flychams::coordination
             core::RowVectorXi nk = core::RowVectorXi::Zero(m);
             for (int k = 0; k < m; k++)
             {
-                nk(k) = solvers[k]->n_tracking();
+                nk(k) = solvers[k]->getUnitCount() - 1;
             }
 
             // Create agent vector

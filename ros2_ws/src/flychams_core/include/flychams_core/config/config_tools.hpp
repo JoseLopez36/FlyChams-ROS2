@@ -330,7 +330,12 @@ namespace flychams::core
             params.upsilon_max = multi_window->max_lambda;
             params.upsilon_ref = multi_window->ref_lambda;
 
+            // Get central camera parameters
+            params.camera_params = central_camera_params.camera_params;
+
             // Get window parameters
+            // Central camera focal length (m)
+            params.window_params.f_ref = central_camera_params.upsilon_ref;
             // Full resolution (pix)
             params.window_params.full_width = central_camera_params.camera_params.width;
             params.window_params.full_height = central_camera_params.camera_params.height;

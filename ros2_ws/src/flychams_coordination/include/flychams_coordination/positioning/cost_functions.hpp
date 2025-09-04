@@ -16,28 +16,12 @@ namespace flychams::coordination
     class CostFunctions
     {
     public: // Types
-        struct TrackingUnit // Tracking unit parameters
+        struct UnitCostParameters // Parameters for the cost of a single observation unit
         {
-            // Tracking mode
-            core::TrackingMode mode;
+            // Unit parameters
+            core::ObservationUnitParameters params;
 
-            // Camera parameters
-            float f_min = 0.0f;
-            float f_max = 0.0f;
-            float f_ref = 0.0f;
-
-            // Window parameters
-            float lambda_min = 0.0f;
-            float lambda_max = 0.0f;
-            float lambda_ref = 0.0f;
-            float central_f = 0.0f;
-
-            // Projection parameters
-            float s_min = 0.0f;
-            float s_max = 0.0f;
-            float s_ref = 0.0f;
-
-            // Cost function weights
+            // Cost function weights for this unit
             // Psi
             float tau0 = 1.0f;
             float tau1 = 2.0f;
@@ -50,39 +34,38 @@ namespace flychams::coordination
             float mu = 1.0f;
             float nu = 1.0f;
         };
-        struct Parameters // Parameters for the cost function
+        struct CostParameters // Parameters for the cost function
         {
-            int n;                              // Number of units (central + tracking)
-            int n_tracking;                     // Number of tracking units
-            std::vector<TrackingUnit> units;    // Units (central + tracking) where 0 is the central unit
+            int n_o;                                    // Number of units
+            std::vector<UnitCostParameters> units;      // Unit cost parameters
         };
 
     public: // Cost functions without gradient calculation
-        static float J0(const core::Matrix3Xr& tab_P, const core::RowVectorXr& tab_r, const core::Vector3r& x, const Parameters& params)
+        static float J0(const core::Matrix3Xr& tab_P, const core::RowVectorXr& tab_r, const core::Vector3r& x, const CostParameters& cost_params)
         {
             // Compute the value of the optimization index based on nested intervals 
-            // (original cost function, with non-convex term) based on tracking mode
+            // (original cost function, with non-convex term) based on unit type
             float J = 0.0f;
-            for (int i = 0; i < params.n; i++)
+            for (int i = 0; i < cost_params.n_o; i++)
             {
                 // Get relevant data
                 const auto& z = tab_P.col(i);
                 const auto& r = tab_r(i);
-                const auto& unit = params.units[i];
+                const auto& unit = cost_params.units[i];
 
-                // Compute the value of the index based on tracking mode
-                switch (unit.mode)
+                // Compute the value of the index based on unit type
+                switch (unit.params.type)
                 {
-                case core::TrackingMode::MultiCamera:
+                case core::ObservationType::Camera:
                     J += CostFunctions::cameraJ0(z, r, x, unit);
                     break;
 
-                case core::TrackingMode::MultiWindow:
+                case core::ObservationType::Window:
                     J += CostFunctions::windowJ0(z, r, x, unit);
                     break;
 
                 default:
-                    throw std::invalid_argument("Invalid tracking mode");
+                    throw std::invalid_argument("Invalid observation unit type");
                 }
             }
 
@@ -90,31 +73,31 @@ namespace flychams::coordination
             return J;
         }
 
-        static float J1(const core::Matrix3Xr& tab_P, const core::RowVectorXr& tab_r, const core::Vector3r& x, const Parameters& params)
+        static float J1(const core::Matrix3Xr& tab_P, const core::RowVectorXr& tab_r, const core::Vector3r& x, const CostParameters& cost_params)
         {
             // Compute the value of the optimization index based on nested intervals 
-            // (without non-convex term) based on tracking mode
+            // (without non-convex term) based on unit type
             float J = 0.0f;
-            for (int i = 0; i < params.n; i++)
+            for (int i = 0; i < cost_params.n_o; i++)
             {
                 // Get relevant data
                 const auto& z = tab_P.col(i);
                 const auto& r = tab_r(i);
-                const auto& unit = params.units[i];
+                const auto& unit = cost_params.units[i];
 
-                // Compute the value of the index based on tracking mode
-                switch (unit.mode)
+                // Compute the value of the index based on unit type
+                switch (unit.params.type)
                 {
-                case core::TrackingMode::MultiCamera:
+                case core::ObservationType::Camera:
                     J += CostFunctions::cameraJ1(z, r, x, unit);
                     break;
 
-                case core::TrackingMode::MultiWindow:
+                case core::ObservationType::Window:
                     J += CostFunctions::windowJ1(z, r, x, unit);
                     break;
 
                 default:
-                    throw std::invalid_argument("Invalid tracking mode");
+                    throw std::invalid_argument("Invalid observation unit type");
                 }
             }
 
@@ -122,31 +105,31 @@ namespace flychams::coordination
             return J;
         }
 
-        static float J2(const core::Matrix3Xr& tab_P, const core::RowVectorXr& tab_r, const core::Vector3r& x, const core::Vector3r& x_hat, const Parameters& params)
+        static float J2(const core::Matrix3Xr& tab_P, const core::RowVectorXr& tab_r, const core::Vector3r& x, const core::Vector3r& x_hat, const CostParameters& cost_params)
         {
             // Compute the value of the optimization index based on nested intervals 
-            // (with convex relaxation of the non-convex term) based on tracking mode
+            // (with convex relaxation of the non-convex term) based on unit type
             float J = 0.0f;
-            for (int i = 0; i < params.n; i++)
+            for (int i = 0; i < cost_params.n_o; i++)
             {
                 // Get relevant data
                 const auto& z = tab_P.col(i);
                 const auto& r = tab_r(i);
-                const auto& unit = params.units[i];
+                const auto& unit = cost_params.units[i];
 
-                // Compute the value of the index based on tracking mode
-                switch (unit.mode)
+                // Compute the value of the index based on unit type
+                switch (unit.params.type)
                 {
-                case core::TrackingMode::MultiCamera:
+                case core::ObservationType::Camera:
                     J += CostFunctions::cameraJ2(z, r, x, x_hat, unit);
                     break;
 
-                case core::TrackingMode::MultiWindow:
+                case core::ObservationType::Window:
                     J += CostFunctions::windowJ2(z, r, x, x_hat, unit);
                     break;
 
                 default:
-                    throw std::invalid_argument("Invalid tracking mode");
+                    throw std::invalid_argument("Invalid observation unit type");
                 }
             }
 
@@ -155,35 +138,35 @@ namespace flychams::coordination
         }
 
     public: // Cost functions with gradient calculation
-        static float J1(const core::Matrix3Xr& tab_P, const core::RowVectorXr& tab_r, const core::Vector3r& x, const Parameters& params, core::Vector3r& grad)
+        static float J1(const core::Matrix3Xr& tab_P, const core::RowVectorXr& tab_r, const core::Vector3r& x, const CostParameters& cost_params, core::Vector3r& grad)
         {
             // Initialize the gradient
             grad = core::Vector3r::Zero();
 
             // Compute the value of the optimization index based on nested intervals 
-            // (without non-convex term) based on tracking mode
+            // (without non-convex term) based on unit type
             float J = 0.0f;
-            for (int i = 0; i < params.n; i++)
+            for (int i = 0; i < cost_params.n_o; i++)
             {
                 // Get relevant data
                 const auto& z = tab_P.col(i);
                 const auto& r = tab_r(i);
-                const auto& unit = params.units[i];
+                const auto& unit = cost_params.units[i];
 
-                // Compute the value of the index based on tracking mode
+                // Compute the value of the index based on unit type
                 core::Vector3r grad_i;
-                switch (unit.mode)
+                switch (unit.params.type)
                 {
-                case core::TrackingMode::MultiCamera:
+                case core::ObservationType::Camera:
                     J += CostFunctions::cameraJ1(z, r, x, unit, grad_i);
                     break;
 
-                case core::TrackingMode::MultiWindow:
+                case core::ObservationType::Window:
                     J += CostFunctions::windowJ1(z, r, x, unit, grad_i);
                     break;
-
+                    
                 default:
-                    throw std::invalid_argument("Invalid tracking mode");
+                    throw std::invalid_argument("Invalid observation unit type");
                 }
 
                 // Integrate the gradient
@@ -194,35 +177,35 @@ namespace flychams::coordination
             return J;
         }
 
-        static float J2(const core::Matrix3Xr& tab_P, const core::RowVectorXr& tab_r, const core::Vector3r& x, const core::Vector3r& x_hat, const Parameters& params, core::Vector3r& grad)
+        static float J2(const core::Matrix3Xr& tab_P, const core::RowVectorXr& tab_r, const core::Vector3r& x, const core::Vector3r& x_hat, const CostParameters& cost_params, core::Vector3r& grad)
         {
             // Initialize the gradient
             grad = core::Vector3r::Zero();
 
             // Compute the value of the optimization index based on nested intervals 
-            // (with convex relaxation of the non-convex term) based on tracking mode
+            // (with convex relaxation of the non-convex term) based on unit type
             float J = 0.0f;
-            for (int i = 0; i < params.n; i++)
+            for (int i = 0; i < cost_params.n_o; i++)
             {
                 // Get relevant data
                 const auto& z = tab_P.col(i);
                 const auto& r = tab_r(i);
-                const auto& unit = params.units[i];
+                const auto& unit = cost_params.units[i];
 
-                // Compute the value of the index based on tracking mode
+                // Compute the value of the index based on unit type
                 core::Vector3r grad_i;
-                switch (unit.mode)
+                switch (unit.params.type)
                 {
-                case core::TrackingMode::MultiCamera:
+                case core::ObservationType::Camera:
                     J += CostFunctions::cameraJ2(z, r, x, x_hat, unit, grad_i);
                     break;
 
-                case core::TrackingMode::MultiWindow:
+                case core::ObservationType::Window:
                     J += CostFunctions::windowJ2(z, r, x, x_hat, unit, grad_i);
                     break;
 
                 default:
-                    throw std::invalid_argument("Invalid tracking mode");
+                    throw std::invalid_argument("Invalid observation unit type");
                 }
 
                 // Integrate the gradient
@@ -233,8 +216,8 @@ namespace flychams::coordination
             return J;
         }
 
-    public: // Cost for single tracking unit without gradient calculation
-        static float cameraJ0(const core::Vector3r& z, const float& r, const core::Vector3r& x, const TrackingUnit& params)
+    public: // Cost for single observation unit without gradient calculation
+        static float cameraJ0(const core::Vector3r& z, const float& r, const core::Vector3r& x, const UnitCostParameters& unit)
         {
             // Original cost function with non-convex term
             // Not valid for non-global optimization (e.g. Ellipsoid method, Nelder-Mead Simplex...)
@@ -242,23 +225,23 @@ namespace flychams::coordination
             // z: center of the cluster
             // r: radius of the cluster
             // x: position of the vehicle
-            // params: parameters for the cost function
+            // unit: parameters for the cost function for the observation unit
 
             // Extract cost function parameters
-            const auto& s_min = params.s_min;
-            const auto& s_max = params.s_max;
-            const auto& s_ref = params.s_ref;
-            const auto& f_min = params.f_min;
-            const auto& f_max = params.f_max;
-            const auto& f_ref = params.f_ref;
-            const auto& tau0 = params.tau0;
-            const auto& tau1 = params.tau1;
-            const auto& tau2 = params.tau2;
-            const auto& sigma0 = params.sigma0;
-            const auto& sigma1 = params.sigma1;
-            const auto& sigma2 = params.sigma2;
-            const auto& mu = params.mu;
-            const auto& nu = params.nu;
+            const auto& s_min = unit.params.s_min;
+            const auto& s_max = unit.params.s_max;
+            const auto& s_ref = unit.params.s_ref;
+            const auto& f_min = unit.params.upsilon_min;
+            const auto& f_max = unit.params.upsilon_max;
+            const auto& f_ref = unit.params.upsilon_ref;
+            const auto& tau0 = unit.tau0;
+            const auto& tau1 = unit.tau1;
+            const auto& tau2 = unit.tau2;
+            const auto& sigma0 = unit.sigma0;
+            const auto& sigma1 = unit.sigma1;
+            const auto& sigma2 = unit.sigma2;
+            const auto& mu = unit.mu;
+            const auto& nu = unit.nu;
 
             // Target position and distance to its camera (approximated by distance to the vehicle)
             const float d = (x - z).norm();
@@ -295,27 +278,27 @@ namespace flychams::coordination
             return psi_i + lambda_i + gamma_i;
         }
 
-        static float cameraJ1(const core::Vector3r& z, const float& r, const core::Vector3r& x, const TrackingUnit& params)
+        static float cameraJ1(const core::Vector3r& z, const float& r, const core::Vector3r& x, const UnitCostParameters& unit)
         {
             // Cost function without non-convex term
             // Args:
             // z: center of the cluster
             // r: radius of the cluster
             // x: position of the vehicle
-            // params: parameters for the cost function
+            // unit: parameters for the cost function for the observation unit
 
             // Extract cost function parameters
-            const auto& s_min = params.s_min;
-            const auto& s_max = params.s_max;
-            const auto& s_ref = params.s_ref;
-            const auto& f_min = params.f_min;
-            const auto& f_max = params.f_max;
-            const auto& f_ref = params.f_ref;
-            const auto& tau0 = params.tau0;
-            const auto& tau1 = params.tau1;
-            const auto& tau2 = params.tau2;
-            const auto& mu = params.mu;
-            const auto& nu = params.nu;
+            const auto& s_min = unit.params.s_min;
+            const auto& s_max = unit.params.s_max;
+            const auto& s_ref = unit.params.s_ref;
+            const auto& f_min = unit.params.upsilon_min;
+            const auto& f_max = unit.params.upsilon_max;
+            const auto& f_ref = unit.params.upsilon_ref;
+            const auto& tau0 = unit.tau0;
+            const auto& tau1 = unit.tau1;
+            const auto& tau2 = unit.tau2;
+            const auto& mu = unit.mu;
+            const auto& nu = unit.nu;
 
             // Target position and distance to its camera (approximated by distance to the vehicle)
             const float d = (x - z).norm();
@@ -349,7 +332,7 @@ namespace flychams::coordination
             return psi_i + gamma_i;
         }
 
-        static float cameraJ2(const core::Vector3r& z, const float& r, const core::Vector3r& x, const core::Vector3r& x_hat, const TrackingUnit& params)
+        static float cameraJ2(const core::Vector3r& z, const float& r, const core::Vector3r& x, const core::Vector3r& x_hat, const UnitCostParameters& unit)
         {
             // Cost function with convex relaxation of the non-convex term
             // Args:
@@ -357,27 +340,27 @@ namespace flychams::coordination
             // r: radius of the cluster
             // x: position of the vehicle
             // x_hat: estimated position of the vehicle
-            // params: parameters for the cost function
+            // unit: parameters for the cost function for the observation unit
 
             // Distance threshold to consider that x_hat coincides with zi
             // Considering that hMin is several meters, it should not be reached unless set very high, since zi are at height 0
             float eps_dist = 0.1f;
 
             // Extract cost function parameters
-            const auto& s_min = params.s_min;
-            const auto& s_max = params.s_max;
-            const auto& s_ref = params.s_ref;
-            const auto& f_min = params.f_min;
-            const auto& f_max = params.f_max;
-            const auto& f_ref = params.f_ref;
-            const auto& tau0 = params.tau0;
-            const auto& tau1 = params.tau1;
-            const auto& tau2 = params.tau2;
-            const auto& sigma0 = params.sigma0;
-            const auto& sigma1 = params.sigma1;
-            const auto& sigma2 = params.sigma2;
-            const auto& mu = params.mu;
-            const auto& nu = params.nu;
+            const auto& s_min = unit.params.s_min;
+            const auto& s_max = unit.params.s_max;
+            const auto& s_ref = unit.params.s_ref;
+            const auto& f_min = unit.params.upsilon_min;
+            const auto& f_max = unit.params.upsilon_max;
+            const auto& f_ref = unit.params.upsilon_ref;
+            const auto& tau0 = unit.tau0;
+            const auto& tau1 = unit.tau1;
+            const auto& tau2 = unit.tau2;
+            const auto& sigma0 = unit.sigma0;
+            const auto& sigma1 = unit.sigma1;
+            const auto& sigma2 = unit.sigma2;
+            const auto& mu = unit.mu;
+            const auto& nu = unit.nu;
 
             // Target position and distance to its camera (approximated by distance to the vehicle)
             const float d = (x - z).norm();
@@ -424,7 +407,7 @@ namespace flychams::coordination
             return psi_i + lambda_i + gamma_i;
         }
 
-        static float windowJ0(const core::Vector3r& z, const float& r, const core::Vector3r& x, const TrackingUnit& params)
+        static float windowJ0(const core::Vector3r& z, const float& r, const core::Vector3r& x, const UnitCostParameters& unit)
         {
             // Original cost function with non-convex term
             // Not valid for non-global optimization (e.g. Ellipsoid method, Nelder-Mead Simplex...)
@@ -432,24 +415,24 @@ namespace flychams::coordination
             // z: center of the cluster
             // r: radius of the cluster
             // x: position of the vehicle
-            // params: parameters for the cost function
+            // unit: parameters for the cost function for the observation unit
 
             // Extract cost function parameters
-            const auto& s_min = params.s_min;
-            const auto& s_max = params.s_max;
-            const auto& s_ref = params.s_ref;
-            const auto& lambda_min = params.lambda_min;
-            const auto& lambda_max = params.lambda_max;
-            const auto& lambda_ref = params.lambda_ref;
-            const auto& f = params.central_f;
-            const auto& tau0 = params.tau0;
-            const auto& tau1 = params.tau1;
-            const auto& tau2 = params.tau2;
-            const auto& sigma0 = params.sigma0;
-            const auto& sigma1 = params.sigma1;
-            const auto& sigma2 = params.sigma2;
-            const auto& mu = params.mu;
-            const auto& nu = params.nu;
+            const auto& s_min = unit.params.s_min;
+            const auto& s_max = unit.params.s_max;
+            const auto& s_ref = unit.params.s_ref;
+            const auto& lambda_min = unit.params.upsilon_min;
+            const auto& lambda_max = unit.params.upsilon_max;
+            const auto& lambda_ref = unit.params.upsilon_ref;
+            const auto& f = unit.params.window_params.f_ref;
+            const auto& tau0 = unit.tau0;
+            const auto& tau1 = unit.tau1;
+            const auto& tau2 = unit.tau2;
+            const auto& sigma0 = unit.sigma0;
+            const auto& sigma1 = unit.sigma1;
+            const auto& sigma2 = unit.sigma2;
+            const auto& mu = unit.mu;
+            const auto& nu = unit.nu;
 
             // Target position and distance to its camera (approximated by distance to the vehicle)
             const float d = (x - z).norm();
@@ -486,28 +469,28 @@ namespace flychams::coordination
             return psi_i + lambda_i + gamma_i;
         }
 
-        static float windowJ1(const core::Vector3r& z, const float& r, const core::Vector3r& x, const TrackingUnit& params)
+        static float windowJ1(const core::Vector3r& z, const float& r, const core::Vector3r& x, const UnitCostParameters& unit)
         {
             // Cost function without non-convex term
             // Args:
             // z: center of the cluster
             // r: radius of the cluster
             // x: position of the vehicle
-            // params: parameters for the cost function
+            // unit: parameters for the cost function for the observation unit
 
             // Extract cost function parameters
-            const auto& s_min = params.s_min;
-            const auto& s_max = params.s_max;
-            const auto& s_ref = params.s_ref;
-            const auto& lambda_min = params.lambda_min;
-            const auto& lambda_max = params.lambda_max;
-            const auto& lambda_ref = params.lambda_ref;
-            const auto& f = params.central_f;
-            const auto& tau0 = params.tau0;
-            const auto& tau1 = params.tau1;
-            const auto& tau2 = params.tau2;
-            const auto& mu = params.mu;
-            const auto& nu = params.nu;
+            const auto& s_min = unit.params.s_min;
+            const auto& s_max = unit.params.s_max;
+            const auto& s_ref = unit.params.s_ref;
+            const auto& lambda_min = unit.params.upsilon_min;
+            const auto& lambda_max = unit.params.upsilon_max;
+            const auto& lambda_ref = unit.params.upsilon_ref;
+            const auto& f = unit.params.window_params.f_ref;
+            const auto& tau0 = unit.tau0;
+            const auto& tau1 = unit.tau1;
+            const auto& tau2 = unit.tau2;
+            const auto& mu = unit.mu;
+            const auto& nu = unit.nu;
 
             // Target position and distance to its camera (approximated by distance to the vehicle)
             const float d = (x - z).norm();
@@ -541,7 +524,7 @@ namespace flychams::coordination
             return psi_i + gamma_i;
         }
 
-        static float windowJ2(const core::Vector3r& z, const float& r, const core::Vector3r& x, const core::Vector3r& x_hat, const TrackingUnit& params)
+        static float windowJ2(const core::Vector3r& z, const float& r, const core::Vector3r& x, const core::Vector3r& x_hat, const UnitCostParameters& unit)
         {
             // Cost function with convex relaxation of the non-convex term
             // Args:
@@ -549,28 +532,28 @@ namespace flychams::coordination
             // r: radius of the cluster
             // x: position of the vehicle
             // x_hat: estimated position of the vehicle
-            // params: parameters for the cost function
+            // unit: parameters for the cost function for the observation unit
 
             // Distance threshold to consider that x_hat coincides with zi
             // Considering that hMin is several meters, it should not be reached unless set very high, since zi are at height 0
             float eps_dist = 0.1f;
 
             // Extract cost function parameters
-            const auto& s_min = params.s_min;
-            const auto& s_max = params.s_max;
-            const auto& s_ref = params.s_ref;
-            const auto& lambda_min = params.lambda_min;
-            const auto& lambda_max = params.lambda_max;
-            const auto& lambda_ref = params.lambda_ref;
-            const auto& f = params.central_f;
-            const auto& tau0 = params.tau0;
-            const auto& tau1 = params.tau1;
-            const auto& tau2 = params.tau2;
-            const auto& sigma0 = params.sigma0;
-            const auto& sigma1 = params.sigma1;
-            const auto& sigma2 = params.sigma2;
-            const auto& mu = params.mu;
-            const auto& nu = params.nu;
+            const auto& s_min = unit.params.s_min;
+            const auto& s_max = unit.params.s_max;
+            const auto& s_ref = unit.params.s_ref;
+            const auto& lambda_min = unit.params.upsilon_min;
+            const auto& lambda_max = unit.params.upsilon_max;
+            const auto& lambda_ref = unit.params.upsilon_ref;
+            const auto& f = unit.params.window_params.f_ref;
+            const auto& tau0 = unit.tau0;
+            const auto& tau1 = unit.tau1;
+            const auto& tau2 = unit.tau2;
+            const auto& sigma0 = unit.sigma0;
+            const auto& sigma1 = unit.sigma1;
+            const auto& sigma2 = unit.sigma2;
+            const auto& mu = unit.mu;
+            const auto& nu = unit.nu;
 
             // Target position and distance to its camera (approximated by distance to the vehicle)
             const float d = (x - z).norm();
@@ -618,28 +601,28 @@ namespace flychams::coordination
         }
 
     public: // Cost for single tracking unit with gradient calculation
-        static float cameraJ1(const core::Vector3r& z, const float& r, const core::Vector3r& x, const TrackingUnit& params, core::Vector3r& grad)
+        static float cameraJ1(const core::Vector3r& z, const float& r, const core::Vector3r& x, const UnitCostParameters& unit, core::Vector3r& grad)
         {
             // Cost function without non-convex term
             // Args:
             // z: center of the cluster
             // r: radius of the cluster
             // x: position of the vehicle
-            // params: parameters for the cost function
+            // unit: parameters for the cost function for the observation unit
             // grad: gradient of the cost function to be computed
 
             // Extract cost function parameters
-            const auto& s_min = params.s_min;
-            const auto& s_max = params.s_max;
-            const auto& s_ref = params.s_ref;
-            const auto& f_min = params.f_min;
-            const auto& f_max = params.f_max;
-            const auto& f_ref = params.f_ref;
-            const auto& tau0 = params.tau0;
-            const auto& tau1 = params.tau1;
-            const auto& tau2 = params.tau2;
-            const auto& mu = params.mu;
-            const auto& nu = params.nu;
+            const auto& s_min = unit.params.s_min;
+            const auto& s_max = unit.params.s_max;
+            const auto& s_ref = unit.params.s_ref;
+            const auto& f_min = unit.params.upsilon_min;
+            const auto& f_max = unit.params.upsilon_max;
+            const auto& f_ref = unit.params.upsilon_ref;
+            const auto& tau0 = unit.tau0;
+            const auto& tau1 = unit.tau1;
+            const auto& tau2 = unit.tau2;
+            const auto& mu = unit.mu;
+            const auto& nu = unit.nu;
 
             // Initialize the gradient
             grad = core::Vector3r::Zero();
@@ -697,7 +680,7 @@ namespace flychams::coordination
             return psi_i + gamma_i;
         }
 
-        static float cameraJ2(const core::Vector3r& z, const float& r, const core::Vector3r& x, const core::Vector3r& x_hat, const TrackingUnit& params, core::Vector3r& grad)
+        static float cameraJ2(const core::Vector3r& z, const float& r, const core::Vector3r& x, const core::Vector3r& x_hat, const UnitCostParameters& unit, core::Vector3r& grad)
         {
             // Cost function with convex relaxation of the non-convex term
             // Args:
@@ -705,7 +688,7 @@ namespace flychams::coordination
             // r: radius of the cluster
             // x: position of the vehicle
             // x_hat: estimated position of the vehicle
-            // params: parameters for the cost function
+            // unit: parameters for the cost function for the observation unit
             // grad: gradient of the cost function to be computed
 
             // Distance threshold to consider that x_hat coincides with zi
@@ -716,20 +699,20 @@ namespace flychams::coordination
             grad = core::Vector3r::Zero();
 
             // Extract cost function parameters
-            const auto& s_min = params.s_min;
-            const auto& s_max = params.s_max;
-            const auto& s_ref = params.s_ref;
-            const auto& f_min = params.f_min;
-            const auto& f_max = params.f_max;
-            const auto& f_ref = params.f_ref;
-            const auto& tau0 = params.tau0;
-            const auto& tau1 = params.tau1;
-            const auto& tau2 = params.tau2;
-            const auto& sigma0 = params.sigma0;
-            const auto& sigma1 = params.sigma1;
-            const auto& sigma2 = params.sigma2;
-            const auto& mu = params.mu;
-            const auto& nu = params.nu;
+            const auto& s_min = unit.params.s_min;
+            const auto& s_max = unit.params.s_max;
+            const auto& s_ref = unit.params.s_ref;
+            const auto& f_min = unit.params.upsilon_min;
+            const auto& f_max = unit.params.upsilon_max;
+            const auto& f_ref = unit.params.upsilon_ref;
+            const auto& tau0 = unit.tau0;
+            const auto& tau1 = unit.tau1;
+            const auto& tau2 = unit.tau2;
+            const auto& sigma0 = unit.sigma0;
+            const auto& sigma1 = unit.sigma1;
+            const auto& sigma2 = unit.sigma2;
+            const auto& mu = unit.mu;
+            const auto& nu = unit.nu;
 
             // Target position and distance to its camera (approximated by distance to the vehicle)
             const float d = (x - z).norm();
@@ -801,28 +784,28 @@ namespace flychams::coordination
             return psi_i + lambda_i + gamma_i;
         }
 
-        static float windowJ1(const core::Vector3r& z, const float& r, const core::Vector3r& x, const TrackingUnit& params, core::Vector3r& grad)
+        static float windowJ1(const core::Vector3r& z, const float& r, const core::Vector3r& x, const UnitCostParameters& unit, core::Vector3r& grad)
         {
             // Cost function without non-convex term
             // Args:
             // z: center of the cluster
             // r: radius of the cluster
             // x: position of the vehicle
-            // params: parameters for the cost function
+            // unit: parameters for the cost function for the observation unit
 
             // Extract cost function parameters
-            const auto& s_min = params.s_min;
-            const auto& s_max = params.s_max;
-            const auto& s_ref = params.s_ref;
-            const auto& lambda_min = params.lambda_min;
-            const auto& lambda_max = params.lambda_max;
-            const auto& lambda_ref = params.lambda_ref;
-            const auto& f = params.central_f;
-            const auto& tau0 = params.tau0;
-            const auto& tau1 = params.tau1;
-            const auto& tau2 = params.tau2;
-            const auto& mu = params.mu;
-            const auto& nu = params.nu;
+            const auto& s_min = unit.params.s_min;
+            const auto& s_max = unit.params.s_max;
+            const auto& s_ref = unit.params.s_ref;
+            const auto& lambda_min = unit.params.upsilon_min;
+            const auto& lambda_max = unit.params.upsilon_max;
+            const auto& lambda_ref = unit.params.upsilon_ref;
+            const auto& f = unit.params.window_params.f_ref;
+            const auto& tau0 = unit.tau0;
+            const auto& tau1 = unit.tau1;
+            const auto& tau2 = unit.tau2;
+            const auto& mu = unit.mu;
+            const auto& nu = unit.nu;
 
             // Initialize the gradient
             grad = core::Vector3r::Zero();
@@ -880,7 +863,7 @@ namespace flychams::coordination
             return psi_i + gamma_i;
         }
 
-        static float windowJ2(const core::Vector3r& z, const float& r, const core::Vector3r& x, const core::Vector3r& x_hat, const TrackingUnit& params, core::Vector3r& grad)
+        static float windowJ2(const core::Vector3r& z, const float& r, const core::Vector3r& x, const core::Vector3r& x_hat, const UnitCostParameters& unit, core::Vector3r& grad)
         {
             // Cost function with convex relaxation of the non-convex term
             // Args:
@@ -888,7 +871,7 @@ namespace flychams::coordination
             // r: radius of the cluster
             // x: position of the vehicle
             // x_hat: estimated position of the vehicle
-            // params: parameters for the cost function
+            // unit: parameters for the cost function for the observation unit
 
             // Distance threshold to consider that x_hat coincides with zi
             // Considering that hMin is several meters, it should not be reached unless set very high, since zi are at height 0
@@ -898,21 +881,21 @@ namespace flychams::coordination
             grad = core::Vector3r::Zero();
 
             // Extract cost function parameters
-            const auto& s_min = params.s_min;
-            const auto& s_max = params.s_max;
-            const auto& s_ref = params.s_ref;
-            const auto& lambda_min = params.lambda_min;
-            const auto& lambda_max = params.lambda_max;
-            const auto& lambda_ref = params.lambda_ref;
-            const auto& f = params.central_f;
-            const auto& tau0 = params.tau0;
-            const auto& tau1 = params.tau1;
-            const auto& tau2 = params.tau2;
-            const auto& sigma0 = params.sigma0;
-            const auto& sigma1 = params.sigma1;
-            const auto& sigma2 = params.sigma2;
-            const auto& mu = params.mu;
-            const auto& nu = params.nu;
+            const auto& s_min = unit.params.s_min;
+            const auto& s_max = unit.params.s_max;
+            const auto& s_ref = unit.params.s_ref;
+            const auto& lambda_min = unit.params.upsilon_min;
+            const auto& lambda_max = unit.params.upsilon_max;
+            const auto& lambda_ref = unit.params.upsilon_ref;
+            const auto& f = unit.params.window_params.f_ref;
+            const auto& tau0 = unit.tau0;
+            const auto& tau1 = unit.tau1;
+            const auto& tau2 = unit.tau2;
+            const auto& sigma0 = unit.sigma0;
+            const auto& sigma1 = unit.sigma1;
+            const auto& sigma2 = unit.sigma2;
+            const auto& mu = unit.mu;
+            const auto& nu = unit.nu;
 
             // Target position and distance to its camera (approximated by distance to the vehicle)
             const float d = (x - z).norm();

@@ -1,8 +1,7 @@
 #pragma once
 
 // Tracking includes
-#include "flychams_coordination/tracking/head_solver.hpp"
-#include "flychams_coordination/tracking/window_solver.hpp"
+#include "flychams_coordination/tracking/observation_solver.hpp"
 
 // Base module include
 #include "flychams_core/base/base_module.hpp"
@@ -41,18 +40,18 @@ namespace flychams::coordination
             core::AgentClustersMsg clusters;
             bool has_clusters;
             // Tracking setpoint messages
-            core::AgentTrackingSetpointsMsg tracking_setpoints;
+            core::AgentObservationSetpointsMsg observation_setpoints;
             core::GuiSetpointsMsg gui_setpoints;
             // Subscribers
             core::SubscriberPtr<core::AgentStatusMsg> status_sub;
             core::SubscriberPtr<core::AgentClustersMsg> clusters_sub;
             // Publisher
-            core::PublisherPtr<core::AgentTrackingSetpointsMsg> tracking_setpoints_pub;
+            core::PublisherPtr<core::AgentObservationSetpointsMsg> observation_setpoints_pub;
             core::PublisherPtr<core::GuiSetpointsMsg> gui_setpoints_pub;
             // Constructor
             Agent()
-                : status(), has_status(false), clusters(), has_clusters(false), tracking_setpoints(),
-                gui_setpoints(), status_sub(), clusters_sub(), tracking_setpoints_pub(), gui_setpoints_pub()
+                : status(), has_status(false), clusters(), has_clusters(false), observation_setpoints(),
+                gui_setpoints(), status_sub(), clusters_sub(), observation_setpoints_pub(), gui_setpoints_pub()
             {
             }
         };
@@ -61,21 +60,17 @@ namespace flychams::coordination
         core::ID agent_id_;
         float update_rate_;
         // Tracking parameters
-        core::TrackingMode mode_;
-        int n_heads_;
-        int n_windows_;
-        std::vector<core::HeadParameters> head_params_;
-        std::vector<core::WindowParameters> window_params_;
+        core::TrackingParameters tracking_params_;
         // Transform parameters
         std::string world_frame_;
         std::vector<std::string> optical_frames_;
+        int n_frames_;
 
     private: // Data
         // Agent
         Agent agent_;
         // Solvers
-        std::vector<HeadSolver> head_solvers_;
-        std::vector<WindowSolver> window_solvers_;
+        std::vector<ObservationSolver::SharedPtr> solvers_;
 
     private: // Callbacks
         void statusCallback(const core::AgentStatusMsg::SharedPtr msg);
@@ -86,10 +81,8 @@ namespace flychams::coordination
         void update();
 
     private: // Tracking methods
-        void initializeMultiCamera();
-        void initializeMultiWindow();
-        void updateMultiCamera(const core::Matrix3Xr& tab_P, const core::RowVectorXr& tab_r, const std::vector<core::Matrix4r>& tab_T);
-        void updateMultiWindow(const core::Matrix3Xr& tab_P, const core::RowVectorXr& tab_r, const core::Matrix4r& central_T);
+        std::tuple<float, core::Vector3r> updateCamera(const core::Vector3r& P, const float& r, const core::Matrix4r& T, ObservationSolver::SharedPtr solver);
+        std::tuple<float, core::Crop> updateWindow(const core::Vector3r& P, const float& r, const core::Matrix4r& T, ObservationSolver::SharedPtr solver);
 
     private: // ROS components
         // Timer

@@ -8,16 +8,16 @@ namespace flychams::coordination
 {
     /**
      * ════════════════════════════════════════════════════════════════
-     * @brief Solver for agent tracking. Specific for head tracking
+     * @brief Solver for agent tracking. Specific for camera tracking
      * ════════════════════════════════════════════════════════════════
      * @author Jose Francisco Lopez Ruiz
      * @date 2025-04-28
      * ════════════════════════════════════════════════════════════════
      */
-    class HeadSolver
+    class CameraSolver
     {
     public: // Types
-        using SharedPtr = std::shared_ptr<HeadSolver>;
+        using SharedPtr = std::shared_ptr<CameraSolver>;
         // Modes
         enum class AimingMode
         {
@@ -41,20 +41,20 @@ namespace flychams::coordination
         }
 
         // Runtime methods
-        std::tuple<float, core::Vector3r, float> runCamera(const core::Vector3r& z, const float& r, const core::Matrix4r& T, const core::HeadParameters& head_params)
+        std::tuple<float, core::Vector3r> run(const core::Vector3r& z, const float& r, const core::Matrix4r& T, const core::ObservationUnitParameters& unit_params)
         {
             // Args:
             // z: Target position in world frame (m)
             // r: Equivalent radius of the target's area of interest (m)
             // T: Ci_ in world frame (auxiliary frame)
-            // head_params: Head parameters
+            // unit_params: Observation unit parameters
 
             // Extract camera position and orientation
             const core::Vector3r x = T.block<3, 1>(0, 3);
             const core::Matrix3r R = T.block<3, 3>(0, 0);
 
             // Compute focal length
-            const auto [focal, s_proj_pix] = computeCameraFocal(z, r, x, head_params);
+            const auto focal = computeCameraFocal(z, r, x, unit_params);
 
             // Update previous focal
             focal_prev_ = focal;
@@ -74,24 +74,23 @@ namespace flychams::coordination
             // Update previous orientation
             rpy_prev_ = rpy;
 
-            // Return focal length, orientation and projected size
-            return std::make_tuple(focal, rpy, s_proj_pix);
+            // Return focal length and orientation
+            return std::make_tuple(focal, rpy);
         }
 
     private: // Implementation
-        std::pair<float, float> computeCameraFocal(const core::Vector3r& z, const float& r, const core::Vector3r& x, const core::HeadParameters& head_params)
+        float computeCameraFocal(const core::Vector3r& z, const float& r, const core::Vector3r& x, const core::ObservationUnitParameters& unit_params)
         {
             // Args:
             // z: Target position in world frame (m)
             // r: Equivalent radius of the target's area of interest (m)
             // x: Camera position in world frame (m)
-            // head_params: Head parameters
+            // unit_params: Observation unit parameters
 
             // Extract parameters
-            const auto& f_min = head_params.f_min;
-            const auto& f_max = head_params.f_max;
-            const auto& rho = head_params.rho;
-            const auto& s_ref = head_params.s_ref;
+            const auto& f_min = unit_params.upsilon_min;
+            const auto& f_max = unit_params.upsilon_max;
+            const auto& s_ref = unit_params.s_ref;
 
             // Compute distance between target and camera
             float d = (x - z).norm();
@@ -102,11 +101,8 @@ namespace flychams::coordination
             // Clamp the focal length within the camera's focal limits
             f = std::max(std::min(f, f_max), f_min);
 
-            // Compute actual projected size after clamping
-            float s_proj_pix = (r * f) / (d * rho);
-
-            // Return focal length and projected size
-            return std::make_pair(f, s_proj_pix);
+            // Return focal length
+            return f;
         }
 
         core::Vector3r computeCameraOrientation(const core::Vector3r& z, const core::Vector3r& x, const core::Matrix3r& wRc, const core::Vector3r& prev_rpy, const bool& is_first_update)
