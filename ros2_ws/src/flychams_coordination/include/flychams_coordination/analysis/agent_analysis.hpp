@@ -34,7 +34,9 @@ namespace flychams::coordination
             core::AgentStatus status;
             bool has_status;
             // Assignment data
-            std::vector<core::ID> assignment;
+            std::vector<core::ID> unit_ids;
+            std::vector<core::ID> cluster_ids;
+            core::ID central_unit_id;
             bool has_assignment;
             // Subscriber
             core::SubscriberPtr<core::AgentStatusMsg> status_sub;
@@ -43,7 +45,7 @@ namespace flychams::coordination
             core::PublisherPtr<core::AgentClustersMsg> clusters_pub;
             // Constructor
             Agent()
-                : status(), has_status(false), assignment(), has_assignment(false), status_sub(), assignment_sub(), clusters_pub()
+                : status(), has_status(false), unit_ids(), cluster_ids(), has_assignment(false), status_sub(), assignment_sub(), clusters_pub()
             {
             }
         };

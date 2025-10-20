@@ -36,6 +36,8 @@ namespace flychams::coordination
             // Status data
             core::AgentStatus status;
             bool has_status;
+            // Unit data
+            std::vector<core::ID> tracking_unit_ids;
             // Position data
             core::PointMsg position;
             bool has_position;

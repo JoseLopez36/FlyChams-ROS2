@@ -41,6 +41,10 @@ namespace flychams::coordination
         // Create and add agent
         agents_.insert({ agent_id, Agent() });
 
+        // Define agent's central unit ID
+        const auto& tracking_params = config_tools_->getTrackingParameters(agent_id);
+        agents_[agent_id].central_unit_id = tracking_params.observation_units_params[0].id;
+
         // Create agent status subscriber
         agents_[agent_id].status_sub = topic_tools_->createAgentStatusSubscriber(agent_id,
             [this, agent_id](const AgentStatusMsg::SharedPtr msg)
@@ -98,7 +102,8 @@ namespace flychams::coordination
     void AgentAnalysis::agentAssignmentCallback(const ID& agent_id, const AgentAssignmentMsg::SharedPtr msg)
     {
         // Update agent assignment
-        agents_[agent_id].assignment = msg->cluster_ids;
+        agents_[agent_id].unit_ids = msg->unit_ids;
+        agents_[agent_id].cluster_ids = msg->cluster_ids;
         agents_[agent_id].has_assignment = true;
     }
 
@@ -150,19 +155,23 @@ namespace flychams::coordination
             msg.header = RosUtils::createHeader(node_, transform_tools_->getGlobalFrame());
 
             // Iterate over the assignment and add tracking clusters
-            int n = static_cast<int>(agent.assignment.size());
-            msg.centers.resize(n + 1);
-            msg.radii.resize(n + 1);
+            int n_t = static_cast<int>(agent.unit_ids.size());
+            int n_o = n_t + 1;
+            msg.unit_ids.resize(n_o);
+            msg.centers.resize(n_o);
+            msg.radii.resize(n_o);
             int c = 0;
-            for (int i = 1; i < n + 1; i++)
+            for (int i = 1; i < n_o; i++)
             {
-                const auto& cluster = clusters_[agent.assignment[c]];
+                msg.unit_ids[i] = agent.unit_ids[c];
+                const auto& cluster = clusters_[agent.cluster_ids[c]];
                 msg.centers[i] = cluster.center;
                 msg.radii[i] = cluster.radius;
                 c++;
             }
 
             // Add central cluster
+            msg.unit_ids[0] = agent.central_unit_id;
             const auto& [central_P, central_r] = computeCentralCluster(msg.centers, msg.radii);
             msg.centers[0] = central_P;
             msg.radii[0] = central_r;

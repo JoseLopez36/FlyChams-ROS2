@@ -82,6 +82,16 @@ namespace flychams::coordination
         agents_.insert({ agent_id, Agent() });
         A_.insert(agent_id); // Add agent to ordered set
 
+        // Define tracking units IDs
+        const auto& tracking_params = config_tools_->getTrackingParameters(agent_id);
+        agents_[agent_id].tracking_unit_ids.resize(tracking_params.n_t);
+        int t_u = 0;
+        for (int i = 1; i < tracking_params.n_o; i++)
+        {
+            agents_[agent_id].tracking_unit_ids[t_u] = tracking_params.observation_units_params[i].id;
+            t_u++;
+        }
+
         // Create and initialize position solver
         agents_[agent_id].position_solver = createPositionSolver(agent_id, position_solver_params_, position_solver_mode_);
 
@@ -242,8 +252,10 @@ namespace flychams::coordination
             int n = solvers[k]->getUnitCount() - 1;
             for (int i = 0; i < n; i++)
             {
+                const std::string unit_id = agents_[agent_id].tracking_unit_ids[i];
                 const int& cluster_index = X(t);
                 const std::string cluster_id = *std::next(T_.begin(), cluster_index);
+                msg.unit_ids.push_back(unit_id);
                 msg.cluster_ids.push_back(cluster_id);
                 t++;
             }
@@ -255,7 +267,7 @@ namespace flychams::coordination
             RCLCPP_INFO(node_->get_logger(), "Agent assignment: Agent %s assigned to %d clusters", agent_id.c_str(), n);
             for (int i = 0; i < n; i++)
             {
-                RCLCPP_INFO(node_->get_logger(), "Agent assignment:     - Cluster %s", msg.cluster_ids[i].c_str());
+                RCLCPP_INFO(node_->get_logger(), "Agent assignment:     - Unit %s    - Cluster %s", msg.unit_ids[i].c_str(), msg.cluster_ids[i].c_str());
             }
 
             k++;

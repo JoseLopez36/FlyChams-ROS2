@@ -1,3 +1,4 @@
 std_msgs/Header header
-string[] cluster_ids    # IDs of the clusters assigned to the agent
-# Index of the assigned cluster matches the index of the tracking unit assigned to it
+string[] unit_ids       # IDs of the tracking units of the agent
+string[] cluster_ids    # IDs of the clusters assigned to each tracking unit
+# Note: Only tracking clusters (and not the central cluster) are assigned
