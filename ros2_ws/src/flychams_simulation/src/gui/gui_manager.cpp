@@ -20,9 +20,6 @@ namespace flychams::simulation
         // Initialize data
         agent_ = Agent();
 
-        // Get head configuration
-        const auto& [heads, n] = config_tools_->getHeads(agent_id_);
-
         // Get system config
         const auto& system_config = config_tools_->getSystem();
 

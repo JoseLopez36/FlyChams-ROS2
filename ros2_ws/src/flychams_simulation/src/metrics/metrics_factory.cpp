@@ -77,11 +77,11 @@ namespace flychams::simulation
                 this->agentOptimizationDurationCallback(agent_id, msg);
             }, sub_options_with_module_cb_group_);
 
-        // Create agent tracking setpoints subscriber
-        agents_[agent_id].tracking_setpoints_sub = topic_tools_->createAgentTrackingSetpointsSubscriber(agent_id,
-            [this, agent_id](const AgentTrackingSetpointsMsg::SharedPtr msg)
+        // Create agent observation setpoints subscriber
+        agents_[agent_id].observation_setpoints_sub = topic_tools_->createAgentObservationSetpointsSubscriber(agent_id,
+            [this, agent_id](const AgentObservationSetpointsMsg::SharedPtr msg)
             {
-                this->agentTrackingSetpointsCallback(agent_id, msg);
+                this->agentObservationSetpointsCallback(agent_id, msg);
             }, sub_options_with_module_cb_group_);
 
         // Create agent metrics publisher
@@ -168,12 +168,10 @@ namespace flychams::simulation
         agents_[agent_id].metrics.optimization_duration = msg->data;
     }
 
-    void MetricsFactory::agentTrackingSetpointsCallback(const ID& agent_id, const AgentTrackingSetpointsMsg::SharedPtr msg)
+    void MetricsFactory::agentObservationSetpointsCallback(const ID& agent_id, const AgentObservationSetpointsMsg::SharedPtr msg)
     {
-        // Update agent tracking setpoints
-        agents_[agent_id].metrics.focals = msg->focals;
-        agents_[agent_id].metrics.resolution_factors = msg->resolution_factors;
-        agents_[agent_id].metrics.projected_sizes = msg->projected_sizes;
+        // Update agent observation setpoints
+        agents_[agent_id].metrics.zoom_factors = msg->zoom_factors;
     }
 
     void MetricsFactory::targetPositionCallback(const ID& target_id, const PointStampedMsg::SharedPtr msg)

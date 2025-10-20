@@ -5,9 +5,7 @@ geometry_msgs/Point position
 geometry_msgs/Point setpoint
 
 # Tracking data
-float32[] focals                     # Associated tracking focal length for this cluster (only used if tracking_mode == 0)
-float32[] resolution_factors         # Associated tracking resolution factor for this cluster (only used if tracking_mode == 1)
-float32[] projected_sizes            # Associated tracking projected size for this cluster
+float32[] zoom_factors               # Associated tracking zoom factor for this cluster
 
 # Optimization data
 float32 optimization_duration        # Time taken to compute the optimal position (ms)
