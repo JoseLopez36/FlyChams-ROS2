@@ -92,9 +92,9 @@ namespace flychams::coordination
             float d = (x - z).norm();
 
             // Calculate the correction factor for uncentered targets
-            float u = full_width / 2.0f;
-            float v = full_height / 2.0f;
-            float l = std::sqrt(std::pow(p(0) - u, 2) * std::pow(rho_x, 2) + std::pow(p(1) - v, 2) * std::pow(rho_y, 2));
+            float u_pix = full_width / 2.0f;
+            float v_pix = full_height / 2.0f;
+            float l = std::sqrt(std::pow(p(0) - u_pix, 2) * std::pow(rho_x, 2) + std::pow(p(1) - v_pix, 2) * std::pow(rho_y, 2));
             float xi = std::sqrt(std::pow(f, 2) + std::pow(l, 2));
 
             // Attempt to adjust the resolution factor to achieve the desired apparent size of the object

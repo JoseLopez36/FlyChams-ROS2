@@ -44,6 +44,7 @@ namespace flychams::coordination
             core::Matrix3Xr tab_P;
             core::RowVectorXr tab_r;
             core::Vector3r x_hat;
+            core::Matrix4r wTcentral;
 
             // Cost function parameters
             CostFunctions::CostParameters cost_params;
@@ -73,12 +74,13 @@ namespace flychams::coordination
             data_.tab_P = core::Matrix3Xr::Zero(3, data_.cost_params.n_o);
             data_.tab_r = core::RowVectorXr::Zero(data_.cost_params.n_o);
             data_.x_hat = core::Vector3r::Zero();
+            data_.wTcentral = core::Matrix4r::Identity();
         }
         void destroy()
         {
             // Nothing to destroy
         }
-        core::Vector3r run(const core::Matrix3Xr& tab_P, const core::RowVectorXr& tab_r, const core::Vector3r& x0, float& J)
+        core::Vector3r run(const core::Matrix3Xr& tab_P, const core::RowVectorXr& tab_r, const core::Vector3r& x0, const core::Matrix4r& wTcentral, float& J)
         {
             // Clip position to constraints
             core::Vector3r x0_clipped = x0;
@@ -90,6 +92,7 @@ namespace flychams::coordination
             data_.tab_P = tab_P;
             data_.tab_r = tab_r;
             data_.x_hat = core::Vector3r::Zero();
+            data_.wTcentral = wTcentral;
 
             // First optimization (solve for initial position)
             core::Vector3r x_opt_1;
@@ -174,9 +177,9 @@ namespace flychams::coordination
                 float f;
                 core::Vector3r grad_f;
                 if (convex_relaxation)
-                    f = CostFunctions::J2(data_.tab_P, data_.tab_r, y, data_.x_hat, data_.cost_params, grad_f);
+                    f = CostFunctions::J2(data_.tab_P, data_.tab_r, y, data_.x_hat, data_.wTcentral, data_.cost_params, grad_f);
                 else
-                    f = CostFunctions::J1(data_.tab_P, data_.tab_r, y, data_.cost_params, grad_f);
+                    f = CostFunctions::J1(data_.tab_P, data_.tab_r, y, data_.wTcentral, data_.cost_params, grad_f);
 
                 // Check if the cost function is increasing
                 if (f > f_prev)
@@ -217,9 +220,9 @@ namespace flychams::coordination
             // Evaluate the final cost (without gradient)
             float f;
             if (convex_relaxation)
-                f = CostFunctions::J2(data_.tab_P, data_.tab_r, x, data_.x_hat, data_.cost_params);
+                f = CostFunctions::J2(data_.tab_P, data_.tab_r, x, data_.x_hat, data_.wTcentral, data_.cost_params);
             else
-                f = CostFunctions::J1(data_.tab_P, data_.tab_r, x, data_.cost_params);
+                f = CostFunctions::J1(data_.tab_P, data_.tab_r, x, data_.wTcentral, data_.cost_params);
 
             // Return the cost function value and position
             x_opt = x;

@@ -200,22 +200,22 @@ namespace flychams::coordination
         {
         case SolverMode::ELLIPSOID_METHOD:
         {
-            return ellipsoid_method_.run(tab_P, tab_r, x0, J);
+            return ellipsoid_method_.run(tab_P, tab_r, x0, wTcentral, J);
         }
 
         case SolverMode::NELDER_MEAD_NLOPT:
         {
-            return nelder_mead_nlopt_.run(tab_P, tab_r, x0, J);
+            return nelder_mead_nlopt_.run(tab_P, tab_r, x0, wTcentral, J);
         }
 
         case SolverMode::NESTEROV_ALGORITHM:
         {
-            return nesterov_algorithm_.run(tab_P, tab_r, x0, J);
+            return nesterov_algorithm_.run(tab_P, tab_r, x0, wTcentral, J);
         }
 
         case SolverMode::L_BFGS_NLOPT:
         {
-            return l_bfgs_nlopt_.run(tab_P, tab_r, x0, J);
+            return l_bfgs_nlopt_.run(tab_P, tab_r, x0, wTcentral, J);
         }
 
         case SolverMode::PSO_ALGORITHM:

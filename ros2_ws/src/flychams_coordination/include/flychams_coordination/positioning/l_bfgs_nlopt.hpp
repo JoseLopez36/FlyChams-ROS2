@@ -41,6 +41,7 @@ namespace flychams::coordination
             core::Matrix3Xr tab_P;
             core::RowVectorXr tab_r;
             core::Vector3r x_hat;
+            core::Matrix4r wTcentral;
 
             // Cost function parameters
             CostFunctions::CostParameters cost_params;
@@ -72,6 +73,7 @@ namespace flychams::coordination
             data_.tab_P = core::Matrix3Xr::Zero(3, data_.cost_params.n_o);
             data_.tab_r = core::RowVectorXr::Zero(data_.cost_params.n_o);
             data_.x_hat = core::Vector3r::Zero();
+            data_.wTcentral = core::Matrix4r::Identity();
 
             // Create an NLopt optimizer
             opt_ = nlopt_create(NLOPT_LD_LBFGS, 3); // 3 is the dimension of the problem
@@ -87,7 +89,7 @@ namespace flychams::coordination
                 nlopt_destroy(opt_);
             }
         }
-        core::Vector3r run(const core::Matrix3Xr& tab_P, const core::RowVectorXr& tab_r, const core::Vector3r& x0, float& J)
+        core::Vector3r run(const core::Matrix3Xr& tab_P, const core::RowVectorXr& tab_r, const core::Vector3r& x0, const core::Matrix4r& wTcentral, float& J)
         {
             // Check if NLopt optimizer is initialized
             if (!opt_)
@@ -111,6 +113,7 @@ namespace flychams::coordination
             data_.tab_P = tab_P;
             data_.tab_r = tab_r;
             data_.x_hat = core::Vector3r::Zero();
+            data_.wTcentral = wTcentral;
 
             // First optimization (solve for initial position)
             core::Vector3r x_opt_1;
@@ -197,7 +200,7 @@ namespace flychams::coordination
 
             // Calculate the cost for J1 (with gradient)
             core::Vector3r grad_vec;
-            float J1 = CostFunctions::J1(data_ptr->tab_P, data_ptr->tab_r, x_vec, data_ptr->cost_params, grad_vec);
+            float J1 = CostFunctions::J1(data_ptr->tab_P, data_ptr->tab_r, x_vec, data_ptr->wTcentral, data_ptr->cost_params, grad_vec);
 
             // Copy the gradient to the output
             grad[0] = static_cast<double>(grad_vec(0));
@@ -215,7 +218,7 @@ namespace flychams::coordination
 
             // Calculate the cost for J2 (with gradient)
             core::Vector3r grad_vec;
-            float J2 = CostFunctions::J2(data_ptr->tab_P, data_ptr->tab_r, x_vec, data_ptr->x_hat, data_ptr->cost_params, grad_vec);
+            float J2 = CostFunctions::J2(data_ptr->tab_P, data_ptr->tab_r, x_vec, data_ptr->x_hat, data_ptr->wTcentral, data_ptr->cost_params, grad_vec);
 
             // Copy the gradient to the output
             grad[0] = static_cast<double>(grad_vec(0));

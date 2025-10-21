@@ -43,6 +43,7 @@ namespace flychams::coordination
             core::Matrix3Xr tab_P;
             core::RowVectorXr tab_r;
             core::Vector3r x_hat;
+            core::Matrix4r wTcentral;
 
             // Cost function parameters
             CostFunctions::CostParameters cost_params;
@@ -73,6 +74,7 @@ namespace flychams::coordination
             data_.tab_P = core::Matrix3Xr::Zero(3, data_.cost_params.n_o);
             data_.tab_r = core::RowVectorXr::Zero(data_.cost_params.n_o);
             data_.x_hat = core::Vector3r::Zero();
+            data_.wTcentral = core::Matrix4r::Identity();
 
             // Initialize ellipsoid
             ellipsoid_.a0 = (params_.x_max + params_.x_min) / 2.0f;
@@ -85,7 +87,7 @@ namespace flychams::coordination
         {
             // Nothing to destroy
         }
-        core::Vector3r run(const core::Matrix3Xr& tab_P, const core::RowVectorXr& tab_r, const core::Vector3r& x0, float& J)
+        core::Vector3r run(const core::Matrix3Xr& tab_P, const core::RowVectorXr& tab_r, const core::Vector3r& x0, const core::Matrix4r& wTcentral, float& J)
         {
             // Clip position to constraints
             core::Vector3r x0_clipped = x0;
@@ -97,6 +99,7 @@ namespace flychams::coordination
             data_.tab_P = tab_P;
             data_.tab_r = tab_r;
             data_.x_hat = core::Vector3r::Zero();
+            data_.wTcentral = wTcentral;
 
             // First optimization (solve for initial position)
             core::Vector3r x_opt_1;
@@ -162,9 +165,9 @@ namespace flychams::coordination
             float f;
             core::Vector3r grad_f;
             if (convex_relaxation)
-                f = CostFunctions::J2(data_.tab_P, data_.tab_r, a, data_.x_hat, data_.cost_params, grad_f);
+                f = CostFunctions::J2(data_.tab_P, data_.tab_r, a, data_.x_hat, data_.wTcentral, data_.cost_params, grad_f);
             else
-                f = CostFunctions::J1(data_.tab_P, data_.tab_r, a, data_.cost_params, grad_f);
+                f = CostFunctions::J1(data_.tab_P, data_.tab_r, a, data_.wTcentral, data_.cost_params, grad_f);
 
             // Compute the norm of the gradient of the cost function using the matrix A
             float factor_norm_f = std::sqrt(
@@ -236,9 +239,9 @@ namespace flychams::coordination
 
                 // Update the norm of the gradient of the cost function
                 if (convex_relaxation)
-                    f = CostFunctions::J2(data_.tab_P, data_.tab_r, a, data_.x_hat, data_.cost_params, grad_f);
+                    f = CostFunctions::J2(data_.tab_P, data_.tab_r, a, data_.x_hat, data_.wTcentral, data_.cost_params, grad_f);
                 else
-                    f = CostFunctions::J1(data_.tab_P, data_.tab_r, a, data_.cost_params, grad_f);
+                    f = CostFunctions::J1(data_.tab_P, data_.tab_r, a, data_.wTcentral, data_.cost_params, grad_f);
                 factor_norm_f = std::sqrt(
                     grad_f(0) * A(0, 0) * grad_f(0) +
                     grad_f(1) * A(1, 1) * grad_f(1) +
