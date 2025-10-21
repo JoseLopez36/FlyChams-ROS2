@@ -39,6 +39,11 @@ namespace flychams::coordination
         agent_.setpoint.header = RosUtils::createHeader(node_, transform_tools_->getGlobalFrame());
         agent_.setpoint.point = PointMsg();
 
+        // Get relevant transform frames
+        world_frame_ = transform_tools_->getGlobalFrame();
+        const core::TrackingParameters& tracking_params = config_tools_->getTrackingParameters(agent_id_);
+        central_optical_frame_ = transform_tools_->getCameraOpticalFrame(agent_id_, tracking_params.observation_units_params[0].id);
+
         // Create and initialize solver
         solver_ = createSolver(agent_id_, solver_params_, solver_mode_);
 
@@ -130,10 +135,14 @@ namespace flychams::coordination
             tab_r(i) = agent_.clusters.radii[i];
         }
 
+        // Get central observation unit transform
+        const TransformMsg& wTcentral_msg = transform_tools_->getTransform(world_frame_, central_optical_frame_);
+        Matrix4r wTcentral = RosUtils::fromMsg(wTcentral_msg);
+
         // Solve agent positioning
         float J;
         const auto& start = std::chrono::high_resolution_clock::now();
-        Vector3r optimal_position = solver_->run(tab_P, tab_r, x0, J);
+        Vector3r optimal_position = solver_->run(tab_P, tab_r, x0, wTcentral, J);
         const auto& end = std::chrono::high_resolution_clock::now();
         float time_elapsed = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
         RCLCPP_INFO(node_->get_logger(), "Agent positioning: Computed optimal position (J = %.2f): (xOpt = %.2f, %.2f, %.2f) in %.2f us",

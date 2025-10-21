@@ -193,7 +193,7 @@ namespace flychams::coordination
         }
     }
 
-    Vector3r PositionSolver::run(const Matrix3Xr& tab_P, const RowVectorXr& tab_r, const Vector3r& x0, float& J)
+    Vector3r PositionSolver::run(const Matrix3Xr& tab_P, const RowVectorXr& tab_r, const Vector3r& x0, const Matrix4r& wTcentral, float& J)
     {
         // Run the optimization based on the mode
         switch (mode_)
@@ -220,17 +220,17 @@ namespace flychams::coordination
 
         case SolverMode::PSO_ALGORITHM:
         {
-            return pso_algorithm_.run(tab_P, tab_r, J);
+            return pso_algorithm_.run(tab_P, tab_r, wTcentral, J);
         }
 
         case SolverMode::ALC_PSO_ALGORITHM:
         {
-            return alc_pso_algorithm_.run(tab_P, tab_r, J);
+            return alc_pso_algorithm_.run(tab_P, tab_r, wTcentral, J);
         }
 
         case SolverMode::CMA_ES_ALGORITHM:
         {
-            return cma_es_algorithm_.run(tab_P, tab_r, J);
+            return cma_es_algorithm_.run(tab_P, tab_r, wTcentral, J);
         }
 
         default:

@@ -2,6 +2,7 @@
 
 // Utilities
 #include "flychams_core/types/core_types.hpp"
+#include "flychams_core/utils/math_utils.hpp"
 
 namespace flychams::coordination
 {
@@ -41,7 +42,7 @@ namespace flychams::coordination
         };
 
     public: // Cost functions without gradient calculation
-        static float J0(const core::Matrix3Xr& tab_P, const core::RowVectorXr& tab_r, const core::Vector3r& x, const CostParameters& cost_params)
+        static float J0(const core::Matrix3Xr& tab_P, const core::RowVectorXr& tab_r, const core::Vector3r& x, const core::Matrix4r& wTcentral, const CostParameters& cost_params)
         {
             // Compute the value of the optimization index based on nested intervals 
             // (original cost function, with non-convex term) based on unit type
@@ -61,7 +62,7 @@ namespace flychams::coordination
                     break;
 
                 case core::ObservationType::Window:
-                    J += CostFunctions::windowJ0(z, r, x, unit);
+                    J += CostFunctions::windowJ0(z, r, x, wTcentral, unit);
                     break;
 
                 default:
@@ -407,7 +408,7 @@ namespace flychams::coordination
             return psi_i + lambda_i + gamma_i;
         }
 
-        static float windowJ0(const core::Vector3r& z, const float& r, const core::Vector3r& x, const UnitCostParameters& unit)
+        static float windowJ0(const core::Vector3r& z, const float& r, const core::Vector3r& x, const core::Matrix4r& T, const UnitCostParameters& unit)
         {
             // Original cost function with non-convex term
             // Not valid for non-global optimization (e.g. Ellipsoid method, Nelder-Mead Simplex...)
@@ -415,6 +416,7 @@ namespace flychams::coordination
             // z: center of the cluster
             // r: radius of the cluster
             // x: position of the vehicle
+            // T: C0 in world frame (frame of central camera)
             // unit: parameters for the cost function for the observation unit
 
             // Extract cost function parameters
@@ -425,6 +427,11 @@ namespace flychams::coordination
             const auto& lambda_max = unit.params.upsilon_max;
             const auto& lambda_ref = unit.params.upsilon_ref;
             const auto& f = unit.params.window_params.f_ref;
+            const auto& full_width = unit.params.window_params.full_width;
+            const auto& full_height = unit.params.window_params.full_height;
+            const auto& rho_x = unit.params.rho_x;
+            const auto& rho_y = unit.params.rho_y;
+            const auto& K = unit.params.camera_params.K;
             const auto& tau0 = unit.tau0;
             const auto& tau1 = unit.tau1;
             const auto& tau2 = unit.tau2;
@@ -434,11 +441,20 @@ namespace flychams::coordination
             const auto& mu = unit.mu;
             const auto& nu = unit.nu;
 
+            // Project target position onto central camera
+            core::Vector2r p = core::MathUtils::projectPoint(z, T, K);
+
+            // Calculate the correction factor for uncentered targets
+            float u = full_width / 2.0f;
+            float v = full_height / 2.0f;
+            float l = std::sqrt(std::pow(p(0) - u, 2) * std::pow(rho_x, 2) + std::pow(p(1) - v, 2) * std::pow(rho_y, 2));
+            float xi = std::sqrt(std::pow(f, 2) + std::pow(l, 2));
+
             // Target position and distance to its camera (approximated by distance to the vehicle)
             const float d = (x - z).norm();
 
             // Calculate the reference distance to the target
-            const float d_ref = (r * f * lambda_ref) / s_ref;
+            const float d_ref = (r * lambda_ref * xi) / s_ref;
 
             // Calculate what would be the ideal reference position in the case of a single target (perfect verticallity)
             core::Vector3r p_ref = z;
@@ -447,10 +463,10 @@ namespace flychams::coordination
             // Determine the nested intervals
             const float L0 = d_ref;
             const float U0 = d_ref;
-            const float L1 = (r * f * lambda_min) / s_ref;
-            const float U1 = (r * f * lambda_max) / s_ref;
-            const float L2 = (r * f * lambda_min) / s_max;
-            const float U2 = (r * f * lambda_max) / s_min;
+            const float L1 = (r * lambda_min * xi) / s_ref;
+            const float U1 = (r * lambda_max * xi) / s_ref;
+            const float L2 = (r * lambda_min * xi) / s_max;
+            const float U2 = (r * lambda_max * xi) / s_min;
 
             // Calculate the index terms based on intervals
             const float psi_i =

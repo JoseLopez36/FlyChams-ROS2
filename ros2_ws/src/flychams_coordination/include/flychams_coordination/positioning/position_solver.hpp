@@ -92,7 +92,7 @@ namespace flychams::coordination
         // Getters
         int getUnitCount() const { return params_.cost_params.n_o; }
         // Optimization
-        core::Vector3r run(const core::Matrix3Xr& tab_P, const core::RowVectorXr& tab_r, const core::Vector3r& x0, float& J);
+        core::Vector3r run(const core::Matrix3Xr& tab_P, const core::RowVectorXr& tab_r, const core::Vector3r& x0, const core::Matrix4r& wTcentral, float& J);
     };
 
 } // namespace flychams::coordination

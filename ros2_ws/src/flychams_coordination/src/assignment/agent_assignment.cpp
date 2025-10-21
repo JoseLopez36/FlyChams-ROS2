@@ -45,6 +45,10 @@ namespace flychams::coordination
         T_.clear();
         X_prev_.resize(0);
 
+        // Get relevant transform frames
+        world_frame_ = transform_tools_->getGlobalFrame();
+        central_optical_frame_map_.clear();
+
         // Create and initialize assignment solver
         // Note: Position solvers will be created when adding agents
         solver_ = std::make_shared<AssignmentSolver>();
@@ -91,6 +95,10 @@ namespace flychams::coordination
             agents_[agent_id].tracking_unit_ids[t_u] = tracking_params.observation_units_params[i].id;
             t_u++;
         }
+
+        // Get central observation unit optical frame
+        central_optical_frame_map_.insert({ agent_id, 
+            transform_tools_->getCameraOpticalFrame(agent_id, tracking_params.observation_units_params[0].id) });
 
         // Create and initialize position solver
         agents_[agent_id].position_solver = createPositionSolver(agent_id, position_solver_params_, position_solver_mode_);
@@ -209,12 +217,15 @@ namespace flychams::coordination
         // Agents
         int n_agents = static_cast<int>(A_.size());
         Matrix3Xr tab_x(3, n_agents);
+        std::vector<Matrix4r> wTcentral_array(n_agents);
         std::vector<PositionSolver::SharedPtr> solvers(n_agents);
         int k = 0;
         for (const auto& agent_id : A_)
         {
             const auto& agent = agents_[agent_id];
             tab_x.col(k) = RosUtils::fromMsg(agent.position);
+            const TransformMsg& wTcentral_msg = transform_tools_->getTransform(world_frame_, central_optical_frame_map_[agent_id]);
+            wTcentral_array[k] = RosUtils::fromMsg(wTcentral_msg);
             solvers[k] = agent.position_solver;
             k++;
         }
@@ -233,7 +244,7 @@ namespace flychams::coordination
 
         // Perform agent assignment
         RCLCPP_INFO(node_->get_logger(), "Agent assignment: Performing agent assignment...");
-        RowVectorXi X = solver_->run(tab_x, tab_P, tab_r, X_prev_, solvers);
+        RowVectorXi X = solver_->run(tab_x, tab_P, tab_r, X_prev_, wTcentral_array, solvers);
 
         // Update previous assignment
         X_prev_.resize(X.size());

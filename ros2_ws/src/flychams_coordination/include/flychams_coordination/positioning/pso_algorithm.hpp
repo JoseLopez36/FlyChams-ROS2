@@ -59,6 +59,7 @@ namespace flychams::coordination
             // Cost function data
             core::Matrix3Xr tab_P;
             core::RowVectorXr tab_r;
+            core::Matrix4r wTcentral;
 
             // Cost function parameters
             CostFunctions::CostParameters cost_params;
@@ -90,6 +91,7 @@ namespace flychams::coordination
             // Initialize data
             data_.tab_P = core::Matrix3Xr::Zero(3, data_.cost_params.n_o);
             data_.tab_r = core::RowVectorXr::Zero(data_.cost_params.n_o);
+            data_.wTcentral = core::Matrix4r::Identity();
 
             // Initialize particles
             particles_.resize(params_.num_particles);
@@ -99,12 +101,13 @@ namespace flychams::coordination
             // Destroy particles
             particles_.clear();
         }
-        core::Vector3r run(const core::Matrix3Xr& tab_P, const core::RowVectorXr& tab_r, float& J)
+        core::Vector3r run(const core::Matrix3Xr& tab_P, const core::RowVectorXr& tab_r, const core::Matrix4r& wTcentral, float& J)
         {
             // Update data struct
             data_.tab_P = tab_P;
             data_.tab_r = tab_r;
-
+            data_.wTcentral = wTcentral;
+            
             // Compute the optimal position
             core::Vector3r x_opt;
             J = optimize(x_opt);
@@ -132,7 +135,7 @@ namespace flychams::coordination
                 particles_[k].position = params_.x_min + ((params_.x_max - params_.x_min).array() * r.array()).matrix();
                 particles_[k].best_position = particles_[k].position;
                 particles_[k].velocity = core::Vector3r::Zero();
-                particles_[k].best_score = CostFunctions::J0(data_.tab_P, data_.tab_r, particles_[k].position, data_.cost_params);
+                particles_[k].best_score = CostFunctions::J0(data_.tab_P, data_.tab_r, particles_[k].position, data_.wTcentral, data_.cost_params);
             }
 
             // PSO iterations
@@ -145,7 +148,7 @@ namespace flychams::coordination
                 // Iterate over all particles to compute and update their scores
                 for (int k = 0; k < params_.num_particles; k++)
                 {
-                    float score = CostFunctions::J0(data_.tab_P, data_.tab_r, particles_[k].position, data_.cost_params);
+                    float score = CostFunctions::J0(data_.tab_P, data_.tab_r, particles_[k].position, data_.wTcentral, data_.cost_params);
 
                     // Update best score if current score is better
                     if (score < particles_[k].best_score)

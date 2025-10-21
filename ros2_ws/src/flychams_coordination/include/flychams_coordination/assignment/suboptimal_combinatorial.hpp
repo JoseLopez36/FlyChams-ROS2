@@ -64,7 +64,8 @@ namespace flychams::coordination
             // Nothing to destroy
         }
         core::RowVectorXi run(const core::Matrix3Xr& tab_x, const core::Matrix3Xr& tab_P, const core::RowVectorXr& tab_r,
-            const core::RowVectorXi& X_prev, std::vector<PositionSolver::SharedPtr>& solvers)
+            const core::RowVectorXi& X_prev, const std::vector<core::Matrix4r>& wTcentral_array, 
+            std::vector<PositionSolver::SharedPtr>& solvers)
         {
             // Get number of agents and tracking units
             int m = tab_x.cols();
@@ -104,7 +105,7 @@ namespace flychams::coordination
             // Compute minimum global cost using recursive function
             float J = 0.0f, J_min = HUGE_VALF;
             core::RowVectorXi X = core::RowVectorXi::Zero(0), X_min = core::RowVectorXi::Zero(0);
-            globalCost(A, T, J, X, J_min, X_min, nk, solvers);
+            globalCost(A, T, J, X, J_min, X_min, nk, wTcentral_array, solvers);
 
             // Return assignment vector
             return X_min;
@@ -114,7 +115,8 @@ namespace flychams::coordination
         void globalCost(std::vector<Agent>& A, const std::vector<Cluster>& T,
             const float& J, const core::RowVectorXi& X,
             float& J_min, core::RowVectorXi& X_min,
-            const core::RowVectorXi& nk, std::vector<PositionSolver::SharedPtr>& solvers)
+            const core::RowVectorXi& nk, const std::vector<core::Matrix4r>& wTcentral_array, 
+            std::vector<PositionSolver::SharedPtr>& solvers)
         {
             //std::cout << "---------------> Global cost: " << J << std::endl;
 
@@ -179,7 +181,7 @@ namespace flychams::coordination
                     float Jk;
                     core::RowVectorXi Xk;
                     //std::cout << "Calculating agent cost for agent " << k << std::endl;
-                    agentCost(Ak, Tk, Jk, Xk, nk(k), solvers[k]);
+                    agentCost(Ak, Tk, Jk, Xk, nk(k), wTcentral_array[k], solvers[k]);
                     //std::cout << "Agent cost: " << Jk << std::endl;
                     //std::cout << "Agent assignment: " << Xk << std::endl;
 
@@ -235,7 +237,7 @@ namespace flychams::coordination
                         }
 
                         // Recursive call to continue branch exploration
-                        globalCost(An, Tn, J + Jk, Xn, J_min, X_min, nk, solvers);
+                        globalCost(An, Tn, J + Jk, Xn, J_min, X_min, nk, wTcentral_array, solvers);
                     }
                 }
             }
@@ -247,6 +249,7 @@ namespace flychams::coordination
         void agentCost(Agent& Ak, const std::vector<Cluster>& Tk,
             float& Jk, core::RowVectorXi& Xk,
             const int& nk,
+            const core::Matrix4r& wTcentral,
             PositionSolver::SharedPtr solver)
         {
             // Check if solver is valid
@@ -332,7 +335,7 @@ namespace flychams::coordination
             tab_r_central.tail(nk) = tab_r;
             // Run solver to get optimal position
             float Jo;
-            core::Vector3r x_opt = solver->run(tab_P_central, tab_r_central, x, Jo);
+            core::Vector3r x_opt = solver->run(tab_P_central, tab_r_central, x, wTcentral, Jo);
 
             // Calculate distance cost
             float Jd = (x - x_opt).norm();

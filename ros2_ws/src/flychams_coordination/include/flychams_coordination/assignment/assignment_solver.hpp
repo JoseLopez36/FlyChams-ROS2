@@ -49,7 +49,7 @@ namespace flychams::coordination
         void init(const SolverMode& mode, const Parameters& params);
         void destroy();
         // Optimization
-        core::RowVectorXi run(const core::Matrix3Xr& tab_x, const core::Matrix3Xr& tab_P, const core::RowVectorXr& tab_r, const core::RowVectorXi& X_prev, std::vector<PositionSolver::SharedPtr>& solvers);
+        core::RowVectorXi run(const core::Matrix3Xr& tab_x, const core::Matrix3Xr& tab_P, const core::RowVectorXr& tab_r, const core::RowVectorXi& X_prev, const std::vector<core::Matrix4r>& wTcentral_array, std::vector<PositionSolver::SharedPtr>& solvers);
     };
 
 } // namespace flychams::coordination

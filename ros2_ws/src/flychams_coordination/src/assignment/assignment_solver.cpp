@@ -50,14 +50,14 @@ namespace flychams::coordination
         }
     }
 
-    core::RowVectorXi AssignmentSolver::run(const core::Matrix3Xr& tab_x, const core::Matrix3Xr& tab_P, const core::RowVectorXr& tab_r, const core::RowVectorXi& X_prev, std::vector<PositionSolver::SharedPtr>& solvers)
+    core::RowVectorXi AssignmentSolver::run(const core::Matrix3Xr& tab_x, const core::Matrix3Xr& tab_P, const core::RowVectorXr& tab_r, const core::RowVectorXi& X_prev, const std::vector<core::Matrix4r>& wTcentral_array, std::vector<PositionSolver::SharedPtr>& solvers)
     {
         // Run the assignment based on the mode
         switch (mode_)
         {
             case SolverMode::SUBOPTIMAL_COMBINATORIAL:
             {
-                return suboptimal_combinatorial_.run(tab_x, tab_P, tab_r, X_prev, solvers);
+                return suboptimal_combinatorial_.run(tab_x, tab_P, tab_r, X_prev, wTcentral_array, solvers);
             }
 
             default:

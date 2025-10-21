@@ -91,13 +91,14 @@ namespace flychams::coordination
             // Compute distance between target and camera
             float d = (x - z).norm();
 
-            // Calculate the correction distance
+            // Calculate the correction factor for uncentered targets
             float u = full_width / 2.0f;
             float v = full_height / 2.0f;
             float l = std::sqrt(std::pow(p(0) - u, 2) * std::pow(rho_x, 2) + std::pow(p(1) - v, 2) * std::pow(rho_y, 2));
+            float xi = std::sqrt(std::pow(f, 2) + std::pow(l, 2));
 
             // Attempt to adjust the resolution factor to achieve the desired apparent size of the object
-            float lambda = (d * s_ref) / (r * std::sqrt(std::pow(f, 2) + std::pow(l, 2)));
+            float lambda = (d * s_ref) / (r * xi);
 
             // Clamp the resolution factor within the camera's resolution limits
             lambda = std::max(std::min(lambda, lambda_max), lambda_min);

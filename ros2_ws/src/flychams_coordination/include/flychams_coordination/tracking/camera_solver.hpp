@@ -96,7 +96,7 @@ namespace flychams::coordination
             float d = (x - z).norm();
 
             // Attempt to adjust the focal length to achieve the desired apparent size of the object
-            float f = (d / r) * s_ref;
+            float f = (d * s_ref) / r;
 
             // Clamp the focal length within the camera's focal limits
             f = std::max(std::min(f, f_max), f_min);

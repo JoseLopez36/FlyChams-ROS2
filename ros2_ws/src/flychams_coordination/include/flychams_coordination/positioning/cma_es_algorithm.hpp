@@ -45,6 +45,7 @@ namespace flychams::coordination
             // Cost function data
             core::Matrix3Xr tab_P;
             core::RowVectorXr tab_r;
+            core::Matrix4r wTcentral;
 
             // Cost function parameters
             CostFunctions::CostParameters cost_params;
@@ -77,6 +78,7 @@ namespace flychams::coordination
             // Initialize data
             data_.tab_P = core::Matrix3Xr::Zero(3, data_.cost_params.n_o);
             data_.tab_r = core::RowVectorXr::Zero(data_.cost_params.n_o);
+            data_.wTcentral = core::Matrix4r::Identity();
 
             // Initialize random number generator
             rng_ = std::mt19937(std::random_device{}());
@@ -86,12 +88,13 @@ namespace flychams::coordination
         {
             // Nothing to destroy
         }
-        core::Vector3r run(const core::Matrix3Xr& tab_P, const core::RowVectorXr& tab_r, float& J)
+        core::Vector3r run(const core::Matrix3Xr& tab_P, const core::RowVectorXr& tab_r, const core::Matrix4r& wTcentral, float& J)
         {
             // Update data struct
             data_.tab_P = tab_P;
             data_.tab_r = tab_r;
-
+            data_.wTcentral = wTcentral;
+            
             // Compute the optimal position
             core::Vector3r x_opt;
             J = optimize(x_opt);
@@ -157,7 +160,7 @@ namespace flychams::coordination
                     arx.col(k) = x_mean + sigma * B * (D.asDiagonal() * arz.col(k));
 
                     // Evaluate candidate
-                    arfitness(k) = CostFunctions::J0(data_.tab_P, data_.tab_r, arx.col(k), data_.cost_params);
+                    arfitness(k) = CostFunctions::J0(data_.tab_P, data_.tab_r, arx.col(k), data_.wTcentral, data_.cost_params);
 
                     // Count evaluations
                     iter++;
