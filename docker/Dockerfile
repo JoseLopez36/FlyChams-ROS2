@@ -47,3 +47,19 @@ RUN     echo "source /opt/ros/iron/setup.bash" >> ~/.bashrc
 RUN     echo "export FLYCHAMS_ROS2_PATH=/home/${USER_NAME}/FlyChams-ROS2" >> ~/.bashrc
 RUN     echo "export FLYCHAMS_COSYS_AIRSIM_PATH=/home/${USER_NAME}/FlyChams-Cosys-AirSim" >> ~/.bashrc
 RUN     echo "export FLYCHAMS_PX4_PATH=/home/${USER_NAME}/PX4-Autopilot" >> ~/.bashrc
+
+# Aliases
+# Build workspace
+RUN     echo 'alias flychams-build="$FLYCHAMS_ROS2_PATH/tools/build/build.sh"' >> ~/.bashrc
+# Clean workspace
+RUN     echo 'alias flychams-clean="$FLYCHAMS_ROS2_PATH/tools/build/clean.sh"' >> ~/.bashrc
+# Build AirSim dependencies
+RUN     echo 'alias flychams-build-airsim-deps="$FLYCHAMS_ROS2_PATH/tools/airsim/clean_dependencies.sh && $FLYCHAMS_ROS2_PATH/tools/airsim/setup_dependencies.sh && $FLYCHAMS_ROS2_PATH/tools/airsim/build_dependencies.sh"' >> ~/.bashrc
+# Source ROS2 workspace
+RUN     echo 'alias flychams-source="source $FLYCHAMS_ROS2_PATH/ros2_ws/install/setup.bash"' >> ~/.bashrc
+# Create AirSim settings
+RUN     echo 'alias flychams-create-airsim-settings="$FLYCHAMS_ROS2_PATH/tools/airsim/create_settings.sh"' >> ~/.bashrc
+# Setup
+RUN     echo 'alias flychams-setup="$FLYCHAMS_ROS2_PATH/tools/run/setup.sh"' >> ~/.bashrc
+# Run
+RUN     echo 'alias flychams-run="$FLYCHAMS_ROS2_PATH/tools/run/run.sh"' >> ~/.bashrc
