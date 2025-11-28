@@ -199,7 +199,7 @@ namespace flychams::core
                     params.mode = TrackingMode::MultiCamera;
                     RCLCPP_INFO(node_->get_logger(), "Tracking mode for agent %s: MultiCamera (n_c = %d)", agent_id.c_str(), params.n_c);
                 }
-                else if (params.n_w > 0)
+                else if (params.n_w > 0 && params.n_c == 0)
                 {
                     params.mode = TrackingMode::MultiWindow;
                     RCLCPP_INFO(node_->get_logger(), "Tracking mode for agent %s: MultiWindow (n_w = %d)", agent_id.c_str(), params.n_w);
@@ -301,7 +301,7 @@ namespace flychams::core
 
             // Print unit parameters for debugging
             RCLCPP_INFO(node_->get_logger(), "------ Observation unit parameters -------");
-            RCLCPP_INFO(node_->get_logger(), "  Unit ID: %s", params.id .c_str());
+            RCLCPP_INFO(node_->get_logger(), "  Unit ID: %s", params.id.c_str());
             RCLCPP_INFO(node_->get_logger(), "  Unit type: %s", observationTypeToString(params.type).c_str());
             RCLCPP_INFO(node_->get_logger(), "  Unit role: %s", observationRoleToString(params.role).c_str());
             RCLCPP_INFO(node_->get_logger(), "  Zoom factor limits: min=%.3f, max=%.3f, ref=%.3f [m]", params.upsilon_min, params.upsilon_max, params.upsilon_ref);
@@ -380,7 +380,7 @@ namespace flychams::core
             RCLCPP_INFO(node_->get_logger(), "  Unit type: %s", observationTypeToString(params.type).c_str());
             RCLCPP_INFO(node_->get_logger(), "  Unit role: %s", observationRoleToString(params.role).c_str());
             RCLCPP_INFO(node_->get_logger(), "  Zoom factor limits: min=%.3f, max=%.3f, ref=%.3f [m]", params.upsilon_min, params.upsilon_max, params.upsilon_ref);
-            RCLCPP_INFO(node_->get_logger(), "  Regularized pixel size: %.6f [m/pix]", params.rho); 
+            RCLCPP_INFO(node_->get_logger(), "  Regularized pixel size: %.6f [m/pix]", params.rho);
             RCLCPP_INFO(node_->get_logger(), "  Target size limits: min=%.2f [pix], max=%.2f [pix], ref=%.2f [pix]", params.s_min_pix, params.s_max_pix, params.s_ref_pix);
             RCLCPP_INFO(node_->get_logger(), "  Window full resolution: %d x %d [pix]", params.window_params.full_width, params.window_params.full_height);
             RCLCPP_INFO(node_->get_logger(), "  Window tracking resolution: %d x %d [pix]", params.window_params.tracking_width, params.window_params.tracking_height);
