@@ -12,6 +12,7 @@ namespace flychams::bringup
 	{
 		// Iterate over all agents in the configuration
 		clusters_.clear();
+		int cluster_index = 0;
 		for (const auto& [agent_id, agent_ptr] : config_tools_->getAgentTeam())
 		{
 			// Get tracking parameters
@@ -23,11 +24,14 @@ namespace flychams::bringup
 			{
 				// Generate cluster ID
 				std::stringstream ss;
-				ss << "CLUSTER" << std::setw(2) << std::setfill('0') << i;
+				ss << "CLUSTER" << std::setw(2) << std::setfill('0') << cluster_index;
 				const ID cluster_id = ss.str();
 
 				// Add clusters to list
 				clusters_.push_back(cluster_id);
+
+				// Increment cluster index
+				cluster_index++;
 			}
 		}
 	}
