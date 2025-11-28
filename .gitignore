@@ -1,4 +1,5 @@
 # Ignore VScode files
 .vscode/
+.cursor/
 config/settings.json
 config/.~lock.Configuration.xlsx\#

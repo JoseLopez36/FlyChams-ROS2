@@ -160,8 +160,9 @@ If you want to run the PX4 SITL (must be configured first in the `Configuration.
 
 **Host Machine**
 ```bash
-./path/to/FlyChams-ROS2/docker/start_px4.sh
+./path/to/FlyChams-ROS2/docker/start_px4.sh 1
 ```
+*Note: This will launch 1 PX4 instance. Replace 1 for the number of vehicles to be used.*
 
 ### 3. Launch the Unreal Engine Simulation
 

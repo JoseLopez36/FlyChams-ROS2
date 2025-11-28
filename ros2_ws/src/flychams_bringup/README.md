@@ -51,7 +51,7 @@ Runtime nodes are launched by the `run.launch.py` file and perform the core func
 1. **Control Nodes** (from flychams_control package):
    - `drone_state:` Manages the state of the drone
    - `drone_control:` Controls the movement of aerial agents
-   - `head_control:` Controls the heads of the agents
+   - `camera_control:` Controls the cameras of the agents
 
 2. **Perception Nodes** (from flychams_perception package):
    - `target_clustering:` Groups targets into meaningful clusters

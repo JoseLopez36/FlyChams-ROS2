@@ -49,9 +49,9 @@
         ]
     },
     "Vehicles": {
-        "AGENT01": {
+        "AGENT05": {
             "PawnPath": "FlyChamsHexacopter",
-            "X": 0.0,
+            "X": 10.0,
             "Y": -0.0,
             "Z": -0.0,
             "Roll": 0.0,
@@ -104,7 +104,299 @@
                 }
             },
             "Cameras": {
-                "MULTICAMERA5": {
+                "MULTICAMERA21": {
+                    "CaptureSettings": [
+                        {
+                            "ImageType": 0,
+                            "Width": 7680,
+                            "Height": 4320,
+                            "SensorWidth": 0.013199999928474426,
+                            "SensorHeight": 0.007424999959766865,
+                            "FOV_Degrees": 131.11209106445313,
+                            "K1": -0.029999999329447746,
+                            "K2": 0.0020000000949949026,
+                            "K3": 0.0,
+                            "P1": 0.0005000000237487257,
+                            "P2": -0.00039999998989515007,
+                            "LumenGIEnable": true,
+                            "LumenReflectionEnable": true,
+                            "LumenFinalQuality": 2,
+                            "LumenSceneDetail": 2,
+                            "LumenSceneLightningDetail": 2
+                        }
+                    ],
+                    "Gimbal": {
+                        "YawMin": -320.0,
+                        "PitchMin": -40.0,
+                        "RollMin": -20.0,
+                        "YawMax": 320.0,
+                        "PitchMax": 130.0,
+                        "RollMax": 20.0,
+                        "YawSpeed": 270.0,
+                        "PitchSpeed": 180.0,
+                        "RollSpeed": 180.0,
+                        "Roll": 0.0,
+                        "Pitch": 0.0,
+                        "Yaw": -90.0
+                    },
+                    "NoiseSettings": [
+                        {
+                            "Enabled": true,
+                            "ImageType": 0,
+                            "RandContrib": 0.0010000000474974513,
+                            "RandSpeed": 50000.0,
+                            "RandSize": 100.0,
+                            "RandDensity": 2,
+                            "HorzWaveContrib": 0.00039999998989515007,
+                            "HorzWaveStrength": 0.000699999975040555,
+                            "HorzWaveVertSize": 1.0,
+                            "HorzWaveScreenSize": 1.0,
+                            "HorzNoiseLinesContrib": 0.0007999999797903001,
+                            "HorzNoiseLinesDensityY": 9.999999747378752e-05,
+                            "HorzNoiseLinesDensityXY": 0.004000000189989805,
+                            "HorzDistortionContrib": 0.0,
+                            "HorzDistortionStrength": 0.0
+                        }
+                    ],
+                    "X": 0.0,
+                    "Y": -0.0,
+                    "Z": 0.15000000596046448,
+                    "Roll": 0.0,
+                    "Pitch": -90.0,
+                    "Yaw": 0.0,
+                    "EnableGimbal": true,
+                    "CameraVisible": true,
+                    "CameraScale": 0.699999988079071
+                },
+                "SCENARIOCAM": {
+                    "X": -80.0,
+                    "Y": 80.0,
+                    "Z": -70.0,
+                    "Roll": 0.0,
+                    "Pitch": -15.0,
+                    "Yaw": -45.0,
+                    "External": true
+                },
+                "AGENTCAM": {
+                    "X": -1.5,
+                    "Y": 1.5,
+                    "Z": -1.0,
+                    "Roll": 0.0,
+                    "Pitch": -33.33000183105469,
+                    "Yaw": -45.0
+                },
+                "PAYLOADCAM": {
+                    "X": -0.699999988079071,
+                    "Y": 0.699999988079071,
+                    "Z": 0.5,
+                    "Roll": 0.0,
+                    "Pitch": -0.0,
+                    "Yaw": -45.0
+                }
+            }
+        },
+        "AGENT06": {
+            "PawnPath": "FlyChamsHexacopter",
+            "X": -10.0,
+            "Y": -0.0,
+            "Z": -0.0,
+            "Roll": 0.0,
+            "Pitch": -0.0,
+            "Yaw": -0.0,
+            "VehicleType": "PX4Multirotor",
+            "Model": "FlyChamsHexacopter",
+            "UseSerial": false,
+            "LockStep": true,
+            "UseTcp": true,
+            "TcpPort": 4561,
+            "ControlIp": "remote",
+            "ControlPortLocal": 14541,
+            "ControlPortRemote": 14581,
+            "LocalHostIp": "172.17.0.1",
+            "Parameters": {
+                "NAV_RCL_ACT": 0,
+                "NAV_DLL_ACT": 0,
+                "COM_OBL_ACT": 1,
+                "LPE_LAT": 35.98655700683594,
+                "LPE_LON": -5.89301061630249
+            },
+            "Sensors": {
+                "Barometer": {
+                    "SensorType": 1,
+                    "Enabled": true,
+                    "PressureFactorSigma": 0.00018250000721309334,
+                    "UncorrelatedNoiseSigma": 2.700000047683716
+                },
+                "Imu": {
+                    "SensorType": 2,
+                    "Enabled": true,
+                    "GenerateNoise": true,
+                    "AngularRandomWalk": 0.30000001192092896,
+                    "VelocityRandomWalk": 0.23999999463558197
+                },
+                "Gps": {
+                    "SensorType": 3,
+                    "Enabled": true,
+                    "EphInitial": 25.0,
+                    "EpvInitial": 25.0,
+                    "EphFinal": 0.10000000149011612,
+                    "EpvFinal": 0.10000000149011612
+                },
+                "Magnetometer": {
+                    "SensorType": 4,
+                    "Enabled": true,
+                    "NoiseSigma": 0.004999999888241291,
+                    "NoiseBias": 0.0
+                }
+            },
+            "Cameras": {
+                "MULTICAMERA22": {
+                    "CaptureSettings": [
+                        {
+                            "ImageType": 0,
+                            "Width": 7680,
+                            "Height": 4320,
+                            "SensorWidth": 0.013199999928474426,
+                            "SensorHeight": 0.007424999959766865,
+                            "FOV_Degrees": 131.11209106445313,
+                            "K1": -0.029999999329447746,
+                            "K2": 0.0020000000949949026,
+                            "K3": 0.0,
+                            "P1": 0.0005000000237487257,
+                            "P2": -0.00039999998989515007,
+                            "LumenGIEnable": true,
+                            "LumenReflectionEnable": true,
+                            "LumenFinalQuality": 2,
+                            "LumenSceneDetail": 2,
+                            "LumenSceneLightningDetail": 2
+                        }
+                    ],
+                    "Gimbal": {
+                        "YawMin": -320.0,
+                        "PitchMin": -40.0,
+                        "RollMin": -20.0,
+                        "YawMax": 320.0,
+                        "PitchMax": 130.0,
+                        "RollMax": 20.0,
+                        "YawSpeed": 270.0,
+                        "PitchSpeed": 180.0,
+                        "RollSpeed": 180.0,
+                        "Roll": 0.0,
+                        "Pitch": 0.0,
+                        "Yaw": -90.0
+                    },
+                    "NoiseSettings": [
+                        {
+                            "Enabled": true,
+                            "ImageType": 0,
+                            "RandContrib": 0.0010000000474974513,
+                            "RandSpeed": 50000.0,
+                            "RandSize": 100.0,
+                            "RandDensity": 2,
+                            "HorzWaveContrib": 0.00039999998989515007,
+                            "HorzWaveStrength": 0.000699999975040555,
+                            "HorzWaveVertSize": 1.0,
+                            "HorzWaveScreenSize": 1.0,
+                            "HorzNoiseLinesContrib": 0.0007999999797903001,
+                            "HorzNoiseLinesDensityY": 9.999999747378752e-05,
+                            "HorzNoiseLinesDensityXY": 0.004000000189989805,
+                            "HorzDistortionContrib": 0.0,
+                            "HorzDistortionStrength": 0.0
+                        }
+                    ],
+                    "X": 0.0,
+                    "Y": -0.0,
+                    "Z": 0.15000000596046448,
+                    "Roll": 0.0,
+                    "Pitch": -90.0,
+                    "Yaw": 0.0,
+                    "EnableGimbal": true,
+                    "CameraVisible": true,
+                    "CameraScale": 0.699999988079071
+                },
+                "SCENARIOCAM": {
+                    "X": -80.0,
+                    "Y": 80.0,
+                    "Z": -70.0,
+                    "Roll": 0.0,
+                    "Pitch": -15.0,
+                    "Yaw": -45.0,
+                    "External": true
+                },
+                "AGENTCAM": {
+                    "X": -1.5,
+                    "Y": 1.5,
+                    "Z": -1.0,
+                    "Roll": 0.0,
+                    "Pitch": -33.33000183105469,
+                    "Yaw": -45.0
+                },
+                "PAYLOADCAM": {
+                    "X": -0.699999988079071,
+                    "Y": 0.699999988079071,
+                    "Z": 0.5,
+                    "Roll": 0.0,
+                    "Pitch": -0.0,
+                    "Yaw": -45.0
+                }
+            }
+        },
+        "AGENT07": {
+            "PawnPath": "FlyChamsHexacopter",
+            "X": 0.0,
+            "Y": -10.0,
+            "Z": -0.0,
+            "Roll": 0.0,
+            "Pitch": -0.0,
+            "Yaw": -0.0,
+            "VehicleType": "PX4Multirotor",
+            "Model": "FlyChamsHexacopter",
+            "UseSerial": false,
+            "LockStep": true,
+            "UseTcp": true,
+            "TcpPort": 4562,
+            "ControlIp": "remote",
+            "ControlPortLocal": 14542,
+            "ControlPortRemote": 14582,
+            "LocalHostIp": "172.17.0.1",
+            "Parameters": {
+                "NAV_RCL_ACT": 0,
+                "NAV_DLL_ACT": 0,
+                "COM_OBL_ACT": 1,
+                "LPE_LAT": 35.98655700683594,
+                "LPE_LON": -5.89301061630249
+            },
+            "Sensors": {
+                "Barometer": {
+                    "SensorType": 1,
+                    "Enabled": true,
+                    "PressureFactorSigma": 0.00018250000721309334,
+                    "UncorrelatedNoiseSigma": 2.700000047683716
+                },
+                "Imu": {
+                    "SensorType": 2,
+                    "Enabled": true,
+                    "GenerateNoise": true,
+                    "AngularRandomWalk": 0.30000001192092896,
+                    "VelocityRandomWalk": 0.23999999463558197
+                },
+                "Gps": {
+                    "SensorType": 3,
+                    "Enabled": true,
+                    "EphInitial": 25.0,
+                    "EpvInitial": 25.0,
+                    "EphFinal": 0.10000000149011612,
+                    "EpvFinal": 0.10000000149011612
+                },
+                "Magnetometer": {
+                    "SensorType": 4,
+                    "Enabled": true,
+                    "NoiseSigma": 0.004999999888241291,
+                    "NoiseBias": 0.0
+                }
+            },
+            "Cameras": {
+                "MULTICAMERA23": {
                     "CaptureSettings": [
                         {
                             "ImageType": 0,
