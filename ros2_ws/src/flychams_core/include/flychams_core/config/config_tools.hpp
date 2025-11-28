@@ -181,7 +181,7 @@ namespace flychams::core
             const auto& tracking = getTracking(agent_id);
 
             // Get number of units
-            params.n_c = static_cast<int>(tracking.multi_camera_set.size());
+            params.n_c = static_cast<int>(tracking.multi_camera_set.size()) - 1;
             params.n_w = static_cast<int>(tracking.multi_window_set.size());
             params.n_t = params.n_c + params.n_w;
             params.n_o = params.n_t + 1;
@@ -199,15 +199,19 @@ namespace flychams::core
                     params.mode = TrackingMode::MultiCamera;
                     RCLCPP_INFO(node_->get_logger(), "Tracking mode for agent %s: MultiCamera (n_c = %d)", agent_id.c_str(), params.n_c);
                 }
-                else if (params.n_c == 0)
+                else if (params.n_w > 0)
                 {
                     params.mode = TrackingMode::MultiWindow;
                     RCLCPP_INFO(node_->get_logger(), "Tracking mode for agent %s: MultiWindow (n_w = %d)", agent_id.c_str(), params.n_w);
                 }
-                else
+                else if (params.n_w > 0 && params.n_c > 0)
                 {
                     params.mode = TrackingMode::MultiHybrid;
                     RCLCPP_INFO(node_->get_logger(), "Tracking mode for agent %s: MultiHybrid (n_c = %d, n_w = %d)", agent_id.c_str(), params.n_c, params.n_w);
+                }
+                else
+                {
+                    throw std::runtime_error("Invalid number of multi-cameras and multi-windows");
                 }
             }
 

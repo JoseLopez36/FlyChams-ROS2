@@ -50,7 +50,7 @@ RUN     echo "export FLYCHAMS_PX4_PATH=/home/${USER_NAME}/PX4-Autopilot" >> ~/.b
 
 # Aliases
 # Build workspace
-RUN     echo 'alias flychams-build="$FLYCHAMS_ROS2_PATH/tools/build/build.sh"' >> ~/.bashrc
+RUN     echo 'alias flychams-build="$FLYCHAMS_ROS2_PATH/tools/build/build.sh -j 3"' >> ~/.bashrc
 # Clean workspace
 RUN     echo 'alias flychams-clean="$FLYCHAMS_ROS2_PATH/tools/build/clean.sh"' >> ~/.bashrc
 # Build AirSim dependencies

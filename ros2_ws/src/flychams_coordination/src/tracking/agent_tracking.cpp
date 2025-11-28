@@ -178,9 +178,16 @@ namespace flychams::coordination
             Crop crop;         // Only for Window type
             
             // Solve based on unit type
-            if (unit.type == ObservationType::Camera)
+            if (unit.type == ObservationType::Camera && unit.role == ObservationRole::Tracking)
             {
                 std::tie(zoom_factor, rotation) = updateCamera(tab_P.col(i), tab_r(i), tab_T[i], solvers_[i]);
+            }
+            else if (unit.type == ObservationType::Camera && unit.role == ObservationRole::Central)
+            {
+                // Set central camera reference focal length
+                zoom_factor = tracking_params_.observation_units_params[0].upsilon_ref;
+                // Get central camera initial orientation
+                rotation = config_tools_->getMultiCamera(agent_id_, unit.id)->orientation;
             }
             else if (unit.type == ObservationType::Window)
             {
