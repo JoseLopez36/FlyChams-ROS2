@@ -35,7 +35,6 @@ export FLYCHAMS_ROS2_PATH=$FLYCHAMS_ROS2_PATH
 export FLYCHAMS_AIRSIM_PATH=$FLYCHAMS_AIRSIM_PATH
 export FLYCHAMS_PX4_PATH=$FLYCHAMS_PX4_PATH
 export DISPLAY=$DISPLAY
-export ROS_DOMAIN_ID=$ROS_DOMAIN_ID
 
 # Generate compose file
 echo "Generating docker-compose.yml for $AGENTS agents..."

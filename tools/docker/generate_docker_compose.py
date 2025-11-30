@@ -13,7 +13,6 @@ def generate_compose(agents):
         'environment': {
             'DISPLAY': os.environ.get('DISPLAY', ':0'),
             'QT_X11_NO_MITSHM': '1',
-            'ROS_DOMAIN_ID': os.environ.get('ROS_DOMAIN_ID', '0'),
             'FLYCHAMS_PATH': f'/home/{os.environ.get("USER_NAME")}/FlyChams-ROS2',
             'AIRSIM_PATH': f'/home/{os.environ.get("USER_NAME")}/FlyChams-Cosys-AirSim',
             'PX4_PATH': f'/home/{os.environ.get("USER_NAME")}/PX4-Autopilot'
@@ -49,7 +48,7 @@ def generate_compose(agents):
         agent_config['container_name'] = container_name
         
         # Add AGENT_ID env var
-        agent_config['environment']['AGENT_ID'] = f"agent_{k}"
+        agent_config['environment']['AGENT_ID'] = f"AGENT{k:02d}"
         
         # PX4 SITL Command
         px4_cmd = (
@@ -60,9 +59,16 @@ def generate_compose(agents):
             f"-s etc/init.d-posix/rcS"
         )
         
+        # MAVROS launch command (runs in background at setup stage)
+        mavros_cmd = (
+            f"ros2 launch flychams_bringup mavros.launch.py "
+            f"tgt_system:=1 fcu_url:=udp://:14030@172.17.0.2:14280 agent_id:=AGENT{k:02d}"
+        )
+        
         agent_config['command'] = (
             f"bash -c 'source /opt/ros/iron/setup.bash && "
             f"source /home/{os.environ.get('USER_NAME')}/FlyChams-ROS2/ros2_ws/install/setup.bash && "
+            f"{mavros_cmd} & "
             f"{px4_cmd}'"
         )
 
