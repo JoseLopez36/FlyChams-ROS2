@@ -1,6 +1,6 @@
 #!/bin/bash
 
-cd $FLYCHAMS_COSYS_AIRSIM_PATH || { echo "Directory $FLYCHAMS_COSYS_AIRSIM_PATH was not found."; exit 1; }
+cd $AIRSIM_PATH || { echo "Directory $AIRSIM_PATH was not found."; exit 1; }
 
 echo "Setting up AirSim dependencies..."
 

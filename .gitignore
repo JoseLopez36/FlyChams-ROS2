@@ -3,3 +3,4 @@
 .cursor/
 config/settings.json
 config/.~lock.Configuration.xlsx\#
+docker/docker-compose.yml

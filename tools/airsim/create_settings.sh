@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Get ROS2 workspace directory
-ROS_WS="$FLYCHAMS_ROS2_PATH/ros2_ws"
+ROS_WS="$FLYCHAMS_PATH/ros2_ws"
 
 # Source ROS2 workspace
 if [ -f "$ROS_WS/install/setup.bash" ]; then

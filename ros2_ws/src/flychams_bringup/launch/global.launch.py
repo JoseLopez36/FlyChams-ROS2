@@ -1,0 +1,296 @@
+from launch import LaunchDescription
+from launch_ros.actions import Node
+from launch import LaunchContext
+from launch.substitutions import PathJoinSubstitution
+from launch_ros.substitutions import FindPackageShare
+import os
+import yaml
+
+def generate_launch_description():
+    # Get paths to config files
+    # Core parameters
+    system_path = PathJoinSubstitution([
+        FindPackageShare('flychams_bringup'),
+        'config',
+        'core',
+        'system.yaml'
+    ])
+    launch_path = PathJoinSubstitution([
+        FindPackageShare('flychams_bringup'),
+        'config',
+        'core',
+        'launch.yaml'
+    ])
+    topics_path = PathJoinSubstitution([
+        FindPackageShare('flychams_bringup'),
+        'config',
+        'core',
+        'topics.yaml'
+    ])
+    frames_path = PathJoinSubstitution([
+        FindPackageShare('flychams_bringup'),
+        'config',
+        'core',
+        'frames.yaml'
+    ])
+    recording_path = PathJoinSubstitution([
+        FindPackageShare('flychams_bringup'),
+        'config',
+        'recording',
+        'recording.yaml'
+    ])
+    
+    # Package parameters
+    perception_path = PathJoinSubstitution([
+        FindPackageShare('flychams_bringup'),
+        'config',
+        'package',
+        'perception.yaml'
+    ])
+    coordination_path = PathJoinSubstitution([
+        FindPackageShare('flychams_bringup'),
+        'config',
+        'package',
+        'coordination.yaml'
+    ])
+    simulation_path = PathJoinSubstitution([
+        FindPackageShare('flychams_bringup'),
+        'config',
+        'package',
+        'simulation.yaml'
+    ])
+
+    # Set environment variable to control ROS logger output
+    os.environ['RCUTILS_LOGGING_USE_STDOUT'] = '1' # Enable logging to stdout
+    os.environ['RCUTILS_COLORIZED_OUTPUT'] = '1'   # Enable colored output
+
+    # Generate launch description
+    ld = []
+
+    # Load the nodes configuration YAML file
+    # Convert from PathJoinSubstitution to path string and load the file
+    launch_file_path = launch_path.perform(LaunchContext()).strip()
+    with open(launch_file_path, 'r') as f:
+        launch = yaml.safe_load(f)
+    
+    # Get the node activation settings from config
+    nodes = {
+        # Perception nodes (Global)
+        'target_clustering': launch.get('target_clustering', [True, 'info']),
+        'cluster_analysis': launch.get('cluster_analysis', [True, 'info']),
+        # Coordination nodes (Global)
+        'agent_assignment': launch.get('agent_assignment', [True, 'info']),
+        'agent_analysis': launch.get('agent_analysis', [True, 'info']),
+        # Simulation nodes (Global)
+        'gui_manager': launch.get('gui_manager', [True, 'info']),
+        'metrics_factory': launch.get('metrics_factory', [True, 'info']),
+        'marker_factory': launch.get('marker_factory', [True, 'info']),
+        'target_state': launch.get('target_state', [True, 'info']),
+        'target_control': launch.get('target_control', [True, 'info']),
+        # Recording nodes (Global)
+        'airsim_record_camera': launch.get('airsim_record_camera', [True, 'info']),
+    }
+
+    # ============= PERCEPTION NODES =============
+    # Conditionally add Target Clustering node
+    if nodes['target_clustering'][0]:
+        ld.append(
+            Node(
+                package='flychams_perception',
+                executable='target_clustering_node',
+                name='target_clustering_node',
+                output='screen',
+                namespace='flychams',
+                arguments=['--ros-args', '--log-level', nodes['target_clustering'][1]],
+                parameters=[
+                    system_path, 
+                    topics_path, 
+                    frames_path, 
+                    perception_path,
+                    {'use_sim_time': True}
+                ]
+            )
+        )
+
+    # Conditionally add Cluster Analysis node
+    if nodes['cluster_analysis'][0]:
+        ld.append(
+            Node(
+                package='flychams_perception',
+                executable='cluster_analysis_node',
+                name='cluster_analysis_node',
+                output='screen',
+                namespace='flychams',
+                arguments=['--ros-args', '--log-level', nodes['cluster_analysis'][1]],
+                parameters=[
+                    system_path, 
+                    topics_path, 
+                    frames_path, 
+                    perception_path,
+                    {'use_sim_time': True}
+                ]
+            )
+        )
+
+    # ============= COORDINATION NODES =============
+    # Conditionally add Agent Assignment node
+    if nodes['agent_assignment'][0]:
+        ld.append(
+            Node(
+                package='flychams_coordination',
+                executable='agent_assignment_node',
+                name='agent_assignment_node',
+                output='screen',
+                namespace='flychams',
+                arguments=['--ros-args', '--log-level', nodes['agent_assignment'][1]],
+                parameters=[
+                    system_path, 
+                    topics_path, 
+                    frames_path, 
+                    coordination_path,
+                    {'use_sim_time': True}
+                ]
+            )
+        )
+
+    # Conditionally add Agent Analysis node
+    if nodes['agent_analysis'][0]:
+        ld.append(
+            Node(
+                package='flychams_coordination',
+                executable='agent_analysis_node',
+                name='agent_analysis_node',
+                output='screen',
+                namespace='flychams',
+                arguments=['--ros-args', '--log-level', nodes['agent_analysis'][1]],
+                parameters=[
+                    system_path, 
+                    topics_path, 
+                    frames_path, 
+                    coordination_path,
+                    {'use_sim_time': True}
+                ]
+            )
+        )
+
+    # ============= SIMULATION NODES =============
+    # Conditionally add GUI Manager node
+    if nodes['gui_manager'][0]:
+        ld.append(
+            Node(
+                package='flychams_simulation',
+                executable='gui_manager_node',
+                name='gui_manager_node',
+                output='screen',
+                namespace='flychams',
+                arguments=['--ros-args', '--log-level', nodes['gui_manager'][1]],
+                parameters=[
+                    system_path, 
+                    topics_path, 
+                    frames_path, 
+                    simulation_path,
+                    {'use_sim_time': True}
+                ]
+            )
+        )
+
+    # Conditionally add Metrics Factory node
+    if nodes['metrics_factory'][0]:
+        ld.append(
+            Node(
+                package='flychams_simulation',
+                executable='metrics_factory_node',
+                name='metrics_factory_node',
+                output='screen',
+                namespace='flychams',
+                arguments=['--ros-args', '--log-level', nodes['metrics_factory'][1]],
+                parameters=[
+                    system_path, 
+                    topics_path, 
+                    frames_path, 
+                    simulation_path,
+                    {'use_sim_time': True}
+                ]
+            )
+        )
+
+    # Conditionally add Marker Factory node
+    if nodes['marker_factory'][0]:
+        ld.append(
+            Node(
+                package='flychams_simulation',
+                executable='marker_factory_node',
+                name='marker_factory_node',
+                output='screen',
+                namespace='flychams',
+                arguments=['--ros-args', '--log-level', nodes['marker_factory'][1]],
+                parameters=[
+                    system_path, 
+                    topics_path, 
+                    frames_path, 
+                    simulation_path,
+                    {'use_sim_time': True}
+                ]
+            )
+        )
+
+    # Conditionally add Target State node
+    if nodes['target_state'][0]:
+        ld.append(
+            Node(
+                package='flychams_simulation',
+                executable='target_state_node',
+                name='target_state_node',
+                output='screen',
+                namespace='flychams',
+                arguments=['--ros-args', '--log-level', nodes['target_state'][1]],
+                parameters=[
+                    system_path, 
+                    topics_path, 
+                    frames_path, 
+                    simulation_path,
+                    {'use_sim_time': True}
+                ]
+            )
+        )
+
+    # Conditionally add Target Control node
+    if nodes['target_control'][0]:
+        ld.append(
+            Node(
+                package='flychams_simulation',
+                executable='target_control_node',
+                name='target_control_node',
+                output='screen',
+                namespace='flychams',
+                arguments=['--ros-args', '--log-level', nodes['target_control'][1]],
+                parameters=[
+                    system_path, 
+                    topics_path, 
+                    frames_path, 
+                    simulation_path,
+                    {'use_sim_time': True}
+                ]
+            )
+        )
+
+    # ============= RECORDING NODES =============
+    # Conditionally add AirSim Record Camera node
+    if nodes['airsim_record_camera'][0]:
+        ld.append(
+            Node(
+                package='airsim_wrapper',
+                executable='airsim_record_camera',
+                name='airsim_record_camera',
+                output='screen',
+                namespace='airsim',
+                arguments=['--ros-args', '--log-level', nodes['airsim_record_camera'][1]],
+                parameters=[
+                    recording_path,
+                    {'use_sim_time': True}
+                ]
+            )
+        )
+
+    return LaunchDescription(ld)
+

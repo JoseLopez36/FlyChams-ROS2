@@ -102,69 +102,19 @@ Run the following command to build the docker image:
 ```
 *Note: This will build the docker image. It may take a while to build the image.*
 
-### 6. Run the docker container
+### 6. Setup and build the system
 
-Run the following command to run the docker container:
-
-**Host Machine**
-```bash
-./docker/start.sh
-```
-*Note: This will run the docker container. It will mount the directories specified in the environment.env file. You can customize the container name, ports and other parameters in the docker/config.env file.*
-
-To stop and remove the container, you can use the following command:
+Run the following command to setup dependencies, build the workspace and generate settings:
 
 **Host Machine**
 ```bash
-./docker/kill.sh
+./tools/docker/run_build_container.sh --regenerate-airsim
 ```
-
-### 7. Setup and build FlyChams-Cosys-AirSim
-
-Inside the docker container, run the following commands to setup and build the dependencies for FlyChams-Cosys-AirSim:
-
-**Docker**
-```bash
-$FLYCHAMS_ROS2_PATH/tools/airsim/clean_dependencies.sh
-$FLYCHAMS_ROS2_PATH/tools/airsim/setup_dependencies.sh
-$FLYCHAMS_ROS2_PATH/tools/airsim/build_dependencies.sh
-```
-*Note: This will clean, setup and build the dependencies for FlyChams-Cosys-AirSim.*
-
-### 8. Build the ROS2 workspace
-
-Inside the docker container, run the following command to build the ROS2 workspace:
-
-**Docker**
-```bash
-$FLYCHAMS_ROS2_PATH/tools/build/build.sh -j 3
-```
-*Note: This will build the ROS2 workspace in the ros2_ws directory. It will use 3 threads for parallel building. We don´t recommend using more threads as the build may fail.*
+*Note: This will launch a temporary container to perform all build and setup operations.*
 
 ## Usage
 
-### 1. Generate AirSim Settings
-
-You only need to generate the AirSim settings once. After that, you can skip this step unless you make changes to the spreadsheet configuration file.
-
-For generating the AirSim settings, run the following command inside the docker container:
-
-**Docker**
-```bash
-$FLYCHAMS_ROS2_PATH/tools/airsim/create_settings.sh
-```
-
-### 2. (Optional) Run PX4 SITL
-
-If you want to run the PX4 SITL (must be configured first in the `Configuration.xlsx` file), you can use the following command in your host machine:
-
-**Host Machine**
-```bash
-./path/to/FlyChams-ROS2/docker/start_px4.sh 1
-```
-*Note: This will launch 1 PX4 instance. Replace 1 for the number of vehicles to be used.*
-
-### 3. Launch the Unreal Engine Simulation
+### 1. Launch the Unreal Engine Simulation
 
 Run the following command to launch the Unreal Engine simulation with the previously generated AirSim settings:
 
@@ -173,56 +123,51 @@ Run the following command to launch the Unreal Engine simulation with the previo
 ./path/to/FlyChams-ROS2/tools/airsim/run_ue5.sh
 ```
 
-### 4. Launch ROS2 System
+### 2. Run the docker containers
 
-The ROS2 system is launched in two phases:
+Run the following command to generate the container structure and run the system:
 
-#### Setup Phase
-
-**Docker**
+**Host Machine**
 ```bash
-$FLYCHAMS_ROS2_PATH/tools/run/setup.sh
+./tools/docker/run_simulation_containers.sh --agents <number_of_agents>
+```
+*Note: This will generate a docker-compose.yml file and start the containers (one global container + one container per agent). Replace <number_of_agents> with the number of agents you want to simulate.*
+
+The ROS2 system is launched automatically when starting the containers with `run_simulation_containers.sh`.
+
+- **Global nodes** are launched in the `flychams-global` container.
+- **Agent nodes** are launched in their respective `flychams-agent-k` containers.
+
+You can check the logs of a specific container:
+
+**Host Machine**
+```bash
+docker logs -f flychams-global
+# or
+docker logs -f flychams-agent-k
 ```
 
-This will:
-1. Start the AirSim interface
-2. Register all elements (agents, targets, clusters)
-3. Initialize the system configurations
+To stop and remove the containers, you can use the following command:
 
-#### Runtime Phase
-
-**Docker**
+**Host Machine**
 ```bash
-$FLYCHAMS_ROS2_PATH/tools/run/run.sh
+./tools/docker/stop_simulation_containers.sh
 ```
 
-This will start all the control, perception, coordination, target, and dashboard nodes. You can customize which nodes are launched by launching manually the nodes you need:
-
-**Docker**
-```bash
-# Launch drone control node with warning level logging
-ros2 launch flychams_bringup run.launch.py log_drone_control:=warn
-```
-
-```bash
-# Don´t launch agent tracking node
-ros2 launch flychams_bringup run.launch.py agent_tracking:=False
-```
-
-### 5. (Optional) Visualization
+### 3. (Optional) Visualization
 
 To view the system in RViz:
 
-**Docker**
+**Host Machine**
 ```bash
-$FLYCHAMS_ROS2_PATH/tools/run_rviz.sh
+./tools/docker/run_rviz_container.sh
 ```
 
-To plot simulation data on runtime, we recommend using `PlotJuggler` (already installed in the docker container). To run it, use the following command:
+To plot simulation data on runtime, we recommend using `PlotJuggler`. To run it, use the following command:
 
-**Docker**
+**Host Machine**
 ```bash
-$FLYCHAMS_ROS2_PATH/tools/run/run_plotjuggler.sh
+./tools/docker/run_rviz_container.sh --plotjuggler
 ```
 
 You can also plot previous rosbag data by importing them into the PlotJuggler window. More info [here](https://plotjuggler.io/). To record rosbags you must configure it in the `Configuration.xlsx` file and use the following command:

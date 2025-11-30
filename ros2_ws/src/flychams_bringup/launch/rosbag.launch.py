@@ -32,7 +32,7 @@ def generate_launch_description():
 
     # Generate a unique output directory name using an index
     # Check existing directories to find the next available index
-    base_dir = '/home/testuser/FlyChams-ROS2/experiments/rosbags'
+    base_dir = os.environ.get('FLYCHAMS_PATH') + '/experiments/rosbags'
     index = 0
     
     # Find the highest existing index

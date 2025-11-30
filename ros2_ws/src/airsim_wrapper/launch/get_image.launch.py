@@ -11,7 +11,7 @@ def generate_launch_description():
     host_ip_arg = DeclareLaunchArgument('host_ip', default_value='localhost')
     host_port_arg = DeclareLaunchArgument('host_port', default_value='41451')
     camera_name_arg = DeclareLaunchArgument('camera_name', default_value='0')
-    image_path_arg = DeclareLaunchArgument('image_path', default_value='/home/testuser/FlyChams-ROS2/experiments/images/image.png')
+    image_path_arg = DeclareLaunchArgument('image_path', default_value=os.environ.get('FLYCHAMS_PATH') + '/experiments/images/image.png')
 
     # Create LaunchConfiguration objects to use the arguments
     host_ip = LaunchConfiguration('host_ip')

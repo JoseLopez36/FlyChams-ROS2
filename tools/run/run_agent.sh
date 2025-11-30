@@ -5,7 +5,7 @@ set -e  # Exit on error
 RECORD=${1:-"false"}
 
 # Get ROS2 workspace directory
-ROS2_WS="$FLYCHAMS_ROS2_PATH/ros2_ws"
+ROS2_WS="$FLYCHAMS_PATH/ros2_ws"
 
 # Source ROS2 workspace
 if [ -f "$ROS2_WS/install/setup.bash" ]; then

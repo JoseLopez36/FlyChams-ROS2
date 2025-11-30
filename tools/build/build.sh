@@ -16,7 +16,7 @@ done
 shift $((OPTIND-1))
 
 # Verify directory
-WORKSPACE_DIR=$FLYCHAMS_ROS2_PATH/ros2_ws
+WORKSPACE_DIR=$FLYCHAMS_PATH/ros2_ws
 if [ ! -d "$WORKSPACE_DIR" ]; then
     echo "❌ Directory $WORKSPACE_DIR was not found."
     exit 1
