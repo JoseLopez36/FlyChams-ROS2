@@ -123,17 +123,26 @@ Run the following command to launch the Unreal Engine simulation with the previo
 ./path/to/FlyChams-ROS2/tools/airsim/run_ue5.sh
 ```
 
-### 2. Run the docker containers
+### 2. Setup the docker containers
 
-Run the following command to generate the container structure and run the system:
+Run the following command to generate the container structure and setup the system:
 
 **Host Machine**
 ```bash
-./tools/docker/run_simulation_containers.sh --agents <number_of_agents>
+./tools/docker/setup_simulation_containers.sh --agents <number_of_agents>
 ```
 *Note: This will generate a docker-compose.yml file and start the containers (one global container + one container per agent). Replace <number_of_agents> with the number of agents you want to simulate.*
 
-The ROS2 system is launched automatically when starting the containers with `run_simulation_containers.sh`.
+### 3. Run the docker containers
+
+Run the following command to run each container:
+
+**Host Machine**
+```bash
+./tools/docker/run_simulation_containers.sh
+```
+
+The ROS2 system is launched:
 
 - **Global nodes** are launched in the `flychams-global` container.
 - **Agent nodes** are launched in their respective `flychams-agent-k` containers.
@@ -154,7 +163,7 @@ To stop and remove the containers, you can use the following command:
 ./tools/docker/stop_simulation_containers.sh
 ```
 
-### 3. (Optional) Visualization
+### 4. (Optional) Visualization
 
 To view the system in RViz:
 

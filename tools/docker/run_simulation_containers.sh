@@ -1,47 +1,47 @@
 #!/bin/bash
 
-# Get the directory where this script is located
-SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-ROOT_DIR="$(dirname "$SCRIPT_DIR")/.."
+# Function to run command in container with persistent stdin to keep script alive
+run_in_container() {
+    local container=$1
+    local script=$2
+    
+    echo "Starting simulation in $container..."
+    
+    # Get FLYCHAMS_PATH from container environment
+    FLYCHAMS_PATH=$(docker exec "$container" printenv FLYCHAMS_PATH)
+    if [ -z "$FLYCHAMS_PATH" ]; then
+        echo "Error: FLYCHAMS_PATH not set in $container. Using default."
+        FLYCHAMS_PATH="/home/testuser/FlyChams-ROS2"
+    fi
+    
+    # Trim whitespace
+    FLYCHAMS_PATH=$(echo "$FLYCHAMS_PATH" | tr -d '\r')
+    
+    # Construct full script path
+    SCRIPT_NAME=$(basename "$script")
+    FULL_SCRIPT_PATH="$FLYCHAMS_PATH/tools/run/$SCRIPT_NAME"
 
-# Source the environment file relative to the script location
-if [ -f "$ROOT_DIR/docker/config.env" ]; then
-    source "$ROOT_DIR/docker/config.env"
+    # Run script in container
+    docker exec -d "$container" bash -c "$FULL_SCRIPT_PATH < <(tail -f /dev/null)"
+}
+
+# Check for global container
+if docker ps --format '{{.Names}}' | grep -q "^flychams-global$"; then
+    run_in_container "flychams-global" "run_global.sh"
+else
+    echo "Warning: flychams-global container not found running."
 fi
 
-# Allow X11 forwarding
-xhost +local:docker
+# Check for agent containers
+agents=$(docker ps --format '{{.Names}}' | grep "^flychams-agent-" | sort -V)
 
-# Default agents
-AGENTS=1
+if [ -z "$agents" ]; then
+    echo "Warning: No flychams-agent containers found running."
+else
+    for container in $agents; do
+        run_in_container "$container" "run_agent.sh"
+    done
+fi
 
-# Parse args
-while [[ $# -gt 0 ]]; do
-  case $1 in
-    --agents)
-      AGENTS="$2"
-      shift 2
-      ;;
-    *)
-      echo "Unknown option: $1"
-      exit 1
-      ;;
-  esac
-done
+echo "Commands sent to containers."
 
-# Export environment variables
-export USER_NAME=$USER_NAME
-export FLYCHAMS_ROS2_PATH=$FLYCHAMS_ROS2_PATH
-export FLYCHAMS_AIRSIM_PATH=$FLYCHAMS_AIRSIM_PATH
-export FLYCHAMS_PX4_PATH=$FLYCHAMS_PX4_PATH
-export DISPLAY=$DISPLAY
-export ROS_DOMAIN_ID=$ROS_DOMAIN_ID
-
-# Generate compose file
-echo "Generating docker-compose.yml for $AGENTS agents..."
-python3 "$SCRIPT_DIR/generate_docker_compose.py" --agents $AGENTS --output "$ROOT_DIR/docker/docker-compose.yml"
-
-# Run docker compose
-echo "Starting containers..."
-cd "$ROOT_DIR/docker"
-docker compose up --remove-orphans

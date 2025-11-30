@@ -33,7 +33,12 @@ def generate_compose(agents):
     global_config['container_name'] = 'flychams-global'
     # Start command for global
     # We need to make sure we source the workspace before running
-    global_config['command'] = f"bash -c 'source /opt/ros/iron/setup.bash && source /home/{os.environ.get('USER_NAME')}/FlyChams-ROS2/ros2_ws/install/setup.bash && /home/{os.environ.get('USER_NAME')}/FlyChams-ROS2/tools/run/setup.sh'"
+    global_config['command'] = (
+        f"bash -c 'source /opt/ros/iron/setup.bash && "
+        f"source /home/{os.environ.get('USER_NAME')}/FlyChams-ROS2/ros2_ws/install/setup.bash && "
+        f"/home/{os.environ.get('USER_NAME')}/FlyChams-ROS2/tools/run/setup.sh'"
+    )
+
     services['flychams-global'] = global_config
 
     # Agent Services
@@ -46,9 +51,21 @@ def generate_compose(agents):
         # Add AGENT_ID env var
         agent_config['environment']['AGENT_ID'] = f"agent_{k}"
         
-        # Command
-        agent_config['command'] = f"bash -c 'source /opt/ros/iron/setup.bash && source /home/{os.environ.get('USER_NAME')}/FlyChams-ROS2/ros2_ws/install/setup.bash'"
+        # PX4 SITL Command
+        px4_cmd = (
+            f"cd /home/{os.environ.get('USER_NAME')}/PX4-Autopilot && "
+            f"PX4_SIM_HOSTNAME=172.17.0.1 PX4_SIM_MODEL=iris ./build/px4_sitl_default/bin/px4 "
+            f"-i {k} "
+            f"-d /home/{os.environ.get('USER_NAME')}/PX4-Autopilot/ROMFS/px4fmu_common "
+            f"-s etc/init.d-posix/rcS"
+        )
         
+        agent_config['command'] = (
+            f"bash -c 'source /opt/ros/iron/setup.bash && "
+            f"source /home/{os.environ.get('USER_NAME')}/FlyChams-ROS2/ros2_ws/install/setup.bash && "
+            f"{px4_cmd}'"
+        )
+
         services[container_name] = agent_config
 
     compose_data = {
