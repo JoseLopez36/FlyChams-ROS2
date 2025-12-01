@@ -1,9 +1,37 @@
 import argparse
 import os
+import sys
 import yaml
 import copy
+from pathlib import Path
 
-def generate_compose(agents):
+def parse_agents_yaml(path_str):
+    """Parse agents.yaml and extract agent IDs."""
+    # Generate path
+    path = Path(path_str)
+
+    if not path.exists():
+        raise FileNotFoundError(f"agents.yaml not found at {path}")
+    
+    with open(path, 'r') as f:
+        agents_data = yaml.safe_load(f)
+    
+    if 'agents' not in agents_data:
+        raise ValueError("agents.yaml does not contain 'agents' key")
+    
+    agents = agents_data['agents']
+    if not agents:
+        raise ValueError("No agents found in agents.yaml")
+    
+    # Extract agent IDs
+    agent_ids = [agent['id'] for agent in agents if 'id' in agent]
+    
+    if not agent_ids:
+        raise ValueError("No agent IDs found in agents.yaml")
+    
+    return agent_ids
+
+def generate_compose(agent_ids):
     services = {}
 
     common_config = {
@@ -41,14 +69,15 @@ def generate_compose(agents):
     services['flychams-global'] = global_config
 
     # Agent Services
-    for k in range(agents):
-        container_name = f"flychams-agent-{k}"
+    k = 0
+    for agent_id in agent_ids:
+        container_name = "flychams-" + agent_id
         
         agent_config = copy.deepcopy(common_config)
         agent_config['container_name'] = container_name
         
         # Add AGENT_ID env var
-        agent_config['environment']['AGENT_ID'] = f"AGENT{k:02d}"
+        agent_config['environment']['AGENT_ID'] = agent_id
         
         # PX4 SITL Command
         px4_cmd = (
@@ -68,6 +97,9 @@ def generate_compose(agents):
 
         services[container_name] = agent_config
 
+        # Increment agent counter
+        k = k + 1
+
     compose_data = {
         'services': services
     }
@@ -76,15 +108,19 @@ def generate_compose(agents):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Generate docker-compose.yml for FlyChams')
-    parser.add_argument('--agents', type=int, default=1, help='Number of agents')
+    parser.add_argument('--agents-file', type=str, help='agents.yaml file')
     parser.add_argument('--output', type=str, default='docker-compose.yml', help='Output file')
     
     args = parser.parse_args()
+
+    # Parse agent ID
+    agent_ids = parse_agents_yaml(args.agents_file)
     
-    compose_data = generate_compose(args.agents)
+    # Generate Docker compose
+    compose_data = generate_compose(agent_ids)
     
     with open(args.output, 'w') as f:
         yaml.dump(compose_data, f, sort_keys=False)
         
-    print(f"Generated {args.output} with {args.agents} agents.")
+    print(f"Generated {args.output} with {len(agent_ids)} agents.")
 

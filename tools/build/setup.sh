@@ -37,9 +37,9 @@ fi
 echo ">> [2/3] Building ROS2 workspace..."
 $FLYCHAMS_PATH/tools/build/build.sh -j 3
 
-# 3. Generate AirSim Settings
-echo ">> [3/3] Generating AirSim settings..."
-$FLYCHAMS_PATH/tools/airsim/create_settings.sh
+# 3. Generate settings
+echo ">> [3/3] Generating settings..."
+$FLYCHAMS_PATH/tools/settings/create_settings.sh
 
 echo "================================================================="
 echo " FULL SETUP COMPLETED SUCCESSFULLY"

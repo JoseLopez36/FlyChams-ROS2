@@ -39,14 +39,14 @@ add_executable(registrator_node src/registrator_node.cpp)
 target_link_libraries(registrator_node ${PROJECT_NAME})
 ament_target_dependencies(registrator_node rclcpp flychams_core)
 
-# Create executable for airsim settings node
-add_executable(airsim_settings_node src/airsim_settings_node.cpp)
-ament_target_dependencies(airsim_settings_node rclcpp flychams_core)
-
 # Create executable for mavros node
 add_executable(mavros_node src/mavros_node.cpp)
 target_link_libraries(mavros_node ${PROJECT_NAME})
 ament_target_dependencies(mavros_node rclcpp flychams_core)
+
+# Create executable for settings node
+add_executable(settings_node src/settings_node.cpp)
+ament_target_dependencies(settings_node rclcpp flychams_core)
 
 # Install targets and headers
 install(TARGETS ${PROJECT_NAME}
@@ -57,7 +57,7 @@ install(TARGETS ${PROJECT_NAME}
   INCLUDES DESTINATION include
 )
 
-install(TARGETS registrator_node airsim_settings_node mavros_node
+install(TARGETS registrator_node mavros_node settings_node
   RUNTIME DESTINATION lib/${PROJECT_NAME}
 )
 

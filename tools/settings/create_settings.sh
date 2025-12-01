@@ -12,4 +12,4 @@ else
 fi
 
 # Launch Airsim settings parser with parameters
-ros2 launch flychams_bringup create_airsim_settings.launch.py
+ros2 launch flychams_bringup create_settings.launch.py

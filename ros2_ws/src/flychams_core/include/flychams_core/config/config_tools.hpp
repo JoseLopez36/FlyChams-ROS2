@@ -3,6 +3,7 @@
 // Config includes
 #include "flychams_core/config/spreadsheet_parser.hpp"
 #include "flychams_core/config/airsim_settings_creator.hpp"
+#include "flychams_core/config/agents_yaml_creator.hpp"
 
 // Core includes
 #include "flychams_core/utils/math_utils.hpp"
@@ -70,7 +71,8 @@ namespace flychams::core
         // ROS components
         NodePtr node_;
 
-    public: // AirSim utilities
+    public: // Settings utilities
+
         void createAirsimSettings() const
         {
             const std::string& path = RosUtils::getParameter<std::string>(node_, "path.airsim_settings_path");
@@ -82,6 +84,41 @@ namespace flychams::core
             else
             {
                 RCLCPP_INFO(node_->get_logger(), "AirSim settings.json created successfully at %s", path.c_str());
+            }
+        }
+
+        void createAgentsYaml() const
+        {
+            // Get path from parameters, default to config/agents.yaml if not specified
+            std::string path;
+            try
+            {
+                path = RosUtils::getParameter<std::string>(node_, "path.agents_yaml_path");
+            }
+            catch (const std::exception&)
+            {
+                // Default path relative to config spreadsheet
+                const std::string& spreadsheet_path = RosUtils::getParameter<std::string>(node_, "path.config_spreadsheet_path");
+                // Extract directory path manually
+                size_t last_slash = spreadsheet_path.find_last_of("/\\");
+                if (last_slash != std::string::npos)
+                {
+                    path = spreadsheet_path.substr(0, last_slash + 1) + "agents.yaml";
+                }
+                else
+                {
+                    path = "agents.yaml";
+                }
+            }
+
+            if (!AgentsYamlCreator::createAgentsYaml(config_ptr_, path))
+            {
+                RCLCPP_ERROR(node_->get_logger(), "Failed to create agents.yaml at %s", path.c_str());
+                rclcpp::shutdown();
+            }
+            else
+            {
+                RCLCPP_INFO(node_->get_logger(), "agents.yaml created successfully at %s", path.c_str());
             }
         }
 

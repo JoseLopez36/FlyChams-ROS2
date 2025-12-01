@@ -34,12 +34,12 @@ def generate_launch_description():
     # Generate launch description
     ld = []
 
-    # Add AirSim Settings Parser node
+    # Add Settings node
     ld.append(
         Node(
             package='flychams_bringup',
-            executable='airsim_settings_node',
-            name='airsim_settings_node',
+            executable='settings_node',
+            name='settings_node',
             output='screen',
             namespace='flychams',
             parameters=[

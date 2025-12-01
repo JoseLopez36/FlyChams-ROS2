@@ -12,23 +12,6 @@ fi
 # Allow X11 forwarding
 xhost +local:docker
 
-# Default agents
-AGENTS=1
-
-# Parse args
-while [[ $# -gt 0 ]]; do
-  case $1 in
-    --agents)
-      AGENTS="$2"
-      shift 2
-      ;;
-    *)
-      echo "Unknown option: $1"
-      exit 1
-      ;;
-  esac
-done
-
 # Export environment variables
 export USER_NAME=$USER_NAME
 export FLYCHAMS_ROS2_PATH=$FLYCHAMS_ROS2_PATH
@@ -37,8 +20,8 @@ export FLYCHAMS_PX4_PATH=$FLYCHAMS_PX4_PATH
 export DISPLAY=$DISPLAY
 
 # Generate compose file
-echo "Generating docker-compose.yml for $AGENTS agents..."
-python3 "$SCRIPT_DIR/generate_docker_compose.py" --agents $AGENTS --output "$ROOT_DIR/docker/docker-compose.yml"
+echo "Generating docker-compose.yml..."
+python3 "$SCRIPT_DIR/generate_docker_compose.py" --agents-file "$ROOT_DIR/config/agents.yaml" --output "$ROOT_DIR/docker/docker-compose.yml"
 
 # Run docker compose
 echo "Starting containers..."
