@@ -1,4 +1,5 @@
 #!/bin/bash
+set -e  # Exit on error
 
 # Get ROS2 workspace directory
 ROS2_WS="$FLYCHAMS_PATH/ros2_ws"
@@ -11,5 +12,6 @@ else
   exit 1
 fi
 
-# Launch rosbag record
-ros2 launch flychams_bringup run_rosbag.launch.py
+# Launch FlyChams with AirSim
+echo "Setting up FlyingChameleons agent container..."
+ros2 launch flychams_bringup setup_agent.launch.py

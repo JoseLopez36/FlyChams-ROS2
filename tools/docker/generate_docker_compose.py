@@ -35,7 +35,7 @@ def generate_compose(agents):
     global_config['command'] = (
         f"bash -c 'source /opt/ros/iron/setup.bash && "
         f"source /home/{os.environ.get('USER_NAME')}/FlyChams-ROS2/ros2_ws/install/setup.bash && "
-        f"/home/{os.environ.get('USER_NAME')}/FlyChams-ROS2/tools/run/setup.sh'"
+        f"/home/{os.environ.get('USER_NAME')}/FlyChams-ROS2/tools/run/setup_global.sh'"
     )
 
     services['flychams-global'] = global_config
@@ -59,16 +59,10 @@ def generate_compose(agents):
             f"-s etc/init.d-posix/rcS"
         )
         
-        # MAVROS launch command (runs in background at setup stage)
-        mavros_cmd = (
-            f"ros2 launch flychams_bringup mavros.launch.py "
-            f"tgt_system:=1 fcu_url:=udp://:14030@172.17.0.2:14280 agent_id:=AGENT{k:02d}"
-        )
-        
         agent_config['command'] = (
             f"bash -c 'source /opt/ros/iron/setup.bash && "
             f"source /home/{os.environ.get('USER_NAME')}/FlyChams-ROS2/ros2_ws/install/setup.bash && "
-            f"{mavros_cmd} & "
+            f"/home/{os.environ.get('USER_NAME')}/FlyChams-ROS2/tools/run/setup_agent.sh & "
             f"{px4_cmd}'"
         )
 

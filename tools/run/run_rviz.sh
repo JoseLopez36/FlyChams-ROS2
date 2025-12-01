@@ -14,4 +14,4 @@ else
 fi
 
 # Launch RViz
-ros2 launch flychams_bringup rviz.launch.py config:="$RVIZ_CONFIG"
+ros2 launch flychams_bringup run_rviz.launch.py config:="$RVIZ_CONFIG"
