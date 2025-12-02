@@ -7,7 +7,7 @@ namespace flychams::bringup
 {
 	/**
 	 * ════════════════════════════════════════════════════════════════
-	 * @brief mavROS manager for managing connection to a single agent
+	 * @brief MavROS manager for managing connection to a single agent
 	 * ════════════════════════════════════════════════════════════════
 	 * @author Jose Francisco Lopez Ruiz
 	 * @date 2025-12-01

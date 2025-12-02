@@ -31,6 +31,9 @@ namespace flychams::control
 		// Set speed planner parameters
 		speed_planner_.setParameters(min_speed, max_speed, min_distance, max_distance, max_acceleration);
 
+		// Create mavros communication
+		mavros_comm_ = std::make_shared<MavrosCommunication>(agent_id_, node_, config_tools_, transform_tools_);
+
 		// Subscribe to status, position and setpoint topics
 		agent_.status_sub = topic_tools_->createAgentStatusSubscriber(agent_id_,
 			std::bind(&DroneControl::statusCallback, this, std::placeholders::_1), sub_options_with_module_cb_group_);
@@ -129,13 +132,10 @@ namespace flychams::control
 
 	void DroneControl::handlePositionControl(const float& dt)
 	{
-		// Plan speed based on distance to goal and other criteria
-		float target_speed = speed_planner_.planSpeed(agent_.position.x, agent_.position.y, agent_.position.z, agent_.setpoint.x, agent_.setpoint.y, agent_.setpoint.z, dt);
-
 		// Send command to move to goal position
-		framework_tools_->enableControl(agent_id_, true);
-		std::this_thread::sleep_for(std::chrono::milliseconds(1));
-		framework_tools_->setPosition(agent_id_, agent_.setpoint.x, agent_.setpoint.y, agent_.setpoint.z, target_speed, dt * 1000.0f);
+		mavros_comm_->enableOffboard(true);
+		std::this_thread::sleep_for(std::chrono::milliseconds(5));
+		mavros_comm_->setPosition(agent_.setpoint.x, agent_.setpoint.y, agent_.setpoint.z);
 	}
 
 	void DroneControl::handleVelocityControl(const float& dt)

@@ -36,6 +36,9 @@ namespace flychams::control
         agent_.status_msg.header = RosUtils::createHeader(node_, transform_tools_->getGlobalFrame());
         agent_.position_msg.header = RosUtils::createHeader(node_, transform_tools_->getGlobalFrame());
 
+        // Create mavros communication
+        mavros_comm_ = std::make_shared<MavrosCommunication>(agent_id_, node_, config_tools_, transform_tools_);
+
         // Subscribe to agent odom topic from framework tools
         agent_.odom_sub = framework_tools_->createOdometrySubscriber(agent_id_,
             std::bind(&DroneState::odomCallback, this, std::placeholders::_1), sub_options_with_module_cb_group_);
@@ -76,7 +79,7 @@ namespace flychams::control
         }
 
         // Enable OFFBOARD mode
-        bool enable_result = framework_tools_->enableControl(agent_id_, true);
+        bool enable_result = mavros_comm_->enableOffboard(true);
         if (!enable_result)
         {
             RCLCPP_ERROR(node_->get_logger(), "Drone state: Failed to enable control for agent %s", agent_id_.c_str());
@@ -85,7 +88,7 @@ namespace flychams::control
 
         // Request disarming
         RCLCPP_INFO(node_->get_logger(), "Drone state: Disarming agent %s...", agent_id_.c_str());
-        bool disarm_result = framework_tools_->armDisarm(agent_id_, false);
+        bool disarm_result = mavros_comm_->armDisarm(false);
         if (!disarm_result)
         {
             RCLCPP_ERROR(node_->get_logger(), "Drone state: Failed to disarm agent %s", agent_id_.c_str());
@@ -107,7 +110,7 @@ namespace flychams::control
         }
 
         // Enable OFFBOARD mode
-        bool enable_result = framework_tools_->enableControl(agent_id_, true);
+        bool enable_result = mavros_comm_->enableOffboard(true);
         if (!enable_result)
         {
             RCLCPP_ERROR(node_->get_logger(), "Drone state: Failed to enable control for agent %s", agent_id_.c_str());
@@ -116,7 +119,7 @@ namespace flychams::control
 
         // Request arming
         RCLCPP_INFO(node_->get_logger(), "Drone state: Arming agent %s...", agent_id_.c_str());
-        bool arm_result = framework_tools_->armDisarm(agent_id_, true);
+        bool arm_result = mavros_comm_->armDisarm(true);
         if (!arm_result)
         {
             RCLCPP_ERROR(node_->get_logger(), "Drone state: Failed to arm agent %s", agent_id_.c_str());
@@ -138,7 +141,7 @@ namespace flychams::control
         }
 
         // Enable OFFBOARD mode
-        bool enable_result = framework_tools_->enableControl(agent_id_, true);
+        bool enable_result = mavros_comm_->enableOffboard(true);
         if (!enable_result)
         {
             RCLCPP_ERROR(node_->get_logger(), "Drone state: Failed to enable control for agent %s", agent_id_.c_str());
@@ -147,7 +150,7 @@ namespace flychams::control
 
         // Request takeoff
         RCLCPP_INFO(node_->get_logger(), "Drone state: Taking off agent %s...", agent_id_.c_str());
-        bool takeoff_result = framework_tools_->takeoff(agent_id_);
+        bool takeoff_result = mavros_comm_->takeoff(takeoff_altitude_);
         if (!takeoff_result)
         {
             RCLCPP_ERROR(node_->get_logger(), "Drone state: Failed to takeoff agent %s", agent_id_.c_str());
@@ -169,7 +172,7 @@ namespace flychams::control
         }
 
         // Enable OFFBOARD mode
-        bool enable_result = framework_tools_->enableControl(agent_id_, true);
+        bool enable_result = mavros_comm_->enableOffboard(true);
         if (!enable_result)
         {
             RCLCPP_ERROR(node_->get_logger(), "Drone state: Failed to enable control for agent %s", agent_id_.c_str());
@@ -178,7 +181,9 @@ namespace flychams::control
 
         // Request hover
         RCLCPP_INFO(node_->get_logger(), "Drone state: Hovering agent %s...", agent_id_.c_str());
-        bool hover_result = framework_tools_->hover(agent_id_);
+        mavros_comm_->setPosition(agent_.odom.pose.pose.position.x, agent_.odom.pose.pose.position.y, hover_altitude_);
+        bool hover_result = true;
+
         if (!hover_result)
         {
             RCLCPP_ERROR(node_->get_logger(), "Drone state: Failed to hover agent %s", agent_id_.c_str());
@@ -200,7 +205,7 @@ namespace flychams::control
         }
 
         // Enable OFFBOARD mode
-        bool enable_result = framework_tools_->enableControl(agent_id_, true);
+        bool enable_result = mavros_comm_->enableOffboard(true);
         if (!enable_result)
         {
             RCLCPP_ERROR(node_->get_logger(), "Drone state: Failed to enable control for agent %s", agent_id_.c_str());
@@ -225,7 +230,7 @@ namespace flychams::control
         }
 
         // Enable OFFBOARD mode
-        bool enable_result = framework_tools_->enableControl(agent_id_, true);
+        bool enable_result = mavros_comm_->enableOffboard(true);
         if (!enable_result)
         {
             RCLCPP_ERROR(node_->get_logger(), "Drone state: Failed to enable control for agent %s", agent_id_.c_str());
@@ -234,7 +239,7 @@ namespace flychams::control
 
         // Request landing
         RCLCPP_INFO(node_->get_logger(), "Drone state: Landing agent %s...", agent_id_.c_str());
-        bool land_result = framework_tools_->land(agent_id_);
+        bool land_result = mavros_comm_->land();
         if (!land_result)
         {
             RCLCPP_ERROR(node_->get_logger(), "Drone state: Failed to land agent %s", agent_id_.c_str());

@@ -1,6 +1,23 @@
 #!/bin/bash
 
-# Function to run command in container with persistent stdin to keep script alive
+# Array to store background job PIDs
+declare -a bg_pids=()
+
+# Cleanup function to kill all background processes
+cleanup() {
+    echo ""
+    echo "Stopping all processes..."
+    for pid in "${bg_pids[@]}"; do
+        kill "$pid" 2>/dev/null || true
+    done
+    wait
+    exit 0
+}
+
+# Set up signal handler for Ctrl+C
+trap cleanup SIGINT SIGTERM
+
+# Function to run command in container as a separate process
 run_in_container() {
     local container=$1
     local script=$2
@@ -10,7 +27,7 @@ run_in_container() {
     # Get FLYCHAMS_PATH from container environment
     FLYCHAMS_PATH=$(docker exec "$container" printenv FLYCHAMS_PATH)
     if [ -z "$FLYCHAMS_PATH" ]; then
-        echo "Error: FLYCHAMS_PATH not set in $container. Using default."
+        echo "Error: FLYCHAMS_PATH not set in $container. Using default." >&2
         FLYCHAMS_PATH="/home/testuser/FlyChams-ROS2"
     fi
     
@@ -21,8 +38,16 @@ run_in_container() {
     SCRIPT_NAME=$(basename "$script")
     FULL_SCRIPT_PATH="$FLYCHAMS_PATH/tools/run/$SCRIPT_NAME"
 
-    # Run script in container
-    docker exec -d "$container" bash -c "$FULL_SCRIPT_PATH < <(tail -f /dev/null)"
+    # Run script in container without -d flag, in background, prefixing output with container name
+    (
+        docker exec "$container" bash -c "$FULL_SCRIPT_PATH" 2>&1 | \
+        while IFS= read -r line; do
+            echo "[$container] $line"
+        done
+    ) &
+    
+    # Store the background process PID
+    bg_pids+=($!)
 }
 
 # Check for global container
@@ -33,7 +58,7 @@ else
 fi
 
 # Check for agent containers
-agents=$(docker ps --format '{{.Names}}' | grep "^flychams-agent-" | sort -V)
+agents=$(docker ps --format '{{.Names}}' | grep "^flychams-AGENT" | sort -V)
 
 if [ -z "$agents" ]; then
     echo "Warning: No flychams-agent containers found running."
@@ -43,5 +68,8 @@ else
     done
 fi
 
-echo "Commands sent to containers."
+# Wait a moment for processes to start
+sleep 1
 
+# Wait for all background processes (this will keep the script alive)
+wait

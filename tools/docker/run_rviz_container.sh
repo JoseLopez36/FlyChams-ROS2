@@ -28,6 +28,7 @@ docker run --rm -it \
     --privileged \
     -e DISPLAY=$DISPLAY \
     -e QT_X11_NO_MITSHM=1 \
+    -e ROS_DOMAIN_ID=${ROS_DOMAIN_ID:-0} \
     -e FLYCHAMS_PATH=/home/${USER_NAME}/FlyChams-ROS2 \
     -e AIRSIM_PATH=/home/${USER_NAME}/FlyChams-Cosys-AirSim \
     -e PX4_PATH=/home/${USER_NAME}/PX4-Autopilot \
@@ -37,4 +38,3 @@ docker run --rm -it \
     -v "$FLYCHAMS_PX4_PATH":/home/${USER_NAME}/PX4-Autopilot \
     flychams-ros2:latest \
     bash -c "source /opt/ros/iron/setup.bash && source /home/${USER_NAME}/FlyChams-ROS2/ros2_ws/install/setup.bash && $CONTAINER_CMD"
-

@@ -41,6 +41,8 @@ def generate_compose(agent_ids):
         'environment': {
             'DISPLAY': os.environ.get('DISPLAY', ':0'),
             'QT_X11_NO_MITSHM': '1',
+            'ROS_DOMAIN_ID': os.environ.get('ROS_DOMAIN_ID', '0'),
+            'FASTDDS_BUILTIN_TRANSPORTS': 'UDPv4',
             'FLYCHAMS_PATH': f'/home/{os.environ.get("USER_NAME")}/FlyChams-ROS2',
             'AIRSIM_PATH': f'/home/{os.environ.get("USER_NAME")}/FlyChams-Cosys-AirSim',
             'PX4_PATH': f'/home/{os.environ.get("USER_NAME")}/PX4-Autopilot'
@@ -123,4 +125,3 @@ if __name__ == '__main__':
         yaml.dump(compose_data, f, sort_keys=False)
         
     print(f"Generated {args.output} with {len(agent_ids)} agents.")
-

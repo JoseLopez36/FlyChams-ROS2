@@ -3,6 +3,9 @@
 // Control includes
 #include "flychams_control/drone/speed_planner.hpp"
 
+// Communication include
+#include "flychams_core/communication/mavros_communication.hpp"
+
 // Base module include
 #include "flychams_core/base/base_module.hpp"
 
@@ -73,6 +76,8 @@ namespace flychams::control
 		SpeedPlanner speed_planner_;
 		// Step time
 		core::Time last_update_time_;
+		// Mavros communication
+		core::MavrosCommunication::SharedPtr mavros_comm_;
 
 	private: // Callbacks
 		void statusCallback(const core::AgentStatusMsg::SharedPtr msg);

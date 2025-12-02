@@ -19,6 +19,7 @@ find_package(tf2 REQUIRED)
 find_package(tf2_ros REQUIRED)
 find_package(tf2_geometry_msgs REQUIRED)
 find_package(OpenCV REQUIRED)
+find_package(mavros_msgs REQUIRED)
 find_package(airsim_interfaces REQUIRED)
 find_package(flychams_interfaces REQUIRED)
 
@@ -32,9 +33,10 @@ include_directories(
 )
 
 # Declare the library
-add_library(${PROJECT_NAME}
+add_library(${PROJECT_NAME} SHARED
   src/framework/framework_tools.cpp
   src/framework/airsim_tools.cpp
+  src/communication/mavros_communication.cpp
 )
 
 target_include_directories(${PROJECT_NAME} PUBLIC
@@ -66,6 +68,7 @@ ament_target_dependencies(${PROJECT_NAME}
   tf2_ros
   tf2_geometry_msgs
   OpenCV
+  mavros_msgs
   airsim_interfaces
   flychams_interfaces
 )
@@ -119,6 +122,7 @@ ament_export_dependencies(
   tf2_ros
   tf2_geometry_msgs
   OpenCV
+  mavros_msgs
   airsim_interfaces
   flychams_interfaces
 )

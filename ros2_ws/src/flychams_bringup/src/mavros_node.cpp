@@ -11,7 +11,7 @@ using namespace flychams::bringup;
 
 /**
  * ════════════════════════════════════════════════════════════════
- * @brief mavROS node for managing connection to a single agent
+ * @brief MavROS node for managing connection to a single agent
  * ════════════════════════════════════════════════════════════════
  * @author Jose Francisco Lopez Ruiz
  * @date 2025-12-01
