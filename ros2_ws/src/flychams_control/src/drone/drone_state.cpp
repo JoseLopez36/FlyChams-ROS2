@@ -15,7 +15,7 @@ namespace flychams::control
         update_rate_ = RosUtils::getParameterOr<float>(node_, "drone_state.update_rate", 5.0f);
         // Get takeoff parameters
         takeoff_altitude_ = RosUtils::getParameterOr<float>(node_, "drone_state.takeoff_altitude", 1.5f);
-        takeoff_timeout_ = RosUtils::getParameterOr<float>(node_, "drone_state.takeoff_timeout", 10.0f);
+        takeoff_timeout_ = RosUtils::getParameterOr<float>(node_, "drone_state.takeoff_timeout", 60.0f);
         // Get landing parameters
         landing_altitude_ = RosUtils::getParameterOr<float>(node_, "drone_state.landing_altitude", 0.5f);
         landing_timeout_ = RosUtils::getParameterOr<float>(node_, "drone_state.landing_timeout", 10.0f);
@@ -29,8 +29,8 @@ namespace flychams::control
         // Initialize data
         agent_ = Agent();
 
-        // Set initial status as disarmed. Arming request will be necessary for further transitions
-        agent_.status = AgentStatus::DISARMED;
+        // Set initial status as IDLE
+        agent_.status = AgentStatus::IDLE;
 
         // Initialize message data
         agent_.status_msg.header = RosUtils::createHeader(node_, transform_tools_->getGlobalFrame());
@@ -71,8 +71,8 @@ namespace flychams::control
 
     bool DroneState::requestDisarm()
     {
-        // Check if we're in ARMED or LANDING state
-        if (agent_.status != AgentStatus::ARMED && agent_.status != AgentStatus::LANDING)
+        // Check if we're in ARMED, LANDED or ERROR state
+        if (agent_.status != AgentStatus::ARMED && agent_.status != AgentStatus::LANDED && agent_.status != AgentStatus::ERROR)
         {
             RCLCPP_WARN(node_->get_logger(), "Drone state: Cannot disarm agent %s from state %d", agent_id_.c_str(), static_cast<int>(agent_.status));
             return false;
@@ -95,25 +95,19 @@ namespace flychams::control
             return false;
         }
 
-        // Transition to DISARMED state
-        setStatus(AgentStatus::DISARMED);
+        // Transition to IDLE state
+        setStatus(AgentStatus::IDLE);
         return true;
     }
 
     bool DroneState::requestArm()
     {
-        // Check if we're in DISARMED state
-        if (agent_.status != AgentStatus::DISARMED)
+        // Check if we're in IDLE state
+        if (agent_.status != AgentStatus::IDLE)
         {
-            RCLCPP_WARN(node_->get_logger(), "Drone state: Cannot arm agent %s from state %d", agent_id_.c_str(), static_cast<int>(agent_.status));
-            return false;
-        }
-
-        // Enable OFFBOARD mode
-        bool enable_result = mavros_comm_->enableOffboard(true);
-        if (!enable_result)
-        {
-            RCLCPP_ERROR(node_->get_logger(), "Drone state: Failed to enable control for agent %s", agent_id_.c_str());
+            // Only warn if not already ARMED (to avoid spamming if called redundantly)
+            if (agent_.status != AgentStatus::ARMED)
+                RCLCPP_WARN(node_->get_logger(), "Drone state: Cannot arm agent %s from state %d", agent_id_.c_str(), static_cast<int>(agent_.status));
             return false;
         }
 
@@ -134,17 +128,9 @@ namespace flychams::control
     bool DroneState::requestTakeoff()
     {
         // Check if we're in ARMED state
-        if (agent_.status != AgentStatus::ARMED)
+        if (agent_.status != AgentStatus::ARMED && agent_.status != AgentStatus::TAKING_OFF)
         {
             RCLCPP_WARN(node_->get_logger(), "Drone state: Cannot takeoff agent %s from state %d", agent_id_.c_str(), static_cast<int>(agent_.status));
-            return false;
-        }
-
-        // Enable OFFBOARD mode
-        bool enable_result = mavros_comm_->enableOffboard(true);
-        if (!enable_result)
-        {
-            RCLCPP_ERROR(node_->get_logger(), "Drone state: Failed to enable control for agent %s", agent_id_.c_str());
             return false;
         }
 
@@ -164,8 +150,8 @@ namespace flychams::control
 
     bool DroneState::requestHover()
     {
-        // Check if we're in TAKEN_OFF or TRACKING state
-        if (agent_.status != AgentStatus::TAKEN_OFF && agent_.status != AgentStatus::TRACKING)
+        // Allowed from TAKING_OFF (completion), TRACKING (return), or HOVERING (retry)
+        if (agent_.status != AgentStatus::TAKING_OFF && agent_.status != AgentStatus::TRACKING && agent_.status != AgentStatus::HOVERING)
         {
             RCLCPP_WARN(node_->get_logger(), "Drone state: Cannot hover agent %s from state %d", agent_id_.c_str(), static_cast<int>(agent_.status));
             return false;
@@ -182,13 +168,6 @@ namespace flychams::control
         // Request hover
         RCLCPP_INFO(node_->get_logger(), "Drone state: Hovering agent %s...", agent_id_.c_str());
         mavros_comm_->setPosition(agent_.odom.pose.pose.position.x, agent_.odom.pose.pose.position.y, hover_altitude_);
-        bool hover_result = true;
-
-        if (!hover_result)
-        {
-            RCLCPP_ERROR(node_->get_logger(), "Drone state: Failed to hover agent %s", agent_id_.c_str());
-            return false;
-        }
 
         // Transition to HOVERING state
         setStatus(AgentStatus::HOVERING);
@@ -197,8 +176,8 @@ namespace flychams::control
 
     bool DroneState::requestTracking()
     {
-        // Check if we're in HOVERED state
-        if (agent_.status != AgentStatus::HOVERED && agent_.status != AgentStatus::TRACKING)
+        // Check if we're in HOVERING state or already TRACKING
+        if (agent_.status != AgentStatus::HOVERING && agent_.status != AgentStatus::TRACKING)
         {
             RCLCPP_WARN(node_->get_logger(), "Drone state: Cannot move agent %s from state %d", agent_id_.c_str(), static_cast<int>(agent_.status));
             return false;
@@ -222,18 +201,10 @@ namespace flychams::control
 
     bool DroneState::requestLand()
     {
-        // Check if we're in HOVERING, HOVERED or TRACKING state
-        if (agent_.status != AgentStatus::HOVERING && agent_.status != AgentStatus::HOVERED && agent_.status != AgentStatus::TRACKING)
+        // Check if we're in HOVERING, TRACKING, TAKING_OFF, or LANDING
+        if (agent_.status != AgentStatus::HOVERING && agent_.status != AgentStatus::TRACKING && agent_.status != AgentStatus::TAKING_OFF && agent_.status != AgentStatus::LANDING && agent_.status != AgentStatus::ERROR)
         {
             RCLCPP_WARN(node_->get_logger(), "Drone state: Cannot land agent %s from state %d", agent_id_.c_str(), static_cast<int>(agent_.status));
-            return false;
-        }
-
-        // Enable OFFBOARD mode
-        bool enable_result = mavros_comm_->enableOffboard(true);
-        if (!enable_result)
-        {
-            RCLCPP_ERROR(node_->get_logger(), "Drone state: Failed to enable control for agent %s", agent_id_.c_str());
             return false;
         }
 
@@ -273,8 +244,8 @@ namespace flychams::control
 
     void DroneState::update()
     {
-        // Check if we have a valid position. If not, we can't update the state
-        if (!agent_.has_odom)
+        // Check if we have a valid position. If not, we can't update the state (except IDLE)
+        if (!agent_.has_odom && agent_.status != AgentStatus::IDLE)
         {
             RCLCPP_WARN(node_->get_logger(), "Drone state: No odometry data received for agent %s", agent_id_.c_str());
             return;
@@ -298,10 +269,6 @@ namespace flychams::control
             handleIdle();
             break;
 
-        case AgentStatus::DISARMED:
-            handleDisarmed();
-            break;
-
         case AgentStatus::ARMED:
             handleArmed();
             break;
@@ -310,16 +277,8 @@ namespace flychams::control
             handleTakingOff();
             break;
 
-        case AgentStatus::TAKEN_OFF:
-            handleTakenOff();
-            break;
-
         case AgentStatus::HOVERING:
             handleHovering();
-            break;
-
-        case AgentStatus::HOVERED:
-            handleHovered();
             break;
 
         case AgentStatus::TRACKING:
@@ -373,55 +332,34 @@ namespace flychams::control
 
     bool DroneState::isValid(const AgentStatus& from, const AgentStatus& to) const
     {
-        // Check state transitions
+        // Simple linear flow + error handling
         switch (from)
         {
         case AgentStatus::IDLE:
-            // From IDLE, we can only go to DISARMED
-            return to == AgentStatus::DISARMED;
-
-        case AgentStatus::DISARMED:
-            // From DISARMED, we can go to ARMED, IDLE, or ERROR
-            return to == AgentStatus::ARMED || to == AgentStatus::IDLE || to == AgentStatus::ERROR;
+            return to == AgentStatus::ARMED || to == AgentStatus::ERROR;
 
         case AgentStatus::ARMED:
-            // From ARMED, we can go to DISARMED, TAKING_OFF, or ERROR
-            return to == AgentStatus::DISARMED || to == AgentStatus::TAKING_OFF || to == AgentStatus::ERROR;
+            return to == AgentStatus::TAKING_OFF || to == AgentStatus::IDLE || to == AgentStatus::ERROR;
 
         case AgentStatus::TAKING_OFF:
-            // From TAKING_OFF, we can go to TAKEN_OFF, LANDING, or ERROR
-            return to == AgentStatus::TAKEN_OFF || to == AgentStatus::LANDING || to == AgentStatus::ERROR;
-
-        case AgentStatus::TAKEN_OFF:
-            // From TAKEN_OFF, we can go to HOVERING, LANDING, or ERROR
             return to == AgentStatus::HOVERING || to == AgentStatus::LANDING || to == AgentStatus::ERROR;
 
         case AgentStatus::HOVERING:
-            // From HOVERING, we can go to HOVERED, LANDING, or ERROR
-            return to == AgentStatus::HOVERED || to == AgentStatus::LANDING || to == AgentStatus::ERROR;
-
-        case AgentStatus::HOVERED:
-            // From HOVERED, we can go to TRACKING, LANDING, or ERROR
             return to == AgentStatus::TRACKING || to == AgentStatus::LANDING || to == AgentStatus::ERROR;
 
         case AgentStatus::TRACKING:
-            // From TRACKING, we can go to HOVERING, TRACKING, LANDING, or ERROR
-            return to == AgentStatus::HOVERING || to == AgentStatus::TRACKING || to == AgentStatus::LANDING || to == AgentStatus::ERROR;
+            return to == AgentStatus::HOVERING || to == AgentStatus::LANDING || to == AgentStatus::ERROR;
 
         case AgentStatus::LANDING:
-            // From LANDING, we can go to LANDED, or ERROR
             return to == AgentStatus::LANDED || to == AgentStatus::ERROR;
 
         case AgentStatus::LANDED:
-            // From LANDED, we can go to DISARMED, or ERROR
-            return to == AgentStatus::DISARMED || to == AgentStatus::ERROR;
+            return to == AgentStatus::IDLE || to == AgentStatus::ERROR;
 
         case AgentStatus::ERROR:
-            // From ERROR, we can only go to IDLE (reset)
-            return to == AgentStatus::IDLE;
+            return to == AgentStatus::LANDING || to == AgentStatus::LANDED; // Try to land if error
 
         default:
-            // Unknown state, reject transition
             return false;
         }
     }
@@ -430,84 +368,66 @@ namespace flychams::control
     // STATE HANDLERS: Methods for handling different states
     // ════════════════════════════════════════════════════════════════════════════
 
-    // DroneState handler implementations
     void DroneState::handleIdle()
     {
-        // Nothing to do in IDLE state
-    }
-
-    void DroneState::handleDisarmed()
-    {
-        // Nothing to do in DISARMED state, waiting for arm request
+        // Auto-start: try to arm
+        requestArm();
     }
 
     void DroneState::handleArmed()
     {
-        // Nothing to do in ARMED state, waiting for takeoff request
+        // Auto-continue: try to takeoff
+        requestTakeoff();
     }
 
     void DroneState::handleTakingOff()
     {
-        // Check if takeoff has timed out
+        // Check timeout
         if (status_duration_ > takeoff_timeout_)
         {
-            RCLCPP_WARN(node_->get_logger(), "Drone state: Takeoff timeout for agent %s, trying again...", agent_id_.c_str());
+            RCLCPP_WARN(node_->get_logger(), "Drone state: Takeoff timeout for agent %s, retrying...", agent_id_.c_str());
             requestTakeoff();
             return;
         }
 
-        // Check if takeoff altitude is reached
+        // Check altitude
         if (agent_.odom.pose.pose.position.z >= takeoff_altitude_)
         {
-            RCLCPP_INFO(node_->get_logger(), "Drone state: Takeoff complete for agent %s", agent_id_.c_str());
-            setStatus(AgentStatus::TAKEN_OFF);
+            RCLCPP_INFO(node_->get_logger(), "Drone state: Takeoff altitude reached for agent %s", agent_id_.c_str());
+            // Transition to hovering
+            requestHover();
         }
-    }
-
-    void DroneState::handleTakenOff()
-    {
-        // Nothing to do in TAKEN_OFF state, waiting for hover request
     }
 
     void DroneState::handleHovering()
     {
-        // Check if hover has timed out
+        // Check timeout
         if (status_duration_ > hover_timeout_)
         {
-            RCLCPP_WARN(node_->get_logger(), "Drone state: Hover timeout for agent %s, trying again...", agent_id_.c_str());
-            requestHover();
+             // Transition to tracking after hover duration
+            requestTracking();
             return;
         }
 
-        // Check if hover altitude is reached
-        if (agent_.odom.pose.pose.position.z >= hover_altitude_)
-        {
-            RCLCPP_INFO(node_->get_logger(), "Drone state: Hover complete for agent %s", agent_id_.c_str());
-            setStatus(AgentStatus::HOVERED);
-        }
-    }
-
-    void DroneState::handleHovered()
-    {
-        // Nothing to do in HOVERED state, other nodes handle the commands (such as drone motion)
+        // Could re-send hover command if needed, but we assume it's stable.
     }
 
     void DroneState::handleTracking()
     {
-        // In TRACKING state, other nodes handle the commands (such as drone motion)
+        // Tracking is handled by other nodes, we just stay here unless error or external command
     }
 
     void DroneState::handleLanding()
     {
-        // Check if landing has timed out
+        // Check timeout
         if (status_duration_ > landing_timeout_)
         {
-            RCLCPP_WARN(node_->get_logger(), "Drone state: Landing timeout for agent %s, trying again...", agent_id_.c_str());
+            RCLCPP_WARN(node_->get_logger(), "Drone state: Landing timeout for agent %s, retrying...", agent_id_.c_str());
             requestLand();
             return;
         }
 
-        // Check if landing altitude is reached
+        // Check altitude
         if (agent_.odom.pose.pose.position.z <= landing_altitude_)
         {
             RCLCPP_INFO(node_->get_logger(), "Drone state: Landing complete for agent %s", agent_id_.c_str());
@@ -517,13 +437,21 @@ namespace flychams::control
 
     void DroneState::handleLanded()
     {
-        // Nothing to do in LANDED state, waiting for disarm request
+        // After landing, we can disarm and go to IDLE
+        requestDisarm();
     }
 
     void DroneState::handleError()
     {
         // In ERROR state, attempt landing
-        requestLand();
+        if (agent_.odom.pose.pose.position.z > landing_altitude_)
+        {
+            requestLand();
+        }
+        else
+        {
+            setStatus(AgentStatus::LANDED);
+        }
     }
 
 } // namespace flychams::control

@@ -103,9 +103,7 @@ namespace flychams::control
         void handleDisarmed();
         void handleArmed();
         void handleTakingOff();
-        void handleTakenOff();
         void handleHovering();
-        void handleHovered();
         void handleTracking();
         void handleLanding();
         void handleLanded();
