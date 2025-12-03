@@ -8,6 +8,9 @@ import os
 def launch_setup(context, *args, **kwargs):
     # Get agent_id value from LaunchConfiguration
     agent_id = LaunchConfiguration('agent_id').perform(context)
+    is_simulated_str = LaunchConfiguration('is_simulated').perform(context)
+    # Convert string to boolean for use_sim_time parameter
+    is_simulated = is_simulated_str.lower() in ('true', '1', 'yes', 'on')
 
     # Get paths to config files
     # Core parameters
@@ -53,9 +56,9 @@ def launch_setup(context, *args, **kwargs):
     ld.append(
         Node(
             package='flychams_bringup',
-            executable='mavros_manager_node',
-            name='mavros_manager_node',
-            output='screen',
+            executable='mavros_node',
+            name='mavros_node',
+            output='screen' if is_simulated else 'log',
             namespace='flychams/' + agent_id,
             parameters=[
                 system_path,
@@ -64,7 +67,8 @@ def launch_setup(context, *args, **kwargs):
                 mavros_path,
                 plugin_lists_path,
                 {'agent_id': agent_id},
-                {'tgt_system': 1, 'fcu_url': 'udp://:14030@172.17.0.2:14280'}
+                {'tgt_system': 1, 'fcu_url': 'udp://:14030@172.17.0.2:14280'},
+                {'use_sim_time': is_simulated}
             ]
         )
     )
@@ -78,8 +82,14 @@ def generate_launch_description():
         default_value='',
         description='ID of the agent to setup'
     )
+    is_simulated_arg = DeclareLaunchArgument(
+        'is_simulated',
+        default_value='False',
+        description='Whether the agent is simulated'
+    )
 
     return LaunchDescription([
         agent_id_arg,
+        is_simulated_arg,
         OpaqueFunction(function=launch_setup)
     ])

@@ -3,6 +3,7 @@ set -e  # Exit on error
 
 # Arguments   
 AGENT_ID=${1:-""}
+IS_SIMULATED=${2:-"False"}
 
 # Check if AGENT_ID is provided
 if [ -z "$AGENT_ID" ]; then
@@ -23,4 +24,4 @@ fi
 
 # Launch FlyChams with AirSim
 echo "Running FlyingChameleons agent..."
-ros2 launch flychams_bringup run_agent.launch.py agent_id:=$AGENT_ID
+ros2 launch flychams_bringup run_agent.launch.py agent_id:=$AGENT_ID is_simulated:=$IS_SIMULATED

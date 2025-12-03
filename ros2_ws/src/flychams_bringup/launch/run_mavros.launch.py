@@ -72,7 +72,7 @@ def generate_launch_description():
             get_package_share_directory('flychams_bringup'),
             'config',
             'mavros',
-            'config.yaml'
+            'mavros.yaml'
         )
         
         # Create a config file with the agent_id substituted

@@ -105,9 +105,6 @@ namespace flychams::simulation
         }
 
     private: // ROS components
-        // Config tools
-        core::ConfigTools::SharedPtr config_tools_;
-
         // Global commands
         core::ClientPtr<ResetSrv> reset_client_;
         core::ClientPtr<RunSrv> run_client_;

@@ -11,7 +11,7 @@ namespace flychams::simulation
     // ════════════════════════════════════════════════════════════════════════════
 
     AirsimTools::AirsimTools(NodePtr node, const ConfigTools::SharedPtr& config_tools)
-        : SimulationTools(node), config_tools_(config_tools)
+        : SimulationTools(node, config_tools)
     {
         // Initialize ROS components
         // Global commands

@@ -93,7 +93,7 @@ def generate_compose(agent_ids):
         agent_config['command'] = (
             f"bash -c 'source /opt/ros/iron/setup.bash && "
             f"source /home/{os.environ.get('USER_NAME')}/FlyChams-ROS2/ros2_ws/install/setup.bash && "
-            f"/home/{os.environ.get('USER_NAME')}/FlyChams-ROS2/tools/run/setup_agent.sh {agent_id} & "
+            f"/home/{os.environ.get('USER_NAME')}/FlyChams-ROS2/tools/run/setup_agent.sh {agent_id} True & "
             f"{px4_cmd}'"
         )
 

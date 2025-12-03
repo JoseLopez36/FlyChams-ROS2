@@ -49,7 +49,7 @@ run_in_container() {
 
     # Run script in container without -d flag, in background, prefixing output with container name
     (
-        docker exec "$container" bash -c "$FULL_SCRIPT_PATH $AGENT_ID_ARG" 2>&1 | \
+        docker exec "$container" bash -c "$FULL_SCRIPT_PATH $AGENT_ID_ARG True" 2>&1 | \
         while IFS= read -r line; do
             echo "[$container] $line"
         done

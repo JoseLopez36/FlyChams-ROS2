@@ -26,8 +26,8 @@ namespace flychams::simulation
     class SimulationTools
     {
     public: // Constructors/Destructors
-        SimulationTools(core::NodePtr node)
-            : node_(node)
+        SimulationTools(core::NodePtr node, const core::ConfigTools::SharedPtr& config_tools)
+            : node_(node), config_tools_(config_tools)
         {
             // Nothing to do
         }
@@ -105,6 +105,9 @@ namespace flychams::simulation
     protected: // Data
         // ROS components
         core::NodePtr node_;
+
+        // Config tools
+        core::ConfigTools::SharedPtr config_tools_;
     };
 
     SimulationTools::SharedPtr createSimulationTools(core::NodePtr node, const core::ConfigTools::SharedPtr& config_tools);
