@@ -13,5 +13,5 @@ else
 fi
 
 # Launch FlyChams with AirSim
-echo "Setting up FlyingChameleons global container..."
+echo "Setting up FlyingChameleons global..."
 ros2 launch flychams_bringup setup_global.launch.py

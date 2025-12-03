@@ -1,21 +1,14 @@
 from launch import LaunchDescription
 from launch_ros.actions import Node
-from launch import LaunchContext
-from launch.actions import DeclareLaunchArgument
+from launch.actions import DeclareLaunchArgument, OpaqueFunction
 from launch.substitutions import PathJoinSubstitution, LaunchConfiguration
 from launch_ros.substitutions import FindPackageShare
 import os
 import yaml
 
-def generate_launch_description():
-    # Declare arguments
-    agent_id_arg = DeclareLaunchArgument(
-        'agent_id',
-        default_value='agent_0',
-        description='ID of the agent to control'
-    )
-    
-    agent_id = LaunchConfiguration('agent_id')
+def launch_setup(context, *args, **kwargs):
+    # Get agent_id value from LaunchConfiguration
+    agent_id = LaunchConfiguration('agent_id').perform(context)
 
     # Get paths to config files
     # Core parameters
@@ -63,11 +56,11 @@ def generate_launch_description():
     os.environ['RCUTILS_COLORIZED_OUTPUT'] = '1'   # Enable colored output
 
     # Generate launch description
-    ld = [agent_id_arg]
+    ld = []
 
     # Load the nodes configuration YAML file
     # Convert from PathJoinSubstitution to path string and load the file
-    launch_file_path = launch_path.perform(LaunchContext()).strip()
+    launch_file_path = launch_path.perform(context).strip()
     with open(launch_file_path, 'r') as f:
         launch = yaml.safe_load(f)
     
@@ -91,15 +84,15 @@ def generate_launch_description():
                 executable='drone_state_node',
                 name='drone_state_node',
                 output='screen',
-                namespace='flychams',
+                namespace='flychams/' + agent_id,
                 arguments=['--ros-args', '--log-level', nodes['drone_state'][1]],
                 parameters=[
                     system_path, 
                     topics_path, 
                     frames_path, 
                     control_path,
-                    {'use_sim_time': True},
-                    {'assigned_agent_id': agent_id}
+                    {'agent_id': agent_id},
+                    {'use_sim_time': True}
                 ]
             )
         )
@@ -112,15 +105,15 @@ def generate_launch_description():
                 executable='drone_control_node',
                 name='drone_control_node',
                 output='screen',
-                namespace='flychams',
+                namespace='flychams/' + agent_id,
                 arguments=['--ros-args', '--log-level', nodes['drone_control'][1]],
                 parameters=[
                     system_path, 
                     topics_path, 
                     frames_path, 
                     control_path,
-                    {'use_sim_time': True},
-                    {'assigned_agent_id': agent_id}
+                    {'agent_id': agent_id},
+                    {'use_sim_time': True}
                 ]
             )
         )
@@ -133,15 +126,15 @@ def generate_launch_description():
                 executable='camera_control_node',
                 name='camera_control_node',
                 output='screen',
-                namespace='flychams',
+                namespace='flychams/' + agent_id,
                 arguments=['--ros-args', '--log-level', nodes['camera_control'][1]],
                 parameters=[
                     system_path, 
                     topics_path, 
                     frames_path, 
                     control_path,
-                    {'use_sim_time': True},
-                    {'assigned_agent_id': agent_id}
+                    {'agent_id': agent_id},
+                    {'use_sim_time': True}
                 ]
             )
         )
@@ -155,15 +148,15 @@ def generate_launch_description():
                 executable='agent_positioning_node',
                 name='agent_positioning_node',
                 output='screen',
-                namespace='flychams',
+                namespace='flychams/' + agent_id,
                 arguments=['--ros-args', '--log-level', nodes['agent_positioning'][1]],
                 parameters=[
                     system_path, 
                     topics_path, 
                     frames_path, 
                     coordination_path,
-                    {'use_sim_time': True},
-                    {'assigned_agent_id': agent_id}
+                    {'agent_id': agent_id},
+                    {'use_sim_time': True}
                 ]
             )
         )
@@ -176,18 +169,31 @@ def generate_launch_description():
                 executable='agent_tracking_node',
                 name='agent_tracking_node',
                 output='screen',
-                namespace='flychams',
+                namespace='flychams/' + agent_id,
                 arguments=['--ros-args', '--log-level', nodes['agent_tracking'][1]],
                 parameters=[
                     system_path, 
                     topics_path, 
                     frames_path, 
                     coordination_path,
-                    {'use_sim_time': True},
-                    {'assigned_agent_id': agent_id}
+                    {'agent_id': agent_id},
+                    {'use_sim_time': True}
                 ]
             )
         )
 
-    return LaunchDescription(ld)
+    return ld
+
+def generate_launch_description():
+    # Declare arguments
+    agent_id_arg = DeclareLaunchArgument(
+        'agent_id',
+        default_value='',
+        description='ID of the agent to run'
+    )
+
+    return LaunchDescription([
+        agent_id_arg,
+        OpaqueFunction(function=launch_setup)
+    ])
 

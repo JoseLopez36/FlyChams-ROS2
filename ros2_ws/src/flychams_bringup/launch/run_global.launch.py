@@ -1,12 +1,12 @@
 from launch import LaunchDescription
 from launch_ros.actions import Node
-from launch import LaunchContext
+from launch.actions import OpaqueFunction
 from launch.substitutions import PathJoinSubstitution
 from launch_ros.substitutions import FindPackageShare
 import os
 import yaml
 
-def generate_launch_description():
+def launch_setup(context, *args, **kwargs):
     # Get paths to config files
     # Core parameters
     system_path = PathJoinSubstitution([
@@ -69,7 +69,7 @@ def generate_launch_description():
 
     # Load the nodes configuration YAML file
     # Convert from PathJoinSubstitution to path string and load the file
-    launch_file_path = launch_path.perform(LaunchContext()).strip()
+    launch_file_path = launch_path.perform(context).strip()
     with open(launch_file_path, 'r') as f:
         launch = yaml.safe_load(f)
     
@@ -100,7 +100,7 @@ def generate_launch_description():
                 executable='target_clustering_node',
                 name='target_clustering_node',
                 output='screen',
-                namespace='flychams',
+                namespace='flychams/global',
                 arguments=['--ros-args', '--log-level', nodes['target_clustering'][1]],
                 parameters=[
                     system_path, 
@@ -120,7 +120,7 @@ def generate_launch_description():
                 executable='cluster_analysis_node',
                 name='cluster_analysis_node',
                 output='screen',
-                namespace='flychams',
+                namespace='flychams/global',
                 arguments=['--ros-args', '--log-level', nodes['cluster_analysis'][1]],
                 parameters=[
                     system_path, 
@@ -141,7 +141,7 @@ def generate_launch_description():
                 executable='agent_assignment_node',
                 name='agent_assignment_node',
                 output='screen',
-                namespace='flychams',
+                namespace='flychams/global',
                 arguments=['--ros-args', '--log-level', nodes['agent_assignment'][1]],
                 parameters=[
                     system_path, 
@@ -161,7 +161,7 @@ def generate_launch_description():
                 executable='agent_analysis_node',
                 name='agent_analysis_node',
                 output='screen',
-                namespace='flychams',
+                namespace='flychams/global',
                 arguments=['--ros-args', '--log-level', nodes['agent_analysis'][1]],
                 parameters=[
                     system_path, 
@@ -182,7 +182,7 @@ def generate_launch_description():
                 executable='gui_manager_node',
                 name='gui_manager_node',
                 output='screen',
-                namespace='flychams',
+                namespace='flychams/global',
                 arguments=['--ros-args', '--log-level', nodes['gui_manager'][1]],
                 parameters=[
                     system_path, 
@@ -202,7 +202,7 @@ def generate_launch_description():
                 executable='metrics_factory_node',
                 name='metrics_factory_node',
                 output='screen',
-                namespace='flychams',
+                namespace='flychams/global',
                 arguments=['--ros-args', '--log-level', nodes['metrics_factory'][1]],
                 parameters=[
                     system_path, 
@@ -222,7 +222,7 @@ def generate_launch_description():
                 executable='marker_factory_node',
                 name='marker_factory_node',
                 output='screen',
-                namespace='flychams',
+                namespace='flychams/global',
                 arguments=['--ros-args', '--log-level', nodes['marker_factory'][1]],
                 parameters=[
                     system_path, 
@@ -242,7 +242,7 @@ def generate_launch_description():
                 executable='target_state_node',
                 name='target_state_node',
                 output='screen',
-                namespace='flychams',
+                namespace='flychams/global',
                 arguments=['--ros-args', '--log-level', nodes['target_state'][1]],
                 parameters=[
                     system_path, 
@@ -262,7 +262,7 @@ def generate_launch_description():
                 executable='target_control_node',
                 name='target_control_node',
                 output='screen',
-                namespace='flychams',
+                namespace='flychams/global',
                 arguments=['--ros-args', '--log-level', nodes['target_control'][1]],
                 parameters=[
                     system_path, 
@@ -283,7 +283,7 @@ def generate_launch_description():
                 executable='airsim_record_camera',
                 name='airsim_record_camera',
                 output='screen',
-                namespace='airsim',
+                namespace='airsim/global',
                 arguments=['--ros-args', '--log-level', nodes['airsim_record_camera'][1]],
                 parameters=[
                     recording_path,
@@ -292,5 +292,9 @@ def generate_launch_description():
             )
         )
 
-    return LaunchDescription(ld)
+    return ld
 
+def generate_launch_description():
+    return LaunchDescription([
+        OpaqueFunction(function=launch_setup)
+    ])

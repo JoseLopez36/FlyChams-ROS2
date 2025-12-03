@@ -2,7 +2,13 @@
 set -e  # Exit on error
 
 # Arguments   
-RECORD=${1:-"false"}
+AGENT_ID=${1:-""}
+
+# Check if AGENT_ID is provided
+if [ -z "$AGENT_ID" ]; then
+  echo "Error: AGENT_ID is required" >&2
+  exit 1
+fi
 
 # Get ROS2 workspace directory
 ROS2_WS="$FLYCHAMS_PATH/ros2_ws"
@@ -16,5 +22,5 @@ else
 fi
 
 # Launch FlyChams with AirSim
-echo "Running FlyingChameleons simulation..."
-ros2 launch flychams_bringup run_agent.launch.py
+echo "Running FlyingChameleons agent..."
+ros2 launch flychams_bringup run_agent.launch.py agent_id:=$AGENT_ID

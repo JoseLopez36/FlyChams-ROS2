@@ -5,6 +5,7 @@
 
 // Core includes
 #include "flychams_core/base/base_discoverer_node.hpp"
+#include "flychams_core/utils/ros_utils.hpp"
 
 using namespace flychams::core;
 using namespace flychams::control;
@@ -28,38 +29,26 @@ public: // Constructor/Destructor
 
     void onInit() override
     {
-        // Initialize drone control
-        drone_control_.clear();
+        // Get agent ID
+        agent_id_ = RosUtils::getParameter<std::string>(node_, "agent_id");
+
+        // Create drone control
+        drone_control_ = std::make_shared<DroneControl>(agent_id_, node_, config_tools_, framework_tools_, topic_tools_, transform_tools_, nullptr);
+
+        RCLCPP_INFO(node_->get_logger(), "Drone Control created for agent: %s", agent_id_.c_str());
     }
 
     void onShutdown() override
     {
         // Destroy drone control
-        drone_control_.clear();
-    }
-
-private: // Element management
-    void onAddAgent(const ID& agent_id) override
-    {
-        // Create callback group for each drone control
-        auto control_cb_group = node_->create_callback_group(rclcpp::CallbackGroupType::MutuallyExclusive);
-
-        // Create drone control
-        auto drone_control = std::make_shared<DroneControl>(agent_id, node_, config_tools_, framework_tools_, topic_tools_, transform_tools_, control_cb_group);
-        drone_control_.insert(std::make_pair(agent_id, drone_control));
-        RCLCPP_INFO(node_->get_logger(), "Drone control created for agent %s", agent_id.c_str());
-    }
-
-    void onRemoveAgent(const ID& agent_id) override
-    {
-        // Destroy drone control
-        drone_control_.erase(agent_id);
-        RCLCPP_INFO(node_->get_logger(), "Drone control destroyed for agent %s", agent_id.c_str());
+        drone_control_.reset();
     }
 
 private: // Components
+    // Agent ID
+    ID agent_id_;
     // Drone control
-    std::unordered_map<ID, DroneControl::SharedPtr> drone_control_;
+    DroneControl::SharedPtr drone_control_;
 };
 
 int main(int argc, char** argv)

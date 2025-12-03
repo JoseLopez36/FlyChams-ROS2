@@ -5,6 +5,7 @@
 
 // Core includes
 #include "flychams_core/base/base_registrator_node.hpp"
+#include "flychams_core/utils/ros_utils.hpp"
 
 using namespace flychams::core;
 using namespace flychams::bringup;
@@ -28,8 +29,13 @@ public: // Constructor/Destructor
 
     void onInit() override
     {
+        // Get agent ID
+        agent_id_ = RosUtils::getParameter<std::string>(node_, "agent_id");
+
         // Create mavros manager
-        mavros_manager_ = std::make_shared<MavrosManager>("AGENT00", node_, config_tools_, framework_tools_, topic_tools_, transform_tools_, registration_cb_group_);
+        mavros_manager_ = std::make_shared<MavrosManager>(agent_id_, node_, config_tools_, framework_tools_, topic_tools_, transform_tools_, registration_cb_group_);
+
+        RCLCPP_INFO(node_->get_logger(), "Mavros Manager created for agent: %s", agent_id_.c_str());
     }
 
     void onShutdown() override
@@ -39,6 +45,8 @@ public: // Constructor/Destructor
     }
 
 private: // Components
+    // Agent ID
+    ID agent_id_;
     // Mavros instance
     MavrosManager::SharedPtr mavros_manager_;
 };

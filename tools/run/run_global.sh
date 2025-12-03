@@ -16,5 +16,5 @@ else
 fi
 
 # Launch FlyChams with AirSim
-echo "Running FlyingChameleons simulation..."
+echo "Running FlyingChameleons global..."
 ros2 launch flychams_bringup run_global.launch.py

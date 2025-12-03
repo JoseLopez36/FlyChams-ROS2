@@ -33,6 +33,15 @@ run_in_container() {
     
     # Trim whitespace
     FLYCHAMS_PATH=$(echo "$FLYCHAMS_PATH" | tr -d '\r')
+
+    # Get AGENT_ID if available
+    AGENT_ID_ARG=""
+    AGENT_ID=$(docker exec "$container" printenv AGENT_ID)
+    if [ ! -z "$AGENT_ID" ]; then
+        # Trim whitespace
+        AGENT_ID=$(echo "$AGENT_ID" | tr -d '\r')
+        AGENT_ID_ARG="$AGENT_ID"
+    fi
     
     # Construct full script path
     SCRIPT_NAME=$(basename "$script")
@@ -40,7 +49,7 @@ run_in_container() {
 
     # Run script in container without -d flag, in background, prefixing output with container name
     (
-        docker exec "$container" bash -c "$FULL_SCRIPT_PATH" 2>&1 | \
+        docker exec "$container" bash -c "$FULL_SCRIPT_PATH $AGENT_ID_ARG" 2>&1 | \
         while IFS= read -r line; do
             echo "[$container] $line"
         done

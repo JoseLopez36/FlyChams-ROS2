@@ -1,11 +1,14 @@
 from launch import LaunchDescription
 from launch_ros.actions import Node
-from launch.actions import DeclareLaunchArgument
-from launch.substitutions import PathJoinSubstitution
+from launch.actions import DeclareLaunchArgument, OpaqueFunction
+from launch.substitutions import PathJoinSubstitution, LaunchConfiguration
 from launch_ros.substitutions import FindPackageShare
 import os
-    
-def generate_launch_description():
+
+def launch_setup(context, *args, **kwargs):
+    # Get agent_id value from LaunchConfiguration
+    agent_id = LaunchConfiguration('agent_id').perform(context)
+
     # Get paths to config files
     # Core parameters
     system_path = PathJoinSubstitution([
@@ -53,16 +56,30 @@ def generate_launch_description():
             executable='mavros_manager_node',
             name='mavros_manager_node',
             output='screen',
-            namespace='flychams',
+            namespace='flychams/' + agent_id,
             parameters=[
                 system_path,
                 topics_path,
                 frames_path,
                 mavros_path,
                 plugin_lists_path,
+                {'agent_id': agent_id},
                 {'tgt_system': 1, 'fcu_url': 'udp://:14030@172.17.0.2:14280'}
             ]
         )
     )
+    
+    return ld
 
-    return LaunchDescription(ld)
+def generate_launch_description():
+    # Declare arguments
+    agent_id_arg = DeclareLaunchArgument(
+        'agent_id',
+        default_value='',
+        description='ID of the agent to setup'
+    )
+
+    return LaunchDescription([
+        agent_id_arg,
+        OpaqueFunction(function=launch_setup)
+    ])

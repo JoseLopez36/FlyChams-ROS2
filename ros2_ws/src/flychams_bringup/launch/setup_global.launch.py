@@ -1,11 +1,11 @@
 from launch import LaunchDescription
 from launch_ros.actions import Node
-from launch.actions import DeclareLaunchArgument
+from launch.actions import OpaqueFunction
 from launch.substitutions import PathJoinSubstitution
 from launch_ros.substitutions import FindPackageShare
 import os
-    
-def generate_launch_description():
+
+def launch_setup(context, *args, **kwargs):
     # Get paths to config files
     # Core parameters
     system_path = PathJoinSubstitution([
@@ -63,7 +63,7 @@ def generate_launch_description():
             executable='registrator_node',
             name='registrator_node',
             output='screen',
-            namespace='flychams',
+            namespace='flychams/global',
             parameters=[
                 system_path, 
                 topics_path, 
@@ -72,4 +72,9 @@ def generate_launch_description():
         )
     )
 
-    return LaunchDescription(ld)
+    return ld
+
+def generate_launch_description():
+    return LaunchDescription([
+        OpaqueFunction(function=launch_setup)
+    ])

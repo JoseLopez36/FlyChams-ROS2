@@ -2,31 +2,31 @@
   ros__parameters:
     # Global topics
     global_topics:
-      registration: "bringup/registration"                          # Registration.msg (custom)
-      metrics: "dashboard/global/metrics"                           # GlobalMetrics.msg (custom)
+      registration: "/flychams/bringup/registration"                          # Registration.msg (custom)
+      metrics: "/flychams/dashboard/global/metrics"                           # GlobalMetrics.msg (custom)
     # Agent topics
     agent_topics:
-      status: "control/AGENTID/status"                              # AgentStatus.msg (custom)
-      position: "control/AGENTID/position"                          # PointStamped.msg
-      assignment: "coordination/AGENTID/assignment"                 # AgentAssignment.msg (custom)
-      clusters: "coordination/AGENTID/clusters"                     # AgentClusters.msg (custom)
-      position_setpoint: "coordination/AGENTID/setpoint/position"   # PointStamped.msg
-      optimization_duration: "coordination/AGENTID/optimization_duration" # Float32.msg
-      observation_setpoints: "coordination/AGENTID/setpoint/observation"  # AgentObservationSetpoints.msg (custom)
-      metrics: "dashboard/AGENTID/metrics"                          # AgentMetrics.msg (custom)
-      markers: "dashboard/AGENTID/markers"                          # MarkerArray.msg
+      status: "/flychams/control/AGENTID/status"                              # AgentStatus.msg (custom)
+      position: "/flychams/control/AGENTID/position"                          # PointStamped.msg
+      assignment: "/flychams/coordination/AGENTID/assignment"                 # AgentAssignment.msg (custom)
+      clusters: "/flychams/coordination/AGENTID/clusters"                     # AgentClusters.msg (custom)
+      position_setpoint: "/flychams/coordination/AGENTID/setpoint/position"   # PointStamped.msg
+      optimization_duration: "/flychams/coordination/AGENTID/optimization_duration" # Float32.msg
+      observation_setpoints: "/flychams/coordination/AGENTID/setpoint/observation"  # AgentObservationSetpoints.msg (custom)
+      metrics: "/flychams/dashboard/AGENTID/metrics"                          # AgentMetrics.msg (custom)
+      markers: "/flychams/dashboard/AGENTID/markers"                          # MarkerArray.msg
     # Target topics
     target_topics:
-      true_position: "targets/TARGETID/true_position"               # PointStamped.msg
-      est_position: "perception/TARGETID/est_position"              # PointStamped.msg
-      metrics: "dashboard/TARGETID/metrics"                         # TargetMetrics.msg (custom)
-      markers: "dashboard/TARGETID/markers"                         # MarkerArray.msg
+      true_position: "/flychams/targets/TARGETID/true_position"               # PointStamped.msg
+      est_position: "/flychams/perception/TARGETID/est_position"              # PointStamped.msg
+      metrics: "/flychams/dashboard/TARGETID/metrics"                         # TargetMetrics.msg (custom)
+      markers: "/flychams/dashboard/TARGETID/markers"                         # MarkerArray.msg
     # Cluster topics
     cluster_topics:
-      assignment: "perception/CLUSTERID/assignment"                 # ClusterAssignment.msg (custom)
-      geometry: "perception/CLUSTERID/geometry"                     # ClusterGeometry.msg (custom)
-      metrics: "dashboard/CLUSTERID/metrics"                        # ClusterMetrics.msg (custom)
-      markers: "dashboard/CLUSTERID/markers"                        # MarkerArray.msg
+      assignment: "/flychams/perception/CLUSTERID/assignment"                 # ClusterAssignment.msg (custom)
+      geometry: "/flychams/perception/CLUSTERID/geometry"                     # ClusterGeometry.msg (custom)
+      metrics: "/flychams/dashboard/CLUSTERID/metrics"                        # ClusterMetrics.msg (custom)
+      markers: "/flychams/dashboard/CLUSTERID/markers"                        # MarkerArray.msg
     # GUI topics
     gui_topics:
-      setpoints: "simulation/AGENTID/setpoint/gui"                  # GuiSetpoints.msg (custom)
+      setpoints: "/flychams/simulation/AGENTID/setpoint/gui"                  # GuiSetpoints.msg (custom)
