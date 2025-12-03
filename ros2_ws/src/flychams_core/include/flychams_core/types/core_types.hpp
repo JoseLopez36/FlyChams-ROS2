@@ -278,14 +278,11 @@ namespace flychams::core
      */
     enum class AgentStatus
     {
-        IDLE,                // 0: Initial state, UAV is inactive/disarmed
-        ARMED,               // 1: UAV is armed, ready for takeoff
-        TAKING_OFF,          // 2: UAV is taking off
-        HOVERING,            // 3: UAV is hovering
-        TRACKING,            // 4: UAV is tracking targets
-        LANDING,             // 5: UAV is landing
-        LANDED,              // 6: UAV has landed
-        ERROR                // 7: Error state, requires reset
+        IDLE,           // 0: UAV is on the ground
+        TAKEOFF,        // 1: UAV will take off
+        MISSION,        // 2: UAV will follow the mission
+        LAND,           // 3: UAV will land
+        ERROR           // 4: Error state, requires reset
     };
 
     // ════════════════════════════════════════════════════════════════

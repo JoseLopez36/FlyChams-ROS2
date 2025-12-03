@@ -5,6 +5,7 @@
 #include "flychams_core/ros/transform_tools.hpp"
 
 // ROS includes
+#include <mavros_msgs/msg/state.hpp>
 #include <mavros_msgs/srv/command_bool.hpp>
 #include <mavros_msgs/srv/command_tol.hpp>
 #include <mavros_msgs/srv/set_mode.hpp>
@@ -32,6 +33,10 @@ namespace flychams::core
 
     public: // Types
         using SharedPtr = std::shared_ptr<MavrosCommunication>;
+
+    public: // Vehicle state methods
+        SubscriberPtr<mavros_msgs::msg::State> subscribeStatus(const std::function<void(const mavros_msgs::msg::State::SharedPtr)>& callback, const rclcpp::SubscriptionOptions& options = rclcpp::SubscriptionOptions());
+        SubscriberPtr<OdometryMsg> subscribeOdometry(const std::function<void(const OdometryMsg::SharedPtr)>& callback, const rclcpp::SubscriptionOptions& options = rclcpp::SubscriptionOptions());
 
     public: // Vehicle control methods
         bool armDisarm(const bool& arm);

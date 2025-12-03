@@ -80,7 +80,7 @@ namespace flychams::coordination
 
             // Initialize solver
             solver->reset();
-            
+
             // Add to solvers
             solvers_.push_back(solver);
         }
@@ -143,7 +143,7 @@ namespace flychams::coordination
         }
 
         // Check if we are in the correct state to track
-        if (agent_.status != AgentStatus::TRACKING)
+        if (agent_.status != AgentStatus::MISSION)
         {
             RCLCPP_WARN(node_->get_logger(), "Agent tracking: Agent %s is not in the correct state to track",
                 agent_id_.c_str());
@@ -176,7 +176,7 @@ namespace flychams::coordination
             float zoom_factor;
             Vector3r rotation; // Only for Camera type
             Crop crop;         // Only for Window type
-            
+
             // Solve based on unit type
             if (unit.type == ObservationType::Camera && unit.role == ObservationRole::Tracking)
             {

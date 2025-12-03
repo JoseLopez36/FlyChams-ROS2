@@ -38,6 +38,22 @@ namespace flychams::core
     }
 
     // ════════════════════════════════════════════════════════════════════════════
+    // VEHICLE STATE
+    // ════════════════════════════════════════════════════════════════════════════
+
+    SubscriberPtr<mavros_msgs::msg::State> MavrosCommunication::subscribeStatus(const std::function<void(const mavros_msgs::msg::State::SharedPtr)>& callback, const rclcpp::SubscriptionOptions& options)
+    {
+        rclcpp::QoS qos = rclcpp::QoS(rclcpp::KeepLast(10)).best_effort();
+        return node_->create_subscription<mavros_msgs::msg::State>("/mavros/" + agent_id_ + "/state", qos, callback, options);
+    }
+
+    SubscriberPtr<OdometryMsg> MavrosCommunication::subscribeOdometry(const std::function<void(const OdometryMsg::SharedPtr)>& callback, const rclcpp::SubscriptionOptions& options)
+    {
+        rclcpp::QoS qos = rclcpp::QoS(rclcpp::KeepLast(10)).best_effort();
+        return node_->create_subscription<OdometryMsg>("/mavros/" + agent_id_ + "/global_position/local", qos, callback, options);
+    }
+
+    // ════════════════════════════════════════════════════════════════════════════
     // VEHICLE CONTROL
     // ════════════════════════════════════════════════════════════════════════════
 

@@ -117,7 +117,7 @@ namespace flychams::coordination
         }
 
         // Check if we are in the correct state to position
-        if (agent_.status != AgentStatus::TRACKING)
+        if (agent_.status != AgentStatus::MISSION)
         {
             RCLCPP_WARN(node_->get_logger(), "Agent positioning: Agent %s is not in the correct state to position",
                 agent_id_.c_str());

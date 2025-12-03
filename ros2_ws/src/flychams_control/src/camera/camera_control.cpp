@@ -70,7 +70,7 @@ namespace flychams::control
 		}
 
 		// Check if we are in the correct state to move
-		if (agent_.status != AgentStatus::TRACKING)
+		if (agent_.status != AgentStatus::MISSION)
 		{
 			RCLCPP_WARN(node_->get_logger(), "Camera control: Agent %s is not in the correct state to control cameras",
 				agent_id_.c_str());
@@ -85,15 +85,15 @@ namespace flychams::control
 		std::vector<float> unit_fovs(n_commands);
 		for (int i = 0, j = 0; i < n_o; i++)
 		{
-            // Filter out units that are not cameras
-            if (agent_.setpoints.types[i] != 1)
-            {
-                continue;
-            }
+			// Filter out units that are not cameras
+			if (agent_.setpoints.types[i] != 1)
+			{
+				continue;
+			}
 
 			// Get camera ID
 			unit_ids[j] = agent_.setpoints.ids[i];
-			
+
 			// Get camera configuration
 			const auto& camera_config = config_tools_->getCamera(agent_id_, unit_ids[j]);
 

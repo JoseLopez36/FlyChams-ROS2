@@ -179,7 +179,7 @@ namespace flychams::simulation
             }
 
             // Check if we are in the correct state to track
-            if (agent_.status != AgentStatus::TRACKING)
+            if (agent_.status != AgentStatus::MISSION)
             {
                 RCLCPP_WARN(node_->get_logger(), "GUI manager: Agent %s is not in the correct state to track",
                     agent_id_.c_str());

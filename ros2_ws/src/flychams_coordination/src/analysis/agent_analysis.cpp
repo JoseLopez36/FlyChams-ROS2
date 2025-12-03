@@ -131,7 +131,7 @@ namespace flychams::coordination
             }
 
             // Check if we are in the correct state to analyze
-            if (agent.status != AgentStatus::TRACKING)
+            if (agent.status != AgentStatus::MISSION)
             {
                 RCLCPP_WARN(node_->get_logger(), "Agent analysis: Agent %s is not in the correct state to analyze",
                     agent_id.c_str());
@@ -200,7 +200,7 @@ namespace flychams::coordination
             tab_r(c) = radii[i];
             c++;
         }
-        
+
         // Compute mean of all available clusters
         core::Vector3r z_mean = core::Vector3r::Zero();
         for (int i = 0; i < n; i++)

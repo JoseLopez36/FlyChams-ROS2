@@ -34,23 +34,28 @@ namespace flychams::control
         struct Agent
         {
             // Odometry data
-            core::OdometryMsg odom;
-            bool has_odom;
-            // Status data
-            core::AgentStatus status;
-            // Status message
-            core::AgentStatusMsg status_msg;
+            core::OdometryMsg odom_in_msg;
+            bool has_odom_in;
+            // Status data (In)
+            mavros_msgs::msg::State status_in_msg;
+            bool has_status_in;
+            // Status data (Out)
+            core::AgentStatus status_out;
+            // Status message (Out)
+            core::AgentStatusMsg status_out_msg;
             // Position message
-            core::PointStampedMsg position_msg;
+            core::PointStampedMsg position_out_msg;
             // Subscriber
-            core::SubscriberPtr<core::OdometryMsg> odom_sub;
+            core::SubscriberPtr<mavros_msgs::msg::State> status_in_sub;
+            core::SubscriberPtr<core::OdometryMsg> odom_in_sub;
             // Publishers
-            core::PublisherPtr<core::AgentStatusMsg> status_pub;
-            core::PublisherPtr<core::PointStampedMsg> position_pub;
+            core::PublisherPtr<core::AgentStatusMsg> status_out_pub;
+            core::PublisherPtr<core::PointStampedMsg> position_out_pub;
             // Constructor
             Agent()
-                : odom(), has_odom(false), status(), status_msg(), position_msg(), odom_sub(),
-                status_pub(), position_pub()
+                : odom_in_msg(), has_odom_in(false), status_in_msg(), has_status_in(false),
+                status_out(), status_out_msg(), position_out_msg(), status_in_sub(), odom_in_sub(),
+                status_out_pub(), position_out_pub()
             {
             }
         };
@@ -58,56 +63,24 @@ namespace flychams::control
     private: // Parameters
         core::ID agent_id_;
         float update_rate_;
-        // Takeoff parameters
+        // Flight parameters
         float takeoff_altitude_;
-        float takeoff_timeout_;
-        // Landing parameters
         float landing_altitude_;
-        float landing_timeout_;
-        // Hovering parameters
-        float hover_altitude_;
-        float hover_timeout_;
-        // Command timeout
-        float cmd_timeout_;
 
     private: // Data
         // Agent
         Agent agent_;
-        // Time step
-        float status_duration_;
+        // Last update time
         core::Time last_update_time_;
         // Mavros communication
         core::MavrosCommunication::SharedPtr mavros_comm_;
 
-    public: // Public methods
-        // Status getter
-        core::AgentStatus getStatus() const { return agent_.status; }
-        // Status transition requests
-        bool requestDisarm();
-        bool requestArm();
-        bool requestTakeoff();
-        bool requestHover();
-        bool requestTracking();
-        bool requestLand();
-
     private: // Callbacks
-        void odomCallback(const core::OdometryMsg::SharedPtr msg);
+        void statusInCallback(const mavros_msgs::msg::State::SharedPtr msg);
+        void odomInCallback(const core::OdometryMsg::SharedPtr msg);
 
     private: // State management
         void update();
-
-    private: // State methods
-        void setStatus(const core::AgentStatus& new_status);
-        bool isValid(const core::AgentStatus& from, const core::AgentStatus& to) const;
-        void handleIdle();
-        void handleDisarmed();
-        void handleArmed();
-        void handleTakingOff();
-        void handleHovering();
-        void handleTracking();
-        void handleLanding();
-        void handleLanded();
-        void handleError();
 
     private: // ROS components
         // Timer

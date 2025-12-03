@@ -97,7 +97,7 @@ namespace flychams::coordination
         }
 
         // Get central observation unit optical frame
-        central_optical_frame_map_.insert({ agent_id, 
+        central_optical_frame_map_.insert({ agent_id,
             transform_tools_->getCameraOpticalFrame(agent_id, tracking_params.observation_units_params[0].id) });
 
         // Create and initialize position solver
@@ -195,7 +195,7 @@ namespace flychams::coordination
             }
 
             // Check if we are in the correct state to assign clusters
-            if (agent.status != AgentStatus::TRACKING)
+            if (agent.status != AgentStatus::MISSION)
             {
                 RCLCPP_WARN(node_->get_logger(), "Agent assignment: Agent %s is not in the correct state to assign clusters",
                     agent_id.c_str());

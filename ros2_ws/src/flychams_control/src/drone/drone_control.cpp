@@ -15,21 +15,29 @@ namespace flychams::control
 		update_rate_ = RosUtils::getParameterOr<float>(node_, "drone_control.update_rate", 10.0f);
 		// Get control mode
 		control_mode_ = static_cast<ControlMode>(RosUtils::getParameterOr<uint8_t>(node_, "drone_control.control_mode", 0));
-		// Get speed planner parameters
-		float min_speed = RosUtils::getParameterOr<float>(node_, "drone_control.min_speed", 0.5f);
-		float max_speed = RosUtils::getParameterOr<float>(node_, "drone_control.max_speed", 12.0f);
-		float min_distance = RosUtils::getParameterOr<float>(node_, "drone_control.min_distance", 0.20f);
-		float max_distance = RosUtils::getParameterOr<float>(node_, "drone_control.max_distance", 50.0f);
-		float max_acceleration = RosUtils::getParameterOr<float>(node_, "drone_control.max_acceleration", 2.0f);
 
-		// Compute command timeout
-		cmd_timeout_ = (1.0f / update_rate_) * 1.25f;
+		// Get flight parameters
+		takeoff_altitude_ = RosUtils::getParameterOr<float>(node_, "drone_control.takeoff_altitude", 1.5f);
+
+		// Get space constraints
+		const auto& config_ptr = config_tools_->getConfig();
+		const auto& agent_ptr = config_tools_->getAgent(agent_id_);
+		float min_horizontal = config_ptr->horizontal_constraint(0);
+		float max_horizontal = config_ptr->horizontal_constraint(1);
+		float min_vertical = config_ptr->vertical_constraint(0);
+		float max_vertical = std::min(config_ptr->vertical_constraint(1), agent_ptr->max_altitude);
+		flying_box_.min_x = min_horizontal;
+		flying_box_.max_x = max_horizontal;
+		flying_box_.min_y = min_horizontal;
+		flying_box_.max_y = max_horizontal;
+		flying_box_.min_z = min_vertical;
+		flying_box_.max_z = max_vertical;
 
 		// Initialize data
 		agent_ = Agent();
 
-		// Set speed planner parameters
-		speed_planner_.setParameters(min_speed, max_speed, min_distance, max_distance, max_acceleration);
+		// Initialize command counter
+		command_counter_ = 0;
 
 		// Create mavros communication
 		mavros_comm_ = std::make_shared<MavrosCommunication>(agent_id_, node_, config_tools_, transform_tools_);
@@ -54,6 +62,8 @@ namespace flychams::control
 		agent_.status_sub.reset();
 		agent_.position_sub.reset();
 		agent_.setpoint_sub.reset();
+		// Destroy mavros communication
+		mavros_comm_.reset();
 		// Destroy update timer
 		update_timer_.reset();
 	}
@@ -89,18 +99,10 @@ namespace flychams::control
 
 	void DroneControl::update()
 	{
-		// Check if we have a valid status, position and setpoint
-		if (!agent_.has_status || !agent_.has_position || !agent_.has_setpoint)
+		// Check if we have a valid status and position
+		if (!agent_.has_status || !agent_.has_position)
 		{
-			RCLCPP_WARN(node_->get_logger(), "Drone control: No status, position or setpoint data received for agent %s",
-				agent_id_.c_str());
-			return;
-		}
-
-		// Check if we are in the correct state to move
-		if (agent_.status != AgentStatus::TRACKING)
-		{
-			RCLCPP_WARN(node_->get_logger(), "Drone control: Agent %s is not in the correct state to move",
+			RCLCPP_WARN(node_->get_logger(), "Drone control: No status or position data received for agent %s",
 				agent_id_.c_str());
 			return;
 		}
@@ -110,37 +112,200 @@ namespace flychams::control
 		float dt = (current_time - last_update_time_).seconds();
 		last_update_time_ = current_time;
 
-		// Limit dt to prevent extreme values after pauses
-		dt = std::min(dt, cmd_timeout_);
+		// Initialize success variable
+		bool success = true;
 
-		switch (control_mode_)
+		// Send heartbeat
+		// bool success = sendHeartbeat();
+		// if (!success)
+		// {
+		// 	RCLCPP_ERROR(node_->get_logger(), "Drone control: Failed to send heartbeat to agent %s",
+		// 		agent_id_.c_str());
+		// 	return;
+		// }
+
+		// Proceed based on the status of the agent
+		switch (agent_.status)
 		{
-		case ControlMode::POSITION:
-			handlePositionControl(dt);
+		case AgentStatus::IDLE:
+			success &= requestTakeoff();
+			if (command_counter_ > 10)
+			{
+				success &= requestOffboard();
+				success &= requestArm();
+			}
+			if (!success)
+			{
+				RCLCPP_ERROR(node_->get_logger(), "Drone control: Failed to set agent %s in idle mode",
+					agent_id_.c_str());
+				return;
+			}
+			command_counter_++;
 			break;
-
-		case ControlMode::VELOCITY:
-			handleVelocityControl(dt);
+		case AgentStatus::TAKEOFF:
+			success &= requestTakeoff();
+			if (!success)
+			{
+				RCLCPP_ERROR(node_->get_logger(), "Drone control: Failed to takeoff agent %s in takeoff mode",
+					agent_id_.c_str());
+				return;
+			}
+			command_counter_ = 0;
 			break;
+		case AgentStatus::MISSION:
+			switch (control_mode_)
+			{
+			case ControlMode::POSITION:
+				// Check if we have a valid setpoint
+				if (agent_.has_setpoint)
+				{
+					// We have a valid setpoint
+					// Check if the setpoint is inside the flying box
+					if (isInsideFlyingBox(agent_.setpoint))
+					{
+						// The setpoint is inside the flying box, so we move to it
+						success &= requestSetpoint();
+					}
+					else
+					{
+						// The setpoint is outside the flying box, so we hover
+						success &= requestHover();
+					}
+				}
+				else
+				{
+					// We don't have a valid setpoint, so we hover
+					success &= requestHover();
+				}
+				break;
 
+			case ControlMode::VELOCITY:
+				// TODO: Implement velocity control
+				break;
+			}
+
+			if (!success)
+			{
+				RCLCPP_ERROR(node_->get_logger(), "Drone control: Failed to control agent %s in mission mode",
+					agent_id_.c_str());
+				return;
+			}
+			command_counter_ = 0;
+			break;
+		case AgentStatus::LAND:
+			success &= requestLand();
+			if (!success)
+			{
+				RCLCPP_ERROR(node_->get_logger(), "Drone control: Failed to land agent %s in landing mode",
+					agent_id_.c_str());
+				return;
+			}
+			command_counter_ = 0;
+			break;
+		case AgentStatus::ERROR:
+			success &= requestLand();
+			if (!success)
+			{
+				RCLCPP_ERROR(node_->get_logger(), "Drone control: Failed to land agent %s in error mode",
+					agent_id_.c_str());
+				return;
+			}
+			command_counter_ = 0;
+			break;
 		default:
-			RCLCPP_ERROR(node_->get_logger(), "Drone control: Invalid control mode for agent %s",
-				agent_id_.c_str());
+			// The agent is in an unknown status, so we land
+			success &= requestLand();
+			if (!success)
+			{
+				RCLCPP_ERROR(node_->get_logger(), "Drone control: Failed to land agent %s in unknown mode",
+					agent_id_.c_str());
+				return;
+			}
+			command_counter_ = 0;
 			break;
 		}
 	}
 
-	void DroneControl::handlePositionControl(const float& dt)
+	// ════════════════════════════════════════════════════════════════════════════
+	// REQUESTS: Request methods to control the drone
+	// ════════════════════════════════════════════════════════════════════════════
+
+	bool DroneControl::sendHeartbeat()
 	{
-		// Send command to move to goal position
-		mavros_comm_->enableOffboard(true);
-		std::this_thread::sleep_for(std::chrono::milliseconds(5));
-		mavros_comm_->setPosition(agent_.setpoint.x, agent_.setpoint.y, agent_.setpoint.z);
+		return mavros_comm_->enableOffboard(true);
 	}
 
-	void DroneControl::handleVelocityControl(const float& dt)
+	bool DroneControl::requestOffboard()
 	{
-		// TODO: Implement velocity control
+		return mavros_comm_->enableOffboard(true);
+	}
+
+	bool DroneControl::requestDisarm()
+	{
+		if (agent_.status == AgentStatus::IDLE || agent_.status == AgentStatus::ERROR)
+			return mavros_comm_->armDisarm(false);
+		else
+			return false;
+	}
+
+	bool DroneControl::requestArm()
+	{
+		if (agent_.status == AgentStatus::IDLE)
+			return mavros_comm_->armDisarm(true);
+		else
+			return false;
+	}
+
+	bool DroneControl::requestTakeoff()
+	{
+		if (agent_.status == AgentStatus::IDLE || agent_.status == AgentStatus::TAKEOFF)
+		{
+			mavros_comm_->setPosition(agent_.position.x, agent_.position.y, takeoff_altitude_);
+			return true;
+		}
+		else
+			return false;
+	}
+
+	bool DroneControl::requestHover()
+	{
+		if (agent_.status == AgentStatus::TAKEOFF || agent_.status == AgentStatus::MISSION)
+		{
+			mavros_comm_->setPosition(agent_.position.x, agent_.position.y, agent_.position.z);
+			return true;
+		}
+		else
+			return false;
+	}
+
+	bool DroneControl::requestSetpoint()
+	{
+		if (agent_.status == AgentStatus::MISSION)
+		{
+			mavros_comm_->setPosition(agent_.setpoint.x, agent_.setpoint.y, agent_.setpoint.z);
+			return true;
+		}
+		else
+			return false;
+	}
+
+	bool DroneControl::requestLand()
+	{
+		if (agent_.status == AgentStatus::MISSION || agent_.status == AgentStatus::ERROR)
+			return mavros_comm_->land();
+		else
+			return false;
+	}
+
+	// ════════════════════════════════════════════════════════════════════════════
+	// HELPER METHODS
+	// ════════════════════════════════════════════════════════════════════════════
+
+	bool DroneControl::isInsideFlyingBox(const core::PointMsg& point)
+	{
+		return point.x >= flying_box_.min_x && point.x <= flying_box_.max_x &&
+			point.y >= flying_box_.min_y && point.y <= flying_box_.max_y &&
+			point.z >= flying_box_.min_z && point.z <= flying_box_.max_z;
 	}
 
 } // namespace flychams::control

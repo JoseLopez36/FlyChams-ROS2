@@ -1,8 +1,5 @@
 #pragma once
 
-// Control includes
-#include "flychams_control/drone/speed_planner.hpp"
-
 // Communication include
 #include "flychams_core/communication/mavros_communication.hpp"
 
@@ -39,6 +36,12 @@ namespace flychams::control
 			POSITION,
 			VELOCITY
 		};
+		struct FlyingBox
+		{
+			float min_x, max_x;
+			float min_y, max_y;
+			float min_z, max_z;
+		};
 		struct Agent
 		{
 			// Status data
@@ -65,16 +68,18 @@ namespace flychams::control
 	private: // Parameters
 		core::ID agent_id_;
 		float update_rate_;
-		float cmd_timeout_;
 		// Control mode
 		ControlMode control_mode_;
+		// Flight parameters
+		float takeoff_altitude_;
+		FlyingBox flying_box_;
 
 	private: // Data
 		// Agent
 		Agent agent_;
-		// Speed planner
-		SpeedPlanner speed_planner_;
-		// Step time
+		// Command counter
+		uint8_t command_counter_;
+		// Last update time
 		core::Time last_update_time_;
 		// Mavros communication
 		core::MavrosCommunication::SharedPtr mavros_comm_;
@@ -87,9 +92,18 @@ namespace flychams::control
 	private: // Control management
 		void update();
 
-	private: // Control methods
-		void handlePositionControl(const float& dt);
-		void handleVelocityControl(const float& dt);
+	private: // Requests (only if the agent is in the correct state)
+		bool sendHeartbeat();
+		bool requestOffboard();
+		bool requestDisarm();
+		bool requestArm();
+		bool requestTakeoff();
+		bool requestHover();
+		bool requestSetpoint();
+		bool requestLand();
+
+	private: // Helper methods
+		bool isInsideFlyingBox(const core::PointMsg& point);
 
 	private: // ROS components
 		// Timer
