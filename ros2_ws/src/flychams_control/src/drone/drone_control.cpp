@@ -40,7 +40,7 @@ namespace flychams::control
 		command_counter_ = 0;
 
 		// Create mavros communication
-		mavros_comm_ = std::make_shared<MavrosCommunication>(agent_id_, node_, config_tools_, transform_tools_);
+		mavros_comm_ = std::make_shared<MavrosCommunication>(agent_id_, node_);
 
 		// Subscribe to status, position and setpoint topics
 		agent_.status_sub = topic_tools_->createAgentStatusSubscriber(agent_id_,

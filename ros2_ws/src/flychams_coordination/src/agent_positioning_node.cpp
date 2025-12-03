@@ -11,7 +11,7 @@ using namespace flychams::coordination;
 
 /**
  * ════════════════════════════════════════════════════════════════
- * @brief Agent positioning node for positioning agents in the 
+ * @brief Agent positioning node for positioning agents in the
  * simulation
  * ════════════════════════════════════════════════════════════════
  * @author Jose Francisco Lopez Ruiz
@@ -47,7 +47,7 @@ private: // Element management
 
         // Create agent positioning system
         agent_positionings_.insert({ agent_id,
-            std::make_shared<AgentPositioning>(agent_id, node_, config_tools_, framework_tools_, topic_tools_, transform_tools_, positioning_cb_group) });
+            std::make_shared<AgentPositioning>(agent_id, node_, config_tools_, topic_tools_, transform_tools_, positioning_cb_group) });
     }
 
     void onRemoveAgent(const ID& agent_id) override

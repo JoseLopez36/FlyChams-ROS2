@@ -2,9 +2,13 @@
 
 // Tools includes
 #include "flychams_core/config/config_tools.hpp"
-#include "flychams_core/framework/framework_tools.hpp"
 #include "flychams_core/ros/topic_tools.hpp"
 #include "flychams_core/ros/transform_tools.hpp"
+
+// Core includes
+#include "flychams_core/types/core_types.hpp"
+#include "flychams_core/types/ros_types.hpp"
+#include "flychams_core/utils/ros_utils.hpp"
 
 namespace flychams::core
 {
@@ -25,35 +29,10 @@ namespace flychams::core
     class BaseModule
     {
     public: // Constructor/Destructor
-        BaseModule(NodePtr node, ConfigTools::SharedPtr config_tools, FrameworkTools::SharedPtr framework_tools, TopicTools::SharedPtr topic_tools, TransformTools::SharedPtr transform_tools, CallbackGroupPtr module_cb_group)
-            : node_(node), config_tools_(config_tools), framework_tools_(framework_tools), topic_tools_(topic_tools), transform_tools_(transform_tools), module_cb_group_(module_cb_group)
-        {
-            // Nothing to do
-        }
-        void init()
-        {
-            // Initialize subscription options
-            sub_options_with_module_cb_group_.callback_group = module_cb_group_;
-
-            // Call on init overridable method
-            onInit();
-        }
-        virtual ~BaseModule()
-        {
-            shutdown();
-        }
-        void shutdown()
-        {
-            // Call on shutdown overridable method
-            onShutdown();
-            // Destroy tools
-            config_tools_.reset();
-            framework_tools_.reset();
-            topic_tools_.reset();
-            transform_tools_.reset();
-            // Destroy node
-            node_.reset();
-        }
+        BaseModule(NodePtr node, ConfigTools::SharedPtr config_tools, TopicTools::SharedPtr topic_tools, TransformTools::SharedPtr transform_tools, CallbackGroupPtr module_cb_group);
+        void init();
+        virtual ~BaseModule();
+        void shutdown();
 
     public: // Types
         using SharedPtr = std::shared_ptr<BaseModule>;
@@ -67,7 +46,6 @@ namespace flychams::core
         NodePtr node_;
         // Tools
         ConfigTools::SharedPtr config_tools_;
-        FrameworkTools::SharedPtr framework_tools_;
         TopicTools::SharedPtr topic_tools_;
         TransformTools::SharedPtr transform_tools_;
         // Callback group

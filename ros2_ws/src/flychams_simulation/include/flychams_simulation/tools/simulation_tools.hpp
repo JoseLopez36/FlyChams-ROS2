@@ -3,34 +3,39 @@
 // Tools includes
 #include "flychams_core/config/config_tools.hpp"
 
-namespace flychams::core
+// Core includes
+#include "flychams_core/types/core_types.hpp"
+#include "flychams_core/types/ros_types.hpp"
+#include "flychams_core/utils/ros_utils.hpp"
+
+namespace flychams::simulation
 {
     /**
      * ════════════════════════════════════════════════════════════════
-     * @brief Framework interface for handling communication
-     * with external simulation frameworks (e.g. AirSim)
+     * @brief Simulation tools for controlling the simulation environment
+     * (e.g. AirSim, Gazebo, etc.)
      *
      * @details
      * This class provides utilities for managing the communication
-     * with the external framework.
+     * with the simulation environment.
      * ════════════════════════════════════════════════════════════════
      * @author Jose Francisco Lopez Ruiz
      * @date 2025-02-28
      * ════════════════════════════════════════════════════════════════
      */
-    class FrameworkTools
+    class SimulationTools
     {
     public: // Constructors/Destructors
-        FrameworkTools(NodePtr node, const ConfigTools::SharedPtr& config_tools)
-            : node_(node), config_tools_(config_tools)
+        SimulationTools(core::NodePtr node)
+            : node_(node)
         {
             // Nothing to do
         }
-        virtual ~FrameworkTools() = default;
+        virtual ~SimulationTools() = default;
         virtual void shutdown() = 0;
 
     public: // Types
-        using SharedPtr = std::shared_ptr<FrameworkTools>;
+        using SharedPtr = std::shared_ptr<SimulationTools>;
         struct WindowCmd
         {
             core::ID window_id;
@@ -80,49 +85,28 @@ namespace flychams::core
             }
         };
 
-    public: // Vehicle adders (override)
-        virtual void addVehicle(const ID& vehicle_id) = 0;
-        virtual void removeVehicle(const ID& vehicle_id) = 0;
-
-    public: // Vehicle state methods (override)
-        virtual SubscriberPtr<OdometryMsg> createOdometrySubscriber(const ID& vehicle_id, const std::function<void(const OdometryMsg::SharedPtr)>& callback, const rclcpp::SubscriptionOptions& options = rclcpp::SubscriptionOptions()) = 0;
-
     public: // Global control methods (override)
         virtual bool resetSimulation() = 0;
         virtual bool runSimulation() = 0;
         virtual bool pauseSimulation() = 0;
-
-    public: // Vehicle control methods (override)
-        virtual bool enableControl(const ID& vehicle_id, const bool& enable) = 0;
-        virtual bool armDisarm(const ID& vehicle_id, const bool& arm) = 0;
-        virtual bool takeoff(const ID& vehicle_id) = 0;
-        virtual bool land(const ID& vehicle_id) = 0;
-        virtual bool hover(const ID& vehicle_id) = 0;
-        virtual void setVelocity(const ID& vehicle_id, const float& vel_cmd_x, const float& vel_cmd_y, const float& vel_cmd_z, const float& vel_cmd_dt) = 0;
-        virtual void setPosition(const ID& vehicle_id, const float& pos_cmd_x, const float& pos_cmd_y, const float& pos_cmd_z, const float& pos_cmd_vel, const float& pos_cmd_timeout) = 0;
-        virtual void setGimbalOrientations(const ID& vehicle_id, const IDs& camera_ids, const std::vector<QuaternionMsg>& target_quats) = 0;
-        virtual void setCameraFovs(const ID& vehicle_id, const IDs& camera_ids, const std::vector<float>& target_fovs) = 0;
 
     public: // Window control methods (override)
         virtual void setWindows(const std::vector<WindowCmd>& window_cmds) = 0;
         virtual void drawWindow(const DrawCmd& draw_cmd) = 0;
 
     public: // Tracking control methods (override)
-        virtual bool addTargetGroup(const IDs& target_ids, const std::vector<TargetType>& target_types, const std::vector<PointMsg>& positions, const bool& highlight, const std::vector<ColorMsg>& highlight_colors) = 0;
-        virtual bool addClusterGroup(const IDs& cluster_ids, const std::vector<PointMsg>& centers, const std::vector<float>& radii, const bool& highlight, const std::vector<ColorMsg>& highlight_colors) = 0;
+        virtual bool addTargetGroup(const core::IDs& target_ids, const std::vector<core::TargetType>& target_types, const std::vector<core::PointMsg>& positions, const bool& highlight, const std::vector<core::ColorMsg>& highlight_colors) = 0;
+        virtual bool addClusterGroup(const core::IDs& cluster_ids, const std::vector<core::PointMsg>& centers, const std::vector<float>& radii, const bool& highlight, const std::vector<core::ColorMsg>& highlight_colors) = 0;
         virtual bool removeAllTargets() = 0;
         virtual bool removeAllClusters() = 0;
-        virtual void updateTargetGroup(const IDs& target_ids, const std::vector<PointMsg>& positions) = 0;
-        virtual void updateClusterGroup(const IDs& cluster_ids, const std::vector<PointMsg>& centers, const std::vector<float>& radii) = 0;
+        virtual void updateTargetGroup(const core::IDs& target_ids, const std::vector<core::PointMsg>& positions) = 0;
+        virtual void updateClusterGroup(const core::IDs& cluster_ids, const std::vector<core::PointMsg>& centers, const std::vector<float>& radii) = 0;
 
     protected: // Data
         // ROS components
-        NodePtr node_;
-
-        // Config tools
-        ConfigTools::SharedPtr config_tools_;
+        core::NodePtr node_;
     };
 
-    FrameworkTools::SharedPtr createFrameworkTools(NodePtr node, const ConfigTools::SharedPtr& config_tools);
+    SimulationTools::SharedPtr createSimulationTools(core::NodePtr node, const core::ConfigTools::SharedPtr& config_tools);
 
-} // namespace flychams::core
+} // namespace flychams::simulation

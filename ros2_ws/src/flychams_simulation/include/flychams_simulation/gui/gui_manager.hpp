@@ -1,5 +1,8 @@
 #pragma once
 
+// Simulation tools include
+#include "flychams_simulation/tools/simulation_tools.hpp"
+
 // Base module include
 #include "flychams_core/base/base_module.hpp"
 
@@ -21,8 +24,8 @@ namespace flychams::simulation
     class GuiManager : public core::BaseModule
     {
     public: // Constructor/Destructor
-        GuiManager(const core::ID& agent_id, core::NodePtr node, core::ConfigTools::SharedPtr config_tools, core::FrameworkTools::SharedPtr framework_tools, core::TopicTools::SharedPtr topic_tools, core::TransformTools::SharedPtr transform_tools, core::CallbackGroupPtr module_cb_group)
-            : BaseModule(node, config_tools, framework_tools, topic_tools, transform_tools, module_cb_group), agent_id_(agent_id)
+        GuiManager(const core::ID& agent_id, core::NodePtr node, core::ConfigTools::SharedPtr config_tools, core::TopicTools::SharedPtr topic_tools, core::TransformTools::SharedPtr transform_tools, core::CallbackGroupPtr module_cb_group)
+            : BaseModule(node, config_tools, topic_tools, transform_tools, module_cb_group), agent_id_(agent_id)
         {
             init();
         }
@@ -33,8 +36,8 @@ namespace flychams::simulation
 
     public: // Types
         using SharedPtr = std::shared_ptr<GuiManager>;
-        using WindowCmd = core::FrameworkTools::WindowCmd;
-        using DrawCmd = core::FrameworkTools::DrawCmd;
+        using WindowCmd = SimulationTools::WindowCmd;
+        using DrawCmd = SimulationTools::DrawCmd;
         enum class GuiMode
         {
             IDLE,
@@ -68,6 +71,8 @@ namespace flychams::simulation
         GuiMode gui_mode_;
         // Agent
         Agent agent_;
+        // Simulation tools
+        SimulationTools::SharedPtr simulation_tools_;
         // Window commands
         std::vector<WindowCmd> simulation_window_cmds_; // Simulation window commands
         std::vector<WindowCmd> operator_window_cmds_;   // Operator window commands

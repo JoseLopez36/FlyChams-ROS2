@@ -1,5 +1,8 @@
 #pragma once
 
+// Simulation tools include
+#include "flychams_simulation/tools/simulation_tools.hpp"
+
 // Base module include
 #include "flychams_core/base/base_module.hpp"
 
@@ -22,8 +25,8 @@ namespace flychams::simulation
     class TargetControl : public core::BaseModule
     {
     public: // Constructor/Destructor
-        TargetControl(core::NodePtr node, core::ConfigTools::SharedPtr config_tools, core::FrameworkTools::SharedPtr framework_tools, core::TopicTools::SharedPtr topic_tools, core::TransformTools::SharedPtr transform_tools, core::CallbackGroupPtr module_cb_group)
-            : BaseModule(node, config_tools, framework_tools, topic_tools, transform_tools, module_cb_group)
+        TargetControl(core::NodePtr node, core::ConfigTools::SharedPtr config_tools, core::TopicTools::SharedPtr topic_tools, core::TransformTools::SharedPtr transform_tools, core::CallbackGroupPtr module_cb_group)
+            : BaseModule(node, config_tools, topic_tools, transform_tools, module_cb_group)
         {
             init();
         }
@@ -72,6 +75,8 @@ namespace flychams::simulation
         std::unordered_map<core::ID, Cluster> clusters_;
         // Other
         int spawn_index_;
+        // Simulation tools
+        SimulationTools::SharedPtr simulation_tools_;
 
     public: // Public methods
         void addCluster(const core::ID& cluster_id);

@@ -52,7 +52,7 @@ private: // Agent management
     {
         // Use callback group from discovery node (to avoid race conditions)
         // Create and add GUI manager
-        auto manager = std::make_shared<GuiManager>(agent_id, node_, config_tools_, framework_tools_, topic_tools_, transform_tools_, discovery_cb_group_);
+        auto manager = std::make_shared<GuiManager>(agent_id, node_, config_tools_, topic_tools_, transform_tools_, discovery_cb_group_);
         gui_managers_.insert({ agent_id, manager });
 
         // Deactivate GUI manager

@@ -1,16 +1,17 @@
 #pragma once
 
-// Tools includes
-#include "flychams_core/config/config_tools.hpp"
-#include "flychams_core/ros/transform_tools.hpp"
-
-// ROS includes
+// MavROS includes
 #include <mavros_msgs/msg/state.hpp>
 #include <mavros_msgs/srv/command_bool.hpp>
 #include <mavros_msgs/srv/command_tol.hpp>
 #include <mavros_msgs/srv/set_mode.hpp>
 
-namespace flychams::core
+// Core includes
+#include "flychams_core/types/core_types.hpp"
+#include "flychams_core/types/ros_types.hpp"
+#include "flychams_core/utils/ros_utils.hpp"
+
+namespace flychams::control
 {
     /**
      * ════════════════════════════════════════════════════════════════
@@ -27,16 +28,16 @@ namespace flychams::core
     class MavrosCommunication
     {
     public: // Constructors/Destructors
-        MavrosCommunication(const core::ID& agent_id, NodePtr node, const ConfigTools::SharedPtr& config_tools, TransformTools::SharedPtr transform_tools);
+        MavrosCommunication(const core::ID& agent_id, core::NodePtr node);
         virtual ~MavrosCommunication();
-        virtual void shutdown();
+        void shutdown();
 
     public: // Types
         using SharedPtr = std::shared_ptr<MavrosCommunication>;
 
     public: // Vehicle state methods
-        SubscriberPtr<mavros_msgs::msg::State> subscribeStatus(const std::function<void(const mavros_msgs::msg::State::SharedPtr)>& callback, const rclcpp::SubscriptionOptions& options = rclcpp::SubscriptionOptions());
-        SubscriberPtr<OdometryMsg> subscribeOdometry(const std::function<void(const OdometryMsg::SharedPtr)>& callback, const rclcpp::SubscriptionOptions& options = rclcpp::SubscriptionOptions());
+        core::SubscriberPtr<mavros_msgs::msg::State> subscribeStatus(const std::function<void(const mavros_msgs::msg::State::SharedPtr)>& callback, const rclcpp::SubscriptionOptions& options = rclcpp::SubscriptionOptions());
+        core::SubscriberPtr<core::OdometryMsg> subscribeOdometry(const std::function<void(const core::OdometryMsg::SharedPtr)>& callback, const rclcpp::SubscriptionOptions& options = rclcpp::SubscriptionOptions());
 
     public: // Vehicle control methods
         bool armDisarm(const bool& arm);
@@ -50,22 +51,16 @@ namespace flychams::core
 
     private: // Data
         // ROS components
-        NodePtr node_;
-
-        // Config tools
-        ConfigTools::SharedPtr config_tools_;
-
-        // Transform tools
-        TransformTools::SharedPtr transform_tools_;
+        core::NodePtr node_;
 
         // Service clients
-        rclcpp::Client<mavros_msgs::srv::CommandBool>::SharedPtr arming_client_;
-        rclcpp::Client<mavros_msgs::srv::CommandTOL>::SharedPtr takeoff_client_;
-        rclcpp::Client<mavros_msgs::srv::CommandTOL>::SharedPtr land_client_;
-        rclcpp::Client<mavros_msgs::srv::SetMode>::SharedPtr set_mode_client_;
+        core::ClientPtr<mavros_msgs::srv::CommandBool> arming_client_;
+        core::ClientPtr<mavros_msgs::srv::CommandTOL> takeoff_client_;
+        core::ClientPtr<mavros_msgs::srv::CommandTOL> land_client_;
+        core::ClientPtr<mavros_msgs::srv::SetMode> set_mode_client_;
 
         // Publishers
-        rclcpp::Publisher<geometry_msgs::msg::PoseStamped>::SharedPtr local_pos_pub_;
+        core::PublisherPtr<core::PoseStampedMsg> local_pos_pub_;
     };
 
-} // namespace flychams::core
+} // namespace flychams::control

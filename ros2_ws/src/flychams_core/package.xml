@@ -25,8 +25,6 @@
   <depend>tf2_ros</depend>
   <depend>tf2_geometry_msgs</depend>
   <depend>opencv</depend>
-  <depend>mavros_msgs</depend>
-  <depend>airsim_interfaces</depend>
   <depend>flychams_interfaces</depend>
   
   <!-- Export -->

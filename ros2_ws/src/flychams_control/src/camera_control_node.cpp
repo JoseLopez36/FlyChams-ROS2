@@ -5,6 +5,7 @@
 
 // Core includes
 #include "flychams_core/base/base_discoverer_node.hpp"
+#include "flychams_core/utils/ros_utils.hpp"
 
 using namespace flychams::core;
 using namespace flychams::control;
@@ -29,38 +30,26 @@ public: // Constructor/Destructor
 
     void onInit() override
     {
-        // Initialize camera controllers
-        camera_control_.clear();
+        // Get agent ID
+        agent_id_ = RosUtils::getParameter<std::string>(node_, "agent_id");
+
+        // Create camera control
+        camera_control_ = std::make_shared<CameraControl>(agent_id_, node_, config_tools_, topic_tools_, transform_tools_, nullptr);
+
+        RCLCPP_INFO(node_->get_logger(), "Camera Control created for agent: %s", agent_id_.c_str());
     }
 
     void onShutdown() override
     {
-        // Destroy camera controllers
-        camera_control_.clear();
-    }
-
-private: // Element management
-    void onAddAgent(const ID& agent_id) override
-    {
-        // Create callback group for camera control unit
-        auto control_cb_group = node_->create_callback_group(rclcpp::CallbackGroupType::MutuallyExclusive);
-
-        // Create camera controller
-        auto camera_control = std::make_shared<CameraControl>(agent_id, node_, config_tools_, framework_tools_, topic_tools_, transform_tools_, control_cb_group);
-        camera_control_.insert(std::make_pair(agent_id, camera_control));
-        RCLCPP_INFO(node_->get_logger(), "Camera controller created for agent %s", agent_id.c_str());
-    }
-
-    void onRemoveAgent(const ID& agent_id) override
-    {
-        // Destroy camera controller
-        camera_control_.erase(agent_id);
-        RCLCPP_INFO(node_->get_logger(), "Camera controller destroyed for agent %s", agent_id.c_str());
+        // Destroy camera control
+        camera_control_.reset();
     }
 
 private: // Components
-    // Camera controllers
-    std::unordered_map<ID, CameraControl::SharedPtr> camera_control_;
+    // Agent ID
+    ID agent_id_;
+    // Camera control
+    CameraControl::SharedPtr camera_control_;
 };
 
 int main(int argc, char** argv)

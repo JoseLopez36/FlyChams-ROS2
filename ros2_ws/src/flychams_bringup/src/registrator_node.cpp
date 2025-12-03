@@ -33,9 +33,9 @@ public: // Constructor/Destructor
     {
         // Use callback group from registration node (to avoid race conditions)
         // Create registration instances for each element type
-        agent_registration_ = std::make_shared<AgentRegistration>(node_, config_tools_, framework_tools_, topic_tools_, transform_tools_, registration_cb_group_);
-        target_registration_ = std::make_shared<TargetRegistration>(node_, config_tools_, framework_tools_, topic_tools_, transform_tools_, registration_cb_group_);
-        cluster_registration_ = std::make_shared<ClusterRegistration>(node_, config_tools_, framework_tools_, topic_tools_, transform_tools_, registration_cb_group_);
+        agent_registration_ = std::make_shared<AgentRegistration>(node_, config_tools_, topic_tools_, transform_tools_, registration_cb_group_);
+        target_registration_ = std::make_shared<TargetRegistration>(node_, config_tools_, topic_tools_, transform_tools_, registration_cb_group_);
+        cluster_registration_ = std::make_shared<ClusterRegistration>(node_, config_tools_, topic_tools_, transform_tools_, registration_cb_group_);
 
         // Get all elements
         agents_ = agent_registration_->getAgents();

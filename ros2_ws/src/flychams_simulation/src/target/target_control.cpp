@@ -19,6 +19,9 @@ namespace flychams::simulation
         clusters_.clear();
         spawn_index_ = 0;
 
+        // Create simulation tools
+        simulation_tools_ = createSimulationTools(node_, config_tools_);
+
         // Set update timer
         update_timer_ = RosUtils::createTimer(node_, update_rate_,
             std::bind(&TargetControl::update, this), module_cb_group_);
@@ -29,6 +32,8 @@ namespace flychams::simulation
         // Destroy target and cluster maps
         targets_.clear();
         clusters_.clear();
+        // Destroy simulation tools
+        simulation_tools_.reset();
         // Destroy update timer
         update_timer_.reset();
     }
@@ -143,12 +148,12 @@ namespace flychams::simulation
 
     void TargetControl::destroyTargets()
     {
-        framework_tools_->removeAllTargets();
+        simulation_tools_->removeAllTargets();
     }
 
     void TargetControl::destroyClusters()
     {
-        framework_tools_->removeAllClusters();
+        simulation_tools_->removeAllClusters();
     }
 
     void TargetControl::spawnTarget(const ID& target_id, const PointMsg& initial_position, const TargetType& target_type)
@@ -161,7 +166,7 @@ namespace flychams::simulation
         highlight_color.a = 0.005f;
 
         // Add target to simulation
-        framework_tools_->addTargetGroup({ target_id }, { target_type }, { initial_position }, true, { highlight_color });
+        simulation_tools_->addTargetGroup({ target_id }, { target_type }, { initial_position }, true, { highlight_color });
     }
 
     void TargetControl::spawnCluster(const ID& cluster_id, const PointMsg& initial_center, const float& initial_radius)
@@ -181,7 +186,7 @@ namespace flychams::simulation
         highlight_color.a = 0.15f;
 
         // Add cluster to simulation
-        framework_tools_->addClusterGroup({ cluster_id }, { initial_center }, { initial_radius }, true, { highlight_color });
+        simulation_tools_->addClusterGroup({ cluster_id }, { initial_center }, { initial_radius }, true, { highlight_color });
     }
 
     void TargetControl::updateTargets()
@@ -204,7 +209,7 @@ namespace flychams::simulation
         }
 
         // Send target commands to simulation
-        framework_tools_->updateTargetGroup(target_ids, target_positions);
+        simulation_tools_->updateTargetGroup(target_ids, target_positions);
     }
 
     void TargetControl::updateClusters()
@@ -229,7 +234,7 @@ namespace flychams::simulation
         }
 
         // Update clusters in simulation
-        framework_tools_->updateClusterGroup(cluster_ids, cluster_positions, cluster_radii);
+        simulation_tools_->updateClusterGroup(cluster_ids, cluster_positions, cluster_radii);
     }
 
 } // namespace flychams::simulation

@@ -29,7 +29,7 @@ namespace flychams::control
         agent_.position_out_msg.header = RosUtils::createHeader(node_, transform_tools_->getGlobalFrame());
 
         // Create mavros communication
-        mavros_comm_ = std::make_shared<MavrosCommunication>(agent_id_, node_, config_tools_, transform_tools_);
+        mavros_comm_ = std::make_shared<MavrosCommunication>(agent_id_, node_);
 
         // Subscribe to mavros topics
         agent_.status_in_sub = mavros_comm_->subscribeStatus(

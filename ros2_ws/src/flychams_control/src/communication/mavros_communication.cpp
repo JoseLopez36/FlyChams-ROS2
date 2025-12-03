@@ -1,13 +1,15 @@
-#include "flychams_core/communication/mavros_communication.hpp"
+#include "flychams_control/communication/mavros_communication.hpp"
 
-namespace flychams::core
+using namespace flychams::core;
+
+namespace flychams::control
 {
     // ════════════════════════════════════════════════════════════════════════════
     // CONSTRUCTOR: Constructor and destructor
     // ════════════════════════════════════════════════════════════════════════════
 
-    MavrosCommunication::MavrosCommunication(const core::ID& agent_id, NodePtr node, const ConfigTools::SharedPtr& config_tools, TransformTools::SharedPtr transform_tools)
-        : node_(node), config_tools_(config_tools), transform_tools_(transform_tools), agent_id_(agent_id)
+    MavrosCommunication::MavrosCommunication(const core::ID& agent_id, NodePtr node)
+        : node_(node), agent_id_(agent_id)
     {
         // Initialize ROS components
         arming_client_ = node_->create_client<mavros_msgs::srv::CommandBool>("/mavros/" + agent_id + "/cmd/arming");
@@ -31,8 +33,6 @@ namespace flychams::core
         set_mode_client_.reset();
         // Destroy publishers
         local_pos_pub_.reset();
-        // Destroy config tools
-        config_tools_.reset();
         // Destroy node pointer
         node_.reset();
     }
@@ -92,7 +92,7 @@ namespace flychams::core
     void MavrosCommunication::setPosition(const float& x, const float& y, const float& z)
     {
         geometry_msgs::msg::PoseStamped msg;
-        msg.header = RosUtils::createHeader(node_, transform_tools_->getGlobalFrame());
+        msg.header = RosUtils::createHeader(node_, "map");
         msg.pose.position.x = x;
         msg.pose.position.y = y;
         msg.pose.position.z = z;
@@ -101,4 +101,4 @@ namespace flychams::core
         local_pos_pub_->publish(msg);
     }
 
-} // namespace flychams::core
+} // namespace flychams::control

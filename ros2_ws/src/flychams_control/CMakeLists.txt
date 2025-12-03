@@ -9,6 +9,8 @@ endif()
 # Find dependencies
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
+find_package(mavros_msgs REQUIRED)
+find_package(airsim_interfaces REQUIRED)
 find_package(flychams_core REQUIRED)
 
 # Create control library
@@ -16,6 +18,8 @@ set(CONTROL_SRC
   src/drone/drone_state.cpp
   src/drone/drone_control.cpp
   src/camera/camera_control.cpp
+  src/communication/mavros_communication.cpp
+  src/communication/camera_communication.cpp
 )
 add_library(${PROJECT_NAME} SHARED ${CONTROL_SRC})
 target_include_directories(${PROJECT_NAME} PUBLIC
@@ -25,7 +29,7 @@ target_include_directories(${PROJECT_NAME} PUBLIC
 
 # Export dependencies
 ament_target_dependencies(${PROJECT_NAME}
-  rclcpp flychams_core
+  rclcpp mavros_msgs airsim_interfaces flychams_core
 )
 
 # Link to required libraries
@@ -36,17 +40,17 @@ target_link_libraries(${PROJECT_NAME}
 # Create executable for drone state node
 add_executable(drone_state_node src/drone_state_node.cpp)
 target_link_libraries(drone_state_node ${PROJECT_NAME})
-ament_target_dependencies(drone_state_node rclcpp flychams_core)
+ament_target_dependencies(drone_state_node rclcpp mavros_msgs flychams_core)
 
 # Create executable for drone control node
 add_executable(drone_control_node src/drone_control_node.cpp)
 target_link_libraries(drone_control_node ${PROJECT_NAME})
-ament_target_dependencies(drone_control_node rclcpp flychams_core)
+ament_target_dependencies(drone_control_node rclcpp mavros_msgs flychams_core)
 
 # Create executable for camera control node
 add_executable(camera_control_node src/camera_control_node.cpp)
 target_link_libraries(camera_control_node ${PROJECT_NAME})
-ament_target_dependencies(camera_control_node rclcpp flychams_core)
+ament_target_dependencies(camera_control_node rclcpp airsim_interfaces flychams_core)
 
 # Install targets and headers
 install(TARGETS ${PROJECT_NAME}
@@ -69,6 +73,8 @@ install(DIRECTORY include/
 ament_export_targets(${PROJECT_NAME} HAS_LIBRARY_TARGET)
 ament_export_dependencies(
   rclcpp
+  mavros_msgs
+  airsim_interfaces
   flychams_core
 )
 ament_export_libraries(${PROJECT_NAME})

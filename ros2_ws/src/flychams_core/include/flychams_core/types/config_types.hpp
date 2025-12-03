@@ -29,7 +29,7 @@ namespace flychams::core
     struct SystemParameters
     {
         // Simulation settings
-        SimulationFramework framework;
+        SimulationFramework simulation_framework;
         float clock_speed;
 
         // Path settings

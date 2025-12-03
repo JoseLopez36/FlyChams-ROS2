@@ -17,6 +17,9 @@ namespace flychams::control
 		// Initialize data
 		agent_ = Agent();
 
+		// Create camera communication
+		camera_comm_ = std::make_shared<CameraCommunication>(agent_id_, node_);
+
 		// Subscribe to status and head setpoints topics
 		agent_.status_sub = topic_tools_->createAgentStatusSubscriber(agent_id_,
 			std::bind(&CameraControl::statusCallback, this, std::placeholders::_1), sub_options_with_module_cb_group_);
@@ -112,8 +115,8 @@ namespace flychams::control
 		}
 
 		// Send commands to cameras
-		framework_tools_->setGimbalOrientations(agent_id_, unit_ids, unit_quats);
-		framework_tools_->setCameraFovs(agent_id_, unit_ids, unit_fovs);
+		camera_comm_->setGimbalOrientations(unit_ids, unit_quats);
+		camera_comm_->setCameraFovs(unit_ids, unit_fovs);
 	}
 
 } // namespace flychams::control

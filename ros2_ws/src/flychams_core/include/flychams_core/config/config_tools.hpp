@@ -438,8 +438,8 @@ namespace flychams::core
         void parseSystemParameters(MissionConfigPtr& config_ptr)
         {
             // Simulation settings
-            const std::string& framework_str = RosUtils::getParameter<std::string>(node_, "simulation.framework");
-            config_ptr->system.framework = simulationFrameworkFromString(framework_str);
+            const std::string& simulation_framework_str = RosUtils::getParameter<std::string>(node_, "simulation.framework");
+            config_ptr->system.simulation_framework = simulationFrameworkFromString(simulation_framework_str);
             config_ptr->system.clock_speed = RosUtils::getParameter<float>(node_, "simulation.clock_speed");
 
             // Path settings

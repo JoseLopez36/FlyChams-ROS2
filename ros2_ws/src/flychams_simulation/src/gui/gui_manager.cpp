@@ -20,6 +20,9 @@ namespace flychams::simulation
         // Initialize data
         agent_ = Agent();
 
+        // Create simulation tools
+        simulation_tools_ = createSimulationTools(node_, config_tools_);
+
         // Get system config
         const auto& system_config = config_tools_->getSystem();
 
@@ -90,6 +93,8 @@ namespace flychams::simulation
         // Destroy agent data
         agent_.status_sub.reset();
         agent_.gui_setpoints_sub.reset();
+        // Destroy simulation tools
+        simulation_tools_.reset();
         // Destroy update timer
         update_timer_.reset();
     }
@@ -208,7 +213,7 @@ namespace flychams::simulation
     void GuiManager::setWindows(const std::vector<WindowCmd>& window_cmds)
     {
         // Send commands to set window images
-        framework_tools_->setWindows(window_cmds);
+        simulation_tools_->setWindows(window_cmds);
         // Delay to ensure GUI is updated
         std::this_thread::sleep_for(std::chrono::milliseconds(10));
     }
@@ -228,7 +233,7 @@ namespace flychams::simulation
     void GuiManager::drawWindow(const DrawCmd& draw_cmd)
     {
         // Send draw commands to the window
-        framework_tools_->drawWindow(draw_cmd);
+        simulation_tools_->drawWindow(draw_cmd);
         // Delay to ensure GUI is updated
         std::this_thread::sleep_for(std::chrono::milliseconds(10));
     }

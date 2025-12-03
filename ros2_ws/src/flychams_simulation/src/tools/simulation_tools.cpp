@@ -1,14 +1,16 @@
-#include "flychams_core/framework/framework_tools.hpp"
+#include "flychams_simulation/tools/simulation_tools.hpp"
 
 // Derived classes includes
-#include "flychams_core/framework/airsim_tools.hpp"
+#include "flychams_simulation/tools/airsim_tools.hpp"
 
-namespace flychams::core
+using namespace flychams::core;
+
+namespace flychams::simulation
 {
-    FrameworkTools::SharedPtr createFrameworkTools(NodePtr node, const ConfigTools::SharedPtr& config_tools)
+    SimulationTools::SharedPtr createSimulationTools(NodePtr node, const ConfigTools::SharedPtr& config_tools)
     {
         // Get framework
-        const SimulationFramework framework = config_tools->getSystem().framework;
+        const SimulationFramework framework = config_tools->getSystem().simulation_framework;
 
         // Create framework tools based on simulation framework
         switch (framework)
@@ -20,4 +22,4 @@ namespace flychams::core
         }
     }
 
-} // namespace flychams::core
+} // namespace flychams::simulation
