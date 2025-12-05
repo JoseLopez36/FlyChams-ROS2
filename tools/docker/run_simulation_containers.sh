@@ -18,7 +18,38 @@ cleanup() {
 trap cleanup SIGINT SIGTERM
 
 # Function to run command in container as a separate process
-run_in_container() {
+run_in_container_global() {
+    local container=$1
+    local script=$2
+    
+    echo "Starting simulation in $container..."
+    
+    # Get FLYCHAMS_PATH from container environment
+    FLYCHAMS_PATH=$(docker exec "$container" printenv FLYCHAMS_PATH)
+    if [ -z "$FLYCHAMS_PATH" ]; then
+        echo "Error: FLYCHAMS_PATH not set in $container. Using default." >&2
+        FLYCHAMS_PATH="/home/testuser/FlyChams-ROS2"
+    fi
+    
+    # Trim whitespace
+    FLYCHAMS_PATH=$(echo "$FLYCHAMS_PATH" | tr -d '\r')
+
+    # Construct full script path
+    SCRIPT_NAME=$(basename "$script")
+    FULL_SCRIPT_PATH="$FLYCHAMS_PATH/tools/run/$SCRIPT_NAME"
+
+    # Run script in container without -d flag, in background, prefixing output with container name
+    (
+        docker exec "$container" bash -c "$FULL_SCRIPT_PATH True" 2>&1 | \
+        while IFS= read -r line; do
+            echo "[$container] $line"
+        done
+    ) &
+    
+    # Store the background process PID
+    bg_pids+=($!)
+}
+run_in_container_agent() {
     local container=$1
     local script=$2
     
@@ -61,7 +92,7 @@ run_in_container() {
 
 # Check for global container
 if docker ps --format '{{.Names}}' | grep -q "^flychams-global$"; then
-    run_in_container "flychams-global" "run_global.sh"
+    run_in_container_global "flychams-global" "run_global.sh"
 else
     echo "Warning: flychams-global container not found running."
 fi
@@ -73,7 +104,7 @@ if [ -z "$agents" ]; then
     echo "Warning: No flychams-agent containers found running."
 else
     for container in $agents; do
-        run_in_container "$container" "run_agent.sh"
+        run_in_container_agent "$container" "run_agent.sh"
     done
 fi
 

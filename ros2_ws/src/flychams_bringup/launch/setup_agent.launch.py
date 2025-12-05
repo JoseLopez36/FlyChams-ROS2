@@ -67,8 +67,7 @@ def launch_setup(context, *args, **kwargs):
                 mavros_path,
                 plugin_lists_path,
                 {'agent_id': agent_id},
-                {'tgt_system': 1, 'fcu_url': 'udp://:14030@172.17.0.2:14280'},
-                {'use_sim_time': is_simulated}
+                {'tgt_system': 1, 'fcu_url': 'udp://:14030@172.17.0.2:14280'}
             ]
         )
     )

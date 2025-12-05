@@ -1,12 +1,17 @@
 from launch import LaunchDescription
 from launch_ros.actions import Node
-from launch.actions import OpaqueFunction
-from launch.substitutions import PathJoinSubstitution
+from launch.actions import DeclareLaunchArgument, OpaqueFunction
+from launch.substitutions import PathJoinSubstitution, LaunchConfiguration
 from launch_ros.substitutions import FindPackageShare
 import os
 import yaml
 
 def launch_setup(context, *args, **kwargs):
+    # Get is_simulated value from LaunchConfiguration
+    is_simulated_str = LaunchConfiguration('is_simulated').perform(context)
+    # Convert string to boolean for use_sim_time parameter
+    is_simulated = is_simulated_str.lower() in ('true', '1', 'yes', 'on')
+
     # Get paths to config files
     # Core parameters
     system_path = PathJoinSubstitution([
@@ -107,7 +112,7 @@ def launch_setup(context, *args, **kwargs):
                     topics_path, 
                     frames_path, 
                     perception_path,
-                    {'use_sim_time': True}
+                    {'use_sim_time': is_simulated}
                 ]
             )
         )
@@ -127,7 +132,7 @@ def launch_setup(context, *args, **kwargs):
                     topics_path, 
                     frames_path, 
                     perception_path,
-                    {'use_sim_time': True}
+                    {'use_sim_time': is_simulated}
                 ]
             )
         )
@@ -148,7 +153,7 @@ def launch_setup(context, *args, **kwargs):
                     topics_path, 
                     frames_path, 
                     coordination_path,
-                    {'use_sim_time': True}
+                    {'use_sim_time': is_simulated}
                 ]
             )
         )
@@ -168,7 +173,7 @@ def launch_setup(context, *args, **kwargs):
                     topics_path, 
                     frames_path, 
                     coordination_path,
-                    {'use_sim_time': True}
+                    {'use_sim_time': is_simulated}
                 ]
             )
         )
@@ -189,7 +194,7 @@ def launch_setup(context, *args, **kwargs):
                     topics_path, 
                     frames_path, 
                     simulation_path,
-                    {'use_sim_time': True}
+                    {'use_sim_time': is_simulated}
                 ]
             )
         )
@@ -209,7 +214,7 @@ def launch_setup(context, *args, **kwargs):
                     topics_path, 
                     frames_path, 
                     simulation_path,
-                    {'use_sim_time': True}
+                    {'use_sim_time': is_simulated}
                 ]
             )
         )
@@ -229,7 +234,7 @@ def launch_setup(context, *args, **kwargs):
                     topics_path, 
                     frames_path, 
                     simulation_path,
-                    {'use_sim_time': True}
+                    {'use_sim_time': is_simulated}
                 ]
             )
         )
@@ -249,7 +254,7 @@ def launch_setup(context, *args, **kwargs):
                     topics_path, 
                     frames_path, 
                     simulation_path,
-                    {'use_sim_time': True}
+                    {'use_sim_time': is_simulated}
                 ]
             )
         )
@@ -269,7 +274,7 @@ def launch_setup(context, *args, **kwargs):
                     topics_path, 
                     frames_path, 
                     simulation_path,
-                    {'use_sim_time': True}
+                    {'use_sim_time': is_simulated}
                 ]
             )
         )
@@ -287,7 +292,7 @@ def launch_setup(context, *args, **kwargs):
                 arguments=['--ros-args', '--log-level', nodes['airsim_record_camera'][1]],
                 parameters=[
                     recording_path,
-                    {'use_sim_time': True}
+                    {'use_sim_time': is_simulated}
                 ]
             )
         )
@@ -295,6 +300,14 @@ def launch_setup(context, *args, **kwargs):
     return ld
 
 def generate_launch_description():
+    # Declare arguments
+    is_simulated_arg = DeclareLaunchArgument(
+        'is_simulated',
+        default_value='True',
+        description='Whether the system is simulated'
+    )
+
     return LaunchDescription([
+        is_simulated_arg,
         OpaqueFunction(function=launch_setup)
     ])
