@@ -3,24 +3,29 @@
 # Enable: true launches the node, false does not
 # Log levels: debug, info, warn, error, fatal
 
-# Control nodes
-drone_state: [true, 'error']
-drone_control: [true, 'error']
-head_control: [true, 'error']
-
+# ------------------- GLOBAL NODES -------------------
 # Perception nodes
-target_clustering: [true, 'error']
-cluster_analysis: [true, 'error']
-
+target_clustering: [false, 'error']
+cluster_analysis: [false, 'error']
 # Coordination nodes
-agent_assignment: [true, 'error']
-agent_analysis: [true, 'error']
-agent_positioning: [true, 'error']
-agent_tracking: [true, 'error']
-
+agent_assignment: [false, 'error']
+agent_analysis: [false, 'error']
 # Simulation nodes
 gui_manager: [true, 'error']
-metrics_factory: [true, 'error']
-marker_factory: [true, 'error']
-target_state: [true, 'error']
-target_control: [true, 'error']
+metrics_factory: [false, 'error']
+marker_factory: [false, 'error']
+target_state: [false, 'error']
+target_control: [false, 'error']
+# AirSim node
+airsim_node: [true, 'info']
+# Recording nodes
+airsim_record_camera: [false, 'error']
+
+# ------------------- AGENT NODES -------------------
+# Control nodes
+drone_state: [false, 'info']
+drone_control: [false, 'info']
+camera_control: [false, 'error']
+# Coordination nodes
+agent_positioning: [false, 'error']
+agent_tracking: [false, 'error']
