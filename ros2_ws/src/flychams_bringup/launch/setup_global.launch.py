@@ -1,11 +1,17 @@
 from launch import LaunchDescription
 from launch_ros.actions import Node
-from launch.actions import OpaqueFunction
-from launch.substitutions import PathJoinSubstitution
+from launch.actions import DeclareLaunchArgument, OpaqueFunction
+from launch.substitutions import PathJoinSubstitution, LaunchConfiguration
 from launch_ros.substitutions import FindPackageShare
 import os
+import yaml
 
 def launch_setup(context, *args, **kwargs):
+    # Get is_simulated value from LaunchConfiguration
+    is_simulated_str = LaunchConfiguration('is_simulated').perform(context)
+    # Convert string to boolean for use_sim_time parameter
+    is_simulated = is_simulated_str.lower() in ('true', '1', 'yes', 'on')
+    
     # Get paths to config files
     # Core parameters
     system_path = PathJoinSubstitution([
@@ -13,6 +19,12 @@ def launch_setup(context, *args, **kwargs):
         'config',
         'core',
         'system.yaml'
+    ])
+    launch_path = PathJoinSubstitution([
+        FindPackageShare('flychams_bringup'),
+        'config',
+        'core',
+        'launch.yaml'
     ])
     topics_path = PathJoinSubstitution([
         FindPackageShare('flychams_bringup'),
@@ -34,47 +46,70 @@ def launch_setup(context, *args, **kwargs):
     # Generate launch description
     ld = []
 
-    # Add AirSim Wrapper node
-    ld.append(
-        Node(
-            package='airsim_wrapper',
-            executable='airsim_node',
-            name='airsim_node',
-            output='screen',
-            namespace='airsim',
-            parameters=[{
-                'update_airsim_state_every_n_sec': 0.020,
-                'update_sim_clock_every_n_sec': 0.001,
-                'world_frame_id': 'world',
-                'vehicle_local_frame_id': 'local',
-                'vehicle_body_frame_id': 'body',
-                'camera_body_frame_id': 'body',
-                'camera_optical_frame_id': 'optical',
-                'host_ip': 'localhost',
-                'host_port': 41451
-            }]
-        )
-    )
+    # Load the nodes configuration YAML file
+    # Convert from PathJoinSubstitution to path string and load the file
+    launch_file_path = launch_path.perform(context).strip()
+    with open(launch_file_path, 'r') as f:
+        launch = yaml.safe_load(f)
 
-    # Add Registrator node
-    ld.append(
-        Node(
-            package='flychams_bringup',
-            executable='registrator_node',
-            name='registrator_node',
-            output='screen',
-            namespace='flychams/global',
-            parameters=[
-                system_path, 
-                topics_path, 
-                frames_path
-            ]
+    # Get the node activation settings from config
+    nodes = {
+        # Global setup nodes
+        'airsim': launch.get('airsim', [True, 'info']),
+        'registrator': launch.get('registrator', [True, 'info']),
+    }
+
+    # Conditionally add AirSim node
+    if nodes['airsim'][0]:
+        ld.append(
+            Node(
+                package='airsim_wrapper',
+                executable='airsim_node',
+                name='airsim_node',
+                output='screen',
+                namespace='airsim',
+                parameters=[{
+                    'update_airsim_state_every_n_sec': 0.020,
+                    'update_sim_clock_every_n_sec': 0.001,
+                    'world_frame_id': 'world',
+                    'vehicle_local_frame_id': 'local',
+                    'vehicle_body_frame_id': 'body',
+                    'camera_body_frame_id': 'body',
+                    'camera_optical_frame_id': 'optical',
+                    'host_ip': 'localhost',
+                    'host_port': 41451
+                }]
+            )
         )
-    )
+
+    # Conditionally add Registrator node
+    if nodes['registrator'][0]:
+        ld.append(
+            Node(
+                package='flychams_bringup',
+                executable='registrator_node',
+                name='registrator_node',
+                output='screen',
+                namespace='flychams/global',
+                parameters=[
+                    system_path, 
+                    topics_path, 
+                    frames_path
+                ]
+            )
+        )
 
     return ld
 
 def generate_launch_description():
+    # Declare arguments
+    is_simulated_arg = DeclareLaunchArgument(
+        'is_simulated',
+        default_value='True',
+        description='Whether the system is simulated'
+    )
+
     return LaunchDescription([
+        is_simulated_arg,
         OpaqueFunction(function=launch_setup)
     ])

@@ -4,4 +4,3 @@
 config/settings.json
 config/agents.yaml
 config/.~lock.Configuration.xlsx\#
-docker/docker-compose.yml

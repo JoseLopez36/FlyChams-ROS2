@@ -4,6 +4,7 @@ from launch.actions import DeclareLaunchArgument, OpaqueFunction
 from launch.substitutions import PathJoinSubstitution, LaunchConfiguration
 from launch_ros.substitutions import FindPackageShare
 import os
+import yaml
 
 def launch_setup(context, *args, **kwargs):
     # Get agent_id value from LaunchConfiguration
@@ -19,6 +20,12 @@ def launch_setup(context, *args, **kwargs):
         'config',
         'core',
         'system.yaml'
+    ])
+    launch_path = PathJoinSubstitution([
+        FindPackageShare('flychams_bringup'),
+        'config',
+        'core',
+        'launch.yaml'
     ])
     topics_path = PathJoinSubstitution([
         FindPackageShare('flychams_bringup'),
@@ -52,25 +59,38 @@ def launch_setup(context, *args, **kwargs):
     # Generate launch description
     ld = []
 
-    # Add mavROS Manager node
-    ld.append(
-        Node(
-            package='flychams_bringup',
-            executable='mavros_node',
-            name='mavros_node',
-            output='screen' if is_simulated else 'log',
-            namespace='flychams/' + agent_id,
-            parameters=[
-                system_path,
-                topics_path,
-                frames_path,
-                mavros_path,
-                plugin_lists_path,
-                {'agent_id': agent_id},
-                {'tgt_system': 1, 'fcu_url': 'udp://:14030@172.17.0.2:14280'}
-            ]
+    # Load the nodes configuration YAML file
+    # Convert from PathJoinSubstitution to path string and load the file
+    launch_file_path = launch_path.perform(context).strip()
+    with open(launch_file_path, 'r') as f:
+        launch = yaml.safe_load(f)
+
+    # Get the node activation settings from config
+    nodes = {
+        # Agent setup nodes
+        'mavros': launch.get('mavros', [True, 'info']),
+    }
+
+    # Conditionally add MavROS Manager node
+    if nodes['mavros'][0]:
+        ld.append(
+            Node(
+                package='flychams_bringup',
+                executable='mavros_node',
+                name='mavros_node',
+                output='screen' if is_simulated else 'log',
+                namespace='flychams/' + agent_id,
+                parameters=[
+                    system_path,
+                    topics_path,
+                    frames_path,
+                    mavros_path,
+                    plugin_lists_path,
+                    {'agent_id': agent_id},
+                    {'tgt_system': 1, 'fcu_url': 'udp://:14030@172.17.0.2:14280'}
+                ]
+            )
         )
-    )
     
     return ld
 

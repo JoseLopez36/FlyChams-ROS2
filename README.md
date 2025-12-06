@@ -41,6 +41,7 @@ The project leverages:
 
 - **Ubuntu 20.04, 22.04, or 24.04** (or compatible Linux distribution)
 - **Docker** (for running the system in a container)
+- **Tmux** (for managing terminal sessions)
 - **Unreal Engine 5.2.1** (optional, for developing new environments)
 
 ### Hardware Requirements
@@ -102,13 +103,22 @@ Run the following command to build the docker image:
 ```
 *Note: This will build the docker image. It may take a while to build the image.*
 
-### 6. Setup and build the system
+### 6. Install Python dependencies
+
+Run the following command to install the required Python packages:
+
+**Host Machine**
+```bash
+sudo apt install python3-libtmux
+```
+
+### 7. Setup and build the system
 
 Run the following command to setup dependencies, build the workspace and generate settings:
 
 **Host Machine**
 ```bash
-./tools/docker/run_build_container.sh --regenerate-airsim
+python3 ./tools/docker/build.py --regenerate-airsim
 ```
 *Note: This will launch a temporary container to perform all build and setup operations.*
 
@@ -123,60 +133,42 @@ Run the following command to launch the Unreal Engine simulation with the previo
 ./path/to/FlyChams-ROS2/tools/airsim/run_ue5.sh
 ```
 
-### 2. Setup the docker containers
+### 2. Launch the System
 
-Run the following command to generate the container structure and setup the system:
-
-**Host Machine**
-```bash
-./tools/docker/setup_simulation_containers.sh --agents <number_of_agents>
-```
-*Note: This will generate a docker-compose.yml file and start the containers (one global container + one container per agent). Replace <number_of_agents> with the number of agents you want to simulate.*
-
-### 3. Run the docker containers
-
-Run the following command to run each container:
+Run the following command to launch the system:
 
 **Host Machine**
 ```bash
-./tools/docker/run_simulation_containers.sh
+./tools/docker/launch.py --sim
 ```
+*Note: This script handles both setup and run stages in a tmux session. It automatically creates containers for the global tasks and each agent, and then executes the necessary ROS2 launch files.*
 
-The ROS2 system is launched:
+The workflow creates a tmux session named `flychams` with two windows:
+1. **Setup**: Creates and configures the Docker containers and ROS2 system.
+2. **Run**: Executes the main application logic inside the containers.
 
-- **Global nodes** are launched in the `flychams-global` container.
-- **Agent nodes** are launched in their respective `flychams-agent-k` containers.
+You can navigate between windows using `Ctrl+B` then `n` (next) or `p` (previous), and detach from the session with `Ctrl+B` then `d`. To reattach, use `tmux attach -t flychams`.
 
-You can check the logs of a specific container:
-
-**Host Machine**
+To stop the system, you can use the stop script:
 ```bash
-docker logs -f flychams-global
-# or
-docker logs -f flychams-agent-k
+./tools/docker/stop.py
 ```
+This will kill the tmux session and stop all FlyChams containers.
 
-To stop and remove the containers, you can use the following command:
-
-**Host Machine**
-```bash
-./tools/docker/stop_simulation_containers.sh
-```
-
-### 4. (Optional) Visualization
+### 3. (Optional) Visualization
 
 To view the system in RViz:
 
 **Host Machine**
 ```bash
-./tools/docker/run_rviz_container.sh
+./tools/docker/visualization.sh
 ```
 
 To plot simulation data on runtime, we recommend using `PlotJuggler`. To run it, use the following command:
 
 **Host Machine**
 ```bash
-./tools/docker/run_rviz_container.sh --plotjuggler
+./tools/docker/visualization.sh --plotjuggler
 ```
 
 You can also plot previous rosbag data by importing them into the PlotJuggler window. More info [here](https://plotjuggler.io/). To record rosbags you must configure it in the `Configuration.xlsx` file and use the following command:

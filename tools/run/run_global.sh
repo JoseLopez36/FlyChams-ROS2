@@ -1,20 +1,8 @@
 #!/bin/bash
-set -e  # Exit on error
 
 # Arguments   
-RECORD=${1:-"false"}
-
-# Get ROS2 workspace directory
-ROS2_WS="$FLYCHAMS_PATH/ros2_ws"
-
-# Source ROS2 workspace
-if [ -f "$ROS2_WS/install/setup.bash" ]; then
-  source "$ROS2_WS/install/setup.bash"
-else
-  echo "Error: ROS workspace not found at $ROS2_WS" >&2
-  exit 1
-fi
+IS_SIMULATED=${1:-"False"}
 
 # Launch FlyChams with AirSim
 echo "Running FlyingChameleons global..."
-ros2 launch flychams_bringup run_global.launch.py
+ros2 launch flychams_bringup run_global.launch.py is_simulated:=$IS_SIMULATED
