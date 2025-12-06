@@ -33,6 +33,7 @@ include_directories(
 # Declare the library
 add_library(${PROJECT_NAME} SHARED
   src/base/base_module.cpp
+  src/base/base_node.cpp
   src/base/base_registrator_node.cpp
   src/base/base_discoverer_node.cpp
 )

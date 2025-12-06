@@ -4,8 +4,7 @@
 #include "flychams_bringup/mavros/mavros_manager.hpp"
 
 // Core includes
-#include "flychams_core/base/base_registrator_node.hpp"
-#include "flychams_core/utils/ros_utils.hpp"
+#include "flychams_core/base/base_node.hpp"
 
 using namespace flychams::core;
 using namespace flychams::bringup;
@@ -18,11 +17,11 @@ using namespace flychams::bringup;
  * @date 2025-12-01
  * ════════════════════════════════════════════════════════════════
  */
-class MavrosNode : public BaseRegistratorNode
+class MavrosNode : public BaseNode
 {
 public: // Constructor/Destructor
     MavrosNode(const std::string& node_name, const rclcpp::NodeOptions& options)
-        : BaseRegistratorNode(node_name, options)
+        : BaseNode(node_name, options)
     {
         // Nothing to do
     }
@@ -33,7 +32,7 @@ public: // Constructor/Destructor
         agent_id_ = RosUtils::getParameter<std::string>(node_, "agent_id");
 
         // Create mavros manager
-        mavros_manager_ = std::make_shared<MavrosManager>(agent_id_, node_, config_tools_, topic_tools_, transform_tools_, registration_cb_group_);
+        mavros_manager_ = std::make_shared<MavrosManager>(agent_id_, node_, config_tools_, topic_tools_, transform_tools_, node_cb_group_);
 
         RCLCPP_INFO(node_->get_logger(), "Mavros Manager created for agent: %s", agent_id_.c_str());
     }

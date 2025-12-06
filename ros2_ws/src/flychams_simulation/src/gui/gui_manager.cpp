@@ -46,10 +46,7 @@ namespace flychams::simulation
 
         // Initialize central head draw commands
         central_draw_cmd_ = DrawCmd();
-        if (!operator_window_cmds_.empty())
-        {
-            central_draw_cmd_.window_id = operator_window_cmds_[0].window_id;
-        }
+        central_draw_cmd_.window_id = operator_window_cmds_[0].window_id;
         for (size_t i = 0; i < operator_window_cmds_.size(); i++)
         {
             // Draw parameters

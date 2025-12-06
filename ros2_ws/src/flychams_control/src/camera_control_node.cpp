@@ -4,8 +4,7 @@
 #include "flychams_control/camera/camera_control.hpp"
 
 // Core includes
-#include "flychams_core/base/base_discoverer_node.hpp"
-#include "flychams_core/utils/ros_utils.hpp"
+#include "flychams_core/base/base_node.hpp"
 
 using namespace flychams::core;
 using namespace flychams::control;
@@ -19,11 +18,11 @@ using namespace flychams::control;
  * @date 2025-02-28
  * ════════════════════════════════════════════════════════════════
  */
-class CameraControlNode : public BaseDiscovererNode
+class CameraControlNode : public BaseNode
 {
 public: // Constructor/Destructor
     CameraControlNode(const std::string& node_name, const rclcpp::NodeOptions& options)
-        : BaseDiscovererNode(node_name, options)
+        : BaseNode(node_name, options)
     {
         // Nothing to do
     }
@@ -34,7 +33,7 @@ public: // Constructor/Destructor
         agent_id_ = RosUtils::getParameter<std::string>(node_, "agent_id");
 
         // Create camera control
-        camera_control_ = std::make_shared<CameraControl>(agent_id_, node_, config_tools_, topic_tools_, transform_tools_, nullptr);
+        camera_control_ = std::make_shared<CameraControl>(agent_id_, node_, config_tools_, topic_tools_, transform_tools_, node_cb_group_);
 
         RCLCPP_INFO(node_->get_logger(), "Camera Control created for agent: %s", agent_id_.c_str());
     }
@@ -43,37 +42,6 @@ public: // Constructor/Destructor
     {
         // Destroy camera control
         camera_control_.reset();
-    }
-
-private: // Element management
-    void onAddAgent(const ID& agent_id) override
-    {
-        // Agents are not handled by this node (uses agent_id from parameter)
-    }
-
-    void onRemoveAgent(const ID& agent_id) override
-    {
-        // Agents are not handled by this node (uses agent_id from parameter)
-    }
-
-    void onAddTarget(const ID& target_id) override
-    {
-        // Targets are not handled by this node
-    }
-
-    void onRemoveTarget(const ID& target_id) override
-    {
-        // Targets are not handled by this node
-    }
-
-    void onAddCluster(const ID& cluster_id) override
-    {
-        // Clusters are not handled by this node
-    }
-
-    void onRemoveCluster(const ID& cluster_id) override
-    {
-        // Clusters are not handled by this node
     }
 
 private: // Components
