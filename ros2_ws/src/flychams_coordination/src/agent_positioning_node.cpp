@@ -4,7 +4,7 @@
 #include "flychams_coordination/positioning/agent_positioning.hpp"
 
 // Core includes
-#include "flychams_core/base/base_discoverer_node.hpp"
+#include "flychams_core/base/base_node.hpp"
 
 using namespace flychams::core;
 using namespace flychams::coordination;
@@ -18,67 +18,37 @@ using namespace flychams::coordination;
  * @date 2025-02-28
  * ════════════════════════════════════════════════════════════════
  */
-class AgentPositioningNode : public BaseDiscovererNode
+class AgentPositioningNode : public BaseNode
 {
 public: // Constructor/Destructor
     AgentPositioningNode(const std::string& node_name, const rclcpp::NodeOptions& options)
-        : BaseDiscovererNode(node_name, options)
+        : BaseNode(node_name, options)
     {
         // Nothing to do
     }
 
     void onInit() override
     {
-        // Initialize agent positioning systems
-        agent_positionings_.clear();
+        // Get agent ID
+        agent_id_ = RosUtils::getParameter<std::string>(node_, "agent_id");
+
+        // Create agent positioning
+        agent_positioning_ = std::make_shared<AgentPositioning>(agent_id_, node_, config_tools_, topic_tools_, transform_tools_, node_cb_group_);
+
+        RCLCPP_INFO(node_->get_logger(), "Agent positioning created for agent: %s", agent_id_.c_str());
     }
 
     void onShutdown() override
     {
-        // Destroy agent positioning systems
-        agent_positionings_.clear();
-    }
-
-private: // Element management
-    void onAddAgent(const ID& agent_id) override
-    {
-        // Create callback group for each agent positioning system
-        auto positioning_cb_group = node_->create_callback_group(rclcpp::CallbackGroupType::MutuallyExclusive);
-
-        // Create agent positioning system
-        agent_positionings_.insert({ agent_id,
-            std::make_shared<AgentPositioning>(agent_id, node_, config_tools_, topic_tools_, transform_tools_, positioning_cb_group) });
-    }
-
-    void onRemoveAgent(const ID& agent_id) override
-    {
-        // Destroy agent positioning system
-        agent_positionings_.erase(agent_id);
-    }
-
-    void onAddTarget(const ID& target_id) override
-    {
-        // Targets are not handled by this node
-    }
-
-    void onRemoveTarget(const ID& target_id) override
-    {
-        // Targets are not handled by this node
-    }
-
-    void onAddCluster(const ID& cluster_id) override
-    {
-        // Clusters are not handled by this node
-    }
-
-    void onRemoveCluster(const ID& cluster_id) override
-    {
-        // Clusters are not handled by this node
+        // Destroy agent positioning
+        agent_positioning_.reset();
     }
 
 private: // Components
-    // Agent positioning system
-    std::unordered_map<ID, AgentPositioning::SharedPtr> agent_positionings_;
+    // Agent ID
+    ID agent_id_;
+    // Agent positioning
+    AgentPositioning::SharedPtr agent_positioning_;
 };
 
 int main(int argc, char** argv)

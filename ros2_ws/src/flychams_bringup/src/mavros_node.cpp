@@ -34,7 +34,7 @@ public: // Constructor/Destructor
         // Create mavros manager
         mavros_manager_ = std::make_shared<MavrosManager>(agent_id_, node_, config_tools_, topic_tools_, transform_tools_, node_cb_group_);
 
-        RCLCPP_INFO(node_->get_logger(), "Mavros Manager created for agent: %s", agent_id_.c_str());
+        RCLCPP_INFO(node_->get_logger(), "Mavros manager created for agent: %s", agent_id_.c_str());
     }
 
     void onShutdown() override

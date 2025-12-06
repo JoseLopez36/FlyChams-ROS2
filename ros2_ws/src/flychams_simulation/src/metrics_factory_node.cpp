@@ -37,6 +37,8 @@ public: // Constructor/Destructor
         // Use callback group from discovery node (to avoid race conditions)
         // Initialize metrics factory
         metrics_factory_ = std::make_shared<MetricsFactory>(node_, config_tools_, topic_tools_, transform_tools_, discovery_cb_group_);
+
+        RCLCPP_INFO(node_->get_logger(), "Metrics factory created");
     }
 
     void onShutdown() override

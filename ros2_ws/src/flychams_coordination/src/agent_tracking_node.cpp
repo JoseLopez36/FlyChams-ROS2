@@ -4,7 +4,7 @@
 #include "flychams_coordination/tracking/agent_tracking.hpp"
 
 // Core includes
-#include "flychams_core/base/base_discoverer_node.hpp"
+#include "flychams_core/base/base_node.hpp"
 
 using namespace flychams::core;
 using namespace flychams::coordination;
@@ -18,67 +18,37 @@ using namespace flychams::coordination;
  * @date 2025-02-28
  * ════════════════════════════════════════════════════════════════
  */
-class AgentTrackingNode : public BaseDiscovererNode
+class AgentTrackingNode : public BaseNode
 {
 public: // Constructor/Destructor
     AgentTrackingNode(const std::string& node_name, const rclcpp::NodeOptions& options)
-        : BaseDiscovererNode(node_name, options)
+        : BaseNode(node_name, options)
     {
         // Nothing to do
     }
 
     void onInit() override
     {
-        // Initialize agent tracking systems
-        agent_trackings_.clear();
+        // Get agent ID
+        agent_id_ = RosUtils::getParameter<std::string>(node_, "agent_id");
+
+        // Create agent tracking
+        agent_tracking_ = std::make_shared<AgentTracking>(agent_id_, node_, config_tools_, topic_tools_, transform_tools_, node_cb_group_);
+
+        RCLCPP_INFO(node_->get_logger(), "Agent tracking created for agent: %s", agent_id_.c_str());
     }
 
     void onShutdown() override
     {
-        // Destroy agent tracking systems
-        agent_trackings_.clear();
-    }
-
-private: // Element management
-    void onAddAgent(const ID& agent_id) override
-    {
-        // Create callback group for each agent tracking system
-        auto tracking_cb_group = node_->create_callback_group(rclcpp::CallbackGroupType::MutuallyExclusive);
-
-        // Create agent tracking system
-        agent_trackings_.insert({ agent_id,
-            std::make_shared<AgentTracking>(agent_id, node_, config_tools_, topic_tools_, transform_tools_, tracking_cb_group) });
-    }
-
-    void onRemoveAgent(const ID& agent_id) override
-    {
-        // Destroy agent tracking system
-        agent_trackings_.erase(agent_id);
-    }
-
-    void onAddTarget(const ID& target_id) override
-    {
-        // Targets are not handled by this node
-    }
-
-    void onRemoveTarget(const ID& target_id) override
-    {
-        // Targets are not handled by this node
-    }
-
-    void onAddCluster(const ID& cluster_id) override
-    {
-        // Clusters are not handled by this node
-    }
-
-    void onRemoveCluster(const ID& cluster_id) override
-    {
-        // Clusters are not handled by this node
+        // Destroy agent tracking
+        agent_tracking_.reset();
     }
 
 private: // Components
-    // Agent tracking systems
-    std::unordered_map<ID, AgentTracking::SharedPtr> agent_trackings_;
+    // Agent ID
+    ID agent_id_;
+    // Agent tracking
+    AgentTracking::SharedPtr agent_tracking_;
 };
 
 int main(int argc, char** argv)

@@ -35,7 +35,7 @@ public: // Constructor/Destructor
         // Create camera control
         camera_control_ = std::make_shared<CameraControl>(agent_id_, node_, config_tools_, topic_tools_, transform_tools_, node_cb_group_);
 
-        RCLCPP_INFO(node_->get_logger(), "Camera Control created for agent: %s", agent_id_.c_str());
+        RCLCPP_INFO(node_->get_logger(), "Camera control created for agent: %s", agent_id_.c_str());
     }
 
     void onShutdown() override

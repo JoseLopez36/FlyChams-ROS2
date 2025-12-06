@@ -11,17 +11,17 @@ registrator: [true, 'info']
 
 # ------------------- GLOBAL RUN NODES -------------------
 # Perception nodes
-target_clustering: [false, 'error']
-cluster_analysis: [false, 'error']
+target_clustering: [true, 'error']
+cluster_analysis: [true, 'error']
 # Coordination nodes
-agent_assignment: [false, 'error']
-agent_analysis: [false, 'error']
+agent_assignment: [true, 'error']
+agent_analysis: [true, 'error']
 # Simulation nodes
-gui_manager: [false, 'error']
-metrics_factory: [false, 'error']
-marker_factory: [false, 'error']
-target_state: [true, 'info']
-target_control: [false, 'error']
+gui_manager: [true, 'error']
+metrics_factory: [true, 'error']
+marker_factory: [true, 'error']
+target_state: [true, 'error']
+target_control: [true, 'error']
 # Recording nodes
 airsim_record_camera: [false, 'error']
 
@@ -31,9 +31,9 @@ mavros: [true, 'info']
 
 # ------------------- AGENT RUN NODES -------------------
 # Control nodes
-drone_state: [false, 'error']
-drone_control: [false, 'error']
-camera_control: [false, 'error']
+drone_state: [true, 'error']
+drone_control: [true, 'error']
+camera_control: [true, 'error']
 # Coordination nodes
-agent_positioning: [false, 'error']
-agent_tracking: [false, 'error']
+agent_positioning: [true, 'error']
+agent_tracking: [true, 'error']

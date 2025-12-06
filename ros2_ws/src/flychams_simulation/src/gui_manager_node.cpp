@@ -55,6 +55,8 @@ private: // Agent management
         auto manager = std::make_shared<GuiManager>(agent_id, node_, config_tools_, topic_tools_, transform_tools_, discovery_cb_group_);
         gui_managers_.insert({ agent_id, manager });
 
+        RCLCPP_INFO(node_->get_logger(), "GUI manager created for agent %s", agent_id.c_str());
+
         // Deactivate GUI manager
         manager->deactivate();
 
