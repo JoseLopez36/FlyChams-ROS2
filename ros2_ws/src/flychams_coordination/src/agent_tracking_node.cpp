@@ -56,6 +56,26 @@ private: // Element management
         agent_trackings_.erase(agent_id);
     }
 
+    void onAddTarget(const ID& target_id) override
+    {
+        // Targets are not handled by this node
+    }
+
+    void onRemoveTarget(const ID& target_id) override
+    {
+        // Targets are not handled by this node
+    }
+
+    void onAddCluster(const ID& cluster_id) override
+    {
+        // Clusters are not handled by this node
+    }
+
+    void onRemoveCluster(const ID& cluster_id) override
+    {
+        // Clusters are not handled by this node
+    }
+
 private: // Components
     // Agent tracking systems
     std::unordered_map<ID, AgentTracking::SharedPtr> agent_trackings_;

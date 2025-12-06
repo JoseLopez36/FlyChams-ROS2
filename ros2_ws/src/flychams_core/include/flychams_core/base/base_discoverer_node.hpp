@@ -32,6 +32,7 @@ namespace flychams::core
     {
     public: // Constructor/Destructor
         BaseDiscovererNode(const std::string& node_name, const rclcpp::NodeOptions& options);
+        
         void init();
 
         virtual ~BaseDiscovererNode();
@@ -42,8 +43,8 @@ namespace flychams::core
         using SharedPtr = std::shared_ptr<BaseDiscovererNode>;
 
     protected: // Overridable methods
-        virtual void onInit() = 0;
-        virtual void onShutdown() = 0;
+        virtual void onInit() {}
+        virtual void onShutdown() {}
         virtual void onAddAgent(const ID& agent_id) {}
         virtual void onRemoveAgent(const ID& agent_id) {}
         virtual void onAddTarget(const ID& target_id) {}

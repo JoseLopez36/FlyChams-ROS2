@@ -5,7 +5,7 @@
 
 # ------------------- GLOBAL SETUP NODES -------------------
 # AirSim node
-airsim: [true, 'error']
+airsim: [true, 'warn']
 # Registrator node
 registrator: [true, 'info']
 
@@ -17,10 +17,10 @@ cluster_analysis: [false, 'error']
 agent_assignment: [false, 'error']
 agent_analysis: [false, 'error']
 # Simulation nodes
-gui_manager: [true, 'error']
+gui_manager: [false, 'error']
 metrics_factory: [false, 'error']
 marker_factory: [false, 'error']
-target_state: [false, 'error']
+target_state: [true, 'info']
 target_control: [false, 'error']
 # Recording nodes
 airsim_record_camera: [false, 'error']

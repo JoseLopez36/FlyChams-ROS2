@@ -74,11 +74,39 @@ private: // Agent management
         // Select new agent if it is the one being removed
         if (selected_agent_id_ == agent_id)
         {
-            // Get first agent
-            auto it = gui_managers_.begin();
-            selected_agent_id_ = it->first;
-            onAgentSelected();
+            // Get first agent if available
+            if (!gui_managers_.empty())
+            {
+                auto it = gui_managers_.begin();
+                selected_agent_id_ = it->first;
+                onAgentSelected();
+            }
+            else
+            {
+                // No agents left, reset selection
+                selected_agent_id_ = "NONE";
+            }
         }
+    }
+
+    void onAddTarget(const ID& target_id) override
+    {
+        // Targets are not handled by this node
+    }
+
+    void onRemoveTarget(const ID& target_id) override
+    {
+        // Targets are not handled by this node
+    }
+
+    void onAddCluster(const ID& cluster_id) override
+    {
+        // Clusters are not handled by this node
+    }
+
+    void onRemoveCluster(const ID& cluster_id) override
+    {
+        // Clusters are not handled by this node
     }
 
     void onAgentSelected()

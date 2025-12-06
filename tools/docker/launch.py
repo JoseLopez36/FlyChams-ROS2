@@ -160,7 +160,7 @@ def main():
     session_name = "flychams"
     is_simulated = "True" if args.sim else "False"
     delay = 2.0
-    long_delay = 5.0
+    long_delay = 3.0
     
     # Get tmux server
     server = libtmux.Server()
@@ -290,9 +290,6 @@ def main():
         global_run_cmd
     )
     current_pane.send_keys(docker_global_exec)
-
-    # Wait for delay
-    time.sleep(delay)
     
     # Launch agent runs
     for agent_id in agent_ids:
@@ -312,9 +309,6 @@ def main():
         current_pane = run_window.split_window(attach=False)
         run_window.select_layout('tiled')
         current_pane.send_keys(docker_agent_exec)
-
-        # Wait for delay
-        time.sleep(delay)
 
     print("Workflow completed successfully")
 

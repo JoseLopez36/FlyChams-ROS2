@@ -47,6 +47,16 @@ public: // Constructor/Destructor
     }
 
 private: // Element management
+    void onAddAgent(const ID& agent_id) override
+    {
+        // Agents are not handled by this node
+    }
+
+    void onRemoveAgent(const ID& agent_id) override
+    {
+        // Agents are not handled by this node
+    }
+
     void onAddTarget(const ID& target_id) override
     {
         // Add target to target control

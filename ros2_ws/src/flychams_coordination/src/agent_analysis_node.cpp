@@ -52,6 +52,16 @@ private: // Element management
         agent_analysis_->removeAgent(agent_id);
     }
 
+    void onAddTarget(const ID& target_id) override
+    {
+        // Targets are not handled by this node
+    }
+
+    void onRemoveTarget(const ID& target_id) override
+    {
+        // Targets are not handled by this node
+    }
+
     void onAddCluster(const ID& cluster_id) override
     {
         // Add cluster to analysis manager

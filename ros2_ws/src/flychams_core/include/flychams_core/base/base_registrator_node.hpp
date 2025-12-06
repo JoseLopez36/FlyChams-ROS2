@@ -43,8 +43,8 @@ namespace flychams::core
         using SharedPtr = std::shared_ptr<BaseRegistratorNode>;
 
     protected: // Overridable methods
-        virtual void onInit() = 0;
-        virtual void onShutdown() = 0;
+        virtual void onInit() {}
+        virtual void onShutdown() {}
 
     protected: // Registration methods
         // Element registration

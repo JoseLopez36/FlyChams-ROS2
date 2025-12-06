@@ -44,6 +44,37 @@ public: // Constructor/Destructor
         drone_state_.reset();
     }
 
+private: // Element management
+    void onAddAgent(const ID& agent_id) override
+    {
+        // Agents are not handled by this node (uses agent_id from parameter)
+    }
+
+    void onRemoveAgent(const ID& agent_id) override
+    {
+        // Agents are not handled by this node (uses agent_id from parameter)
+    }
+
+    void onAddTarget(const ID& target_id) override
+    {
+        // Targets are not handled by this node
+    }
+
+    void onRemoveTarget(const ID& target_id) override
+    {
+        // Targets are not handled by this node
+    }
+
+    void onAddCluster(const ID& cluster_id) override
+    {
+        // Clusters are not handled by this node
+    }
+
+    void onRemoveCluster(const ID& cluster_id) override
+    {
+        // Clusters are not handled by this node
+    }
+
 private: // Components
     // Agent ID
     ID agent_id_;

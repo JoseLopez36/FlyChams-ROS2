@@ -46,6 +46,16 @@ public: // Constructor/Destructor
     }
 
 private: // Element management
+    void onAddAgent(const ID& agent_id) override
+    {
+        // Agents are not handled by this node
+    }
+
+    void onRemoveAgent(const ID& agent_id) override
+    {
+        // Agents are not handled by this node
+    }
+
     void onAddTarget(const ID& target_id) override
     {
         // Create callback group for target state
@@ -62,6 +72,16 @@ private: // Element management
         // Destroy target controllers
         target_state_.erase(target_id);
         RCLCPP_INFO(node_->get_logger(), "Target state destroyed for target %s", target_id.c_str());
+    }
+
+    void onAddCluster(const ID& cluster_id) override
+    {
+        // Clusters are not handled by this node
+    }
+
+    void onRemoveCluster(const ID& cluster_id) override
+    {
+        // Clusters are not handled by this node
     }
 
 private: // Components

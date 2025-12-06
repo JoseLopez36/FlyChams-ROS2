@@ -30,16 +30,19 @@ namespace flychams::core
     {
     public: // Constructor/Destructor
         BaseModule(NodePtr node, ConfigTools::SharedPtr config_tools, TopicTools::SharedPtr topic_tools, TransformTools::SharedPtr transform_tools, CallbackGroupPtr module_cb_group);
+
         void init();
+
         virtual ~BaseModule();
+
         void shutdown();
 
     public: // Types
         using SharedPtr = std::shared_ptr<BaseModule>;
 
     protected: // Overridable methods
-        virtual void onInit() = 0;
-        virtual void onShutdown() = 0;
+        virtual void onInit() {}
+        virtual void onShutdown() {}
 
     protected: // Components
         // Node
