@@ -92,7 +92,7 @@ namespace flychams::control
     void MavrosCommunication::setPosition(const float& x, const float& y, const float& z)
     {
         geometry_msgs::msg::PoseStamped msg;
-        msg.header = RosUtils::createHeader(node_, "map");
+        msg.header = RosUtils::createHeader(node_, "world");
         msg.pose.position.x = x;
         msg.pose.position.y = y;
         msg.pose.position.z = z;

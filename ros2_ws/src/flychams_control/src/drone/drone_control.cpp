@@ -115,15 +115,6 @@ namespace flychams::control
 		// Initialize success variable
 		bool success = true;
 
-		// Send heartbeat
-		// bool success = sendHeartbeat();
-		// if (!success)
-		// {
-		// 	RCLCPP_ERROR(node_->get_logger(), "Drone control: Failed to send heartbeat to agent %s",
-		// 		agent_id_.c_str());
-		// 	return;
-		// }
-
 		// Proceed based on the status of the agent
 		switch (agent_.status)
 		{
@@ -230,11 +221,6 @@ namespace flychams::control
 	// REQUESTS: Request methods to control the drone
 	// ════════════════════════════════════════════════════════════════════════════
 
-	bool DroneControl::sendHeartbeat()
-	{
-		return mavros_comm_->enableOffboard(true);
-	}
-
 	bool DroneControl::requestOffboard()
 	{
 		return mavros_comm_->enableOffboard(true);
@@ -283,6 +269,10 @@ namespace flychams::control
 		if (agent_.status == AgentStatus::MISSION)
 		{
 			mavros_comm_->setPosition(agent_.setpoint.x, agent_.setpoint.y, agent_.setpoint.z);
+			RCLCPP_INFO(node_->get_logger(), "Drone control: Setpoint sent to agent %s",
+				agent_id_.c_str());
+			RCLCPP_INFO(node_->get_logger(), "Drone control: Setpoint: %f, %f, %f",
+				agent_.setpoint.x, agent_.setpoint.y, agent_.setpoint.z);
 			return true;
 		}
 		else

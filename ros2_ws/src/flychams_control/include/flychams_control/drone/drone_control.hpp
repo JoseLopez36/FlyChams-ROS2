@@ -93,7 +93,6 @@ namespace flychams::control
 		void update();
 
 	private: // Requests (only if the agent is in the correct state)
-		bool sendHeartbeat();
 		bool requestOffboard();
 		bool requestDisarm();
 		bool requestArm();

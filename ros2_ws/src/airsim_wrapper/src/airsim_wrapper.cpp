@@ -423,12 +423,6 @@ namespace airsim_wrapper
     {
         RCLCPP_INFO_THROTTLE(nh_->get_logger(), *nh_->get_clock(), 1000.0, "Received gimbal angle command for vehicle %s", vehicle_name.c_str());
 
-        if (!client_get_enabled_control(vehicle_name))
-        {
-            RCLCPP_ERROR(nh_->get_logger(), "Vehicle %s is not in OFFBOARD mode. Cannot send gimbal angle command", vehicle_name.c_str());
-            return;
-        }
-
         // Extract message data
         const auto& camera_names = gimbal_angle_cmd_msg->camera_names;
         const auto& orientations = gimbal_angle_cmd_msg->orientations;
@@ -456,12 +450,6 @@ namespace airsim_wrapper
     void AirsimWrapper::camera_fov_cmd_cb(const std::string& vehicle_name, const airsim_interfaces::msg::CameraFovCmd::SharedPtr camera_fov_cmd_msg)
     {
         RCLCPP_INFO_THROTTLE(nh_->get_logger(), *nh_->get_clock(), 1000.0, "Received camera fov command for vehicle %s", vehicle_name.c_str());
-
-        if (!client_get_enabled_control(vehicle_name))
-        {
-            RCLCPP_ERROR(nh_->get_logger(), "Vehicle %s is not in OFFBOARD mode. Cannot send camera fov command", vehicle_name.c_str());
-            return;
-        }
 
         // Extract message data
         const auto& camera_names = camera_fov_cmd_msg->camera_names;
