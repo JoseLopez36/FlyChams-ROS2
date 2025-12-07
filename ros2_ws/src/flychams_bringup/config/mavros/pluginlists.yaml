@@ -14,6 +14,10 @@
       - setpoint_raw            # Raw setpoints
       - vfr_hud                 # Virtual Flight Reality HUD data
       - waypoint                # Waypoint missions
+      - local_position          # Local position data
+      - setpoint_velocity       # Velocity setpoints
+      - setpoint_accel          # Acceleration setpoints
+      - setpoint_attitude       # Attitude setpoints
 
       # Disabled extra plugins:
       - adsb                     # ADS-B Vehicle plugin
@@ -57,10 +61,6 @@
       # Enabled common plugins:
       # - command                 # Command services
       # - global_position         # Global position data
-      # - local_position          # Local position data
       # - setpoint_position       # Position setpoints
-      # - setpoint_velocity       # Velocity setpoints
-      # - setpoint_accel          # Acceleration setpoints
-      # - setpoint_attitude       # Attitude setpoints
       # - sys_status              # System status information
       # - sys_time                # System time synchronization

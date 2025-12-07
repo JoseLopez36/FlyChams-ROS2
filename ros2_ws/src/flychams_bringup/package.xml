@@ -15,17 +15,14 @@
 
   <!-- Dependencies -->
   <depend>rclcpp</depend>
-  <depend>flychams_core</depend>
-
+  <depend>geographic_msgs</depend>
+  <depend>mavros_msgs</depend>
+  <depend>flychams_core</depend>]
+  
   <!-- Runtime dependencies -->
   <exec_depend>ros2launch</exec_depend>
   <exec_depend>tf2_ros</exec_depend>
   <exec_depend>rviz2</exec_depend>
-  <!-- <exec_depend>airsim_wrapper</exec_depend>
-  <exec_depend>flychams_control</exec_depend>
-  <exec_depend>flychams_perception</exec_depend>
-  <exec_depend>flychams_coordination</exec_depend>
-  <exec_depend>flychams_dashboard</exec_depend> -->
 
   <!-- Export -->
   <export>

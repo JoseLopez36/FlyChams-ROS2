@@ -1,8 +1,6 @@
 /**:
   ros__parameters:
     startup_px4_usb_quirk: false
-    map_frame: "/AGENTID/map"
-    base_link_frame: "/AGENTID/base_link"
 
 # --- system plugins ---
 
@@ -34,50 +32,21 @@
 # global_position
 /**/global_position:
   ros__parameters:
-    frame_id: "/AGENTID/map"                 # origin frame
-    child_frame_id: "/AGENTID/base_link"     # body-fixed frame
+    frame_id: "world"                 # origin frame
+    child_frame_id: "AGENTID/body"     # body-fixed frame
     rot_covariance: 99999.0         # covariance for attitude?
     gps_uere: 1.0                   # User Equivalent Range Error (UERE) of GPS sensor (m)
     use_relative_alt: true          # use relative altitude for local coordinates
-    tf.send: false                  # send TF?
-    tf.frame_id: "/AGENTID/map"              # TF frame_id
+    tf.send: true                  # send TF?
+    tf.frame_id: "world"              # TF frame_id
     tf.global_frame_id: "earth"     # TF earth frame_id
-    tf.child_frame_id: "/AGENTID/base_link"  # TF child_frame_id
-
-# local_position
-/**/local_position:
-  ros__parameters:
-    frame_id: "/AGENTID/map"
-    tf.send: true
-    tf.frame_id: "/AGENTID/map"
-    tf.child_frame_id: "/AGENTID/base_link"
-    tf.send_fcu: false
-
-# setpoint_accel
-/**/setpoint_accel:
-  ros__parameters:
-    send_force: false
-
-# setpoint_attitude
-/**/setpoint_attitude:
-  ros__parameters:
-    reverse_thrust: false       # allow reversed thrust
-    use_quaternion: false       # enable PoseStamped topic subscriber
-    tf.listen: false            # enable tf listener (disable topic subscribers)
-    tf.frame_id: "/AGENTID/map"
-    tf.child_frame_id: "/AGENTID/target_attitude"
-    tf.rate_limit: 50.0
+    tf.child_frame_id: "AGENTID/body"  # TF child_frame_id
 
 # setpoint_position
 /**/setpoint_position:
   ros__parameters:
     tf.listen: false            # enable tf listener (disable topic subscribers)
-    tf.frame_id: "/AGENTID/map"
-    tf.child_frame_id: "/AGENTID/target_position"
+    tf.frame_id: "AGENTID/local"
+    tf.child_frame_id: "AGENTID/body"
     tf.rate_limit: 50.0
-    mav_frame: LOCAL_NED
-
-# setpoint_velocity
-/**/setpoint_velocity:
-  ros__parameters:
     mav_frame: LOCAL_NED

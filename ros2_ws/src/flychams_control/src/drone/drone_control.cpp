@@ -40,7 +40,7 @@ namespace flychams::control
 		command_counter_ = 0;
 
 		// Create mavros communication
-		mavros_comm_ = std::make_shared<MavrosCommunication>(agent_id_, node_);
+		mavros_comm_ = std::make_shared<MavrosCommunication>(agent_id_, node_, config_tools_, topic_tools_, transform_tools_, module_cb_group_);
 
 		// Subscribe to status, position and setpoint topics
 		agent_.status_sub = topic_tools_->createAgentStatusSubscriber(agent_id_,
@@ -246,7 +246,7 @@ namespace flychams::control
 	{
 		if (agent_.status == AgentStatus::IDLE || agent_.status == AgentStatus::TAKEOFF)
 		{
-			mavros_comm_->setPosition(agent_.position.x, agent_.position.y, takeoff_altitude_);
+			mavros_comm_->setLocalPosition(agent_.position.x, agent_.position.y, takeoff_altitude_);
 			return true;
 		}
 		else
@@ -257,7 +257,7 @@ namespace flychams::control
 	{
 		if (agent_.status == AgentStatus::TAKEOFF || agent_.status == AgentStatus::MISSION)
 		{
-			mavros_comm_->setPosition(agent_.position.x, agent_.position.y, agent_.position.z);
+			mavros_comm_->setLocalPosition(agent_.position.x, agent_.position.y, agent_.position.z);
 			return true;
 		}
 		else
@@ -268,7 +268,7 @@ namespace flychams::control
 	{
 		if (agent_.status == AgentStatus::MISSION)
 		{
-			mavros_comm_->setPosition(agent_.setpoint.x, agent_.setpoint.y, agent_.setpoint.z);
+			mavros_comm_->setLocalPosition(agent_.setpoint.x, agent_.setpoint.y, agent_.setpoint.z);
 			RCLCPP_INFO(node_->get_logger(), "Drone control: Setpoint sent to agent %s",
 				agent_id_.c_str());
 			RCLCPP_INFO(node_->get_logger(), "Drone control: Setpoint: %f, %f, %f",

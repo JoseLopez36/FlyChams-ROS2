@@ -3,11 +3,13 @@
 # Enable: true launches the node, false does not
 # Log levels: debug, info, warn, error, fatal
 
-# ------------------- GLOBAL SETUP NODES -------------------
-# AirSim node
-airsim: [true, 'warn']
+# ------------------- GLOBAL SETUP NODES -------------------\
 # Registrator node
 registrator: [true, 'info']
+# Frames node
+frames: [false, 'info']
+# AirSim node
+airsim: [true, 'warn']
 
 # ------------------- GLOBAL RUN NODES -------------------
 # Perception nodes
@@ -31,8 +33,8 @@ mavros: [true, 'info']
 
 # ------------------- AGENT RUN NODES -------------------
 # Control nodes
-drone_state: [true, 'error']
-drone_control: [true, 'error']
+drone_state: [true, 'info']
+drone_control: [true, 'info']
 camera_control: [true, 'error']
 # Coordination nodes
 agent_positioning: [true, 'error']

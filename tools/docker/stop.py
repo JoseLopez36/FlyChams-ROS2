@@ -2,6 +2,10 @@
 
 import libtmux
 import subprocess
+import threading
+
+def stop_containers(filter_name):
+    subprocess.run(f"docker ps -q --filter name={filter_name} | xargs -r docker stop", shell=True)
 
 def main():
     session_name = "flychams"
@@ -28,8 +32,16 @@ def main():
     # Stop Docker Containers
     print("Stopping FlyChams containers...")
     try:
-        # Stop all FlyChams containers
-        subprocess.run("docker ps -q --filter name=flychams-* | xargs -r docker stop", shell=True)
+        # Stop all FlyChams containers in parallel
+        threads = [
+            threading.Thread(target=stop_containers, args=("flychams-global",)),
+            threading.Thread(target=stop_containers, args=("flychams-AGENT*",)),
+        ]
+
+        for t in threads:
+            t.start()
+        for t in threads:
+            t.join()
         
         print("FlyChams containers stopped successfully")
     except Exception as e:

@@ -8,10 +8,11 @@ namespace airsim_wrapper
     // CONSTRUCTOR/DESTRUCTOR
     // ════════════════════════════════════════════════════════════════════════════
 
-    AirsimWrapper::AirsimWrapper(const std::shared_ptr<rclcpp::Node> nh, const std::string& host_ip, uint16_t host_port)
+    AirsimWrapper::AirsimWrapper(const std::shared_ptr<rclcpp::Node> nh, const std::string& host_ip, uint16_t host_port, bool broadcast_transforms)
         : airsim_settings_parser_(host_ip, host_port)
         , host_ip_(host_ip)
         , host_port_(host_port)
+        , broadcast_transforms_(broadcast_transforms)
         , airsim_client_state_(nullptr)
         , airsim_client_control_(nullptr)
         , airsim_client_window_(nullptr)
@@ -29,8 +30,11 @@ namespace airsim_wrapper
         }
 
         // Create TF broadcaster and static TF broadcaster
-        tf_broadcaster_ = std::make_shared<tf2_ros::TransformBroadcaster>(nh_);
-        static_tf_broadcaster_ = std::make_shared<tf2_ros::StaticTransformBroadcaster>(nh_);
+        if (broadcast_transforms_)
+        {
+            tf_broadcaster_ = std::make_shared<tf2_ros::TransformBroadcaster>(nh_);
+            static_tf_broadcaster_ = std::make_shared<tf2_ros::StaticTransformBroadcaster>(nh_);
+        }
         tf_buffer_ = std::make_shared<tf2_ros::Buffer>(nh_->get_clock());
         tf_listener_ = std::make_shared<tf2_ros::TransformListener>(*tf_buffer_);
 
@@ -295,14 +299,20 @@ namespace airsim_wrapper
         local_tf.child_frame_id = vehicle_ros->local_frame_id;
         local_tf.header.stamp = get_sim_clock_time();
         local_tf.transform = get_transform_msg_from_airsim(vehicle_setting.position, vehicle_setting.rotation);
-        static_tf_broadcaster_->sendTransform(local_tf);
+        if (broadcast_transforms_)
+        {
+            static_tf_broadcaster_->sendTransform(local_tf);
+        }
 
         // Local to Body transform
         body_tf.header.frame_id = vehicle_ros->local_frame_id;
         body_tf.child_frame_id = vehicle_ros->body_frame_id;
         body_tf.header.stamp = get_sim_clock_time();
         body_tf.transform = geometry_msgs::msg::Transform();
-        tf_broadcaster_->sendTransform(body_tf);
+        if (broadcast_transforms_)
+        {
+            tf_broadcaster_->sendTransform(body_tf);
+        }
     }
 
     void AirsimWrapper::initialize_camera_tf(VehicleROS* vehicle_ros, CameraROS* camera_ros, const CameraSetting& camera_setting)
@@ -316,14 +326,20 @@ namespace airsim_wrapper
         body_tf.header.stamp = get_sim_clock_time();
         const auto& pose = client_get_camera_pose(vehicle_ros->vehicle_name, camera_ros->camera_name);
         body_tf.transform = get_gimbal_transform_msg_from_airsim(pose.position, pose.orientation);
-        tf_broadcaster_->sendTransform(body_tf);
+        if (broadcast_transforms_)
+        {
+            tf_broadcaster_->sendTransform(body_tf);
+        }
 
         // Body to Optical transform
         optical_tf.header.frame_id = camera_ros->body_frame_id;
         optical_tf.child_frame_id = camera_ros->optical_frame_id;
         optical_tf.header.stamp = get_sim_clock_time();
         optical_tf.transform = get_camera_optical_tf();
-        static_tf_broadcaster_->sendTransform(optical_tf);
+        if (broadcast_transforms_)
+        {
+            static_tf_broadcaster_->sendTransform(optical_tf);
+        }
     }
 
     // ════════════════════════════════════════════════════════════════════════════
@@ -1016,12 +1032,18 @@ namespace airsim_wrapper
             vehicle_ros->global_odom_pub->publish(vehicle_ros->global_odom);
 
             // Publish vehicle odom tf
-            tf_broadcaster_->sendTransform(vehicle_ros->body_tf_msg);
+            if (broadcast_transforms_)
+            {
+                tf_broadcaster_->sendTransform(vehicle_ros->body_tf_msg);
+            }
 
             // Publish camera body tf
             for (auto& [_, camera_ros] : vehicle_ros->camera_map)
             {
-                tf_broadcaster_->sendTransform(camera_ros->body_tf_msg);
+                if (broadcast_transforms_)
+                {
+                    tf_broadcaster_->sendTransform(camera_ros->body_tf_msg);
+                }
             }
         }
     }

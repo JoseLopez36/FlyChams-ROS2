@@ -102,7 +102,7 @@ namespace airsim_wrapper
     // ════════════════════════════════════════════════════════════════
     // PUBLIC: Constructors/Destructors
     public:
-        AirsimWrapper(const std::shared_ptr<rclcpp::Node> nh, const std::string& host_ip, uint16_t host_port);
+        AirsimWrapper(const std::shared_ptr<rclcpp::Node> nh, const std::string& host_ip, uint16_t host_port, bool broadcast_transforms);
         ~AirsimWrapper();
         void shutdown();
 
@@ -330,6 +330,7 @@ namespace airsim_wrapper
         AirSimSettingsParser airsim_settings_parser_;
         std::string host_ip_;
         uint16_t host_port_;
+        bool broadcast_transforms_;
         double update_airsim_state_every_n_sec_;
         double update_sim_clock_every_n_sec_;
 

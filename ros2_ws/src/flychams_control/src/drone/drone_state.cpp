@@ -29,12 +29,12 @@ namespace flychams::control
         agent_.position_out_msg.header = RosUtils::createHeader(node_, transform_tools_->getGlobalFrame());
 
         // Create mavros communication
-        mavros_comm_ = std::make_shared<MavrosCommunication>(agent_id_, node_);
+        mavros_comm_ = std::make_shared<MavrosCommunication>(agent_id_, node_, config_tools_, topic_tools_, transform_tools_, module_cb_group_);
 
         // Subscribe to mavros topics
         agent_.status_in_sub = mavros_comm_->subscribeStatus(
             std::bind(&DroneState::statusInCallback, this, std::placeholders::_1), sub_options_with_module_cb_group_);
-        agent_.odom_in_sub = mavros_comm_->subscribeOdometry(
+        agent_.odom_in_sub = mavros_comm_->subscribeLocalOdometry(
             std::bind(&DroneState::odomInCallback, this, std::placeholders::_1), sub_options_with_module_cb_group_);
 
         // Create publisher for agent status and position
@@ -78,9 +78,26 @@ namespace flychams::control
         agent_.odom_in_msg = *msg;
         agent_.has_odom_in = true;
 
-        // Publish agent position
-        agent_.position_out_msg.header.stamp = RosUtils::now(node_);
-        agent_.position_out_msg.point = agent_.odom_in_msg.pose.pose.position;
+        // Create pose stamped from odometry
+        PoseStampedMsg pose_in;
+        pose_in.header = msg->header;
+        pose_in.pose = msg->pose.pose;
+
+        // Transform to global frame
+        PoseStampedMsg pose_out;
+        std::string global_frame = transform_tools_->getGlobalFrame();
+        try
+        {
+            pose_out = transform_tools_->transform(pose_in, msg->header.frame_id, global_frame);
+        }
+        catch (const tf2::TransformException& ex)
+        {
+            return;
+        }
+
+        // Publish agent position in global frame
+        agent_.position_out_msg.header = pose_out.header;
+        agent_.position_out_msg.point = pose_out.pose.position;
         agent_.position_out_pub->publish(agent_.position_out_msg);
     }
 

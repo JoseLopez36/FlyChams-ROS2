@@ -55,9 +55,44 @@ def launch_setup(context, *args, **kwargs):
     # Get the node activation settings from config
     nodes = {
         # Global setup nodes
-        'airsim': launch.get('airsim', [True, 'info']),
+        'frames': launch.get('frames', [True, 'info']),
         'registrator': launch.get('registrator', [True, 'info']),
+        'airsim': launch.get('airsim', [True, 'info'])
     }
+
+    # Conditionally add Frames node
+    if nodes['frames'][0]:
+        ld.append(
+            Node(
+                package='flychams_bringup',
+                executable='frames_node',
+                name='frames_node',
+                output='screen',
+                namespace='flychams/global',
+                parameters=[
+                    system_path, 
+                    topics_path, 
+                    frames_path
+                ]
+            )
+        )
+
+    # Conditionally add Registrator node
+    if nodes['registrator'][0]:
+        ld.append(
+            Node(
+                package='flychams_bringup',
+                executable='registrator_node',
+                name='registrator_node',
+                output='screen',
+                namespace='flychams/global',
+                parameters=[
+                    system_path, 
+                    topics_path, 
+                    frames_path
+                ]
+            )
+        )
 
     # Conditionally add AirSim node
     if nodes['airsim'][0]:
@@ -77,25 +112,9 @@ def launch_setup(context, *args, **kwargs):
                     'camera_body_frame_id': 'body',
                     'camera_optical_frame_id': 'optical',
                     'host_ip': 'localhost',
-                    'host_port': 41451
+                    'host_port': 41451,
+                    'broadcast_transforms': False
                 }]
-            )
-        )
-
-    # Conditionally add Registrator node
-    if nodes['registrator'][0]:
-        ld.append(
-            Node(
-                package='flychams_bringup',
-                executable='registrator_node',
-                name='registrator_node',
-                output='screen',
-                namespace='flychams/global',
-                parameters=[
-                    system_path, 
-                    topics_path, 
-                    frames_path
-                ]
             )
         )
 

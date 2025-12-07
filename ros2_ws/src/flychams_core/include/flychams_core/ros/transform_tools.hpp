@@ -1,5 +1,8 @@
 #pragma once
 
+// TF2 includes
+#include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
+
 // Tools includes
 #include "flychams_core/config/config_tools.hpp"
 
@@ -136,9 +139,43 @@ namespace flychams::core
 
                 // Set identity transform if transformation failed
                 transform_msg = TransformMsg();
+                // Set identity quaternion
+                transform_msg.rotation.w = 1.0;
             }
 
             return transform_msg;
+        }
+
+        PoseStampedMsg transform(const PoseStampedMsg& pose_in, const std::string& from_frame, const std::string& to_frame)
+        {
+            // Initialize pose out
+            PoseStampedMsg pose_out = pose_in;
+            pose_out.header.frame_id = to_frame;
+
+            // If frames are the same, just copy
+            if (from_frame == to_frame)
+            {
+                return pose_out;
+            }
+
+            try
+            {
+                // Use the buffer to transform the pose directly
+                TransformStampedMsg transform = tf_buffer_->lookupTransform(
+                    from_frame, 
+                    to_frame,
+                    tf2::TimePointZero
+                );
+                
+                tf2::doTransform(pose_in, pose_out, transform);
+                return pose_out;
+            }
+            catch (const tf2::TransformException& ex)
+            {
+                RCLCPP_WARN(node_->get_logger(), "Failed to transform pose from %s to %s: %s", 
+                    from_frame.c_str(), to_frame.c_str(), ex.what());
+                return pose_out;
+            }
         }
 
     public: // Transform broadcast utilities
