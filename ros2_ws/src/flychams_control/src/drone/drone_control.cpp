@@ -45,6 +45,11 @@ namespace flychams::control
 		// Subscribe to status, position and setpoint topics
 		agent_.status_sub = topic_tools_->createAgentStatusSubscriber(agent_id_,
 			std::bind(&DroneControl::statusCallback, this, std::placeholders::_1), sub_options_with_module_cb_group_);
+		agent_.global_origin_sub = node_->create_subscription<GeoPointStampedMsg>(
+			"/flychams/global_origin",
+			rclcpp::QoS(10).transient_local(),
+			std::bind(&DroneControl::globalOriginCallback, this, std::placeholders::_1),
+			sub_options_with_module_cb_group_);
 		agent_.position_sub = topic_tools_->createAgentPositionSubscriber(agent_id_,
 			std::bind(&DroneControl::positionCallback, this, std::placeholders::_1), sub_options_with_module_cb_group_);
 		agent_.setpoint_sub = topic_tools_->createAgentPositionSetpointSubscriber(agent_id_,
@@ -60,6 +65,7 @@ namespace flychams::control
 	{
 		// Destroy subscribers
 		agent_.status_sub.reset();
+		agent_.global_origin_sub.reset();
 		agent_.position_sub.reset();
 		agent_.setpoint_sub.reset();
 		// Destroy mavros communication
@@ -77,6 +83,15 @@ namespace flychams::control
 		// Update current status
 		agent_.status = static_cast<AgentStatus>(msg->status);
 		agent_.has_status = true;
+	}
+
+	void DroneControl::globalOriginCallback(const core::GeoPointStampedMsg::SharedPtr msg)
+	{
+		RCLCPP_INFO(node_->get_logger(), "Drone control: Received global origin: %f, %f, %f",
+			msg->position.latitude, msg->position.longitude, msg->position.altitude);
+
+		// Set global origin
+		mavros_comm_->setGlobalOrigin(msg->position.latitude, msg->position.longitude, msg->position.altitude);
 	}
 
 	void DroneControl::positionCallback(const core::PointStampedMsg::SharedPtr msg)

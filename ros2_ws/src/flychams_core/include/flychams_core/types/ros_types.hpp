@@ -24,6 +24,12 @@
 // Navigation messages
 #include <nav_msgs/msg/odometry.hpp>
 
+// Sensor messages
+#include <sensor_msgs/msg/nav_sat_fix.hpp>
+
+// Geographic messages
+#include <geographic_msgs/msg/geo_point_stamped.hpp>
+
 // Visualization messages
 #include <visualization_msgs/msg/marker.hpp>
 #include <visualization_msgs/msg/marker_array.hpp>
@@ -124,6 +130,10 @@ namespace flychams::core
     using TransformStampedMsg = geometry_msgs::msg::TransformStamped;
     // Odometry
     using OdometryMsg = nav_msgs::msg::Odometry;
+    // NavSatFix
+    using NavSatFixMsg = sensor_msgs::msg::NavSatFix;
+    // Geographic
+    using GeoPointStampedMsg = geographic_msgs::msg::GeoPointStamped;
     // Marker
     using MarkerMsg = visualization_msgs::msg::Marker;
     using MarkerArrayMsg = visualization_msgs::msg::MarkerArray;

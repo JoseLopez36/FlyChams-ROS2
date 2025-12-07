@@ -55,12 +55,13 @@ namespace flychams::control
 			bool has_setpoint;
 			// Subscribers
 			core::SubscriberPtr<core::AgentStatusMsg> status_sub;
+			core::SubscriberPtr<core::GeoPointStampedMsg> global_origin_sub;
 			core::SubscriberPtr<core::PointStampedMsg> position_sub;
 			core::SubscriberPtr<core::PointStampedMsg> setpoint_sub;
 			// Constructor
 			Agent()
 				: status(), has_status(false), position(), has_position(false), setpoint(),
-				has_setpoint(false), status_sub(), position_sub(), setpoint_sub()
+				has_setpoint(false), status_sub(), global_origin_sub(), position_sub(), setpoint_sub()
 			{
 			}
 		};
@@ -86,6 +87,7 @@ namespace flychams::control
 
 	private: // Callbacks
 		void statusCallback(const core::AgentStatusMsg::SharedPtr msg);
+		void globalOriginCallback(const core::GeoPointStampedMsg::SharedPtr msg);
 		void positionCallback(const core::PointStampedMsg::SharedPtr msg);
 		void setpointPositionCallback(const core::PointStampedMsg::SharedPtr msg);
 

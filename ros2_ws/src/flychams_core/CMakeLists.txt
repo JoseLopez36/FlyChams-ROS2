@@ -13,6 +13,7 @@ find_package(std_msgs REQUIRED)
 find_package(geometry_msgs REQUIRED)
 find_package(nav_msgs REQUIRED)
 find_package(sensor_msgs REQUIRED)
+find_package(geographic_msgs REQUIRED)
 find_package(visualization_msgs REQUIRED)
 find_package(Eigen3 REQUIRED)
 find_package(tf2 REQUIRED)
@@ -61,6 +62,7 @@ ament_target_dependencies(${PROJECT_NAME}
   geometry_msgs
   nav_msgs
   sensor_msgs
+  geographic_msgs
   visualization_msgs
   Eigen3
   tf2
@@ -113,6 +115,7 @@ ament_export_dependencies(
   geometry_msgs
   nav_msgs
   sensor_msgs
+  geographic_msgs
   visualization_msgs
   Eigen3
   tf2

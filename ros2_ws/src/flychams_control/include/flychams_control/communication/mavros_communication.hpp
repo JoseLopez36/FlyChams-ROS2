@@ -47,10 +47,11 @@ namespace flychams::control
         bool armDisarm(const bool& arm);
         bool takeoff(const float& z);
         bool land();
+        void setGlobalOrigin(const double& lat, const double& lon, const double& alt);
         bool enableOffboard(const bool& enable);
         void setLocalPosition(const float& x, const float& y, const float& z);
         void setGlobalPosition(const float& x, const float& y, const float& z);
-
+        
     private: // Parameters
         core::ID agent_id_;
 
@@ -62,6 +63,7 @@ namespace flychams::control
         core::ClientPtr<mavros_msgs::srv::SetMode> set_mode_client_;
 
         // Publishers
+        core::PublisherPtr<core::GeoPointStampedMsg> gp_origin_pub_;
         core::PublisherPtr<core::PoseStampedMsg> local_pos_pub_;
     };
 

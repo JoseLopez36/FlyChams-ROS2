@@ -7,17 +7,17 @@
 # Registrator node
 registrator: [true, 'info']
 # Frames node
-frames: [false, 'info']
+frames: [true, 'info']
 # AirSim node
-airsim: [true, 'warn']
+airsim: [true, 'error']
 
 # ------------------- GLOBAL RUN NODES -------------------
 # Perception nodes
-target_clustering: [true, 'error']
-cluster_analysis: [true, 'error']
+target_clustering: [false, 'error']
+cluster_analysis: [false, 'error']
 # Coordination nodes
-agent_assignment: [true, 'error']
-agent_analysis: [true, 'error']
+agent_assignment: [false, 'error']
+agent_analysis: [false, 'error']
 # Simulation nodes
 gui_manager: [true, 'error']
 metrics_factory: [true, 'error']
@@ -35,7 +35,7 @@ mavros: [true, 'info']
 # Control nodes
 drone_state: [true, 'info']
 drone_control: [true, 'info']
-camera_control: [true, 'error']
+camera_control: [false, 'error']
 # Coordination nodes
-agent_positioning: [true, 'error']
-agent_tracking: [true, 'error']
+agent_positioning: [false, 'error']
+agent_tracking: [false, 'error']

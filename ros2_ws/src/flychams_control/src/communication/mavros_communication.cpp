@@ -15,7 +15,8 @@ namespace flychams::control
         takeoff_client_ = node_->create_client<mavros_msgs::srv::CommandTOL>("/mavros/" + agent_id_ + "/cmd/takeoff");
         land_client_ = node_->create_client<mavros_msgs::srv::CommandTOL>("/mavros/" + agent_id_ + "/cmd/land");
         set_mode_client_ = node_->create_client<mavros_msgs::srv::SetMode>("/mavros/" + agent_id_ + "/set_mode");
-        local_pos_pub_ = node_->create_publisher<geometry_msgs::msg::PoseStamped>("/mavros/" + agent_id_ + "/setpoint_position/local", 10);
+        gp_origin_pub_ = node_->create_publisher<GeoPointStampedMsg>("/mavros/" + agent_id_ + "/global_position/set_gp_origin", 10);
+        local_pos_pub_ = node_->create_publisher<PoseStampedMsg>("/mavros/" + agent_id_ + "/setpoint_position/local", 10);
     }
 
     void MavrosCommunication::onShutdown()
@@ -26,6 +27,7 @@ namespace flychams::control
         land_client_.reset();
         set_mode_client_.reset();
         // Destroy publishers
+        gp_origin_pub_.reset();
         local_pos_pub_.reset();
     }
 
@@ -79,6 +81,18 @@ namespace flychams::control
         request->custom_mode = enable ? "OFFBOARD" : "AUTO.LOITER";
 
         return RosUtils::sendRequest<mavros_msgs::srv::SetMode>(node_, set_mode_client_, request, 2000);
+    }
+
+    void MavrosCommunication::setGlobalOrigin(const double& lat, const double& lon, const double& alt)
+    {
+        GeoPointStampedMsg msg;
+        msg.header.stamp = node_->now();
+        msg.header.frame_id = "world";
+        msg.position.latitude = lat;
+        msg.position.longitude = lon;
+        msg.position.altitude = alt;
+        
+        gp_origin_pub_->publish(msg);
     }
 
     void MavrosCommunication::setLocalPosition(const float& x, const float& y, const float& z)

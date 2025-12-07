@@ -2,9 +2,9 @@
   ros__parameters:
     startup_px4_usb_quirk: false
 
-# --- system plugins ---
+# --- System plugins ---
 
-# sys_status
+# System status
 /**/sys:
   ros__parameters:
     min_voltage: [10.0]   # diagnostics min voltage, use a vector i.e. [16.2, 16.0] for multiple batteries, up-to 10 are supported
@@ -13,7 +13,7 @@
     heartbeat_rate: 1.0   # send heartbeat rate in Hertz
     conn_timeout: 10.0    # heartbeat timeout in seconds
 
-# sys_time
+# System time
 /**/time:
   ros__parameters:
     time_ref_source: "fcu"    # time_reference source
@@ -22,31 +22,39 @@
     timesync_rate: 100.0      # TIMESYNC rate in Hertz (feature disabled if 0.0)
     system_time_rate: 1.0     # send system time to FCU rate in Hertz (disabled if 0.0)
 
-# --- mavros plugins (alphabetical order) ---
+# --- Mavros plugins ---
 
-# command
+# Command
 /**/cmd:
   ros__parameters:
     use_comp_id_system_control: false   # quirk for some old FCUs
 
-# global_position
+# Global position
 /**/global_position:
   ros__parameters:
-    frame_id: "world"                 # origin frame
-    child_frame_id: "AGENTID/body"     # body-fixed frame
-    rot_covariance: 99999.0         # covariance for attitude?
-    gps_uere: 1.0                   # User Equivalent Range Error (UERE) of GPS sensor (m)
-    use_relative_alt: true          # use relative altitude for local coordinates
-    tf.send: true                  # send TF?
-    tf.frame_id: "world"              # TF frame_id
-    tf.global_frame_id: "earth"     # TF earth frame_id
-    tf.child_frame_id: "AGENTID/body"  # TF child_frame_id
+    frame_id: "world"                   # origin frame
+    child_frame_id: "AGENTID/body"      # body-fixed frame
+    rot_covariance: 99999.0             # covariance for attitude?
+    gps_uere: 1.0                       # User Equivalent Range Error (UERE) of GPS sensor (m)
+    use_relative_alt: true              # use relative altitude for local coordinates
+    tf.send: true                       # send TF?
+    tf.frame_id: "world"                # TF frame_id
+    tf.global_frame_id: "earth"         # TF earth frame_id
+    tf.child_frame_id: "AGENTID/body"   # TF child_frame_id
 
-# setpoint_position
+# Local position
+/**/local_position:
+  ros__parameters:
+    frame_id: "world"
+    tf.send: true
+    tf.frame_id: "world"
+    tf.child_frame_id: "AGENTID/body"
+
+# Setpoint position
 /**/setpoint_position:
   ros__parameters:
-    tf.listen: false            # enable tf listener (disable topic subscribers)
-    tf.frame_id: "AGENTID/local"
+    tf.listen: true                     # enable tf listener (enable topic subscribers)
+    tf.frame_id: "world"
     tf.child_frame_id: "AGENTID/body"
     tf.rate_limit: 50.0
     mav_frame: LOCAL_NED

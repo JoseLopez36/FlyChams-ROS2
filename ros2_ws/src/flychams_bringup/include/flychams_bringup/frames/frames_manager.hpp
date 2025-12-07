@@ -36,33 +36,8 @@ namespace flychams::bringup
 	private: // Parameters
 		core::ID agent_id_;
 
-	private: // Data
-		// Setup flag
-        bool frames_setup_flag_ = false;
-		// Latest odometry
-		core::OdometryMsg latest_odom_;
-		bool has_odom_ = false;
-
-    private: // Callbacks
-        void homeCallback(const mavros_msgs::msg::HomePosition::SharedPtr msg);
-		void odomCallback(const core::OdometryMsg::SharedPtr msg);
-
 	public: // Frames management
-		void setupAgentFrames(const geometry_msgs::msg::Point& home_position, const geometry_msgs::msg::Quaternion& home_orientation);
 		void setupCameraFrames();
-
-	private: // Update
-		void update();
-
-	private: // ROS components
-		// Timer
-		core::TimerPtr update_timer_;
-
-		// Home position subscriber
-        core::SubscriberPtr<mavros_msgs::msg::HomePosition> home_sub_;
-
-		// Local odometry subscriber
-		core::SubscriberPtr<core::OdometryMsg> odom_sub_;
 	};
 
 } // namespace flychams::bringup
