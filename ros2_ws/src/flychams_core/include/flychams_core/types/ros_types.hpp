@@ -28,6 +28,7 @@
 #include <sensor_msgs/msg/nav_sat_fix.hpp>
 
 // Geographic messages
+#include <geographic_msgs/msg/geo_point.hpp>
 #include <geographic_msgs/msg/geo_point_stamped.hpp>
 
 // Visualization messages
@@ -133,6 +134,7 @@ namespace flychams::core
     // NavSatFix
     using NavSatFixMsg = sensor_msgs::msg::NavSatFix;
     // Geographic
+    using GeoPointMsg = geographic_msgs::msg::GeoPoint;
     using GeoPointStampedMsg = geographic_msgs::msg::GeoPointStamped;
     // Marker
     using MarkerMsg = visualization_msgs::msg::Marker;

@@ -22,6 +22,10 @@ find_package(tf2_geometry_msgs REQUIRED)
 find_package(OpenCV REQUIRED)
 find_package(flychams_interfaces REQUIRED)
 
+## Find GeographicLib
+set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH};/usr/share/cmake/geographiclib")
+find_package(GeographicLib REQUIRED)
+
 # Add external libraries
 add_subdirectory(external/OpenXLSX ${CMAKE_CURRENT_BINARY_DIR}/OpenXLSX_build)
 add_subdirectory(external/json ${CMAKE_CURRENT_BINARY_DIR}/json_build)
@@ -37,6 +41,7 @@ add_library(${PROJECT_NAME} SHARED
   src/base/base_node.cpp
   src/base/base_registrator_node.cpp
   src/base/base_discoverer_node.cpp
+  src/utils/geo_utils.cpp
 )
 
 target_include_directories(${PROJECT_NAME} PUBLIC
@@ -45,6 +50,7 @@ target_include_directories(${PROJECT_NAME} PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/external/json/single_include>
   $<INSTALL_INTERFACE:include>
   ${OpenCV_INCLUDE_DIRS}
+  ${GeographicLib_INCLUDE_DIRS}
 )
 
 target_link_libraries(${PROJECT_NAME}
@@ -54,6 +60,7 @@ target_link_libraries(${PROJECT_NAME}
     tf2_geometry_msgs::tf2_geometry_msgs
     ${OpenCV_LIBS}
     OpenXLSX::OpenXLSX
+    ${GeographicLib_LIBRARIES}
 )
 
 ament_target_dependencies(${PROJECT_NAME}

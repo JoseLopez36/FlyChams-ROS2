@@ -7,6 +7,7 @@
 #include "flychams_core/types/core_types.hpp"
 #include "flychams_core/types/config_types.hpp"
 #include "flychams_core/utils/math_utils.hpp"
+#include "flychams_core/utils/geo_utils.hpp"
 
 namespace flychams::core
 {
@@ -139,6 +140,13 @@ namespace flychams::core
 
                 if (config_ptr->autopilot == Autopilot::PX4)
                 {
+                    // Calculate agent geopoint
+                    GeoPointMsg origin;
+                    origin.latitude = config_ptr->environment.geopoint.latitude;
+                    origin.longitude = config_ptr->environment.geopoint.longitude;
+                    origin.altitude = config_ptr->environment.geopoint.altitude;
+                    GeoPointMsg agent_geo = GeoUtils::toGlobal(ini_pos.x(), -ini_pos.y(), -ini_pos.z(), origin);
+
                     vehicles[agent_id]["VehicleType"] = "PX4Multirotor";
                     vehicles[agent_id]["Model"] = drone.type == DroneType::Quadcopter ? "Quadcopter" : "FlyChamsHexacopter";
                     vehicles[agent_id]["UseSerial"] = false;
@@ -153,8 +161,8 @@ namespace flychams::core
                         {"NAV_RCL_ACT", 0},
                         {"NAV_DLL_ACT", 0},
                         {"COM_OBL_ACT", 1},
-                        {"LPE_LAT", config_ptr->environment.geopoint.latitude},
-                        {"LPE_LON", config_ptr->environment.geopoint.longitude}
+                        {"LPE_LAT", agent_geo.latitude},
+                        {"LPE_LON", agent_geo.longitude}
                     };
                 }
                 else

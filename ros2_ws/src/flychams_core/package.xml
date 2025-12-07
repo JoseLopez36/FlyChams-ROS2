@@ -20,6 +20,7 @@
   <depend>nav_msgs</depend>
   <depend>sensor_msgs</depend>
   <depend>geographic_msgs</depend>
+  <depend>geographiclib</depend>
   <depend>visualization_msgs</depend>
   <depend>Eigen3</depend>
   <depend>tf2</depend>
