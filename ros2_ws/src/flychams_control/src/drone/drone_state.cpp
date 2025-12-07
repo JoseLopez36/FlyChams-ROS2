@@ -34,7 +34,7 @@ namespace flychams::control
         // Subscribe to mavros topics
         agent_.status_in_sub = mavros_comm_->subscribeStatus(
             std::bind(&DroneState::statusInCallback, this, std::placeholders::_1), sub_options_with_module_cb_group_);
-        agent_.odom_in_sub = mavros_comm_->subscribeLocalOdometry(
+        agent_.odom_in_sub = mavros_comm_->subscribeOdometry(
             std::bind(&DroneState::odomInCallback, this, std::placeholders::_1), sub_options_with_module_cb_group_);
 
         // Create publisher for agent status and position

@@ -41,7 +41,7 @@ namespace flychams::control
         return node_->create_subscription<mavros_msgs::msg::State>("/mavros/" + agent_id_ + "/state", qos, callback, options);
     }
 
-    SubscriberPtr<OdometryMsg> MavrosCommunication::subscribeLocalOdometry(const std::function<void(const OdometryMsg::SharedPtr)>& callback, const rclcpp::SubscriptionOptions& options)
+    SubscriberPtr<OdometryMsg> MavrosCommunication::subscribeOdometry(const std::function<void(const OdometryMsg::SharedPtr)>& callback, const rclcpp::SubscriptionOptions& options)
     {
         rclcpp::QoS qos = rclcpp::QoS(rclcpp::KeepLast(10)).best_effort();  
         return node_->create_subscription<OdometryMsg>("/mavros/" + agent_id_ + "/global_position/local", qos, callback, options);
@@ -87,7 +87,7 @@ namespace flychams::control
     {
         GeoPointStampedMsg msg;
         msg.header.stamp = node_->now();
-        msg.header.frame_id = "world";
+        msg.header.frame_id = transform_tools_->getGlobalFrame();
         msg.position.latitude = lat;
         msg.position.longitude = lon;
         msg.position.altitude = alt;
@@ -95,11 +95,11 @@ namespace flychams::control
         gp_origin_pub_->publish(msg);
     }
 
-    void MavrosCommunication::setLocalPosition(const float& x, const float& y, const float& z)
+    void MavrosCommunication::setPosition(const float& x, const float& y, const float& z)
     {
         // Create local pose stamped message
         PoseStampedMsg msg;
-        msg.header = RosUtils::createHeader(node_, transform_tools_->getAgentLocalFrame(agent_id_));
+        msg.header = RosUtils::createHeader(node_, transform_tools_->getGlobalFrame());
         msg.pose.position.x = x;
         msg.pose.position.y = y;
         msg.pose.position.z = z;
@@ -107,26 +107,6 @@ namespace flychams::control
         
         // Publish message
         local_pos_pub_->publish(msg);
-    }
-
-    void MavrosCommunication::setGlobalPosition(const float& x, const float& y, const float& z)
-    {
-        // Get agent local frame
-        std::string agent_local_frame = transform_tools_->getAgentLocalFrame(agent_id_);
-
-        // Create world pose stamped message
-        PoseStampedMsg msg;
-        msg.header = RosUtils::createHeader(node_, transform_tools_->getGlobalFrame());
-        msg.pose.position.x = x;
-        msg.pose.position.y = y;
-        msg.pose.position.z = z;
-        msg.pose.orientation.w = 1.0;
-
-        // Transform pose to agent mavROS map frame
-        PoseStampedMsg msg_transformed = transform_tools_->transform(msg, msg.header.frame_id, agent_local_frame);
-        
-        // Publish message
-        local_pos_pub_->publish(msg_transformed);
     }
 
 } // namespace flychams::control

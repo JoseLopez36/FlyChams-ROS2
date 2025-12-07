@@ -66,6 +66,7 @@ namespace flychams::core
     {
         // Global topics
         std::string registration;
+        std::string global_origin;
         std::string global_metrics;
 
         // Agent topics

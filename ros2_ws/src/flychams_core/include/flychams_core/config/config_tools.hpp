@@ -524,6 +524,7 @@ namespace flychams::core
         {
             // Global topics
             config_ptr->topics.registration = RosUtils::getParameter<std::string>(node_, "global_topics.registration");
+            config_ptr->topics.global_origin = RosUtils::getParameter<std::string>(node_, "global_topics.global_origin");
             config_ptr->topics.global_metrics = RosUtils::getParameter<std::string>(node_, "global_topics.metrics");
 
             // Agent topics

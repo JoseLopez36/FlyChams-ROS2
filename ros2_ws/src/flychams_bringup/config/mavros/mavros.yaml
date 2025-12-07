@@ -45,9 +45,9 @@
 # Local position
 /**/local_position:
   ros__parameters:
-    frame_id: "world"
-    tf.send: true
-    tf.frame_id: "world"
+    frame_id: "AGENTID/local"
+    tf.send: false
+    tf.frame_id: "AGENTID/local"
     tf.child_frame_id: "AGENTID/body"
 
 # Setpoint position

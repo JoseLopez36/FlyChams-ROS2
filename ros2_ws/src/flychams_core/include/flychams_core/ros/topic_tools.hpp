@@ -27,6 +27,7 @@ namespace flychams::core
 
             // Get global topics
             global_topics_.registration = topic_config.registration;
+            global_topics_.global_origin = topic_config.global_origin;
             global_topics_.metrics = topic_config.global_metrics;
 
             // Get agent topics
@@ -75,6 +76,7 @@ namespace flychams::core
         struct GlobalTopics
         {
             std::string registration;
+            std::string global_origin;
             std::string metrics;
         };
         // Agent topics
@@ -131,6 +133,10 @@ namespace flychams::core
         std::string getRegistrationTopic()
         {
             return global_topics_.registration;
+        }
+        std::string getGlobalOriginTopic()
+        {
+            return global_topics_.global_origin;
         }
         std::string getGlobalMetricsTopic()
         {
@@ -224,6 +230,11 @@ namespace flychams::core
         {
             rclcpp::QoS qos = rclcpp::QoS(rclcpp::KeepLast(1)).reliable().transient_local();
             return node_->create_publisher<RegistrationMsg>(getRegistrationTopic(), qos);
+        }
+        PublisherPtr<GeoPointStampedMsg> createGlobalOriginPublisher()
+        {
+            rclcpp::QoS qos = rclcpp::QoS(rclcpp::KeepLast(1)).reliable().transient_local();
+            return node_->create_publisher<GeoPointStampedMsg>(getGlobalOriginTopic(), qos);
         }
         PublisherPtr<GlobalMetricsMsg> createGlobalMetricsPublisher()
         {
@@ -319,6 +330,11 @@ namespace flychams::core
         {
             rclcpp::QoS qos = rclcpp::QoS(rclcpp::KeepLast(1)).reliable().transient_local();
             return node_->create_subscription<RegistrationMsg>(getRegistrationTopic(), qos, callback, options);
+        }
+        SubscriberPtr<GeoPointStampedMsg> createGlobalOriginSubscriber(const std::function<void(const GeoPointStampedMsg::SharedPtr)>& callback, const rclcpp::SubscriptionOptions& options = rclcpp::SubscriptionOptions())
+        {
+            rclcpp::QoS qos = rclcpp::QoS(rclcpp::KeepLast(1)).reliable().transient_local();
+            return node_->create_subscription<GeoPointStampedMsg>(getGlobalOriginTopic(), qos, callback, options);
         }
         SubscriberPtr<GlobalMetricsMsg> createGlobalMetricsSubscriber(const std::function<void(const GlobalMetricsMsg::SharedPtr)>& callback, const rclcpp::SubscriptionOptions& options = rclcpp::SubscriptionOptions())
         {

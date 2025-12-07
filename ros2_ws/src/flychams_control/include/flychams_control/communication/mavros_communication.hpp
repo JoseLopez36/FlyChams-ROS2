@@ -41,7 +41,7 @@ namespace flychams::control
 
     public: // Vehicle state methods
         core::SubscriberPtr<mavros_msgs::msg::State> subscribeStatus(const std::function<void(const mavros_msgs::msg::State::SharedPtr)>& callback, const rclcpp::SubscriptionOptions& options = rclcpp::SubscriptionOptions());
-        core::SubscriberPtr<core::OdometryMsg> subscribeLocalOdometry(const std::function<void(const core::OdometryMsg::SharedPtr)>& callback, const rclcpp::SubscriptionOptions& options = rclcpp::SubscriptionOptions());
+        core::SubscriberPtr<core::OdometryMsg> subscribeOdometry(const std::function<void(const core::OdometryMsg::SharedPtr)>& callback, const rclcpp::SubscriptionOptions& options = rclcpp::SubscriptionOptions());
 
     public: // Vehicle control methods
         bool armDisarm(const bool& arm);
@@ -49,8 +49,7 @@ namespace flychams::control
         bool land();
         void setGlobalOrigin(const double& lat, const double& lon, const double& alt);
         bool enableOffboard(const bool& enable);
-        void setLocalPosition(const float& x, const float& y, const float& z);
-        void setGlobalPosition(const float& x, const float& y, const float& z);
+        void setPosition(const float& x, const float& y, const float& z);
         
     private: // Parameters
         core::ID agent_id_;

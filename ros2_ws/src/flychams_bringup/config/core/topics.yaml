@@ -3,6 +3,7 @@
     # Global topics
     global_topics:
       registration: "/flychams/bringup/registration"                          # Registration.msg (custom)
+      global_origin: "/flychams/bringup/global_origin"                        # GeoPointStamped.msg
       metrics: "/flychams/dashboard/global/metrics"                           # GlobalMetrics.msg (custom)
     # Agent topics
     agent_topics:
