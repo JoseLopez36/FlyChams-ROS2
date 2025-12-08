@@ -1,8 +1,5 @@
 /**:
   ros__parameters:
-    map_frame_id: "world"
-    odom_frame_id: "AGENTID/local"
-    base_link_frame_id: "AGENTID/body"
     startup_px4_usb_quirk: false
 
 # --- System plugins ---
@@ -25,11 +22,6 @@
     timesync_rate: 100.0      # TIMESYNC rate in Hertz (feature disabled if 0.0)
     system_time_rate: 1.0     # send system time to FCU rate in Hertz (disabled if 0.0)
 
-# IMU
-/**/imu:
-  ros__parameters:
-    frame_id: "AGENTID/body"
-
 # --- Mavros plugins ---
 
 # Command
@@ -37,16 +29,21 @@
   ros__parameters:
     use_comp_id_system_control: false   # quirk for some old FCUs
 
+# IMU
+/**/imu:
+  ros__parameters:
+    frame_id: "AGENTID/body"
+
 # Global position
 /**/global_position:
   ros__parameters:
-    frame_id: "world"                   # origin frame
+    frame_id: "AGENTID/local"           # origin frame
     child_frame_id: "AGENTID/body"      # body-fixed frame
     rot_covariance: 99999.0             # covariance for attitude?
     gps_uere: 1.0                       # User Equivalent Range Error (UERE) of GPS sensor (m)
     use_relative_alt: true              # use relative altitude for local coordinates
-    tf.send: true                       # send TF
-    tf.frame_id: "world"                # TF frame_id
+    tf.send: false                      # send TF
+    tf.frame_id: "AGENTID/local"        # TF frame_id
     tf.global_frame_id: "earth"         # TF earth frame_id
     tf.child_frame_id: "AGENTID/body"   # TF child_frame_id
 
@@ -54,7 +51,7 @@
 /**/local_position:
   ros__parameters:
     frame_id: "AGENTID/local"
-    tf.send: false
+    tf.send: true
     tf.frame_id: "AGENTID/local"
     tf.child_frame_id: "AGENTID/body"
 

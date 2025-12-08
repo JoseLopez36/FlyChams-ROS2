@@ -6,11 +6,11 @@
     sensor_timeout: 0.1
     
     # Frame IDs
-    map_frame: "world"
-    odom_frame: "AGENTID/local"
-    base_link_frame: "AGENTID/body"
-    world_frame: "world"
-    
+    map_frame: "world"                    # Global/map frame
+    odom_frame: "world"                   # Output frame
+    base_link_frame: "AGENTID/body"       # Robot body frame
+    world_frame: "world"      
+      
     # FUENTE 1: GPS (Navsat Transform) -> SOLO PLANO X, Y
     odom0: "/navsat/AGENTID/odometry/gps"
     odom0_config: [true,  true,  false,  # X=ON, Y=ON,  Z=OFF (Ignoramos altura GPS)
@@ -66,6 +66,6 @@
                                   0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.1]
     
     # Publishing options
-    publish_tf: true
+    publish_tf: false
     publish_accel: false
     print_diagnostics: true
