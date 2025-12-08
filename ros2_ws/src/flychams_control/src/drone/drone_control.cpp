@@ -45,10 +45,8 @@ namespace flychams::control
 		// Subscribe to status, position and setpoint topics
 		agent_.status_sub = topic_tools_->createAgentStatusSubscriber(agent_id_,
 			std::bind(&DroneControl::statusCallback, this, std::placeholders::_1), sub_options_with_module_cb_group_);
-		agent_.global_origin_sub = topic_tools_->createGlobalOriginSubscriber(
-			std::bind(&DroneControl::globalOriginCallback, this, std::placeholders::_1), sub_options_with_module_cb_group_);
-		agent_.position_sub = topic_tools_->createAgentPositionSubscriber(agent_id_,
-			std::bind(&DroneControl::positionCallback, this, std::placeholders::_1), sub_options_with_module_cb_group_);
+		agent_.local_position_sub = topic_tools_->createAgentLocalPositionSubscriber(agent_id_,
+			std::bind(&DroneControl::localPositionCallback, this, std::placeholders::_1), sub_options_with_module_cb_group_);
 		agent_.setpoint_sub = topic_tools_->createAgentPositionSetpointSubscriber(agent_id_,
 			std::bind(&DroneControl::setpointPositionCallback, this, std::placeholders::_1), sub_options_with_module_cb_group_);
 
@@ -62,8 +60,7 @@ namespace flychams::control
 	{
 		// Destroy subscribers
 		agent_.status_sub.reset();
-		agent_.global_origin_sub.reset();
-		agent_.position_sub.reset();
+		agent_.local_position_sub.reset();
 		agent_.setpoint_sub.reset();
 		// Destroy mavros communication
 		mavros_comm_.reset();
@@ -82,20 +79,11 @@ namespace flychams::control
 		agent_.has_status = true;
 	}
 
-	void DroneControl::globalOriginCallback(const core::GeoPointStampedMsg::SharedPtr msg)
+	void DroneControl::localPositionCallback(const core::PointStampedMsg::SharedPtr msg)
 	{
-		RCLCPP_INFO(node_->get_logger(), "Drone control: Received global origin: %f, %f, %f",
-			msg->position.latitude, msg->position.longitude, msg->position.altitude);
-
-		// Set global origin
-		mavros_comm_->setGlobalOrigin(msg->position.latitude, msg->position.longitude, msg->position.altitude);
-	}
-
-	void DroneControl::positionCallback(const core::PointStampedMsg::SharedPtr msg)
-	{
-		// Update current position
-		agent_.position = msg->point;
-		agent_.has_position = true;
+		// Update current local position
+		agent_.local_position = msg->point;
+		agent_.has_local_position = true;
 	}
 
 	void DroneControl::setpointPositionCallback(const core::PointStampedMsg::SharedPtr msg)
@@ -112,9 +100,9 @@ namespace flychams::control
 	void DroneControl::update()
 	{
 		// Check if we have a valid status and position
-		if (!agent_.has_status || !agent_.has_position)
+		if (!agent_.has_status || !agent_.has_local_position)
 		{
-			RCLCPP_WARN(node_->get_logger(), "Drone control: No status or position data received for agent %s",
+			RCLCPP_WARN(node_->get_logger(), "Drone control: No status or local position data received for agent %s",
 				agent_id_.c_str());
 			return;
 		}
@@ -258,7 +246,7 @@ namespace flychams::control
 	{
 		if (agent_.status == AgentStatus::IDLE || agent_.status == AgentStatus::TAKEOFF)
 		{
-			mavros_comm_->setPosition(agent_.position.x, agent_.position.y, takeoff_altitude_);
+			mavros_comm_->setLocalPosition(agent_.local_position.x, agent_.local_position.y, takeoff_altitude_);
 			return true;
 		}
 		else
@@ -269,7 +257,7 @@ namespace flychams::control
 	{
 		if (agent_.status == AgentStatus::TAKEOFF || agent_.status == AgentStatus::MISSION)
 		{
-			mavros_comm_->setPosition(agent_.position.x, agent_.position.y, agent_.position.z);
+			mavros_comm_->setLocalPosition(agent_.local_position.x, agent_.local_position.y, agent_.local_position.z);
 			return true;
 		}
 		else
@@ -280,7 +268,7 @@ namespace flychams::control
 	{
 		if (agent_.status == AgentStatus::MISSION)
 		{
-			mavros_comm_->setPosition(agent_.setpoint.x, agent_.setpoint.y, agent_.setpoint.z);
+			mavros_comm_->setGlobalPosition(agent_.setpoint.x, agent_.setpoint.y, agent_.setpoint.z);
 			RCLCPP_INFO(node_->get_logger(), "Drone control: Setpoint sent to agent %s",
 				agent_id_.c_str());
 			RCLCPP_INFO(node_->get_logger(), "Drone control: Setpoint: %f, %f, %f",

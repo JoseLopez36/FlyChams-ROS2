@@ -34,8 +34,10 @@ namespace flychams::control
         struct Agent
         {
             // Odometry data
-            core::OdometryMsg odom_in_msg;
-            bool has_odom_in;
+            core::OdometryMsg local_odom_in_msg;
+            bool has_local_odom_in;
+            core::OdometryMsg global_odom_in_msg;
+            bool has_global_odom_in;
             // Status data (In)
             mavros_msgs::msg::State status_in_msg;
             bool has_status_in;
@@ -44,18 +46,23 @@ namespace flychams::control
             // Status message (Out)
             core::AgentStatusMsg status_out_msg;
             // Position message
-            core::PointStampedMsg position_out_msg;
+            core::PointStampedMsg local_position_out_msg;
+            core::PointStampedMsg global_position_out_msg;
             // Subscriber
             core::SubscriberPtr<mavros_msgs::msg::State> status_in_sub;
-            core::SubscriberPtr<core::OdometryMsg> odom_in_sub;
+            core::SubscriberPtr<core::OdometryMsg> local_odom_in_sub;
+            core::SubscriberPtr<core::OdometryMsg> global_odom_in_sub;
             // Publishers
             core::PublisherPtr<core::AgentStatusMsg> status_out_pub;
-            core::PublisherPtr<core::PointStampedMsg> position_out_pub;
+            core::PublisherPtr<core::PointStampedMsg> local_position_out_pub;
+            core::PublisherPtr<core::PointStampedMsg> global_position_out_pub;
             // Constructor
             Agent()
-                : odom_in_msg(), has_odom_in(false), status_in_msg(), has_status_in(false),
-                status_out(), status_out_msg(), position_out_msg(), status_in_sub(), odom_in_sub(),
-                status_out_pub(), position_out_pub()
+                : local_odom_in_msg(), has_local_odom_in(false), global_odom_in_msg(), has_global_odom_in(false), 
+                status_in_msg(), has_status_in(false), status_out(), status_out_msg(), 
+                local_position_out_msg(), global_position_out_msg(), status_in_sub(), 
+                local_odom_in_sub(), global_odom_in_sub(), status_out_pub(), 
+                local_position_out_pub(), global_position_out_pub()
             {
             }
         };
@@ -77,7 +84,8 @@ namespace flychams::control
 
     private: // Callbacks
         void statusInCallback(const mavros_msgs::msg::State::SharedPtr msg);
-        void odomInCallback(const core::OdometryMsg::SharedPtr msg);
+        void localOdomCallback(const core::OdometryMsg::SharedPtr msg);
+        void globalOdomCallback(const core::OdometryMsg::SharedPtr msg);
 
     private: // State management
         void update();

@@ -11,31 +11,35 @@ frames: [true, 'info']
 # AirSim node
 airsim: [true, 'error']
 
-# ------------------- GLOBAL RUN NODES -------------------
-# Perception nodes
-target_clustering: [true, 'error']
-cluster_analysis: [true, 'error']
-# Coordination nodes
-agent_assignment: [true, 'error']
-agent_analysis: [true, 'error']
-# Simulation nodes
-gui_manager: [true, 'error']
-metrics_factory: [true, 'error']
-marker_factory: [true, 'error']
-target_state: [true, 'error']
-target_control: [true, 'error']
-# Recording nodes
-airsim_record_camera: [false, 'error']
-
 # ------------------- AGENT SETUP NODES -------------------
 # MavROS node
 mavros: [true, 'info']
+# NavSat Transform node (robot-localization)
+navsat_transform: [true, 'info']
+# EKF Global node (robot-localization)
+ekf_global: [true, 'info']
+
+# ------------------- GLOBAL RUN NODES -------------------
+# Perception nodes
+target_clustering: [false, 'error']
+cluster_analysis: [false, 'error']
+# Coordination nodes
+agent_assignment: [false, 'error']
+agent_analysis: [false, 'error']
+# Simulation nodes
+gui_manager: [true, 'error']
+metrics_factory: [false, 'error']
+marker_factory: [true, 'error']
+target_state: [false, 'error']
+target_control: [false, 'error']
+# Recording nodes
+airsim_record_camera: [false, 'error']
 
 # ------------------- AGENT RUN NODES -------------------
 # Control nodes
 drone_state: [true, 'info']
 drone_control: [true, 'info']
-camera_control: [true, 'error']
+camera_control: [false, 'error']
 # Coordination nodes
-agent_positioning: [true, 'error']
-agent_tracking: [true, 'error']
+agent_positioning: [false, 'error']
+agent_tracking: [false, 'error']

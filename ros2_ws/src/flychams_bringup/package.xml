@@ -17,7 +17,8 @@
   <depend>rclcpp</depend>
   <depend>geographic_msgs</depend>
   <depend>mavros_msgs</depend>
-  <depend>flychams_core</depend>]
+  <depend>robot_localization</depend>
+  <depend>flychams_core</depend>
   
   <!-- Runtime dependencies -->
   <exec_depend>ros2launch</exec_depend>

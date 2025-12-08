@@ -50,7 +50,7 @@ namespace flychams::coordination
         // Create subscribers for agent status, position and clusters
         agent_.status_sub = topic_tools_->createAgentStatusSubscriber(agent_id_,
             std::bind(&AgentPositioning::statusCallback, this, std::placeholders::_1), sub_options_with_module_cb_group_);
-        agent_.position_sub = topic_tools_->createAgentPositionSubscriber(agent_id_,
+        agent_.position_sub = topic_tools_->createAgentGlobalPositionSubscriber(agent_id_,
             std::bind(&AgentPositioning::positionCallback, this, std::placeholders::_1), sub_options_with_module_cb_group_);
         agent_.clusters_sub = topic_tools_->createAgentClustersSubscriber(agent_id_,
             std::bind(&AgentPositioning::clustersCallback, this, std::placeholders::_1), sub_options_with_module_cb_group_);

@@ -26,7 +26,8 @@ namespace flychams::control
 
         // Initialize message data
         agent_.status_out_msg.header = RosUtils::createHeader(node_, transform_tools_->getGlobalFrame());
-        agent_.position_out_msg.header = RosUtils::createHeader(node_, transform_tools_->getGlobalFrame());
+        agent_.local_position_out_msg.header = RosUtils::createHeader(node_, transform_tools_->getAgentLocalFrame(agent_id_));
+        agent_.global_position_out_msg.header = RosUtils::createHeader(node_, transform_tools_->getGlobalFrame());
 
         // Create mavros communication
         mavros_comm_ = std::make_shared<MavrosCommunication>(agent_id_, node_, config_tools_, topic_tools_, transform_tools_, module_cb_group_);
@@ -34,12 +35,15 @@ namespace flychams::control
         // Subscribe to mavros topics
         agent_.status_in_sub = mavros_comm_->subscribeStatus(
             std::bind(&DroneState::statusInCallback, this, std::placeholders::_1), sub_options_with_module_cb_group_);
-        agent_.odom_in_sub = mavros_comm_->subscribeOdometry(
-            std::bind(&DroneState::odomInCallback, this, std::placeholders::_1), sub_options_with_module_cb_group_);
+        agent_.local_odom_in_sub = mavros_comm_->subscribeLocalOdometry(
+            std::bind(&DroneState::localOdomCallback, this, std::placeholders::_1), sub_options_with_module_cb_group_);
+        agent_.global_odom_in_sub = mavros_comm_->subscribeGlobalOdometry(
+            std::bind(&DroneState::globalOdomCallback, this, std::placeholders::_1), sub_options_with_module_cb_group_);
 
         // Create publisher for agent status and position
         agent_.status_out_pub = topic_tools_->createAgentStatusPublisher(agent_id_);
-        agent_.position_out_pub = topic_tools_->createAgentPositionPublisher(agent_id_);
+        agent_.local_position_out_pub = topic_tools_->createAgentLocalPositionPublisher(agent_id_);
+        agent_.global_position_out_pub = topic_tools_->createAgentGlobalPositionPublisher(agent_id_);
 
         // Set update timer
         last_update_time_ = RosUtils::now(node_);
@@ -51,10 +55,12 @@ namespace flychams::control
     {
         // Destroy subscriber
         agent_.status_in_sub.reset();
-        agent_.odom_in_sub.reset();
+        agent_.local_odom_in_sub.reset();
+        agent_.global_odom_in_sub.reset();
         // Destroy publisher
         agent_.status_out_pub.reset();
-        agent_.position_out_pub.reset();
+        agent_.local_position_out_pub.reset();
+        agent_.global_position_out_pub.reset();
         // Destroy mavros communication
         mavros_comm_.reset();
         // Destroy update timer
@@ -72,33 +78,28 @@ namespace flychams::control
         agent_.has_status_in = true;
     }
 
-    void DroneState::odomInCallback(const core::OdometryMsg::SharedPtr msg)
+    void DroneState::localOdomCallback(const core::OdometryMsg::SharedPtr msg)
     {
         // Update current odometry
-        agent_.odom_in_msg = *msg;
-        agent_.has_odom_in = true;
+        agent_.local_odom_in_msg = *msg;
+        agent_.has_local_odom_in = true;
 
-        // Create pose stamped from odometry
-        PoseStampedMsg pose_in;
-        pose_in.header = msg->header;
-        pose_in.pose = msg->pose.pose;
+        // Publish agent position in local frame
+        agent_.local_position_out_msg.header = msg->header;
+        agent_.local_position_out_msg.point = msg->pose.pose.position;
+        agent_.local_position_out_pub->publish(agent_.local_position_out_msg);
+    }
 
-        // Transform to global frame
-        PoseStampedMsg pose_out;
-        std::string global_frame = transform_tools_->getGlobalFrame();
-        try
-        {
-            pose_out = transform_tools_->transform(pose_in, msg->header.frame_id, global_frame);
-        }
-        catch (const tf2::TransformException& ex)
-        {
-            return;
-        }
+    void DroneState::globalOdomCallback(const core::OdometryMsg::SharedPtr msg)
+    {
+        // Update current odometry
+        agent_.global_odom_in_msg = *msg;
+        agent_.has_global_odom_in = true;
 
         // Publish agent position in global frame
-        agent_.position_out_msg.header = pose_out.header;
-        agent_.position_out_msg.point = pose_out.pose.position;
-        agent_.position_out_pub->publish(agent_.position_out_msg);
+        agent_.global_position_out_msg.header = msg->header;
+        agent_.global_position_out_msg.point = msg->pose.pose.position;
+        agent_.global_position_out_pub->publish(agent_.global_position_out_msg);
     }
 
     // ════════════════════════════════════════════════════════════════════════════
@@ -108,7 +109,7 @@ namespace flychams::control
     void DroneState::update()
     {
         // Check if we have a valid odometry and status
-        if (!agent_.has_odom_in || !agent_.has_status_in)
+        if (!agent_.has_local_odom_in || !agent_.has_global_odom_in || !agent_.has_status_in)
         {
             RCLCPP_WARN(node_->get_logger(), "Drone state: No odometry or status data received for agent %s", agent_id_.c_str());
             return;
@@ -123,7 +124,7 @@ namespace flychams::control
         bool connected = agent_.status_in_msg.connected;
         bool armed = agent_.status_in_msg.armed;
         std::string mode = agent_.status_in_msg.mode;
-        float altitude = agent_.odom_in_msg.pose.pose.position.z;
+        float altitude = agent_.local_odom_in_msg.pose.pose.position.z;
 
         if (!connected)
         {

@@ -115,7 +115,7 @@ namespace flychams::coordination
             }, sub_options_with_module_cb_group_);
 
         // Create agent position subscriber
-        agents_[agent_id].position_sub = topic_tools_->createAgentPositionSubscriber(agent_id,
+        agents_[agent_id].position_sub = topic_tools_->createAgentGlobalPositionSubscriber(agent_id,
             [this, agent_id](const PointStampedMsg::SharedPtr msg)
             {
                 this->agentPositionCallback(agent_id, msg);

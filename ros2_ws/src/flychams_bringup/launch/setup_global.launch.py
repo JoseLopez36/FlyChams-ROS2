@@ -69,6 +69,7 @@ def launch_setup(context, *args, **kwargs):
                 name='frames_node',
                 output='screen',
                 namespace='flychams/global',
+                arguments=['--ros-args', '--log-level', nodes['frames'][1]],
                 parameters=[
                     system_path, 
                     topics_path, 
@@ -86,6 +87,7 @@ def launch_setup(context, *args, **kwargs):
                 name='registrator_node',
                 output='screen',
                 namespace='flychams/global',
+                arguments=['--ros-args', '--log-level', nodes['registrator'][1]],
                 parameters=[
                     system_path, 
                     topics_path, 
@@ -103,6 +105,7 @@ def launch_setup(context, *args, **kwargs):
                 name='airsim_node',
                 output='screen',
                 namespace='airsim',
+                arguments=['--ros-args', '--log-level', nodes['airsim'][1]],
                 parameters=[{
                     'update_airsim_state_every_n_sec': 0.020,
                     'update_sim_clock_every_n_sec': 0.001,

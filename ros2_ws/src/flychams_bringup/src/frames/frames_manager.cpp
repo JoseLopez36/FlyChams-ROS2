@@ -10,10 +10,6 @@ namespace flychams::bringup
 
 	void FramesManager::onInit()
 	{
-		// Publish agent local frame
-		transform_tools_->broadcastStaticTransform(transform_tools_->getGlobalFrame(), transform_tools_->getAgentLocalFrame(agent_id_), Matrix4r::Identity());
-		RCLCPP_INFO(node_->get_logger(), "Published static transform: %s -> %s", transform_tools_->getGlobalFrame().c_str(), transform_tools_->getAgentLocalFrame(agent_id_).c_str());
-		
 		// Setup camera frames
 		setupCameraFrames();
 	}

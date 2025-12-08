@@ -1427,7 +1427,7 @@ namespace airsim_wrapper
         }
         catch (const tf2::TransformException& ex)
         {
-            RCLCPP_ERROR(nh_->get_logger(), "Transform failed: %s", ex.what());
+            RCLCPP_WARN(nh_->get_logger(), "Transform failed: %s", ex.what());
             return global_point;  // Return original point on failure
         }
     }
@@ -1447,7 +1447,7 @@ namespace airsim_wrapper
         }
         catch (const tf2::TransformException& ex)
         {
-            RCLCPP_ERROR(nh_->get_logger(), "Transform failed: %s", ex.what());
+            RCLCPP_WARN(nh_->get_logger(), "Transform failed: %s", ex.what());
             return local_pose;  // Return original pose on failure
         }
     }
@@ -1462,7 +1462,7 @@ namespace airsim_wrapper
         }
         catch (const tf2::TransformException& ex)
         {
-            RCLCPP_ERROR(nh_->get_logger(), "Transform failed: %s", ex.what());
+            RCLCPP_WARN(nh_->get_logger(), "Transform failed: %s", ex.what());
             return local_twist;  // Return original twist on failure
         }
 

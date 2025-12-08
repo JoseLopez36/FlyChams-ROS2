@@ -48,20 +48,19 @@ namespace flychams::control
 			core::AgentStatus status;
 			bool has_status;
 			// Position data
-			core::PointMsg position;
-			bool has_position;
+			core::PointMsg local_position;
+			bool has_local_position;
 			// Setpoint data
 			core::PointMsg setpoint;
 			bool has_setpoint;
 			// Subscribers
 			core::SubscriberPtr<core::AgentStatusMsg> status_sub;
-			core::SubscriberPtr<core::GeoPointStampedMsg> global_origin_sub;
-			core::SubscriberPtr<core::PointStampedMsg> position_sub;
+			core::SubscriberPtr<core::PointStampedMsg> local_position_sub;
 			core::SubscriberPtr<core::PointStampedMsg> setpoint_sub;
 			// Constructor
 			Agent()
-				: status(), has_status(false), position(), has_position(false), setpoint(),
-				has_setpoint(false), status_sub(), global_origin_sub(), position_sub(), setpoint_sub()
+				: status(), has_status(false), local_position(), has_local_position(false), setpoint(),
+				has_setpoint(false), status_sub(), local_position_sub(), setpoint_sub()
 			{
 			}
 		};
@@ -87,8 +86,7 @@ namespace flychams::control
 
 	private: // Callbacks
 		void statusCallback(const core::AgentStatusMsg::SharedPtr msg);
-		void globalOriginCallback(const core::GeoPointStampedMsg::SharedPtr msg);
-		void positionCallback(const core::PointStampedMsg::SharedPtr msg);
+		void localPositionCallback(const core::PointStampedMsg::SharedPtr msg);
 		void setpointPositionCallback(const core::PointStampedMsg::SharedPtr msg);
 
 	private: // Control management

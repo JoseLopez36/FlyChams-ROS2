@@ -71,7 +71,8 @@ namespace flychams::core
 
         // Agent topics
         std::string agent_status;
-        std::string agent_position;
+        std::string agent_local_position;
+        std::string agent_global_position;
         std::string agent_assignment;
         std::string agent_clusters;
         std::string agent_position_setpoint;

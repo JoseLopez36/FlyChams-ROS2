@@ -1,0 +1,35 @@
+/**/navsat_transform_node:
+  ros__parameters:
+    # Frequency settings
+    frequency: 3.0
+    transform_timeout: 0.1
+    delay: 0.0                              # Delay before starting (seconds)
+
+    # Frame IDs
+    world_frame: "world"                    # World frame ID
+    odom_frame: "AGENTID/local"             # Odometry frame ID (where the drone takes off and lands)
+    base_link_frame: "AGENTID/body"         # Base link frame ID (the drone's body)
+
+    frame_id: "world"
+    child_frame_id: "AGENTID/body"
+    base_link_frame_id: "AGENTID/body"
+    
+    # Datum configuration
+    # The datum is set via the set_datum service (called by frames_node)
+    # wait_for_datum must be true for the node to wait for the service call
+    wait_for_datum: true                    # Wait for datum via set_datum service before starting
+    
+    # Yaw configuration
+    use_odometry_yaw: false
+    yaw_offset: 1.5707963                   # 90 degrees in radians
+    
+    # Altitude handling
+    zero_altitude: false                    # Zero altitude initialization
+    
+    # Publishing options
+    broadcast_cartesian_transform: false    # Broadcast Cartesian transform
+    publish_filtered_gps: true              # Publish filtered GPS data
+    
+    # Magnetic declination (radians)
+    # Set based on your operating location
+    magnetic_declination_radians: 0.0

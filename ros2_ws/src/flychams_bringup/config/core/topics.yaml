@@ -8,7 +8,8 @@
     # Agent topics
     agent_topics:
       status: "/flychams/control/AGENTID/status"                              # AgentStatus.msg (custom)
-      position: "/flychams/control/AGENTID/position"                          # PointStamped.msg
+      local_position: "/flychams/control/AGENTID/local/position"              # PointStamped.msg
+      global_position: "/flychams/control/AGENTID/global/position"            # PointStamped.msg
       assignment: "/flychams/coordination/AGENTID/assignment"                 # AgentAssignment.msg (custom)
       clusters: "/flychams/coordination/AGENTID/clusters"                     # AgentClusters.msg (custom)
       position_setpoint: "/flychams/coordination/AGENTID/setpoint/position"   # PointStamped.msg

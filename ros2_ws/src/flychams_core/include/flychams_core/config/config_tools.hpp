@@ -529,7 +529,8 @@ namespace flychams::core
 
             // Agent topics
             config_ptr->topics.agent_status = RosUtils::getParameter<std::string>(node_, "agent_topics.status");
-            config_ptr->topics.agent_position = RosUtils::getParameter<std::string>(node_, "agent_topics.position");
+            config_ptr->topics.agent_local_position = RosUtils::getParameter<std::string>(node_, "agent_topics.local_position");
+            config_ptr->topics.agent_global_position = RosUtils::getParameter<std::string>(node_, "agent_topics.global_position");
             config_ptr->topics.agent_assignment = RosUtils::getParameter<std::string>(node_, "agent_topics.assignment");
             config_ptr->topics.agent_clusters = RosUtils::getParameter<std::string>(node_, "agent_topics.clusters");
             config_ptr->topics.agent_position_setpoint = RosUtils::getParameter<std::string>(node_, "agent_topics.position_setpoint");

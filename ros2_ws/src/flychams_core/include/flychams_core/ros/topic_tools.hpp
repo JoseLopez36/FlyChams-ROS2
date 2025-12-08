@@ -32,7 +32,8 @@ namespace flychams::core
 
             // Get agent topics
             agent_topics_.status_pattern = topic_config.agent_status;
-            agent_topics_.position_pattern = topic_config.agent_position;
+            agent_topics_.local_position_pattern = topic_config.agent_local_position;
+            agent_topics_.global_position_pattern = topic_config.agent_global_position;
             agent_topics_.assignment_pattern = topic_config.agent_assignment;
             agent_topics_.clusters_pattern = topic_config.agent_clusters;
             agent_topics_.position_setpoint_pattern = topic_config.agent_position_setpoint;
@@ -83,7 +84,8 @@ namespace flychams::core
         struct AgentTopics
         {
             std::string status_pattern;
-            std::string position_pattern;
+            std::string local_position_pattern;
+            std::string global_position_pattern;
             std::string assignment_pattern;
             std::string clusters_pattern;
             std::string position_setpoint_pattern;
@@ -148,9 +150,13 @@ namespace flychams::core
         {
             return RosUtils::replace(agent_topics_.status_pattern, "AGENTID", agent_id);
         }
-        std::string getAgentPositionTopic(const ID& agent_id)
+        std::string getAgentLocalPositionTopic(const ID& agent_id)
         {
-            return RosUtils::replace(agent_topics_.position_pattern, "AGENTID", agent_id);
+            return RosUtils::replace(agent_topics_.local_position_pattern, "AGENTID", agent_id);
+        }
+        std::string getAgentGlobalPositionTopic(const ID& agent_id)
+        {
+            return RosUtils::replace(agent_topics_.global_position_pattern, "AGENTID", agent_id);
         }
         std::string getAgentAssignmentTopic(const ID& agent_id)
         {
@@ -247,9 +253,13 @@ namespace flychams::core
             rclcpp::QoS qos = rclcpp::QoS(rclcpp::KeepLast(1)).reliable().transient_local();
             return node_->create_publisher<AgentStatusMsg>(getAgentStatusTopic(agent_id), qos);
         }
-        PublisherPtr<PointStampedMsg> createAgentPositionPublisher(const ID& agent_id)
+        PublisherPtr<PointStampedMsg> createAgentLocalPositionPublisher(const ID& agent_id)
         {
-            return node_->create_publisher<PointStampedMsg>(getAgentPositionTopic(agent_id), 10);
+            return node_->create_publisher<PointStampedMsg>(getAgentLocalPositionTopic(agent_id), 10);
+        }
+        PublisherPtr<PointStampedMsg> createAgentGlobalPositionPublisher(const ID& agent_id)
+        {
+            return node_->create_publisher<PointStampedMsg>(getAgentGlobalPositionTopic(agent_id), 10);
         }
         PublisherPtr<AgentAssignmentMsg> createAgentAssignmentPublisher(const ID& agent_id)
         {
@@ -347,9 +357,13 @@ namespace flychams::core
             rclcpp::QoS qos = rclcpp::QoS(rclcpp::KeepLast(1)).reliable().transient_local();
             return node_->create_subscription<AgentStatusMsg>(getAgentStatusTopic(agent_id), qos, callback, options);
         }
-        SubscriberPtr<PointStampedMsg> createAgentPositionSubscriber(const ID& agent_id, const std::function<void(const PointStampedMsg::SharedPtr)>& callback, const rclcpp::SubscriptionOptions& options = rclcpp::SubscriptionOptions())
+        SubscriberPtr<PointStampedMsg> createAgentLocalPositionSubscriber(const ID& agent_id, const std::function<void(const PointStampedMsg::SharedPtr)>& callback, const rclcpp::SubscriptionOptions& options = rclcpp::SubscriptionOptions())
         {
-            return node_->create_subscription<PointStampedMsg>(getAgentPositionTopic(agent_id), 10, callback, options);
+            return node_->create_subscription<PointStampedMsg>(getAgentLocalPositionTopic(agent_id), 10, callback, options);
+        }
+        SubscriberPtr<PointStampedMsg> createAgentGlobalPositionSubscriber(const ID& agent_id, const std::function<void(const PointStampedMsg::SharedPtr)>& callback, const rclcpp::SubscriptionOptions& options = rclcpp::SubscriptionOptions())
+        {
+            return node_->create_subscription<PointStampedMsg>(getAgentGlobalPositionTopic(agent_id), 10, callback, options);
         }
         SubscriberPtr<AgentAssignmentMsg> createAgentAssignmentSubscriber(const ID& agent_id, const std::function<void(const AgentAssignmentMsg::SharedPtr)>& callback, const rclcpp::SubscriptionOptions& options = rclcpp::SubscriptionOptions())
         {
