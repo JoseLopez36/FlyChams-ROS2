@@ -9,10 +9,6 @@
     world_frame: "world"                    # World frame ID
     odom_frame: "AGENTID/local"             # Odometry frame ID (where the drone takes off and lands)
     base_link_frame: "AGENTID/body"         # Base link frame ID (the drone's body)
-
-    frame_id: "world"
-    child_frame_id: "AGENTID/body"
-    base_link_frame_id: "AGENTID/body"
     
     # Datum configuration
     # The datum is set via the set_datum service (called by frames_node)
@@ -27,7 +23,7 @@
     zero_altitude: false                    # Zero altitude initialization
     
     # Publishing options
-    broadcast_cartesian_transform: false    # Broadcast Cartesian transform
+    broadcast_cartesian_transform: false    # Disable TF broadcasting
     publish_filtered_gps: true              # Publish filtered GPS data
     
     # Magnetic declination (radians)
