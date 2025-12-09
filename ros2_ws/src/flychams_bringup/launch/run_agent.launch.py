@@ -70,6 +70,7 @@ def launch_setup(context, *args, **kwargs):
     # Get the node activation settings from config
     nodes = {
         # Control nodes (Agent)
+        'drone_frames': launch.get('drone_frames', [True, 'info']),
         'drone_state': launch.get('drone_state', [True, 'info']),
         'drone_control': launch.get('drone_control', [True, 'info']),
         'camera_control': launch.get('camera_control', [True, 'info']),
@@ -79,6 +80,27 @@ def launch_setup(context, *args, **kwargs):
     }
 
     # ============= CONTROL NODES =============
+    # Conditionally add Drone Frames node
+    if nodes['drone_frames'][0]:
+        ld.append(
+            Node(
+                package='flychams_control',
+                executable='drone_frames_node',
+                name='drone_frames_node',
+                output='screen' if is_simulated else 'log',
+                namespace='flychams/' + agent_id,
+                arguments=['--ros-args', '--log-level', nodes['drone_frames'][1]],
+                parameters=[
+                    system_path, 
+                    topics_path, 
+                    frames_path, 
+                    control_path,
+                    {'agent_id': agent_id},
+                    {'use_sim_time': is_simulated}
+                ]
+            )
+        )
+
     # Conditionally add Drone State node
     if nodes['drone_state'][0]:
         ld.append(

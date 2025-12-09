@@ -6,9 +6,6 @@
 // Core includes
 #include "flychams_core/base/base_discoverer_node.hpp"
 
-// Robot localization service
-#include "robot_localization/srv/set_datum.hpp"
-
 using namespace flychams::core;
 using namespace flychams::bringup;
 
@@ -33,7 +30,7 @@ public: // Constructor/Destructor
     {
         // Initialize frames managers
         frames_managers_.clear();
-        
+
         // Create global origin publisher
         global_origin_pub_ = topic_tools_->createGlobalOriginPublisher();
 
@@ -64,17 +61,17 @@ private: // Agent management
         frames_managers_.insert({ agent_id, manager });
 
         RCLCPP_INFO(node_->get_logger(), "Frames manager created for agent %s", agent_id.c_str());
-        
+
         // Set datum for navsat_transform_node via service call
         setNavsatDatum(agent_id);
     }
-    
+
     void setNavsatDatum(const ID& agent_id)
     {
         // Create service client for navsat_transform_node set_datum service
         std::string service_name = "/navsat/" + agent_id + "/datum";
         auto client = node_->create_client<robot_localization::srv::SetDatum>(service_name);
-        
+
         // Wait for service to be available (with timeout)
         if (!client->wait_for_service(std::chrono::seconds(60)))
         {
@@ -85,10 +82,10 @@ private: // Agent management
         }
 
         RCLCPP_INFO(node_->get_logger(), "Service %s available, setting datum for agent %s", service_name.c_str(), agent_id.c_str());
-        
+
         // Get environment geopoint
         const auto& env = config_tools_->getEnvironment();
-        
+
         // Create service request
         auto request = std::make_shared<robot_localization::srv::SetDatum::Request>();
         request->geo_pose.position.latitude = env.geopoint.latitude;
@@ -99,15 +96,15 @@ private: // Agent management
         request->geo_pose.orientation.y = 0.0;
         request->geo_pose.orientation.z = 0.0;
         request->geo_pose.orientation.w = 1.0;
-        
+
         // Send async request
         auto future = client->async_send_request(request);
-        
+
         // Store client for potential retries
         navsat_clients_[agent_id] = client;
-        
-        RCLCPP_INFO(node_->get_logger(), "Set datum for agent %s navsat_transform_node: lat=%.6f, lon=%.6f, alt=%.3f", 
-                    agent_id.c_str(), env.geopoint.latitude, env.geopoint.longitude, env.geopoint.altitude);
+
+        RCLCPP_INFO(node_->get_logger(), "Set datum for agent %s navsat_transform_node: lat=%.6f, lon=%.6f, alt=%.3f",
+            agent_id.c_str(), env.geopoint.latitude, env.geopoint.longitude, env.geopoint.altitude);
     }
 
     void onRemoveAgent(const ID& agent_id) override
@@ -141,10 +138,10 @@ private: // Agent management
 private: // Components
     // Frames manager per agent
     std::unordered_map<ID, FramesManager::SharedPtr> frames_managers_;
-    
+
     // Global origin publisher
     PublisherPtr<GeoPointStampedMsg> global_origin_pub_;
-    
+
     // Navsat transform service clients (for setting datum)
     std::unordered_map<ID, rclcpp::Client<robot_localization::srv::SetDatum>::SharedPtr> navsat_clients_;
 };

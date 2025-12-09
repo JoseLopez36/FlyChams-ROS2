@@ -26,23 +26,23 @@ namespace flychams::control
     class MavrosCommunication : public core::BaseModule
     {
     public: // Constructors/Destructors
-		MavrosCommunication(const core::ID& agent_id, core::NodePtr node, core::ConfigTools::SharedPtr config_tools, core::TopicTools::SharedPtr topic_tools, core::TransformTools::SharedPtr transform_tools, core::CallbackGroupPtr module_cb_group)
+        MavrosCommunication(const core::ID& agent_id, core::NodePtr node, core::ConfigTools::SharedPtr config_tools, core::TopicTools::SharedPtr topic_tools, core::TransformTools::SharedPtr transform_tools, core::CallbackGroupPtr module_cb_group)
             : BaseModule(node, config_tools, topic_tools, transform_tools, module_cb_group), agent_id_(agent_id)
-		{
-			init();
-		}
-        
-	protected: // Overrides
-		void onInit() override;
-		void onShutdown() override;
+        {
+            init();
+        }
+
+    protected: // Overrides
+        void onInit() override;
+        void onShutdown() override;
 
     public: // Types
         using SharedPtr = std::shared_ptr<MavrosCommunication>;
 
     public: // Vehicle state methods
-        core::SubscriberPtr<mavros_msgs::msg::State> subscribeStatus(const std::function<void(const mavros_msgs::msg::State::SharedPtr)>& callback, const rclcpp::SubscriptionOptions& options = rclcpp::SubscriptionOptions());
+        core::SubscriberPtr<core::GeoPointStampedMsg> subscribeHomePosition(const std::function<void(const core::GeoPointStampedMsg::SharedPtr)>& callback, const rclcpp::SubscriptionOptions& options = rclcpp::SubscriptionOptions());
+        core::SubscriberPtr<mavros_msgs::msg::State> subscribeState(const std::function<void(const mavros_msgs::msg::State::SharedPtr)>& callback, const rclcpp::SubscriptionOptions& options = rclcpp::SubscriptionOptions());
         core::SubscriberPtr<core::OdometryMsg> subscribeLocalOdometry(const std::function<void(const core::OdometryMsg::SharedPtr)>& callback, const rclcpp::SubscriptionOptions& options = rclcpp::SubscriptionOptions());
-        core::SubscriberPtr<core::OdometryMsg> subscribeGlobalOdometry(const std::function<void(const core::OdometryMsg::SharedPtr)>& callback, const rclcpp::SubscriptionOptions& options = rclcpp::SubscriptionOptions());
 
     public: // Vehicle control methods
         bool armDisarm(const bool& arm);
@@ -50,8 +50,7 @@ namespace flychams::control
         bool land();
         bool enableOffboard(const bool& enable);
         void setLocalPosition(const float& x, const float& y, const float& z);
-        void setGlobalPosition(const float& x, const float& y, const float& z);
-        
+
     private: // Parameters
         core::ID agent_id_;
 

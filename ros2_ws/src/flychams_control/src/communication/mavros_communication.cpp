@@ -33,7 +33,13 @@ namespace flychams::control
     // VEHICLE STATE
     // ════════════════════════════════════════════════════════════════════════════
 
-    SubscriberPtr<mavros_msgs::msg::State> MavrosCommunication::subscribeStatus(const std::function<void(const mavros_msgs::msg::State::SharedPtr)>& callback, const rclcpp::SubscriptionOptions& options)
+    SubscriberPtr<GeoPointStampedMsg> MavrosCommunication::subscribeHomePosition(const std::function<void(const GeoPointStampedMsg::SharedPtr)>& callback, const rclcpp::SubscriptionOptions& options)
+    {
+        rclcpp::QoS qos = rclcpp::QoS(rclcpp::KeepLast(10)).best_effort();
+        return node_->create_subscription<GeoPointStampedMsg>("/mavros/" + agent_id_ + "/home_position", qos, callback, options);
+    }
+
+    SubscriberPtr<mavros_msgs::msg::State> MavrosCommunication::subscribeState(const std::function<void(const mavros_msgs::msg::State::SharedPtr)>& callback, const rclcpp::SubscriptionOptions& options)
     {
         rclcpp::QoS qos = rclcpp::QoS(rclcpp::KeepLast(10)).best_effort();
         return node_->create_subscription<mavros_msgs::msg::State>("/mavros/" + agent_id_ + "/state", qos, callback, options);
@@ -41,14 +47,8 @@ namespace flychams::control
 
     SubscriberPtr<OdometryMsg> MavrosCommunication::subscribeLocalOdometry(const std::function<void(const OdometryMsg::SharedPtr)>& callback, const rclcpp::SubscriptionOptions& options)
     {
-        rclcpp::QoS qos = rclcpp::QoS(rclcpp::KeepLast(10)).best_effort();  
+        rclcpp::QoS qos = rclcpp::QoS(rclcpp::KeepLast(10)).best_effort();
         return node_->create_subscription<OdometryMsg>("/mavros/" + agent_id_ + "/local_position/odom", qos, callback, options);
-    }
-
-    SubscriberPtr<OdometryMsg> MavrosCommunication::subscribeGlobalOdometry(const std::function<void(const OdometryMsg::SharedPtr)>& callback, const rclcpp::SubscriptionOptions& options)
-    {
-        rclcpp::QoS qos = rclcpp::QoS(rclcpp::KeepLast(10)).best_effort();  
-        return node_->create_subscription<OdometryMsg>("/ekf/" + agent_id_ + "/odometry/filtered", qos, callback, options);
     }
 
     // ════════════════════════════════════════════════════════════════════════════
@@ -96,23 +96,7 @@ namespace flychams::control
         msg.pose.position.y = y;
         msg.pose.position.z = z;
         msg.pose.orientation.w = 1.0;
-        
-        // Publish message
-        local_pos_pub_->publish(msg);
-    }
 
-    void MavrosCommunication::setGlobalPosition(const float& x, const float& y, const float& z)
-    {
-        // Create global pose stamped message
-        PoseStampedMsg msg;
-        msg.header = RosUtils::createHeader(node_, transform_tools_->getGlobalFrame());
-        msg.pose.position.x = x;
-        msg.pose.position.y = y;
-        msg.pose.position.z = z;
-        msg.pose.orientation.w = 1.0;
-
-        // TODO: Transform global position to local position
-        
         // Publish message
         local_pos_pub_->publish(msg);
     }

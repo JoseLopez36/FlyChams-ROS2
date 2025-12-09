@@ -69,6 +69,17 @@ public: // Constructor/Destructor
             registerElement(target_id, ElementType::Target);
         for (const auto& cluster_id : clusters_)
             registerElement(cluster_id, ElementType::Cluster);
+
+        // Create global origin publisher
+        global_origin_pub_ = topic_tools_->createGlobalOriginPublisher();
+
+        // Publish global origin
+        GeoPointStampedMsg origin_msg;
+        origin_msg.header = RosUtils::createHeader(node_, transform_tools_->getGlobalFrame());
+        origin_msg.position.latitude = config_tools_->getEnvironment().geopoint.latitude;
+        origin_msg.position.longitude = config_tools_->getEnvironment().geopoint.longitude;
+        origin_msg.position.altitude = config_tools_->getEnvironment().geopoint.altitude;
+        global_origin_pub_->publish(origin_msg);
     }
 
     void onShutdown() override
@@ -90,6 +101,9 @@ public: // Constructor/Destructor
         agent_registration_.reset();
         target_registration_.reset();
         cluster_registration_.reset();
+
+        // Destroy global origin publisher
+        global_origin_pub_.reset();
     }
 
 private: // Components
@@ -102,6 +116,9 @@ private: // Components
     IDs agents_;
     IDs targets_;
     IDs clusters_;
+
+    // Global origin publisher
+    PublisherPtr<GeoPointStampedMsg> global_origin_pub_;
 };
 
 int main(int argc, char** argv)

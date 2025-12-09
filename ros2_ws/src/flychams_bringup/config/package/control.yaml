@@ -1,5 +1,9 @@
 /flychams/**:
   ros__parameters:
+    # Drone frames parameters
+    drone_frames:
+      update_rate: 30.0         # (Hz)
+      
     # Drone state parameters
     drone_state:
       update_rate: 5.0          # (Hz)

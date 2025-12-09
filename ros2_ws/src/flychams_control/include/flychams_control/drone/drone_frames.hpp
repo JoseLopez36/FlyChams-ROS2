@@ -6,20 +6,23 @@
 // Base module include
 #include "flychams_core/base/base_module.hpp"
 
+// Core include
+#include "flychams_core/utils/geo_utils.hpp"
+
 namespace flychams::control
 {
     /**
      * ════════════════════════════════════════════════════════════════
-     * @brief State manager for UAV drones
+     * @brief Frame manager for UAV drones
      * ════════════════════════════════════════════════════════════════
      * @author Jose Francisco Lopez Ruiz
      * @date 2025-03-26
      * ════════════════════════════════════════════════════════════════
      */
-    class DroneState : public core::BaseModule
+    class DroneFrames : public core::BaseModule
     {
     public: // Constructor/Destructor
-        DroneState(const core::ID& agent_id, core::NodePtr node, core::ConfigTools::SharedPtr config_tools, core::TopicTools::SharedPtr topic_tools, core::TransformTools::SharedPtr transform_tools, core::CallbackGroupPtr module_cb_group)
+        DroneFrames(const core::ID& agent_id, core::NodePtr node, core::ConfigTools::SharedPtr config_tools, core::TopicTools::SharedPtr topic_tools, core::TransformTools::SharedPtr transform_tools, core::CallbackGroupPtr module_cb_group)
             : BaseModule(node, config_tools, topic_tools, transform_tools, module_cb_group), agent_id_(agent_id)
         {
             init();
@@ -30,38 +33,26 @@ namespace flychams::control
         void onShutdown() override;
 
     public: // Types
-        using SharedPtr = std::shared_ptr<DroneState>;
+        using SharedPtr = std::shared_ptr<DroneFrames>;
         struct Agent
         {
+            // Global origin data
+            core::GeoPointStampedMsg global_origin;
+            bool has_global_origin;
             // Home position data
             core::GeoPointStampedMsg home_position;
             bool has_home_position;
             // Local odometry data
             core::OdometryMsg local_odom;
             bool has_local_odom;
-            // State data
-            mavros_msgs::msg::State state;
-            bool has_state;
-            // Status data
-            core::AgentStatus status;
-            core::AgentStatusMsg status_msg;
-            // Position message
-            core::PointStampedMsg local_position;
-            core::PointStampedMsg global_position;
             // Subscriber
+            core::SubscriberPtr<core::GeoPointStampedMsg> global_origin_sub;
             core::SubscriberPtr<mavros_msgs::msg::HomePosition> home_position_sub;
-            core::SubscriberPtr<mavros_msgs::msg::State> state_sub;
             core::SubscriberPtr<core::OdometryMsg> local_odom_sub;
-            // Publishers
-            core::PublisherPtr<core::AgentStatusMsg> status_pub;
-            core::PublisherPtr<core::PointStampedMsg> local_position_pub;
-            core::PublisherPtr<core::PointStampedMsg> global_position_pub;
             // Constructor
             Agent()
-                : home_position(), has_home_position(false), local_odom(), has_local_odom(false),
-                state(), has_state(false), status(), local_position(), global_position(),
-                home_position_sub(), state_sub(), local_odom_sub(), status_pub(),
-                local_position_pub(), global_position_pub()
+                : global_origin(), has_global_origin(false), home_position(), has_home_position(false), local_odom(), has_local_odom(false),
+                global_origin_sub(), home_position_sub(), local_odom_sub()
             {
             }
         };
@@ -69,28 +60,28 @@ namespace flychams::control
     private: // Parameters
         core::ID agent_id_;
         float update_rate_;
-        // Flight parameters
-        float takeoff_altitude_;
-        float landing_altitude_;
 
     private: // Data
         // Agent
         Agent agent_;
-        // Last update time
-        core::Time last_update_time_;
         // Mavros communication
         MavrosCommunication::SharedPtr mavros_comm_;
 
     private: // Callbacks
-        void stateCallback(const mavros_msgs::msg::State::SharedPtr msg);
+        void globalOriginCallback(const core::GeoPointStampedMsg::SharedPtr msg);
+        void homePositionCallback(const mavros_msgs::msg::HomePosition::SharedPtr msg);
         void localOdomCallback(const core::OdometryMsg::SharedPtr msg);
 
-    private: // State management
-        void update();
+    private: // Frames creation
+        void createLocalFrame();
+        void createBodyFrame();
+        void createCameraBodyFrame(const core::ID camera_id, const core::MultiCameraConfigPtr camera_config_ptr);
+        void createCameraOpticalFrame(const core::ID camera_id, const core::MultiCameraConfigPtr camera_config_ptr);
 
-    private: // ROS components
-        // Timer
-        core::TimerPtr update_timer_;
+    private: // Frames update
+        void updateLocalFrame(const core::GeoPointMsg& home_geopoint, const core::GeoPointMsg& origin_geopoint);
+        void updateBodyFrame(const core::PointMsg& position, const core::QuaternionMsg& orientation);
+        void updateCameraBodyFrame(const core::ID camera_id, const core::PointMsg& position, const core::QuaternionMsg& orientation);
     };
 
 } // namespace flychams::control

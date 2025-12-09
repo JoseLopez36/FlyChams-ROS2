@@ -146,35 +146,61 @@ namespace flychams::core
             return transform_msg;
         }
 
-        PoseStampedMsg transform(const PoseStampedMsg& pose_in, const std::string& from_frame, const std::string& to_frame)
+        PoseStampedMsg transformPose(const PoseStampedMsg& pose, const std::string& to_frame)
         {
-            // Initialize pose out
-            PoseStampedMsg pose_out = pose_in;
-            pose_out.header.frame_id = to_frame;
+            // Get from frame
+            std::string from_frame = pose.header.frame_id;
 
-            // If frames are the same, just copy
-            if (from_frame == to_frame)
-            {
-                return pose_out;
-            }
+            // Initialize transformed pose
+            PoseStampedMsg transformed_pose = pose;
+            transformed_pose.header.frame_id = to_frame;
 
             try
             {
                 // Use the buffer to transform the pose directly
                 TransformStampedMsg transform = tf_buffer_->lookupTransform(
-                    from_frame, 
+                    from_frame,
                     to_frame,
                     tf2::TimePointZero
                 );
-                
-                tf2::doTransform(pose_in, pose_out, transform);
-                return pose_out;
+
+                tf2::doTransform(pose, transformed_pose, transform);
+                return transformed_pose;
             }
             catch (const tf2::TransformException& ex)
             {
-                RCLCPP_WARN(node_->get_logger(), "Failed to transform pose from %s to %s: %s", 
+                RCLCPP_WARN(node_->get_logger(), "Failed to transform pose from %s to %s: %s",
                     from_frame.c_str(), to_frame.c_str(), ex.what());
-                return pose_out;
+                return transformed_pose;
+            }
+        }
+
+        PointStampedMsg transformPoint(const PointStampedMsg& point, const std::string& to_frame)
+        {
+            // Get from frame
+            std::string from_frame = point.header.frame_id;
+
+            // Initialize transformed point
+            PointStampedMsg transformed_point = point;
+            transformed_point.header.frame_id = to_frame;
+
+            try
+            {
+                // Use the buffer to transform the point directly
+                TransformStampedMsg transform = tf_buffer_->lookupTransform(
+                    from_frame,
+                    to_frame,
+                    tf2::TimePointZero
+                );
+
+                tf2::doTransform(point, transformed_point, transform);
+                return transformed_point;
+            }
+            catch (const tf2::TransformException& ex)
+            {
+                RCLCPP_WARN(node_->get_logger(), "Failed to transform point from %s to %s: %s",
+                    from_frame.c_str(), to_frame.c_str(), ex.what());
+                return transformed_point;
             }
         }
 

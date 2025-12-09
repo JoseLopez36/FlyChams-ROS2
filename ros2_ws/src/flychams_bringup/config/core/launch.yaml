@@ -15,9 +15,9 @@ airsim: [true, 'error']
 # MavROS node
 mavros: [true, 'info']
 # NavSat Transform node (robot-localization)
-navsat_transform: [true, 'info']
+navsat_transform: [false, 'info']
 # EKF Global node (robot-localization)
-ekf_global: [true, 'info']
+ekf_global: [false, 'info']
 
 # ------------------- GLOBAL RUN NODES -------------------
 # Perception nodes
@@ -37,6 +37,7 @@ airsim_record_camera: [false, 'error']
 
 # ------------------- AGENT RUN NODES -------------------
 # Control nodes
+drone_frames: [true, 'info']
 drone_state: [true, 'info']
 drone_control: [true, 'info']
 camera_control: [false, 'error']
