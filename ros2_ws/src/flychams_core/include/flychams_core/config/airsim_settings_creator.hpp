@@ -7,7 +7,8 @@
 #include "flychams_core/types/core_types.hpp"
 #include "flychams_core/types/config_types.hpp"
 #include "flychams_core/utils/math_utils.hpp"
-#include "flychams_core/utils/geo_utils.hpp"
+#include "flychams_core/utils/tf_utils.hpp"
+#include "flychams_core/utils/vision_utils.hpp"
 
 namespace flychams::core
 {
@@ -92,10 +93,11 @@ namespace flychams::core
 
             // Wind velocity
             const auto& wind_vel = config_ptr->environment.wind_vel;
+            const auto& wind_vel_ned = TfUtils::pointToNED(wind_vel);
             settings["Wind"] = {
-                {"X", wind_vel.x()},
-                {"Y", -wind_vel.y()},
-                {"Z", -wind_vel.z()} };
+                {"X", wind_vel_ned.x()},
+                {"Y", wind_vel_ned.y()},
+                {"Z", wind_vel_ned.z()} };
 
             // Camera defaults
             settings["CameraDefaults"] = {
@@ -129,19 +131,17 @@ namespace flychams::core
                 Vector3r ini_ori = agent_ptr->orientation;
 
                 // Convert pose to NED frame
-                const auto& ini_pos_ned = GeoUtils::toNED(ini_pos);
-                const auto& ini_ori_quat = MathUtils::eulerToQuaternion(ini_ori);
-                const auto& ini_ori_quat_ned = GeoUtils::toNED(ini_ori_quat);
-                const auto& ini_ori_ned = MathUtils::quaternionToEuler(ini_ori_quat_ned);
+                const auto& ini_pos_ned = TfUtils::pointToNED(ini_pos);
+                const auto& ini_ori_ned = TfUtils::eulerToNED(ini_ori);
 
                 vehicles[agent_id] = {
                     {"PawnPath", drone.type == DroneType::Quadcopter ? "FlyChamsQuadcopter" : "FlyChamsHexacopter"},
                     {"X", ini_pos_ned.x()},
                     {"Y", ini_pos_ned.y()},
                     {"Z", ini_pos_ned.z()},
-                    {"Roll", MathUtils::radToDeg(ini_ori_ned(0))},
-                    {"Pitch", MathUtils::radToDeg(ini_ori_ned(1))},
-                    {"Yaw", MathUtils::radToDeg(ini_ori_ned(2))}
+                    {"Roll", MathUtils::radToDeg(ini_ori_ned.x())},
+                    {"Pitch", MathUtils::radToDeg(ini_ori_ned.y())},
+                    {"Yaw", MathUtils::radToDeg(ini_ori_ned.z())}
                 };
 
                 if (config_ptr->autopilot == Autopilot::PX4)
@@ -233,6 +233,10 @@ namespace flychams::core
                 const auto& mount_pos = multi_camera_ptr->position;
                 const auto& mount_ori = multi_camera_ptr->orientation;
 
+                // Convert pose to NED frame
+                const auto& mount_pos_ned = TfUtils::pointToNED(mount_pos);
+                const auto& mount_ori_ned = TfUtils::eulerToNED(mount_ori);
+
                 cameras[multi_camera_id] = {
                     {"CaptureSettings", {
                         {
@@ -241,7 +245,7 @@ namespace flychams::core
                             {"Height", camera.resolution(1)},
                             {"SensorWidth", camera.sensor_size(0)},
                             {"SensorHeight", camera.sensor_size(1)},
-                            {"FOV_Degrees", MathUtils::radToDeg(MathUtils::computeFov(multi_camera_ptr->ref_focal, camera.sensor_size(0)))},
+                            {"FOV_Degrees", MathUtils::radToDeg(VisionUtils::computeFov(multi_camera_ptr->ref_focal, camera.sensor_size(0)))},
                             {"K1", distortion.K1},
                             {"K2", distortion.K2},
                             {"K3", distortion.K3},
@@ -258,7 +262,7 @@ namespace flychams::core
                         {"YawMin", gimbal.yaw.min_angle}, {"PitchMin", gimbal.pitch.min_angle}, {"RollMin", gimbal.roll.min_angle},
                         {"YawMax", gimbal.yaw.max_angle}, {"PitchMax", gimbal.pitch.max_angle}, {"RollMax", gimbal.roll.max_angle},
                         {"YawSpeed", gimbal.yaw.max_speed}, {"PitchSpeed", gimbal.pitch.max_speed}, {"RollSpeed", gimbal.roll.max_speed},
-                        {"Roll", MathUtils::radToDeg(mount_ori.x())}, {"Pitch", 0.0f}, {"Yaw", MathUtils::radToDeg(-mount_ori.z())}
+                        {"Roll", MathUtils::radToDeg(mount_ori_ned.x())}, {"Pitch", 0.0f}, {"Yaw", MathUtils::radToDeg(mount_ori_ned.z())}
                     }},
                     {"NoiseSettings", {
                         {
@@ -279,8 +283,8 @@ namespace flychams::core
                             {"HorzDistortionStrength", 0.0f}
                         }
                     }},
-                    {"X", mount_pos.x()}, {"Y", -mount_pos.y()}, {"Z", -mount_pos.z()},
-                    {"Roll", 0.0f}, {"Pitch", MathUtils::radToDeg(-mount_ori.y())}, {"Yaw", 0.0f},
+                    {"X", mount_pos_ned.x()}, {"Y", mount_pos_ned.y()}, {"Z", mount_pos_ned.z()},
+                    {"Roll", 0.0f}, {"Pitch", MathUtils::radToDeg(mount_ori_ned.y())}, {"Yaw", 0.0f},
                     {"EnableGimbal", true}, {"CameraVisible", true}, {"CameraScale", 0.7f}
                 };
             }
@@ -292,40 +296,52 @@ namespace flychams::core
             const auto& scenario_view_pos = config_ptr->system.scenario_camera_position;
             const auto& scenario_view_ori = config_ptr->system.scenario_camera_orientation;
 
+            // Convert pose to NED frame
+            const auto& scenario_view_pos_ned = TfUtils::pointToNED(scenario_view_pos);
+            const auto& scenario_view_ori_ned = TfUtils::eulerToNED(scenario_view_ori);
+
             cameras["SCENARIOCAM"] = {
-                {"X", scenario_view_pos.x()},
-                {"Y", -scenario_view_pos.y()},
-                {"Z", -scenario_view_pos.z()},
-                {"Roll", MathUtils::radToDeg(scenario_view_ori.x())},
-                {"Pitch", MathUtils::radToDeg(-scenario_view_ori.y())},
-                {"Yaw", MathUtils::radToDeg(-scenario_view_ori.z())},
+                {"X", scenario_view_pos_ned.x()},
+                {"Y", scenario_view_pos_ned.y()},
+                {"Z", scenario_view_pos_ned.z()},
+                {"Roll", MathUtils::radToDeg(scenario_view_ori_ned.x())},
+                {"Pitch", MathUtils::radToDeg(scenario_view_ori_ned.y())},
+                {"Yaw", MathUtils::radToDeg(scenario_view_ori_ned.z())},
                 {"External", true} };
 
             // Get agent view camera pose from config
             const auto& agent_view_pos = config_ptr->system.agent_camera_position;
             const auto& agent_view_ori = config_ptr->system.agent_camera_orientation;
 
+            // Convert pose to NED frame
+            const auto& agent_view_pos_ned = TfUtils::pointToNED(agent_view_pos);
+            const auto& agent_view_ori_ned = TfUtils::eulerToNED(agent_view_ori);
+
             // Agent view camera
             cameras["AGENTCAM"] = {
-                {"X", agent_view_pos.x()},
-                {"Y", -agent_view_pos.y()},
-                {"Z", -agent_view_pos.z()},
-                {"Roll", MathUtils::radToDeg(agent_view_ori.x())},
-                {"Pitch", MathUtils::radToDeg(-agent_view_ori.y())},
-                {"Yaw", MathUtils::radToDeg(-agent_view_ori.z())} };
+                {"X", agent_view_pos_ned.x()},
+                {"Y", agent_view_pos_ned.y()},
+                {"Z", agent_view_pos_ned.z()},
+                {"Roll", MathUtils::radToDeg(agent_view_ori_ned.x())},
+                {"Pitch", MathUtils::radToDeg(agent_view_ori_ned.y())},
+                {"Yaw", MathUtils::radToDeg(agent_view_ori_ned.z())} };
 
             // Get payload view camera pose from config
             const auto& payload_view_pos = config_ptr->system.payload_camera_position;
             const auto& payload_view_ori = config_ptr->system.payload_camera_orientation;
 
+            // Convert pose to NED frame
+            const auto& payload_view_pos_ned = TfUtils::pointToNED(payload_view_pos);
+            const auto& payload_view_ori_ned = TfUtils::eulerToNED(payload_view_ori);
+
             // Payload view camera
             cameras["PAYLOADCAM"] = {
-                {"X", payload_view_pos.x()},
-                {"Y", -payload_view_pos.y()},
-                {"Z", -payload_view_pos.z()},
-                {"Roll", MathUtils::radToDeg(payload_view_ori.x())},
-                {"Pitch", MathUtils::radToDeg(-payload_view_ori.y())},
-                {"Yaw", MathUtils::radToDeg(-payload_view_ori.z())} };
+                {"X", payload_view_pos_ned.x()},
+                {"Y", payload_view_pos_ned.y()},
+                {"Z", payload_view_pos_ned.z()},
+                {"Roll", MathUtils::radToDeg(payload_view_ori_ned.x())},
+                {"Pitch", MathUtils::radToDeg(payload_view_ori_ned.y())},
+                {"Yaw", MathUtils::radToDeg(payload_view_ori_ned.z())} };
         }
 
         static void populateSubWindows(const MissionConfigPtr& config_ptr, nlohmann::ordered_json& subwindows)

@@ -2,6 +2,7 @@
 
 // Standard includes
 #include <sstream>
+#include <iomanip>
 #include <algorithm>
 #include <stdexcept>
 #include <type_traits>

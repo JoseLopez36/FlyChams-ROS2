@@ -99,7 +99,7 @@ namespace flychams::control
         std::string local_frame = transform_tools_->getAgentLocalFrame(agent_id_);
 
         // Get home position in cartesian coordinates
-        PointMsg home_position = GeoUtils::fromGlobal(home_geopoint.latitude, home_geopoint.longitude, home_geopoint.altitude, origin_geopoint);
+        PointMsg home_position = TfUtils::fromGlobal(home_geopoint.latitude, home_geopoint.longitude, home_geopoint.altitude, origin_geopoint);
 
         // We assume that the home position is at z=0 m (ground level)
         home_position.z = 0.0;

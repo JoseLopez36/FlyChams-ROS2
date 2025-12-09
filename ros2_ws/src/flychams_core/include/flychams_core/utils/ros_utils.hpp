@@ -25,39 +25,28 @@ namespace flychams::core
         // TIMERS: Timer utilities
         // ════════════════════════════════════════════════════════════════════════════
 
-        static Time now(NodePtr node)
-        {
-            return node->get_clock()->now();
-        }
+        /**
+         * @brief Get the current time
+         */
+        static Time now(NodePtr node);
 
-        static TimerPtr createTimer(NodePtr node, float rate, const std::function<void()>& callback, CallbackGroupPtr callback_group = nullptr)
-        {
-            if (callback_group == nullptr)
-            {
-                return node->create_timer(std::chrono::duration<float>(1.0f / rate), callback);
-            }
-            else
-            {
-                return node->create_timer(std::chrono::duration<float>(1.0f / rate), callback, callback_group);
-            }
-        }
+        /**
+         * @brief Create a timer
+         */
+        static TimerPtr createTimer(NodePtr node, float rate, const std::function<void()>& callback, CallbackGroupPtr callback_group = nullptr);
 
-        static TimerPtr createWallTimer(NodePtr node, float rate, const std::function<void()>& callback, CallbackGroupPtr callback_group = nullptr)
-        {
-            if (callback_group == nullptr)
-            {
-                return node->create_wall_timer(std::chrono::duration<float>(1.0f / rate), callback);
-            }
-            else
-            {
-                return node->create_wall_timer(std::chrono::duration<float>(1.0f / rate), callback, callback_group);
-            }
-        }
+        /**
+         * @brief Create a wall timer (independent of the node clock)
+         */
+        static TimerPtr createWallTimer(NodePtr node, float rate, const std::function<void()>& callback, CallbackGroupPtr callback_group = nullptr);
 
         // ════════════════════════════════════════════════════════════════════════════
         // PARAMETERS: Parameter utilities
         // ════════════════════════════════════════════════════════════════════════════
 
+        /**
+         * @brief Get a parameter from the parameter server or shutdown the node
+         */
         template <typename T>
         static T getParameter(NodePtr node, const std::string& param_name)
         {
@@ -70,6 +59,9 @@ namespace flychams::core
             return value;
         }
 
+        /**
+         * @brief Get a parameter from the parameter server or a default value
+         */
         template <typename T>
         static T getParameterOr(NodePtr node, const std::string& param_name, const T& default_value)
         {
@@ -80,6 +72,9 @@ namespace flychams::core
         // SERVICES: Service utilities
         // ════════════════════════════════════════════════════════════════════════════
 
+        /**
+         * @brief Send a request to a service and wait for the response
+         */
         template<typename T>
         static bool sendRequest(NodePtr node, ClientPtr<T> client, typename T::Request::SharedPtr request, int wait_time_ms = 1000)
         {
@@ -99,109 +94,74 @@ namespace flychams::core
         // MESSAGES: Message utilities
         // ════════════════════════════════════════════════════════════════════════════
 
-        static Vector3r fromMsg(const PointMsg& point)
-        {
-            return Vector3r{ static_cast<float>(point.x), static_cast<float>(point.y), static_cast<float>(point.z) };
-        }
+        /**
+         * @brief Convert a PointMsg to a Vector3r
+         */
+        static Vector3r fromMsg(const PointMsg& point);
 
-        static Vector3r fromMsg(const Vector3Msg& vector)
-        {
-            return Vector3r{ static_cast<float>(vector.x), static_cast<float>(vector.y), static_cast<float>(vector.z) };
-        }
+        /**
+         * @brief Convert a Vector3Msg to a Vector3r
+         */
+        static Vector3r fromMsg(const Vector3Msg& vector);
 
-        static Quaternionr fromMsg(const QuaternionMsg& quat)
-        {
-            return Quaternionr{ static_cast<float>(quat.w), static_cast<float>(quat.x), static_cast<float>(quat.y), static_cast<float>(quat.z) };
-        }
+        /**
+         * @brief Convert a QuaternionMsg to a Quaternionr
+         */
+        static Quaternionr fromMsg(const QuaternionMsg& quat);
 
-        static Matrix4r fromMsg(const TransformMsg& transform)
-        {
-            Matrix4r T = Matrix4r::Identity();
-            T.block<3, 1>(0, 3) = fromMsg(transform.translation);
-            Quaternionr q = fromMsg(transform.rotation);
-            T.block<3, 3>(0, 0) = MathUtils::quaternionToRotationMatrix(q);
-            return T;
-        }
+        /**
+         * @brief Convert a TransformMsg to a Matrix4r
+         */
+        static Matrix4r fromMsg(const TransformMsg& transform);
 
-        static void toMsg(const Vector3r& vector, PointMsg& point)
-        {
-            point.x = static_cast<double>(vector.x());
-            point.y = static_cast<double>(vector.y());
-            point.z = static_cast<double>(vector.z());
-        }
+        /**
+         * @brief Convert a Vector3r to a PointMsg
+         */
+        static void toMsg(const Vector3r& vector, PointMsg& point);
 
-        static void toMsg(const Vector3r& vector, Vector3Msg& vec)
-        {
-            vec.x = static_cast<double>(vector.x());
-            vec.y = static_cast<double>(vector.y());
-            vec.z = static_cast<double>(vector.z());
-        }
+        /**
+         * @brief Convert a Vector3r to a Vector3Msg
+         */
+        static void toMsg(const Vector3r& vector, Vector3Msg& vec);
 
-        static void toMsg(const Quaternionr& orientation, QuaternionMsg& quat)
-        {
-            quat.x = static_cast<double>(orientation.x());
-            quat.y = static_cast<double>(orientation.y());
-            quat.z = static_cast<double>(orientation.z());
-            quat.w = static_cast<double>(orientation.w());
-        }
+        /**
+         * @brief Convert a Quaternionr to a QuaternionMsg
+         */
+        static void toMsg(const Quaternionr& orientation, QuaternionMsg& quat);
 
-        static void toMsg(const Matrix4r& matrix, TransformMsg& transform)
-        {
-            toMsg(matrix.block<3, 1>(0, 3), transform.translation);
-            toMsg(MathUtils::rotationMatrixToQuaternion(matrix.block<3, 3>(0, 0)), transform.rotation);
-        }
+        /**
+         * @brief Convert a Matrix4r to a TransformMsg
+         */
+        static void toMsg(const Matrix4r& matrix, TransformMsg& transform);
 
-        static void toMsg(const Crop& crop, CropMsg& crop_msg)
-        {
-            crop_msg.x = crop.x;
-            crop_msg.y = crop.y;
-            crop_msg.w = crop.w;
-            crop_msg.h = crop.h;
-            crop_msg.is_out_of_bounds = crop.is_out_of_bounds;
-        }
+        /**
+         * @brief Convert a Crop to a CropMsg
+         */
+        static void toMsg(const Crop& crop, CropMsg& crop_msg);
 
         // ════════════════════════════════════════════════════════════════════════════
         // OTHER: Other utilities
         // ════════════════════════════════════════════════════════════════════════════
 
-        static std::string replace(const std::string& topic_name, const std::string& placeholder, const std::string& value)
-        {
-            return std::regex_replace(topic_name, std::regex(placeholder), value);
-        }
+        /**
+         * @brief Replace a placeholder in a topic name
+         */
+        static std::string replace(const std::string& topic_name, const std::string& placeholder, const std::string& value);
 
-        static HeaderMsg createHeader(NodePtr node, const std::string& frame_id)
-        {
-            HeaderMsg header;
-            header.frame_id = frame_id;
-            header.stamp = now(node);
-            return header;
-        }
+        /**
+         * @brief Create a header
+         */
+        static HeaderMsg createHeader(NodePtr node, const std::string& frame_id);
 
-        static bool addToSet(NodePtr node, std::unordered_set<ID>& set, const ID& id)
-        {
-            // Check if element already exists
-            if (set.find(id) != set.end())
-            {
-                RCLCPP_INFO(node->get_logger(), "Element %s already exists. Skipping addition", id.c_str());
-                return false;
-            }
-            // Insert element
-            set.insert(id);
-            return true;
-        }
+        /**
+         * @brief Add an element to a set
+         */
+        static bool addToSet(NodePtr node, std::unordered_set<ID>& set, const ID& id);
 
-        static bool removeFromSet(NodePtr node, std::unordered_set<ID>& set, const ID& id)
-        {
-            // Check if element exists
-            if (set.find(id) == set.end())
-            {
-                RCLCPP_INFO(node->get_logger(), "Element %s does not exist. Skipping removal", id.c_str());
-                return false;
-            }
-            // Remove element
-            set.erase(id);
-            return true;
-        }
+        /**
+         * @brief Remove an element from a set
+         */
+        static bool removeFromSet(NodePtr node, std::unordered_set<ID>& set, const ID& id);
     };
 
 } // namespace flychams::core
