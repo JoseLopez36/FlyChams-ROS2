@@ -18,6 +18,7 @@ set(CONTROL_SRC
   src/drone/drone_frames.cpp
   src/drone/drone_state.cpp
   src/drone/drone_control.cpp
+  src/camera/camera_frames.cpp
   src/camera/camera_control.cpp
   src/communication/mavros_communication.cpp
   src/communication/camera_communication.cpp
@@ -53,6 +54,11 @@ add_executable(drone_control_node src/drone_control_node.cpp)
 target_link_libraries(drone_control_node ${PROJECT_NAME})
 ament_target_dependencies(drone_control_node rclcpp mavros_msgs flychams_core)
 
+# Create executable for camera frames node
+add_executable(camera_frames_node src/camera_frames_node.cpp)
+target_link_libraries(camera_frames_node ${PROJECT_NAME})
+ament_target_dependencies(camera_frames_node rclcpp airsim_interfaces flychams_core)
+
 # Create executable for camera control node
 add_executable(camera_control_node src/camera_control_node.cpp)
 target_link_libraries(camera_control_node ${PROJECT_NAME})
@@ -67,7 +73,7 @@ install(TARGETS ${PROJECT_NAME}
   INCLUDES DESTINATION include
 )
 
-install(TARGETS drone_frames_node drone_state_node drone_control_node camera_control_node
+install(TARGETS drone_frames_node drone_state_node drone_control_node camera_frames_node camera_control_node
   RUNTIME DESTINATION lib/${PROJECT_NAME}
 )
 

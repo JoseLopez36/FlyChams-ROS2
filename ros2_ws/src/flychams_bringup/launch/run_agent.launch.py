@@ -73,6 +73,7 @@ def launch_setup(context, *args, **kwargs):
         'drone_frames': launch.get('drone_frames', [True, 'info']),
         'drone_state': launch.get('drone_state', [True, 'info']),
         'drone_control': launch.get('drone_control', [True, 'info']),
+        'camera_frames': launch.get('camera_frames', [True, 'info']),
         'camera_control': launch.get('camera_control', [True, 'info']),
         # Coordination nodes (Agent)
         'agent_positioning': launch.get('agent_positioning', [True, 'info']),
@@ -143,6 +144,27 @@ def launch_setup(context, *args, **kwargs):
             )
         )
 
+    # Conditionally add Camera Frames node
+    if nodes['camera_frames'][0]:
+        ld.append(
+            Node(
+                package='flychams_control',
+                executable='camera_frames_node',
+                name='camera_frames_node',
+                output='screen' if is_simulated else 'log',
+                namespace='flychams/' + agent_id,
+                arguments=['--ros-args', '--log-level', nodes['camera_frames'][1]],
+                parameters=[
+                    system_path, 
+                    topics_path, 
+                    frames_path, 
+                    control_path,
+                    {'agent_id': agent_id},
+                    {'use_sim_time': is_simulated}
+                ]
+            )
+        )
+        
     # Conditionally add Camera Control node
     if nodes['camera_control'][0]:
         ld.append(

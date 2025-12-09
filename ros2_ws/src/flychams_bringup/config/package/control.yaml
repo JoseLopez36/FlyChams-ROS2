@@ -1,9 +1,5 @@
 /flychams/**:
   ros__parameters:
-    # Drone frames parameters
-    drone_frames:
-      update_rate: 30.0         # (Hz)
-      
     # Drone state parameters
     drone_state:
       update_rate: 5.0          # (Hz)
@@ -23,7 +19,3 @@
       min_distance: 0.10        # (m)
       max_distance: 20.0        # (m)
       max_acceleration: 0.5     # (m/s^2)
-      
-    # Camera control parameters
-    camera_control:
-      update_rate: 20.0 # (Hz)

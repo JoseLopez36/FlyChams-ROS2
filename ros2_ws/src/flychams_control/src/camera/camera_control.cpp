@@ -10,10 +10,6 @@ namespace flychams::control
 
 	void CameraControl::onInit()
 	{
-		// Get parameters from parameter server
-		// Get update rate
-		update_rate_ = RosUtils::getParameterOr<float>(node_, "camera_control.control_update_rate", 20.0f);
-
 		// Initialize data
 		agent_ = Agent();
 
@@ -25,10 +21,6 @@ namespace flychams::control
 			std::bind(&CameraControl::statusCallback, this, std::placeholders::_1), sub_options_with_module_cb_group_);
 		agent_.setpoints_sub = topic_tools_->createAgentObservationSetpointsSubscriber(agent_id_,
 			std::bind(&CameraControl::setpointsCallback, this, std::placeholders::_1), sub_options_with_module_cb_group_);
-
-		// Set update timer
-		update_timer_ = RosUtils::createTimer(node_, update_rate_,
-			std::bind(&CameraControl::update, this), module_cb_group_);
 	}
 
 	void CameraControl::onShutdown()
@@ -36,8 +28,8 @@ namespace flychams::control
 		// Destroy subscribers
 		agent_.status_sub.reset();
 		agent_.setpoints_sub.reset();
-		// Destroy update timer
-		update_timer_.reset();
+		// Destroy camera communication
+		camera_comm_.reset();
 	}
 
 	// ════════════════════════════════════════════════════════════════════════════
@@ -53,26 +45,15 @@ namespace flychams::control
 
 	void CameraControl::setpointsCallback(const core::AgentObservationSetpointsMsg::SharedPtr msg)
 	{
-		// Update observation setpoints
-		agent_.setpoints = *msg;
-		agent_.has_setpoints = true;
-	}
-
-	// ════════════════════════════════════════════════════════════════════════════
-	// UPDATE: Update cameras
-	// ════════════════════════════════════════════════════════════════════════════
-
-	void CameraControl::update()
-	{
-		// Check if we have a valid status and setpoints
-		if (!agent_.has_status || !agent_.has_setpoints)
+		// Check if we have a valid status
+		if (!agent_.has_status)
 		{
-			RCLCPP_WARN(node_->get_logger(), "Camera control: No status or setpoints data received for agent %s",
+			RCLCPP_WARN(node_->get_logger(), "Camera control: No status data received for agent %s",
 				agent_id_.c_str());
 			return;
 		}
 
-		// Check if we are in the correct state to move
+		// Check if we are in the correct state to control cameras
 		if (agent_.status != AgentStatus::MISSION)
 		{
 			RCLCPP_WARN(node_->get_logger(), "Camera control: Agent %s is not in the correct state to control cameras",
@@ -80,43 +61,53 @@ namespace flychams::control
 			return;
 		}
 
+		// Control cameras based on setpoints
+		controlCameras(*msg);
+	}
+
+	// ════════════════════════════════════════════════════════════════════════════
+	// UPDATE: Update cameras
+	// ════════════════════════════════════════════════════════════════════════════
+
+	void CameraControl::controlCameras(const core::AgentObservationSetpointsMsg& setpoints)
+	{
 		// Iterate over all cameras (including the central camera) to fill vectors
-		const int& n_o = agent_.setpoints.n_o;
-		const int& n_commands = agent_.setpoints.n_c + 1; // +1 for the central camera
-		std::vector<ID> unit_ids(n_commands);
-		std::vector<QuaternionMsg> unit_quats(n_commands);
-		std::vector<float> unit_fovs(n_commands);
+		const int& n_o = setpoints.n_o;
+		const int& n_commands = setpoints.n_c + 1; // +1 for the central camera
+		std::vector<ID> camera_ids(n_commands);
+		std::vector<QuaternionMsg> camera_quats(n_commands);
+		std::vector<float> camera_fovs(n_commands);
 		for (int i = 0, j = 0; i < n_o; i++)
 		{
 			// Filter out units that are not cameras
-			if (agent_.setpoints.types[i] != 1)
+			if (setpoints.types[i] != 1)
 			{
 				continue;
 			}
 
 			// Get camera ID
-			unit_ids[j] = agent_.setpoints.ids[i];
+			camera_ids[j] = setpoints.ids[i];
 
 			// Get camera configuration
-			const auto& camera_config = config_tools_->getCamera(agent_id_, unit_ids[j]);
+			const auto& camera_config = config_tools_->getCamera(agent_id_, camera_ids[j]);
 
 			// Get camera quaternion
-			const auto& rotation = agent_.setpoints.rotations[i];
+			const auto& rotation = setpoints.rotations[i];
 			Vector3r rpy_vec = Vector3r(rotation.x, rotation.y, rotation.z);
-			RosUtils::toMsg(MathUtils::eulerToQuaternion(rpy_vec), unit_quats[j]);
+			RosUtils::toMsg(MathUtils::eulerToQuaternion(rpy_vec), camera_quats[j]);
 
 			// Calculate camera FOV
-			const float& focal = agent_.setpoints.zoom_factors[i];
+			const float& focal = setpoints.zoom_factors[i];
 			const float& sensor_width = camera_config.sensor_size(0);
-			unit_fovs[j] = MathUtils::computeFov(focal, sensor_width);
+			camera_fovs[j] = MathUtils::computeFov(focal, sensor_width);
 
 			// Increment index
 			j++;
 		}
 
 		// Send commands to cameras
-		camera_comm_->setGimbalOrientations(unit_ids, unit_quats);
-		camera_comm_->setCameraFovs(unit_ids, unit_fovs);
+		camera_comm_->setGimbalOrientations(camera_ids, camera_quats);
+		camera_comm_->setCameraFovs(camera_ids, camera_fovs);
 	}
 
 } // namespace flychams::control

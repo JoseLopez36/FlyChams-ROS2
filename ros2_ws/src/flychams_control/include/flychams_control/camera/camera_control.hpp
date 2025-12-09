@@ -36,22 +36,18 @@ namespace flychams::control
 			// Status data
 			core::AgentStatus status;
 			bool has_status;
-			// Observation setpoint data
-			core::AgentObservationSetpointsMsg setpoints;
-			bool has_setpoints;
 			// Subscribers
 			core::SubscriberPtr<core::AgentStatusMsg> status_sub;
 			core::SubscriberPtr<core::AgentObservationSetpointsMsg> setpoints_sub;
 			// Constructor
 			Agent()
-				: status(), has_status(false), setpoints(), has_setpoints(false), status_sub(), setpoints_sub()
+				: status(), has_status(false), status_sub(), setpoints_sub()
 			{
 			}
 		};
 
 	private: // Parameters
 		core::ID agent_id_;
-		float update_rate_;
 
 	private: // Data
 		// Agent
@@ -64,12 +60,7 @@ namespace flychams::control
 		void setpointsCallback(const core::AgentObservationSetpointsMsg::SharedPtr msg);
 
 	private: // Camera management
-		// Update
-		void update();
-
-	private:
-		// Timer
-		core::TimerPtr update_timer_;
+		void controlCameras(const core::AgentObservationSetpointsMsg& setpoints);
 	};
 
 } // namespace flychams::control

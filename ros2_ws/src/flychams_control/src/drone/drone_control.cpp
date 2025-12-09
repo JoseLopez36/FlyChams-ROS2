@@ -82,14 +82,14 @@ namespace flychams::control
 	void DroneControl::localPositionCallback(const core::PointStampedMsg::SharedPtr msg)
 	{
 		// Update current local position
-		agent_.local_position = msg->point;
+		agent_.local_position = *msg;
 		agent_.has_local_position = true;
 	}
 
 	void DroneControl::setpointPositionCallback(const core::PointStampedMsg::SharedPtr msg)
 	{
 		// Update setpoint position
-		agent_.setpoint = msg->point;
+		agent_.setpoint = *msg;
 		agent_.has_setpoint = true;
 	}
 
@@ -246,7 +246,7 @@ namespace flychams::control
 	{
 		if (agent_.status == AgentStatus::IDLE || agent_.status == AgentStatus::TAKEOFF)
 		{
-			mavros_comm_->setLocalPosition(agent_.local_position.x, agent_.local_position.y, takeoff_altitude_);
+			mavros_comm_->setLocalPosition(agent_.local_position.point.x, agent_.local_position.point.y, takeoff_altitude_);
 			return true;
 		}
 		else
@@ -257,7 +257,7 @@ namespace flychams::control
 	{
 		if (agent_.status == AgentStatus::TAKEOFF || agent_.status == AgentStatus::MISSION)
 		{
-			mavros_comm_->setLocalPosition(agent_.local_position.x, agent_.local_position.y, agent_.local_position.z);
+			mavros_comm_->setLocalPosition(agent_.local_position.point.x, agent_.local_position.point.y, agent_.local_position.point.z);
 			return true;
 		}
 		else
@@ -268,11 +268,15 @@ namespace flychams::control
 	{
 		if (agent_.status == AgentStatus::MISSION)
 		{
-			mavros_comm_->setGlobalPosition(agent_.setpoint.x, agent_.setpoint.y, agent_.setpoint.z);
+			// Transform setpoint to local frame
+			const std::string& local_frame = transform_tools_->getAgentLocalFrame(agent_id_);
+			const PointStampedMsg local_setpoint = transform_tools_->transformPoint(agent_.setpoint, local_frame);
+
+			mavros_comm_->setLocalPosition(local_setpoint.point.x, local_setpoint.point.y, local_setpoint.point.z);
 			RCLCPP_INFO(node_->get_logger(), "Drone control: Setpoint sent to agent %s",
 				agent_id_.c_str());
 			RCLCPP_INFO(node_->get_logger(), "Drone control: Setpoint: %f, %f, %f",
-				agent_.setpoint.x, agent_.setpoint.y, agent_.setpoint.z);
+				agent_.setpoint.point.x, agent_.setpoint.point.y, agent_.setpoint.point.z);
 			return true;
 		}
 		else

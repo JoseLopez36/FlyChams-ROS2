@@ -1,6 +1,7 @@
 #pragma once
 
 // MavROS includes
+#include <mavros_msgs/msg/home_position.hpp>
 #include <mavros_msgs/msg/state.hpp>
 #include <mavros_msgs/srv/command_bool.hpp>
 #include <mavros_msgs/srv/command_tol.hpp>
@@ -40,7 +41,7 @@ namespace flychams::control
         using SharedPtr = std::shared_ptr<MavrosCommunication>;
 
     public: // Vehicle state methods
-        core::SubscriberPtr<core::GeoPointStampedMsg> subscribeHomePosition(const std::function<void(const core::GeoPointStampedMsg::SharedPtr)>& callback, const rclcpp::SubscriptionOptions& options = rclcpp::SubscriptionOptions());
+        core::SubscriberPtr<mavros_msgs::msg::HomePosition> subscribeHomePosition(const std::function<void(const mavros_msgs::msg::HomePosition::SharedPtr)>& callback, const rclcpp::SubscriptionOptions& options = rclcpp::SubscriptionOptions());
         core::SubscriberPtr<mavros_msgs::msg::State> subscribeState(const std::function<void(const mavros_msgs::msg::State::SharedPtr)>& callback, const rclcpp::SubscriptionOptions& options = rclcpp::SubscriptionOptions());
         core::SubscriberPtr<core::OdometryMsg> subscribeLocalOdometry(const std::function<void(const core::OdometryMsg::SharedPtr)>& callback, const rclcpp::SubscriptionOptions& options = rclcpp::SubscriptionOptions());
 

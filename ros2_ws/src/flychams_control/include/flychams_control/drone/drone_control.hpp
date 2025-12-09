@@ -48,10 +48,10 @@ namespace flychams::control
 			core::AgentStatus status;
 			bool has_status;
 			// Position data
-			core::PointMsg local_position;
+			core::PointStampedMsg local_position;
 			bool has_local_position;
 			// Setpoint data
-			core::PointMsg setpoint;
+			core::PointStampedMsg setpoint;
 			bool has_setpoint;
 			// Subscribers
 			core::SubscriberPtr<core::AgentStatusMsg> status_sub;

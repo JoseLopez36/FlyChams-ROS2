@@ -24,13 +24,6 @@ namespace flychams::control
         createLocalFrame();
         createBodyFrame();
 
-        // Iterate through all cameras
-        for (const auto& [camera_id, camera_config_ptr] : multi_camera_set)
-        {
-            createCameraBodyFrame(camera_id, camera_config_ptr);
-            createCameraOpticalFrame(camera_id, camera_config_ptr);
-        }
-
         // Subscribe to topics
         agent_.global_origin_sub = topic_tools_->createGlobalOriginSubscriber(
             std::bind(&DroneFrames::globalOriginCallback, this, std::placeholders::_1), sub_options_with_module_cb_group_);
@@ -57,7 +50,7 @@ namespace flychams::control
     void DroneFrames::globalOriginCallback(const core::GeoPointStampedMsg::SharedPtr msg)
     {
         // Update global origin data
-        agent_.global_origin = *msg;
+        agent_.global_origin = msg->position;
         agent_.has_global_origin = true;
     }
 
@@ -71,11 +64,11 @@ namespace flychams::control
         }
 
         // Update current home position
-        agent_.home_position = *msg;
+        agent_.home_position = msg->geo;
         agent_.has_home_position = true;
 
         // Create local frame
-        updateLocalFrame(agent_.home_position.geopoint, agent_.global_origin.geopoint);
+        updateLocalFrame(agent_.home_position, agent_.global_origin);
     }
 
     void DroneFrames::localOdomCallback(const core::OdometryMsg::SharedPtr msg)
@@ -87,13 +80,9 @@ namespace flychams::control
             return;
         }
 
-        // Update current local odometry
-        agent_.local_odom = *msg;
-        agent_.has_local_odom = true;
-
         // Update body frame
-        const auto& position = agent_.local_odom.pose.pose.position;
-        const auto& orientation = agent_.local_odom.pose.pose.orientation;
+        const auto& position = msg->pose.pose.position;
+        const auto& orientation = msg->pose.pose.orientation;
         updateBodyFrame(position, orientation);
     }
 
@@ -112,7 +101,7 @@ namespace flychams::control
 
         // Broadcast world -> local
         transform_tools_->broadcastTransform(world_frame, local_frame, world_to_local);
-        RCLCPP_INFO(node_->get_logger(), "Published transform: %s -> %s", agent_.world_frame.c_str(), agent_.local_frame.c_str());
+        RCLCPP_INFO(node_->get_logger(), "Published transform: %s -> %s", world_frame.c_str(), local_frame.c_str());
     }
 
     void DroneFrames::createBodyFrame()
@@ -126,44 +115,7 @@ namespace flychams::control
 
         // Broadcast local -> body
         transform_tools_->broadcastTransform(local_frame, body_frame, local_to_body);
-        RCLCPP_INFO(node_->get_logger(), "Published transform: %s -> %s", agent_.local_frame.c_str(), agent_.body_frame.c_str());
-    }
-
-    void DroneFrames::createCameraBodyFrame(const core::ID camera_id, const core::MultiCameraConfigPtr camera_config_ptr)
-    {
-        // Get frames
-        std::string body_frame = transform_tools_->getAgentBodyFrame(agent_id_);
-        std::string camera_body_frame = transform_tools_->getCameraBodyFrame(agent_id_, camera_id);
-
-        // Get camera position and orientation from config
-        const Vector3r& camera_position = camera_config_ptr->position;
-        const Vector3r& camera_orientation_rpy = camera_config_ptr->orientation;
-
-        // Convert RPY to quaternion
-        Quaternionr camera_orientation = MathUtils::eulerToQuaternion(camera_orientation_rpy);
-
-        // Create transform matrix from agent body to camera body
-        Matrix4r body_to_camera_body = Matrix4r::Identity();
-        body_to_camera_body.block<3, 3>(0, 0) = camera_orientation.toRotationMatrix();
-        body_to_camera_body.block<3, 1>(0, 3) = camera_position;
-
-        // Broadcast agent body -> camera body
-        transform_tools_->broadcastTransform(body_frame, camera_body_frame, body_to_camera_body);
-        RCLCPP_INFO(node_->get_logger(), "Published transform: %s -> %s", agent_.body_frame.c_str(), agent_.camera_body_frame.c_str());
-    }
-
-    void DroneFrames::createCameraOpticalFrame(const core::ID camera_id, const core::MultiCameraConfigPtr camera_config_ptr)
-    {
-        // Get frames
-        std::string camera_body_frame = transform_tools_->getCameraBodyFrame(agent_id_, camera_id);
-        std::string camera_optical_frame = transform_tools_->getCameraOpticalFrame(agent_id_, camera_id);
-
-        // Initialize camera optical at camera body origin
-        Matrix4r camera_body_to_camera_optical = Matrix4r::Identity();
-
-        // Broadcast camera body -> camera optical (static)
-        transform_tools_->broadcastStaticTransform(camera_body_frame, camera_optical_frame, camera_body_to_camera_optical);
-        RCLCPP_INFO(node_->get_logger(), "Published static transform: %s -> %s", agent_.camera_body_frame.c_str(), agent_.camera_optical_frame.c_str());
+        RCLCPP_INFO(node_->get_logger(), "Published transform: %s -> %s", local_frame.c_str(), body_frame.c_str());
     }
 
     // ════════════════════════════════════════════════════════════════════════════
@@ -185,13 +137,12 @@ namespace flychams::control
         // Get world to local transformation
         // We assume that the local frame is aligned with the world frame (ENU)
         Matrix4r world_to_local = Matrix4r::Identity();
-        world_to_local.block(0, 3) = home_position.point.x;
-        world_to_local.block(1, 3) = home_position.point.y;
-        world_to_local.block(2, 3) = home_position.point.z;
+        world_to_local(0, 3) = home_position.x;
+        world_to_local(1, 3) = home_position.y;
+        world_to_local(2, 3) = home_position.z;
 
         // Broadcast world -> local
         transform_tools_->broadcastTransform(world_frame, local_frame, world_to_local);
-        RCLCPP_INFO(node_->get_logger(), "Drone frames: Published static transform: %s -> %s", agent_.world_frame.c_str(), agent_.local_frame.c_str());
     }
 
     void DroneFrames::updateBodyFrame(const core::PointMsg& position, const core::QuaternionMsg& orientation)
@@ -204,40 +155,16 @@ namespace flychams::control
         Matrix4r local_to_body = Matrix4r::Identity();
 
         // Set position
-        local_to_body.block(0, 3) = position.point.x;
-        local_to_body.block(1, 3) = position.point.y;
-        local_to_body.block(2, 3) = position.point.z;
+        local_to_body(0, 3) = position.x;
+        local_to_body(1, 3) = position.y;
+        local_to_body(2, 3) = position.z;
 
         // Set orientation
-        Quaternionr orientation_quat = MathUtils::fromMsg(orientation);
+        Quaternionr orientation_quat = RosUtils::fromMsg(orientation);
         local_to_body.block<3, 3>(0, 0) = MathUtils::quaternionToRotationMatrix(orientation_quat);
 
         // Broadcast local -> body
         transform_tools_->broadcastTransform(local_frame, body_frame, local_to_body);
-        RCLCPP_INFO(node_->get_logger(), "Drone frames: Published transform: %s -> %s", agent_.local_frame.c_str(), agent_.body_frame.c_str());
-    }
-
-    void DroneFrames::updateCameraBodyFrame(const core::ID camera_id, const core::PointMsg& position, const core::QuaternionMsg& orientation)
-    {
-        // Get frames
-        std::string body_frame = transform_tools_->getAgentBodyFrame(agent_id_);
-        std::string camera_body_frame = transform_tools_->getCameraBodyFrame(agent_id_, camera_id);
-
-        // Get body to camera body transformation
-        Matrix4r body_to_camera_body = Matrix4r::Identity();
-
-        // Set position
-        body_to_camera_body.block(0, 3) = position.point.x;
-        body_to_camera_body.block(1, 3) = position.point.y;
-        body_to_camera_body.block(2, 3) = position.point.z;
-
-        // Set orientation
-        Quaternionr orientation_quat = MathUtils::fromMsg(orientation);
-        body_to_camera_body.block<3, 3>(0, 0) = MathUtils::quaternionToRotationMatrix(orientation_quat);
-
-        // Broadcast agent body -> camera body
-        transform_tools_->broadcastTransform(body_frame, camera_body_frame, body_to_camera_body);
-        RCLCPP_INFO(node_->get_logger(), "Drone frames: Published transform: %s -> %s", body_frame.c_str(), camera_body_frame.c_str());
     }
 
 } // namespace flychams::control

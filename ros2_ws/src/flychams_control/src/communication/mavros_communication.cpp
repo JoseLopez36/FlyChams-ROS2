@@ -33,10 +33,10 @@ namespace flychams::control
     // VEHICLE STATE
     // ════════════════════════════════════════════════════════════════════════════
 
-    SubscriberPtr<GeoPointStampedMsg> MavrosCommunication::subscribeHomePosition(const std::function<void(const GeoPointStampedMsg::SharedPtr)>& callback, const rclcpp::SubscriptionOptions& options)
+    SubscriberPtr<mavros_msgs::msg::HomePosition> MavrosCommunication::subscribeHomePosition(const std::function<void(const mavros_msgs::msg::HomePosition::SharedPtr)>& callback, const rclcpp::SubscriptionOptions& options)
     {
         rclcpp::QoS qos = rclcpp::QoS(rclcpp::KeepLast(10)).best_effort();
-        return node_->create_subscription<GeoPointStampedMsg>("/mavros/" + agent_id_ + "/home_position", qos, callback, options);
+        return node_->create_subscription<mavros_msgs::msg::HomePosition>("/mavros/" + agent_id_ + "/home_position", qos, callback, options);
     }
 
     SubscriberPtr<mavros_msgs::msg::State> MavrosCommunication::subscribeState(const std::function<void(const mavros_msgs::msg::State::SharedPtr)>& callback, const rclcpp::SubscriptionOptions& options)
