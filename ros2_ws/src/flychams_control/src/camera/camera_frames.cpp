@@ -17,6 +17,9 @@ namespace flychams::control
         // Initialize data
         agent_ = Agent();
 
+        // Initialize communication
+        camera_communication_ = std::make_shared<CameraCommunication>(agent_id_, node_);
+
         // Get multi camera set
         auto multi_camera_set = config_tools_->getMultiCameraSet(agent_id_);
 
@@ -39,49 +42,33 @@ namespace flychams::control
         }
 
         // Subscribe to topics
-        agent_.setpoints_sub = topic_tools_->createAgentObservationSetpointsSubscriber(agent_id_,
-            std::bind(&CameraFrames::setpointsCallback, this, std::placeholders::_1), sub_options_with_module_cb_group_);
+        agent_.camera_orientation_sub = camera_communication_->subscribeCameraOrientation(
+            std::bind(&CameraFrames::cameraOrientationCallback, this, std::placeholders::_1), sub_options_with_module_cb_group_);
     }
 
     void CameraFrames::onShutdown()
     {
         // Destroy subscriber
-        agent_.setpoints_sub.reset();
+        agent_.camera_orientation_sub.reset();
+        // Shutdown communication
+        camera_communication_.reset();
     }
 
     // ════════════════════════════════════════════════════════════════════════════
     // CALLBACKS: Callback functions
     // ════════════════════════════════════════════════════════════════════════════
 
-    void CameraFrames::setpointsCallback(const core::AgentObservationSetpointsMsg::SharedPtr msg)
+    void CameraFrames::cameraOrientationCallback(const airsim_interfaces::msg::CameraOrientation::SharedPtr msg)
     {
-        // Update observation setpoints
-        agent_.setpoints = *msg;
-        agent_.has_setpoints = true;
-
-        // Iterate over all cameras in setpoints
-        const int& n_o = agent_.setpoints.n_o;
-
-        for (int i = 0; i < n_o; i++)
+        // Iterate through all cameras in the message
+        for (size_t i = 0; i < msg->camera_names.size(); i++)
         {
-            // Filter out units that are not cameras
-            if (agent_.setpoints.types[i] != 1)
-            {
-                continue;
-            }
-
-            // Get camera ID
-            ID camera_id = agent_.setpoints.ids[i];
+            // Get camera ID and orientation
+            ID camera_id = msg->camera_names[i];
+            const auto& orientation_msg = msg->orientations[i];
 
             // Get camera configuration
             const auto& camera_config_ptr = config_tools_->getMultiCamera(agent_id_, camera_id);
-
-            // Get camera quaternion from command (rotation relative to body or gimbal frame)
-            // Note: The rotation in setpoints is Euler angles (RPY)
-            const auto& rotation = agent_.setpoints.rotations[i];
-            Vector3r rpy_vec = Vector3r(rotation.x, rotation.y, rotation.z);
-            QuaternionMsg orientation_msg;
-            RosUtils::toMsg(TfUtils::eulerToQuat(rpy_vec), orientation_msg);
 
             // Get camera position from config (static relative to body)
             PointMsg position_msg;
@@ -104,8 +91,15 @@ namespace flychams::control
         std::string camera_body_frame = transform_tools_->getCameraBodyFrame(agent_id_, camera_id);
         std::string camera_optical_frame = transform_tools_->getCameraOpticalFrame(agent_id_, camera_id);
 
-        // Initialize camera optical at camera body origin
+        // Initialize camera optical at camera body origin with optical frame rotation
         Matrix4r camera_body_to_camera_optical = Matrix4r::Identity();
+
+        // Apply optical frame rotation: rotate from camera body to optical frame
+        // This rotation aligns the camera coordinate system with the optical frame convention
+        TransformMsg optical_tf = TransformMsg();
+        auto optical_quat = Quaternionr(optical_tf.rotation.w, optical_tf.rotation.x, optical_tf.rotation.y, optical_tf.rotation.z);
+        optical_quat *= Quaternionr(0.5, -0.5, 0.5, -0.5);
+        camera_body_to_camera_optical.block<3, 3>(0, 0) = TfUtils::quatToMatrix(optical_quat);
 
         // Broadcast camera body -> camera optical (static)
         transform_tools_->broadcastStaticTransform(camera_body_frame, camera_optical_frame, camera_body_to_camera_optical);

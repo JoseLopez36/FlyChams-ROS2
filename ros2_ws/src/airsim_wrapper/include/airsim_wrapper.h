@@ -65,6 +65,7 @@ STRICT_MODE_ON
 #include <airsim_interfaces/msg/pos_cmd.hpp>
 #include <airsim_interfaces/msg/gimbal_angle_cmd.hpp>
 #include <airsim_interfaces/msg/camera_fov_cmd.hpp>
+#include <airsim_interfaces/msg/camera_orientation.hpp>
 
 // Window commands
 #include <airsim_interfaces/msg/window_image_cmd_group.hpp>
@@ -84,10 +85,10 @@ namespace airsim_wrapper
     /**
      * ════════════════════════════════════════════════════════════════
      * @brief AirSim ROS2 Wrapper Class
-	 * ════════════════════════════════════════════════════════════════
-	 * @author Jose Francisco Lopez Ruiz
-	 * @date 2025-03-31
-	 * ════════════════════════════════════════════════════════════════
+     * ════════════════════════════════════════════════════════════════
+     * @author Jose Francisco Lopez Ruiz
+     * @date 2025-03-31
+     * ════════════════════════════════════════════════════════════════
      */
     class AirsimWrapper
     {
@@ -146,6 +147,7 @@ namespace airsim_wrapper
             // Vehicle data
             nav_msgs::msg::Odometry global_odom;
             nav_msgs::msg::Odometry local_odom;
+            airsim_interfaces::msg::CameraOrientation camera_orientation;
             // Vehicle setting
             VehicleSetting vehicle_setting;
             // Camera data
@@ -153,6 +155,7 @@ namespace airsim_wrapper
             // Publisher
             rclcpp::Publisher<nav_msgs::msg::Odometry>::SharedPtr global_odom_pub;
             rclcpp::Publisher<nav_msgs::msg::Odometry>::SharedPtr local_odom_pub;
+            rclcpp::Publisher<airsim_interfaces::msg::CameraOrientation>::SharedPtr camera_orientation_pub;
             // Subscriber
             rclcpp::Subscription<airsim_interfaces::msg::VelCmd>::SharedPtr local_vel_cmd_sub;
             rclcpp::Subscription<airsim_interfaces::msg::PosCmd>::SharedPtr local_pos_cmd_sub;

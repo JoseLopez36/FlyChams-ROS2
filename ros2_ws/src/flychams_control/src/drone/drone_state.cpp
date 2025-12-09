@@ -154,7 +154,6 @@ namespace flychams::control
         // Create global position message
         PointStampedMsg global_position_msg;
         global_position_msg.header.stamp = local_odom.header.stamp;
-        global_position_msg.header.frame_id = transform_tools_->getGlobalFrame();
         global_position_msg = transform_tools_->transformPoint(local_position_msg, transform_tools_->getGlobalFrame());
 
         // Publish agent global position

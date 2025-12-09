@@ -31,7 +31,16 @@ namespace flychams::control
     }
 
     // ════════════════════════════════════════════════════════════════════════════
-    // PUBLIC METHODS
+    // CAMERA STATE
+    // ════════════════════════════════════════════════════════════════════════════
+
+    core::SubscriberPtr<airsim_interfaces::msg::CameraOrientation> CameraCommunication::subscribeCameraOrientation(const std::function<void(const airsim_interfaces::msg::CameraOrientation::SharedPtr)>& callback, const rclcpp::SubscriptionOptions& options)
+    {
+        return node_->create_subscription<airsim_interfaces::msg::CameraOrientation>("/airsim/" + agent_id_ + "/cameras/state/orientation", 10, callback, options);
+    }
+
+    // ════════════════════════════════════════════════════════════════════════════
+    // CAMERA CONTROL
     // ════════════════════════════════════════════════════════════════════════════
 
     void CameraCommunication::setGimbalOrientations(const IDs& camera_ids, const std::vector<QuaternionMsg>& quaternions)

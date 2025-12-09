@@ -2,6 +2,7 @@
 
 // Base module include
 #include "flychams_core/base/base_module.hpp"
+#include "flychams_control/communication/camera_communication.hpp"
 
 namespace flychams::control
 {
@@ -30,14 +31,11 @@ namespace flychams::control
         using SharedPtr = std::shared_ptr<CameraFrames>;
         struct Agent
         {
-            // Observation setpoint data
-            core::AgentObservationSetpointsMsg setpoints;
-            bool has_setpoints;
             // Subscriber
-            core::SubscriberPtr<core::AgentObservationSetpointsMsg> setpoints_sub;
+            core::SubscriberPtr<airsim_interfaces::msg::CameraOrientation> camera_orientation_sub;
             // Constructor
             Agent()
-                : setpoints(), has_setpoints(false), setpoints_sub()
+                : camera_orientation_sub()
             {
             }
         };
@@ -49,9 +47,11 @@ namespace flychams::control
     private: // Data
         // Agent
         Agent agent_;
+        // Communication
+        CameraCommunication::SharedPtr camera_communication_;
 
     private: // Callbacks
-        void setpointsCallback(const core::AgentObservationSetpointsMsg::SharedPtr msg);
+        void cameraOrientationCallback(const airsim_interfaces::msg::CameraOrientation::SharedPtr msg);
 
     private: // Frames creation
         void createCameraOpticalFrame(const core::ID camera_id);

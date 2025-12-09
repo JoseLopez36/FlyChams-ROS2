@@ -173,9 +173,10 @@ namespace airsim_wrapper
             initialize_vehicle_odom(vehicle_ros.get(), *vehicle_setting);
             initialize_vehicle_tf(vehicle_ros.get(), *vehicle_setting);
 
-            // Initialize vehicle odometry publisher
+            // Initialize vehicle publishers
             vehicle_ros->global_odom_pub = nh_->create_publisher<nav_msgs::msg::Odometry>(vehicle_name + "/global/state/odom", 10);
             vehicle_ros->local_odom_pub = nh_->create_publisher<nav_msgs::msg::Odometry>(vehicle_name + "/local/state/odom", 10);
+            vehicle_ros->camera_orientation_pub = nh_->create_publisher<airsim_interfaces::msg::CameraOrientation>(vehicle_name + "/cameras/state/orientation", 10);
 
             // Initialize vehicle subscribers
             vehicle_ros->local_vel_cmd_sub = nh_->create_subscription<airsim_interfaces::msg::VelCmd>(
@@ -940,15 +941,22 @@ namespace airsim_wrapper
                     //     ground_truth_pose.position.y() - multirotor_state.kinematics_estimated.pose.position.y(),
                     //     ground_truth_pose.position.z() - multirotor_state.kinematics_estimated.pose.position.z());
 
-                        // Iterate over cameras
+                    // Iterate over cameras
+                    vehicle_ros->camera_orientation.header.stamp = curr_time;
+                    vehicle_ros->camera_orientation.camera_names.clear();
+                    vehicle_ros->camera_orientation.orientations.clear();
                     for (auto& [camera_name, camera_ros] : vehicle_ros->camera_map)
                     {
                         // Get camera pose
-                        const auto& pose = client_get_camera_pose(vehicle_name, camera_name);
+                        const auto& pose = client_get_camera_pose(vehicle_ros->vehicle_name, camera_ros->camera_name);
 
                         // Update camera body tf
                         camera_ros->body_tf_msg.header.stamp = curr_time;
                         camera_ros->body_tf_msg.transform = get_gimbal_transform_msg_from_airsim(pose.position, pose.orientation);
+
+                        // Update camera orientation
+                        vehicle_ros->camera_orientation.camera_names.push_back(camera_name);
+                        vehicle_ros->camera_orientation.orientations.push_back(camera_ros->body_tf_msg.transform.rotation);
                     }
                 }
             }
@@ -1030,6 +1038,7 @@ namespace airsim_wrapper
             // Publish vehicle odom
             vehicle_ros->local_odom_pub->publish(vehicle_ros->local_odom);
             vehicle_ros->global_odom_pub->publish(vehicle_ros->global_odom);
+            vehicle_ros->camera_orientation_pub->publish(vehicle_ros->camera_orientation);
 
             // Publish vehicle odom tf
             if (broadcast_transforms_)

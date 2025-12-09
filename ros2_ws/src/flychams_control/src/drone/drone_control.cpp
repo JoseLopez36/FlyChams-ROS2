@@ -245,7 +245,7 @@ namespace flychams::control
 	{
 		if (agent_.status == AgentStatus::IDLE || agent_.status == AgentStatus::TAKEOFF)
 		{
-			mavros_comm_->setLocalPosition(agent_.local_position.point.x, agent_.local_position.point.y, takeoff_altitude_);
+			mavros_comm_->setLocalPosition(0.0f, 0.0f, takeoff_altitude_);
 			return true;
 		}
 		else

@@ -31,6 +31,7 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   "msg/PosCmd.msg"
   "msg/CameraFovCmd.msg"
   "msg/GimbalAngleCmd.msg"
+  "msg/CameraOrientation.msg"
   # Window services and messages
   "msg/WindowImageCmdGroup.msg"
   "msg/WindowRectangleCmd.msg"

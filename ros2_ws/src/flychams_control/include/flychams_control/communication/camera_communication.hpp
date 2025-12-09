@@ -3,6 +3,7 @@
 // AirSim interfaces includes
 #include <airsim_interfaces/msg/gimbal_angle_cmd.hpp>
 #include <airsim_interfaces/msg/camera_fov_cmd.hpp>
+#include <airsim_interfaces/msg/camera_orientation.hpp>
 
 // Core includes
 #include "flychams_core/types/core_types.hpp"
@@ -34,7 +35,10 @@ namespace flychams::control
     public: // Types
         using SharedPtr = std::shared_ptr<CameraCommunication>;
 
-    public: // Public methods
+    public: // Camera state methods
+        core::SubscriberPtr<airsim_interfaces::msg::CameraOrientation> subscribeCameraOrientation(const std::function<void(const airsim_interfaces::msg::CameraOrientation::SharedPtr)>& callback, const rclcpp::SubscriptionOptions& options = rclcpp::SubscriptionOptions());
+
+    public: // Camera control methods
         void setGimbalOrientations(const core::IDs& camera_ids, const std::vector<core::QuaternionMsg>& quaternions);
         void setCameraFovs(const core::IDs& camera_ids, const std::vector<float>& fovs);
 
