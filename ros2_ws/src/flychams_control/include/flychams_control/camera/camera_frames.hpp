@@ -31,7 +31,7 @@ namespace flychams::control
         using SharedPtr = std::shared_ptr<CameraFrames>;
         struct Agent
         {
-            // Subscriber
+            // Subscribers
             core::SubscriberPtr<airsim_interfaces::msg::CameraOrientation> camera_orientation_sub;
             // Constructor
             Agent()

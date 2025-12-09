@@ -24,8 +24,13 @@ namespace flychams::core
         const Vector3r p = K * cTw.block<3, 4>(0, 0) * wP_;
 
         // Get projected coordinates
-        const float u = p.x() / p.z();
-        const float v = p.y() / p.z();
+        float p_z = p.z();
+        if (std::abs(p_z) < 1e-6f)
+        {
+            p_z = (p_z >= 0) ? 1e-6f : -1e-6f;
+        }
+        const float u = p.x() / p_z;
+        const float v = p.y() / p_z;
 
         // Return projected point
         return Vector2r(u, v);

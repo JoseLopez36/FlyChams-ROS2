@@ -18,7 +18,7 @@ mavros: [true, 'info']
 target_clustering: [true, 'error']
 cluster_analysis: [true, 'error']
 # Coordination nodes
-agent_assignment: [true, 'info']
+agent_assignment: [true, 'error']
 agent_analysis: [true, 'error']
 # Simulation nodes
 gui_manager: [true, 'error']

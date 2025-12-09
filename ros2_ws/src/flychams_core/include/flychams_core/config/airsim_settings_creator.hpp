@@ -152,6 +152,8 @@ namespace flychams::core
                     vehicles[agent_id]["ControlPortRemote"] = 14580 + instance;
                     vehicles[agent_id]["LocalHostIp"] = "172.17.0.1";
                     vehicles[agent_id]["Parameters"] = {
+                        {"MPC_TILTMAX_AIR", 15.0},
+                        {"MPC_XY_VEL_MAX", 7.5},
                         {"NAV_RCL_ACT", 0},
                         {"NAV_DLL_ACT", 0},
                         {"COM_OBL_ACT", 1},
