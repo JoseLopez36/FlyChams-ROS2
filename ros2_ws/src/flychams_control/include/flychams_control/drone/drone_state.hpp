@@ -33,23 +33,10 @@ namespace flychams::control
         using SharedPtr = std::shared_ptr<DroneState>;
         struct Agent
         {
-            // Home position data
-            core::GeoPointStampedMsg home_position;
-            bool has_home_position;
-            // Local odometry data
-            core::OdometryMsg local_odom;
-            bool has_local_odom;
             // State data
             mavros_msgs::msg::State state;
             bool has_state;
-            // Status data
-            core::AgentStatus status;
-            core::AgentStatusMsg status_msg;
-            // Position message
-            core::PointStampedMsg local_position;
-            core::PointStampedMsg global_position;
             // Subscriber
-            core::SubscriberPtr<mavros_msgs::msg::HomePosition> home_position_sub;
             core::SubscriberPtr<mavros_msgs::msg::State> state_sub;
             core::SubscriberPtr<core::OdometryMsg> local_odom_sub;
             // Publishers
@@ -58,17 +45,14 @@ namespace flychams::control
             core::PublisherPtr<core::PointStampedMsg> global_position_pub;
             // Constructor
             Agent()
-                : home_position(), has_home_position(false), local_odom(), has_local_odom(false),
-                state(), has_state(false), status(), local_position(), global_position(),
-                home_position_sub(), state_sub(), local_odom_sub(), status_pub(),
-                local_position_pub(), global_position_pub()
+                : state(), has_state(false), state_sub(), local_odom_sub(),
+                status_pub(), local_position_pub(), global_position_pub()
             {
             }
         };
 
     private: // Parameters
         core::ID agent_id_;
-        float update_rate_;
         // Flight parameters
         float takeoff_altitude_;
         float landing_altitude_;
@@ -76,8 +60,6 @@ namespace flychams::control
     private: // Data
         // Agent
         Agent agent_;
-        // Last update time
-        core::Time last_update_time_;
         // Mavros communication
         MavrosCommunication::SharedPtr mavros_comm_;
 
@@ -85,12 +67,10 @@ namespace flychams::control
         void stateCallback(const mavros_msgs::msg::State::SharedPtr msg);
         void localOdomCallback(const core::OdometryMsg::SharedPtr msg);
 
-    private: // State management
-        void update();
-
-    private: // ROS components
-        // Timer
-        core::TimerPtr update_timer_;
+    private: // Status management
+        void updateStatus(const mavros_msgs::msg::State& state, const core::OdometryMsg& local_odom);
+        void updateLocalPosition(const core::OdometryMsg& local_odom);
+        void updateGlobalPosition(const core::OdometryMsg& local_odom);
     };
 
 } // namespace flychams::control

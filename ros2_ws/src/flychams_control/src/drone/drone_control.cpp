@@ -12,12 +12,11 @@ namespace flychams::control
 	{
 		// Get parameters from parameter server
 		// Get update rate
-		update_rate_ = RosUtils::getParameterOr<float>(node_, "drone_control.update_rate", 10.0f);
+		update_rate_ = RosUtils::getParameterOr<float>(node_, "update_rate", 10.0f);
 		// Get control mode
-		control_mode_ = static_cast<ControlMode>(RosUtils::getParameterOr<uint8_t>(node_, "drone_control.control_mode", 0));
-
+		control_mode_ = static_cast<ControlMode>(RosUtils::getParameterOr<uint8_t>(node_, "control_mode", 0));
 		// Get flight parameters
-		takeoff_altitude_ = RosUtils::getParameterOr<float>(node_, "drone_control.takeoff_altitude", 1.5f);
+		takeoff_altitude_ = RosUtils::getParameterOr<float>(node_, "takeoff_altitude", 1.5f);
 
 		// Get space constraints
 		const auto& config_ptr = config_tools_->getConfig();
@@ -72,21 +71,21 @@ namespace flychams::control
 	// CALLBACKS: Callback functions
 	// ════════════════════════════════════════════════════════════════════════════
 
-	void DroneControl::statusCallback(const core::AgentStatusMsg::SharedPtr msg)
+	void DroneControl::statusCallback(const AgentStatusMsg::SharedPtr msg)
 	{
 		// Update current status
 		agent_.status = static_cast<AgentStatus>(msg->status);
 		agent_.has_status = true;
 	}
 
-	void DroneControl::localPositionCallback(const core::PointStampedMsg::SharedPtr msg)
+	void DroneControl::localPositionCallback(const PointStampedMsg::SharedPtr msg)
 	{
 		// Update current local position
 		agent_.local_position = *msg;
 		agent_.has_local_position = true;
 	}
 
-	void DroneControl::setpointPositionCallback(const core::PointStampedMsg::SharedPtr msg)
+	void DroneControl::setpointPositionCallback(const PointStampedMsg::SharedPtr msg)
 	{
 		// Update setpoint position
 		agent_.setpoint = *msg;
@@ -152,7 +151,7 @@ namespace flychams::control
 				{
 					// We have a valid setpoint
 					// Check if the setpoint is inside the flying box
-					if (isInsideFlyingBox(agent_.setpoint))
+					if (isInsideFlyingBox(agent_.setpoint.point))
 					{
 						// The setpoint is inside the flying box, so we move to it
 						success &= requestSetpoint();
@@ -295,7 +294,7 @@ namespace flychams::control
 	// HELPER METHODS
 	// ════════════════════════════════════════════════════════════════════════════
 
-	bool DroneControl::isInsideFlyingBox(const core::PointMsg& point)
+	bool DroneControl::isInsideFlyingBox(const PointMsg& point)
 	{
 		return point.x >= flying_box_.min_x && point.x <= flying_box_.max_x &&
 			point.y >= flying_box_.min_y && point.y <= flying_box_.max_y &&

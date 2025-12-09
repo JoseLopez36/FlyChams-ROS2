@@ -55,28 +55,9 @@ def launch_setup(context, *args, **kwargs):
     # Get the node activation settings from config
     nodes = {
         # Global setup nodes
-        'frames': launch.get('frames', [True, 'info']),
         'registrator': launch.get('registrator', [True, 'info']),
         'airsim': launch.get('airsim', [True, 'info'])
     }
-
-    # Conditionally add Frames node
-    if nodes['frames'][0]:
-        ld.append(
-            Node(
-                package='flychams_bringup',
-                executable='frames_node',
-                name='frames_node',
-                output='screen',
-                namespace='flychams/global',
-                arguments=['--ros-args', '--log-level', nodes['frames'][1]],
-                parameters=[
-                    system_path, 
-                    topics_path, 
-                    frames_path
-                ]
-            )
-        )
 
     # Conditionally add Registrator node
     if nodes['registrator'][0]:

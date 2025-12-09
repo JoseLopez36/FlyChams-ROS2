@@ -23,7 +23,7 @@ agent_analysis: [false, 'error']
 # Simulation nodes
 gui_manager: [true, 'error']
 metrics_factory: [false, 'error']
-marker_factory: [true, 'error']
+marker_factory: [false, 'error']
 target_state: [false, 'error']
 target_control: [false, 'error']
 # Recording nodes
