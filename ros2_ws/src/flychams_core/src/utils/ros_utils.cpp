@@ -59,7 +59,7 @@ namespace flychams::core
         Matrix4r T = Matrix4r::Identity();
         T.block<3, 1>(0, 3) = fromMsg(transform.translation);
         Quaternionr q = fromMsg(transform.rotation);
-        T.block<3, 3>(0, 0) = MathUtils::quaternionToRotationMatrix(q);
+        T.block<3, 3>(0, 0) = TfUtils::quatToMatrix(q);
         return T;
     }
 
@@ -88,7 +88,7 @@ namespace flychams::core
     void RosUtils::toMsg(const Matrix4r& matrix, TransformMsg& transform)
     {
         toMsg(matrix.block<3, 1>(0, 3), transform.translation);
-        toMsg(MathUtils::rotationMatrixToQuaternion(matrix.block<3, 3>(0, 0)), transform.rotation);
+        toMsg(TfUtils::quatFromMatrix(matrix.block<3, 3>(0, 0)), transform.rotation);
     }
 
     void RosUtils::toMsg(const Crop& crop, CropMsg& crop_msg)

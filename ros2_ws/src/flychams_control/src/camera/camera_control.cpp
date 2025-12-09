@@ -94,12 +94,12 @@ namespace flychams::control
 			// Get camera quaternion
 			const auto& rotation = setpoints.rotations[i];
 			Vector3r rpy_vec = Vector3r(rotation.x, rotation.y, rotation.z);
-			RosUtils::toMsg(MathUtils::eulerToQuaternion(rpy_vec), camera_quats[j]);
+			RosUtils::toMsg(TfUtils::eulerToQuat(rpy_vec), camera_quats[j]);
 
 			// Calculate camera FOV
 			const float& focal = setpoints.zoom_factors[i];
 			const float& sensor_width = camera_config.sensor_size(0);
-			camera_fovs[j] = MathUtils::computeFov(focal, sensor_width);
+			camera_fovs[j] = VisionUtils::computeFov(focal, sensor_width);
 
 			// Increment index
 			j++;

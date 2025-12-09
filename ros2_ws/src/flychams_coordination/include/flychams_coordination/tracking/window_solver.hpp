@@ -3,6 +3,7 @@
 // Utilities
 #include "flychams_core/types/core_types.hpp"
 #include "flychams_core/utils/math_utils.hpp"
+#include "flychams_core/utils/vision_utils.hpp"
 
 namespace flychams::coordination
 {
@@ -39,7 +40,7 @@ namespace flychams::coordination
             const core::Vector3r x = T.block<3, 1>(0, 3);
 
             // Project target position onto central camera
-            core::Vector2r p = core::MathUtils::projectPoint(z, T, unit_params.camera_params.K);
+            core::Vector2r p = core::VisionUtils::projectPoint(z, T, unit_params.camera_params.K);
 
             // Compute window size
             const auto [size, lambda] = computeWindowSize(z, r, x, p, unit_params);

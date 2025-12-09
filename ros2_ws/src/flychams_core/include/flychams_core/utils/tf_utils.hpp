@@ -74,6 +74,16 @@ namespace flychams::core
          * @brief Transform orientation from Euler angles (RPY) to quaternion
          */
         static Quaternionr eulerToQuat(const Vector3r& euler);
+
+        /**
+         * @brief Convert a quaternion to a rotation matrix
+         */
+        static Matrix3r quatToMatrix(const Quaternionr& q);
+
+        /**
+         * @brief Convert a rotation matrix to a quaternion
+         */
+        static Quaternionr quatFromMatrix(const Matrix3r& matrix);
     };
 } // namespace flychams::core
 

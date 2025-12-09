@@ -7,6 +7,7 @@
 #include "flychams_core/types/core_types.hpp"
 #include "flychams_core/types/ros_types.hpp"
 #include "flychams_core/utils/math_utils.hpp"
+#include "flychams_core/utils/tf_utils.hpp"
 
 namespace flychams::core
 {

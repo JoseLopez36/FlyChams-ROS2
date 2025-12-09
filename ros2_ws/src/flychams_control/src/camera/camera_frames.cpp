@@ -23,8 +23,19 @@ namespace flychams::control
         // Iterate through all cameras to create initial frames
         for (const auto& [camera_id, camera_config_ptr] : multi_camera_set)
         {
-            createCameraBodyFrame(camera_id, camera_config_ptr);
-            createCameraOpticalFrame(camera_id, camera_config_ptr);
+            // Get camera position from config (static relative to body)
+            PointMsg position_msg;
+            position_msg.x = camera_config_ptr->position.x();
+            position_msg.y = camera_config_ptr->position.y();
+            position_msg.z = camera_config_ptr->position.z();
+
+            // Get camera quaternion from config (static relative to body)
+            QuaternionMsg orientation_msg;
+            RosUtils::toMsg(TfUtils::eulerToQuat(camera_config_ptr->orientation), orientation_msg);
+
+            // Create frames
+            updateCameraBodyFrame(camera_id, position_msg, orientation_msg);
+            createCameraOpticalFrame(camera_id);
         }
 
         // Subscribe to topics
@@ -70,7 +81,7 @@ namespace flychams::control
             const auto& rotation = agent_.setpoints.rotations[i];
             Vector3r rpy_vec = Vector3r(rotation.x, rotation.y, rotation.z);
             QuaternionMsg orientation_msg;
-            RosUtils::toMsg(MathUtils::eulerToQuaternion(rpy_vec), orientation_msg);
+            RosUtils::toMsg(TfUtils::eulerToQuat(rpy_vec), orientation_msg);
 
             // Get camera position from config (static relative to body)
             PointMsg position_msg;
@@ -87,30 +98,7 @@ namespace flychams::control
     // FRAMES CREATION: Frames creation
     // ════════════════════════════════════════════════════════════════════════════
 
-    void CameraFrames::createCameraBodyFrame(const core::ID camera_id, const core::MultiCameraConfigPtr camera_config_ptr)
-    {
-        // Get frames
-        std::string body_frame = transform_tools_->getAgentBodyFrame(agent_id_);
-        std::string camera_body_frame = transform_tools_->getCameraBodyFrame(agent_id_, camera_id);
-
-        // Get camera position and orientation from config
-        const Vector3r& camera_position = camera_config_ptr->position;
-        const Vector3r& camera_orientation_rpy = camera_config_ptr->orientation;
-
-        // Convert RPY to quaternion
-        Quaternionr camera_orientation = MathUtils::eulerToQuaternion(camera_orientation_rpy);
-
-        // Create transform matrix from agent body to camera body
-        Matrix4r body_to_camera_body = Matrix4r::Identity();
-        body_to_camera_body.block<3, 3>(0, 0) = camera_orientation.toRotationMatrix();
-        body_to_camera_body.block<3, 1>(0, 3) = camera_position;
-
-        // Broadcast agent body -> camera body
-        transform_tools_->broadcastTransform(body_frame, camera_body_frame, body_to_camera_body);
-        RCLCPP_INFO(node_->get_logger(), "Published transform: %s -> %s", body_frame.c_str(), camera_body_frame.c_str());
-    }
-
-    void CameraFrames::createCameraOpticalFrame(const core::ID camera_id, const core::MultiCameraConfigPtr camera_config_ptr)
+    void CameraFrames::createCameraOpticalFrame(const core::ID camera_id)
     {
         // Get frames
         std::string camera_body_frame = transform_tools_->getCameraBodyFrame(agent_id_, camera_id);
@@ -144,7 +132,7 @@ namespace flychams::control
 
         // Set orientation
         Quaternionr orientation_quat = RosUtils::fromMsg(orientation);
-        body_to_camera_body.block<3, 3>(0, 0) = MathUtils::quaternionToRotationMatrix(orientation_quat);
+        body_to_camera_body.block<3, 3>(0, 0) = TfUtils::quatToMatrix(orientation_quat);
 
         // Broadcast agent body -> camera body
         transform_tools_->broadcastTransform(body_frame, camera_body_frame, body_to_camera_body);

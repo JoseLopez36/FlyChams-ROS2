@@ -7,7 +7,11 @@
 
 // Core includes
 #include "flychams_core/types/core_types.hpp"
+#include "flychams_core/types/config_types.hpp"
 #include "flychams_core/types/ros_types.hpp"
+#include "flychams_core/utils/math_utils.hpp"
+#include "flychams_core/utils/tf_utils.hpp"
+#include "flychams_core/utils/vision_utils.hpp"
 #include "flychams_core/utils/ros_utils.hpp"
 
 namespace flychams::core

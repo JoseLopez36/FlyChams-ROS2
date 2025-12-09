@@ -28,14 +28,14 @@ namespace flychams::core
 
     Vector3r TfUtils::eulerToNED(const Vector3r& euler)
     {
-        Quaternionr quat = MathUtils::eulerToQuaternion(euler);
-        return MathUtils::quaternionToEuler(quatToNED(quat));
+        Quaternionr quat = TfUtils::eulerToQuat(euler);
+        return TfUtils::quatToEuler(quatToNED(quat));
     }
 
     Vector3r TfUtils::eulerFromNED(const Vector3r& euler)
     {
-        Quaternionr quat = MathUtils::eulerToQuaternion(euler);
-        return MathUtils::quaternionToEuler(quatFromNED(quat));
+        Quaternionr quat = TfUtils::eulerToQuat(euler);
+        return TfUtils::quatToEuler(quatFromNED(quat));
     }
 
     GeoPointMsg TfUtils::toGlobal(const double& x, const double& y, const double& z, const GeoPointMsg& origin)
@@ -80,6 +80,16 @@ namespace flychams::core
     Quaternionr TfUtils::eulerToQuat(const Vector3r& euler)
     {
         return mavros::ftf::quaternion_from_rpy(euler.cast<double>()).cast<float>();
+    }
+
+    Matrix3r TfUtils::quatToMatrix(const Quaternionr& q)
+    {
+        return q.toRotationMatrix();
+    }
+
+    Quaternionr TfUtils::quatFromMatrix(const Matrix3r& matrix)
+    {
+        return Quaternionr(matrix);
     }
 
 }

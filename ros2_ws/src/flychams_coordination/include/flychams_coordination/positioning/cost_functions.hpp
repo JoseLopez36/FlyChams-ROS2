@@ -3,6 +3,7 @@
 // Utilities
 #include "flychams_core/types/core_types.hpp"
 #include "flychams_core/utils/math_utils.hpp"
+#include "flychams_core/utils/vision_utils.hpp"
 
 namespace flychams::coordination
 {
@@ -165,7 +166,7 @@ namespace flychams::coordination
                 case core::ObservationType::Window:
                     J += CostFunctions::windowJ1(z, r, x, wTcentral, unit, grad_i);
                     break;
-                    
+
                 default:
                     throw std::invalid_argument("Invalid observation unit type");
                 }
@@ -442,7 +443,7 @@ namespace flychams::coordination
             const auto& nu = unit.nu;
 
             // Project target position onto central camera
-            core::Vector2r p = core::MathUtils::projectPoint(z, T, K);
+            core::Vector2r p = core::VisionUtils::projectPoint(z, T, K);
 
             // Calculate the correction factor for uncentered targets
             float u_pix = full_width / 2.0f;
@@ -515,7 +516,7 @@ namespace flychams::coordination
             const auto& nu = unit.nu;
 
             // Project target position onto central camera
-            core::Vector2r p = core::MathUtils::projectPoint(z, T, K);
+            core::Vector2r p = core::VisionUtils::projectPoint(z, T, K);
 
             // Calculate the correction factor for uncentered targets
             float u_pix = full_width / 2.0f;
@@ -593,7 +594,7 @@ namespace flychams::coordination
             const auto& nu = unit.nu;
 
             // Project target position onto central camera
-            core::Vector2r p = core::MathUtils::projectPoint(z, T, K);
+            core::Vector2r p = core::VisionUtils::projectPoint(z, T, K);
 
             // Calculate the correction factor for uncentered targets
             float u_pix = full_width / 2.0f;
@@ -864,7 +865,7 @@ namespace flychams::coordination
             grad = core::Vector3r::Zero();
 
             // Project target position onto central camera
-            core::Vector2r p = core::MathUtils::projectPoint(z, T, K);
+            core::Vector2r p = core::VisionUtils::projectPoint(z, T, K);
 
             // Calculate the correction factor for uncentered targets
             float u_pix = full_width / 2.0f;
@@ -965,9 +966,9 @@ namespace flychams::coordination
 
             // Initialize the gradient
             grad = core::Vector3r::Zero();
-            
+
             // Project target position onto central camera
-            core::Vector2r p = core::MathUtils::projectPoint(z, T, K);
+            core::Vector2r p = core::VisionUtils::projectPoint(z, T, K);
 
             // Calculate the correction factor for uncentered targets
             float u_pix = full_width / 2.0f;

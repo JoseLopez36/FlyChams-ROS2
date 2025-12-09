@@ -106,13 +106,13 @@ namespace flychams::control
 
         // Get world to local transformation
         Matrix4r world_to_local = Matrix4r::Identity();
-        world_to_local(0, 3) = home_position.x;
-        world_to_local(1, 3) = home_position.y;
+        world_to_local(0, 3) = home_position.y;  // Cross x and y
+        world_to_local(1, 3) = -home_position.x; // Cross x and y (invert x)
         world_to_local(2, 3) = home_position.z;
 
-        // Add 180 degrees to yaw
-        Quaternionr quat = MathUtils::eulerToQuaternion(Vector3r(0.0, 0.0, M_PIf));
-        world_to_local.block<3, 3>(0, 0) = MathUtils::quaternionToRotationMatrix(quat);
+        // Add -90 degrees to yaw
+        Quaternionr quat = TfUtils::eulerToQuat(Vector3r(0.0, 0.0, -M_PIf / 2.0f));
+        world_to_local.block<3, 3>(0, 0) = TfUtils::quatToMatrix(quat);
 
         // Broadcast world -> local (static)
         transform_tools_->broadcastStaticTransform(world_frame, local_frame, world_to_local);
@@ -138,7 +138,7 @@ namespace flychams::control
 
         // Set orientation
         Quaternionr orientation_quat = RosUtils::fromMsg(orientation);
-        local_to_body.block<3, 3>(0, 0) = MathUtils::quaternionToRotationMatrix(orientation_quat);
+        local_to_body.block<3, 3>(0, 0) = TfUtils::quatToMatrix(orientation_quat);
 
         // Broadcast local -> body
         transform_tools_->broadcastTransform(local_frame, body_frame, local_to_body);

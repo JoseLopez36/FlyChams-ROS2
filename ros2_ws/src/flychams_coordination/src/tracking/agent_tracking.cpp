@@ -229,7 +229,7 @@ namespace flychams::coordination
         wTaux.block<3, 1>(0, 3) = T.block<3, 1>(0, 3);
         // Rotation
         const Quaternionr wQaux = Quaternionr(0.0f, 1.0f, 0.0f, 0.0f);  // w, x, y, z
-        wTaux.block<3, 3>(0, 0) = MathUtils::quaternionToRotationMatrix(wQaux);
+        wTaux.block<3, 3>(0, 0) = TfUtils::quatToMatrix(wQaux);
 
         // Compute camera setpoint
         const auto& [focal, auxRPYc] = solver->runCamera(P, r, wTaux);

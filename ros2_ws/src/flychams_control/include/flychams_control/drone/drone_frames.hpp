@@ -6,9 +6,6 @@
 // Base module include
 #include "flychams_core/base/base_module.hpp"
 
-// Core include
-#include "flychams_core/utils/geo_utils.hpp"
-
 namespace flychams::control
 {
     /**

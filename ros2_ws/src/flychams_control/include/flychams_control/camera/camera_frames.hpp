@@ -3,10 +3,6 @@
 // Base module include
 #include "flychams_core/base/base_module.hpp"
 
-// Core include
-#include "flychams_core/utils/geo_utils.hpp"
-#include "flychams_core/utils/math_utils.hpp"
-
 namespace flychams::control
 {
     /**
@@ -58,8 +54,7 @@ namespace flychams::control
         void setpointsCallback(const core::AgentObservationSetpointsMsg::SharedPtr msg);
 
     private: // Frames creation
-        void createCameraBodyFrame(const core::ID camera_id, const core::MultiCameraConfigPtr camera_config_ptr);
-        void createCameraOpticalFrame(const core::ID camera_id, const core::MultiCameraConfigPtr camera_config_ptr);
+        void createCameraOpticalFrame(const core::ID camera_id);
 
     private: // Frames update
         void updateCameraBodyFrame(const core::ID camera_id, const core::PointMsg& position, const core::QuaternionMsg& orientation);
