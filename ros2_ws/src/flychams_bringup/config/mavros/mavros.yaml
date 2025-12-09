@@ -51,7 +51,7 @@
 /**/local_position:
   ros__parameters:
     frame_id: "AGENTID/local"
-    tf.send: true
+    tf.send: false
     tf.frame_id: "AGENTID/local"
     tf.child_frame_id: "AGENTID/body"
 

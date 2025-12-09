@@ -6,7 +6,6 @@ RUN     apt-get update && \
         apt-utils \
         ros-$ROS_DISTRO-tf2-sensor-msgs ros-$ROS_DISTRO-tf2-geometry-msgs ros-$ROS_DISTRO-mavros* \
         ros-$ROS_DISTRO-vision-opencv ros-$ROS_DISTRO-image-transport \
-        ros-$ROS_DISTRO-angles \
         libyaml-cpp-dev \
         ros-iron-pcl-ros \
         ros-iron-pcl-conversions \

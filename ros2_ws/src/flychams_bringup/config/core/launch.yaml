@@ -6,18 +6,12 @@
 # ------------------- GLOBAL SETUP NODES -------------------\
 # Registrator node
 registrator: [true, 'info']
-# Frames node
-frames: [true, 'info']
 # AirSim node
 airsim: [true, 'error']
 
 # ------------------- AGENT SETUP NODES -------------------
 # MavROS node
 mavros: [true, 'info']
-# NavSat Transform node (robot-localization)
-navsat_transform: [false, 'info']
-# EKF Global node (robot-localization)
-ekf_global: [false, 'info']
 
 # ------------------- GLOBAL RUN NODES -------------------
 # Perception nodes

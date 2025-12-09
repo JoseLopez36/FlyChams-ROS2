@@ -9,9 +9,6 @@ endif()
 # Find dependencies
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
-find_package(geographic_msgs REQUIRED)
-find_package(mavros_msgs REQUIRED)
-find_package(robot_localization REQUIRED)
 find_package(flychams_core REQUIRED)
 
 # Create bringup library
@@ -20,7 +17,6 @@ set(BRINGUP_SRC
   src/registration/target_registration.cpp
   src/registration/cluster_registration.cpp
   src/mavros/mavros_manager.cpp
-  src/frames/frames_manager.cpp
 )
 add_library(${PROJECT_NAME} SHARED ${BRINGUP_SRC})
 target_include_directories(${PROJECT_NAME} PUBLIC
@@ -30,7 +26,7 @@ target_include_directories(${PROJECT_NAME} PUBLIC
 
 # Export dependencies
 ament_target_dependencies(${PROJECT_NAME}
-  rclcpp geographic_msgs mavros_msgs flychams_core
+  rclcpp flychams_core
 )
 
 # Link to required libraries
@@ -48,11 +44,6 @@ add_executable(mavros_node src/mavros_node.cpp)
 target_link_libraries(mavros_node ${PROJECT_NAME})
 ament_target_dependencies(mavros_node rclcpp flychams_core)
 
-# Create executable for frames node
-add_executable(frames_node src/frames_node.cpp)
-target_link_libraries(frames_node ${PROJECT_NAME})
-ament_target_dependencies(frames_node rclcpp geographic_msgs mavros_msgs robot_localization flychams_core)
-
 # Create executable for settings node
 add_executable(settings_node src/settings_node.cpp)
 ament_target_dependencies(settings_node rclcpp flychams_core)
@@ -66,7 +57,7 @@ install(TARGETS ${PROJECT_NAME}
   INCLUDES DESTINATION include
 )
 
-install(TARGETS registrator_node mavros_node settings_node frames_node
+install(TARGETS registrator_node mavros_node settings_node
   RUNTIME DESTINATION lib/${PROJECT_NAME}
 )
 
@@ -86,9 +77,6 @@ install(
 ament_export_targets(${PROJECT_NAME} HAS_LIBRARY_TARGET)
 ament_export_dependencies(
   rclcpp
-  geographic_msgs
-  mavros_msgs
-  robot_localization
   flychams_core
 )
 ament_export_libraries(${PROJECT_NAME})
