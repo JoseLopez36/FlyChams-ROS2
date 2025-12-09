@@ -9,6 +9,9 @@
 #include "flychams_core/types/ros_types.hpp"
 #include "flychams_core/utils/math_utils.hpp"
 
+// MavROS includes
+#include <mavros/frame_tf.hpp>
+
 namespace flychams::core
 {
     /**
@@ -40,7 +43,39 @@ namespace flychams::core
          * @param origin Global origin (LLA)
          * @return Local cartesian coordinates (ENU)
          */
-        static PointMsg toLocal(const double& lat, const double& lon, const double& alt, const GeoPointMsg& origin);
+        static PointMsg fromGlobal(const double& lat, const double& lon, const double& alt, const GeoPointMsg& origin);
+
+        /**
+         * @brief Transform a point from ENU to NED frame
+         * @param x Local X in ENU
+         * @param y Local Y in ENU
+         * @param z Local Z in ENU
+         * @return Point in NED
+         */
+        static Vector3r toNED(const Vector3r& enu);
+
+        /**
+         * @brief Transform a point from NED to ENU frame
+         * @param x Local X in NED
+         * @param y Local Y in NED
+         * @param z Local Z in NED
+         * @return Point in ENU
+         */
+        static Vector3r fromNED(const Vector3r& ned);
+
+        /**
+         * @brief Transform orientation from NED to ENU frame
+         * @param q Orientation in NED
+         * @return Orientation in ENU
+         */
+        static Quaternionr toNED(const Quaternionr& q);
+
+        /**
+         * @brief Transform orientation from ENU to NED frame
+         * @param q Orientation in ENU
+         * @return Orientation in NED
+         */
+        static Quaternionr fromNED(const Quaternionr& q);
     };
 }
 

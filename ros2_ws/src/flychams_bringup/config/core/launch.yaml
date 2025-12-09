@@ -31,11 +31,11 @@ airsim_record_camera: [false, 'error']
 
 # ------------------- AGENT RUN NODES -------------------
 # Control nodes
-drone_frames: [true, 'info']
-drone_state: [true, 'info']
-drone_control: [true, 'info']
-camera_frames: [true, 'info']
-camera_control: [true, 'info']
+drone_frames: [true, 'error']
+drone_state: [true, 'error']
+drone_control: [true, 'error']
+camera_frames: [true, 'error']
+camera_control: [true, 'error']
 # Coordination nodes
 agent_positioning: [false, 'error']
 agent_tracking: [false, 'error']

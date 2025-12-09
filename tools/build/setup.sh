@@ -5,12 +5,16 @@ set -e
 
 # Parse arguments
 REGENERATE_AIRSIM=false
-
+N_THREADS=3
 while [[ $# -gt 0 ]]; do
   case $1 in
     --regenerate-airsim)
       REGENERATE_AIRSIM=true
       shift
+      ;;
+    -j)
+      N_THREADS=$2
+      shift 2
       ;;
     *)
       echo "Unknown option: $1"
@@ -35,7 +39,7 @@ fi
 
 # 2. Build ROS2 workspace
 echo ">> [2/3] Building ROS2 workspace..."
-$FLYCHAMS_PATH/tools/build/build.sh -j 3
+$FLYCHAMS_PATH/tools/build/build.sh -j $N_THREADS
 
 # 3. Generate settings
 echo ">> [3/3] Generating settings..."

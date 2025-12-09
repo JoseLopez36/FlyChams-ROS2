@@ -21,6 +21,7 @@ find_package(tf2_ros REQUIRED)
 find_package(tf2_geometry_msgs REQUIRED)
 find_package(OpenCV REQUIRED)
 find_package(flychams_interfaces REQUIRED)
+find_package(mavros REQUIRED)
 
 ## Find GeographicLib
 set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH};/usr/share/cmake/geographiclib")
@@ -77,6 +78,7 @@ ament_target_dependencies(${PROJECT_NAME}
   tf2_geometry_msgs
   OpenCV
   flychams_interfaces
+  mavros
 )
 
 # Install include directory
@@ -130,6 +132,7 @@ ament_export_dependencies(
   tf2_geometry_msgs
   OpenCV
   flychams_interfaces
+  mavros
 )
 ament_export_libraries(${PROJECT_NAME})
 ament_export_include_directories(include)

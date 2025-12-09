@@ -21,6 +21,7 @@ def main():
     # Get arguments
     parser = argparse.ArgumentParser(description='Run build instance')
     parser.add_argument('--regenerate-airsim', action='store_true', help='Regenerate AirSim wrappers')
+    parser.add_argument('-j', type=int, default=3, help='Number of workers to use for build')
     args = parser.parse_args()
 
     # Get script directory
@@ -39,8 +40,9 @@ def main():
     flychams_airsim_path = os.environ.get('FLYCHAMS_AIRSIM_PATH')
     flychams_px4_path = os.environ.get('FLYCHAMS_PX4_PATH')
 
-    # Get regenerate argument
+    # Get arguments
     regen_arg = "--regenerate-airsim" if args.regenerate_airsim else ""
+    workers_arg = f"-j {args.j}"
     
     print("Starting build instance...")
     print(f"Mounting:\n  - {flychams_ros2_path}\n  - {flychams_airsim_path}\n  - {flychams_px4_path}")
@@ -61,7 +63,7 @@ def main():
         '-v', f"{flychams_px4_path}:/home/{user_name}/PX4-Autopilot",
         'flychams-ros2:latest',
         'bash', '-c',
-        f"source /opt/ros/iron/setup.bash && /home/{user_name}/FlyChams-ROS2/tools/build/setup.sh {regen_arg}"
+        f"source /opt/ros/iron/setup.bash && /home/{user_name}/FlyChams-ROS2/tools/build/setup.sh {regen_arg} {workers_arg}"
     ]
     
     try:

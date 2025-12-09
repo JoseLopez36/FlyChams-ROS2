@@ -70,11 +70,9 @@ namespace flychams::control
         void localOdomCallback(const core::OdometryMsg::SharedPtr msg);
 
     private: // Frames creation
-        void createLocalFrame();
-        void createBodyFrame();
+        void createLocalFrame(const core::GeoPointMsg& home_geopoint, const core::GeoPointMsg& origin_geopoint);
 
     private: // Frames update
-        void updateLocalFrame(const core::GeoPointMsg& home_geopoint, const core::GeoPointMsg& origin_geopoint);
         void updateBodyFrame(const core::PointMsg& position, const core::QuaternionMsg& orientation);
     };
 

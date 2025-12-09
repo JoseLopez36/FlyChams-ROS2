@@ -28,6 +28,7 @@
   <depend>tf2_geometry_msgs</depend>
   <depend>opencv</depend>
   <depend>flychams_interfaces</depend>
+  <depend>mavros</depend>
   
   <!-- Export -->
   <export>

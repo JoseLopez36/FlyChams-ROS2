@@ -128,25 +128,24 @@ namespace flychams::core
                 Vector3r ini_pos = agent_ptr->position;
                 Vector3r ini_ori = agent_ptr->orientation;
 
+                // Convert pose to NED frame
+                const auto& ini_pos_ned = GeoUtils::toNED(ini_pos);
+                const auto& ini_ori_quat = MathUtils::eulerToQuaternion(ini_ori);
+                const auto& ini_ori_quat_ned = GeoUtils::toNED(ini_ori_quat);
+                const auto& ini_ori_ned = MathUtils::quaternionToEuler(ini_ori_quat_ned);
+
                 vehicles[agent_id] = {
                     {"PawnPath", drone.type == DroneType::Quadcopter ? "FlyChamsQuadcopter" : "FlyChamsHexacopter"},
-                    {"X", ini_pos.x()},
-                    {"Y", -ini_pos.y()},
-                    {"Z", -ini_pos.z()},
-                    {"Roll", MathUtils::radToDeg(ini_ori.x())},
-                    {"Pitch", MathUtils::radToDeg(-ini_ori.y())},
-                    {"Yaw", MathUtils::radToDeg(-ini_ori.z())}
+                    {"X", ini_pos_ned.x()},
+                    {"Y", ini_pos_ned.y()},
+                    {"Z", ini_pos_ned.z()},
+                    {"Roll", MathUtils::radToDeg(ini_ori_ned(0))},
+                    {"Pitch", MathUtils::radToDeg(ini_ori_ned(1))},
+                    {"Yaw", MathUtils::radToDeg(ini_ori_ned(2))}
                 };
 
                 if (config_ptr->autopilot == Autopilot::PX4)
                 {
-                    // Calculate agent geopoint
-                    GeoPointMsg origin;
-                    origin.latitude = config_ptr->environment.geopoint.latitude;
-                    origin.longitude = config_ptr->environment.geopoint.longitude;
-                    origin.altitude = config_ptr->environment.geopoint.altitude;
-                    GeoPointMsg agent_geo = GeoUtils::toGlobal(ini_pos.x(), -ini_pos.y(), -ini_pos.z(), origin);
-
                     vehicles[agent_id]["VehicleType"] = "PX4Multirotor";
                     vehicles[agent_id]["Model"] = drone.type == DroneType::Quadcopter ? "Quadcopter" : "FlyChamsHexacopter";
                     vehicles[agent_id]["UseSerial"] = false;
@@ -160,9 +159,9 @@ namespace flychams::core
                     vehicles[agent_id]["Parameters"] = {
                         {"NAV_RCL_ACT", 0},
                         {"NAV_DLL_ACT", 0},
-                        {"COM_OBL_ACT", 1},
-                        {"LPE_LAT", agent_geo.latitude},
-                        {"LPE_LON", agent_geo.longitude}
+                        {"COM_OBL_ACT", 0},
+                        {"LPE_LAT", config_ptr->environment.geopoint.latitude},
+                        {"LPE_LON", config_ptr->environment.geopoint.longitude}
                     };
                 }
                 else

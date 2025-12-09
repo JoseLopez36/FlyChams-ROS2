@@ -20,10 +20,6 @@ namespace flychams::control
         // Create mavros communication
         mavros_comm_ = std::make_shared<MavrosCommunication>(agent_id_, node_, config_tools_, topic_tools_, transform_tools_, module_cb_group_);
 
-        // Create frames
-        createLocalFrame();
-        createBodyFrame();
-
         // Subscribe to topics
         agent_.global_origin_sub = topic_tools_->createGlobalOriginSubscriber(
             std::bind(&DroneFrames::globalOriginCallback, this, std::placeholders::_1), sub_options_with_module_cb_group_);
@@ -63,12 +59,19 @@ namespace flychams::control
             return;
         }
 
+        // Check if we have a valid home position
+        if (agent_.has_home_position)
+        {
+            // We already have a home position, we don't need to update it
+            return;
+        }
+
         // Update current home position
         agent_.home_position = msg->geo;
         agent_.has_home_position = true;
 
         // Create local frame
-        updateLocalFrame(agent_.home_position, agent_.global_origin);
+        createLocalFrame(agent_.home_position, agent_.global_origin);
     }
 
     void DroneFrames::localOdomCallback(const core::OdometryMsg::SharedPtr msg)
@@ -79,7 +82,6 @@ namespace flychams::control
             RCLCPP_WARN(node_->get_logger(), "Drone frames: No global origin or home position data received. Cannot update body frame for agent %s", agent_id_.c_str());
             return;
         }
-
         // Update body frame
         const auto& position = msg->pose.pose.position;
         const auto& orientation = msg->pose.pose.orientation;
@@ -90,60 +92,35 @@ namespace flychams::control
     // FRAMES CREATION: Frames creation
     // ════════════════════════════════════════════════════════════════════════════
 
-    void DroneFrames::createLocalFrame()
-    {
-        // Get frames
-        std::string world_frame = transform_tools_->getGlobalFrame();
-        std::string local_frame = transform_tools_->getAgentLocalFrame(agent_id_);
-
-        // Initialize local frame at world origin
-        Matrix4r world_to_local = Matrix4r::Identity();
-
-        // Broadcast world -> local
-        transform_tools_->broadcastTransform(world_frame, local_frame, world_to_local);
-        RCLCPP_INFO(node_->get_logger(), "Published transform: %s -> %s", world_frame.c_str(), local_frame.c_str());
-    }
-
-    void DroneFrames::createBodyFrame()
-    {
-        // Get frames
-        std::string local_frame = transform_tools_->getAgentLocalFrame(agent_id_);
-        std::string body_frame = transform_tools_->getAgentBodyFrame(agent_id_);
-
-        // Initialize drone body at local origin
-        Matrix4r local_to_body = Matrix4r::Identity();
-
-        // Broadcast local -> body
-        transform_tools_->broadcastTransform(local_frame, body_frame, local_to_body);
-        RCLCPP_INFO(node_->get_logger(), "Published transform: %s -> %s", local_frame.c_str(), body_frame.c_str());
-    }
-
-    // ════════════════════════════════════════════════════════════════════════════
-    // FRAMES UPDATE: Frames update
-    // ════════════════════════════════════════════════════════════════════════════
-
-    void DroneFrames::updateLocalFrame(const core::GeoPointMsg& home_geopoint, const core::GeoPointMsg& origin_geopoint)
+    void DroneFrames::createLocalFrame(const core::GeoPointMsg& home_geopoint, const core::GeoPointMsg& origin_geopoint)
     {
         // Get frames
         std::string world_frame = transform_tools_->getGlobalFrame();
         std::string local_frame = transform_tools_->getAgentLocalFrame(agent_id_);
 
         // Get home position in cartesian coordinates
-        PointMsg home_position = GeoUtils::toLocal(home_geopoint.latitude, home_geopoint.longitude, home_geopoint.altitude, origin_geopoint);
+        PointMsg home_position = GeoUtils::fromGlobal(home_geopoint.latitude, home_geopoint.longitude, home_geopoint.altitude, origin_geopoint);
 
         // We assume that the home position is at z=0 m (ground level)
         home_position.z = 0.0;
 
         // Get world to local transformation
-        // We assume that the local frame is aligned with the world frame (ENU)
         Matrix4r world_to_local = Matrix4r::Identity();
         world_to_local(0, 3) = home_position.x;
         world_to_local(1, 3) = home_position.y;
         world_to_local(2, 3) = home_position.z;
 
-        // Broadcast world -> local
-        transform_tools_->broadcastTransform(world_frame, local_frame, world_to_local);
+        // Add 180 degrees to yaw
+        Quaternionr quat = MathUtils::eulerToQuaternion(Vector3r(0.0, 0.0, M_PIf));
+        world_to_local.block<3, 3>(0, 0) = MathUtils::quaternionToRotationMatrix(quat);
+
+        // Broadcast world -> local (static)
+        transform_tools_->broadcastStaticTransform(world_frame, local_frame, world_to_local);
     }
+
+    // ════════════════════════════════════════════════════════════════════════════
+    // FRAMES UPDATE: Frames update
+    // ════════════════════════════════════════════════════════════════════════════
 
     void DroneFrames::updateBodyFrame(const core::PointMsg& position, const core::QuaternionMsg& orientation)
     {
