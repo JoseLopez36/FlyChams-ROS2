@@ -1,4 +1,4 @@
-/**/mavros_manager:
+/**/mavros_manager_node:
   ros__parameters:
     # Mavros launch parameters
     fcu_url: udp://:14030@172.17.0.2:14280

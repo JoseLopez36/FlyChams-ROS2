@@ -3,7 +3,6 @@
     takeoff_altitude: 3.0     # (m)
     landing_altitude: 0.5     # (m)
 
-/**/drone_control:
   ros__parameters:
     # Drone motion parameters
     drone_control:
