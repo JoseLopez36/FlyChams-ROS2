@@ -12,10 +12,10 @@ namespace flychams::perception
 	{
 		// Get parameters from parameter server
 		// Get update rate
-		update_rate_ = RosUtils::getParameterOr<float>(node_, "cluster_analysis.analysis_rate", 20.0f);
+		update_rate_ = RosUtils::getParameterOr<float>(node_, "analysis_rate", 20.0f);
 		// Get circle parameters
-		min_circle_radius_ = RosUtils::getParameterOr<float>(node_, "cluster_analysis.min_circle_radius", 0.10f);
-		margin_circle_radius_ = RosUtils::getParameterOr<float>(node_, "cluster_analysis.margin_circle_radius", 0.05f);
+		min_circle_radius_ = RosUtils::getParameterOr<float>(node_, "enclosing_circle.min_circle_radius", 0.10f);
+		margin_circle_radius_ = RosUtils::getParameterOr<float>(node_, "enclosing_circle.margin_circle_radius", 0.05f);
 
 		// Initialize data
 		clusters_.clear();
@@ -105,14 +105,14 @@ namespace flychams::perception
 	void ClusterAnalysis::update()
 	{
 		// Check if we have a valid assignment and position for each target and cluster
-        for (const auto& [cluster_id, cluster] : clusters_)
-        {
-            if (!cluster.has_assignment)
-            {
-                RCLCPP_WARN(node_->get_logger(), "Cluster analysis: Cluster %s has no assignment", cluster_id.c_str());
-                return; // Skip updating if we don't have a valid cluster assignment
-            }
-        }
+		for (const auto& [cluster_id, cluster] : clusters_)
+		{
+			if (!cluster.has_assignment)
+			{
+				RCLCPP_WARN(node_->get_logger(), "Cluster analysis: Cluster %s has no assignment", cluster_id.c_str());
+				return; // Skip updating if we don't have a valid cluster assignment
+			}
+		}
 		for (const auto& [target_id, target] : targets_)
 		{
 			if (!target.has_position)
@@ -125,21 +125,21 @@ namespace flychams::perception
 		// Compute cluster geometry and publish
 		for (auto& [cluster_id, cluster] : clusters_)
 		{
-            // Iterate over the assignment and get the points
-            int n = static_cast<int>(cluster.assignment.size());
+			// Iterate over the assignment and get the points
+			int n = static_cast<int>(cluster.assignment.size());
 			Matrix3Xr tab_P(3, n);
-            for (int i = 0; i < n; i++)
-            {
-                const auto& target = targets_[cluster.assignment[i]];
-                tab_P.col(i) = RosUtils::fromMsg(target.position);
-            }
+			for (int i = 0; i < n; i++)
+			{
+				const auto& target = targets_[cluster.assignment[i]];
+				tab_P.col(i) = RosUtils::fromMsg(target.position);
+			}
 
 			// Calculate enclosing circle (minimum enclosing circle with enforced limits)
 			const auto& [center, radius] = calculateEnclosingCircle(tab_P, min_circle_radius_, margin_circle_radius_);
 
 			// Create geometry message with calculated center and radius
-            ClusterGeometryMsg msg;
-            msg.header = RosUtils::createHeader(node_, transform_tools_->getGlobalFrame());
+			ClusterGeometryMsg msg;
+			msg.header = RosUtils::createHeader(node_, transform_tools_->getGlobalFrame());
 			msg.center.x = center.x();
 			msg.center.y = center.y();
 			msg.center.z = 0.0f;

@@ -12,31 +12,31 @@ namespace flychams::coordination
     {
         // Get parameters from parameter server
         // Get update rate
-        update_rate_ = RosUtils::getParameterOr<float>(node_, "agent_assignment.update_rate", 1.0f);
+        update_rate_ = RosUtils::getParameterOr<float>(node_, "assignment_rate", 1.0f);
         // Get assignment mode
-        AssignmentSolver::SolverMode assignment_solver_mode = static_cast<AssignmentSolver::SolverMode>(RosUtils::getParameterOr<uint8_t>(node_, "agent_assignment.solver_mode", 0));
+        AssignmentSolver::SolverMode assignment_solver_mode = static_cast<AssignmentSolver::SolverMode>(RosUtils::getParameterOr<uint8_t>(node_, "assignment.solver_mode", 0));
         // Get assignment solver parameters
-        float observation_weight = RosUtils::getParameterOr<float>(node_, "agent_assignment.observation_weight", 1.0f);
-        float distance_weight = RosUtils::getParameterOr<float>(node_, "agent_assignment.distance_weight", 10.0f);
-        float switch_weight = RosUtils::getParameterOr<float>(node_, "agent_assignment.switch_weight", 5000.0f);
+        float observation_weight = RosUtils::getParameterOr<float>(node_, "assignment.observation_weight", 1.0f);
+        float distance_weight = RosUtils::getParameterOr<float>(node_, "assignment.distance_weight", 10.0f);
+        float switch_weight = RosUtils::getParameterOr<float>(node_, "assignment.switch_weight", 5000.0f);
         // Get position solver parameters
-        position_solver_mode_ = static_cast<PositionSolver::SolverMode>(RosUtils::getParameterOr<uint8_t>(node_, "agent_positioning.solver_mode", 0));
+        position_solver_mode_ = static_cast<PositionSolver::SolverMode>(RosUtils::getParameterOr<uint8_t>(node_, "positioning.solver_mode", 0));
         // Get generic position solver parameters
-        position_solver_params_.eps = RosUtils::getParameterOr<float>(node_, "agent_positioning.eps", 1.0e-1f);
-        position_solver_params_.tol = RosUtils::getParameterOr<float>(node_, "agent_positioning.convergence_tolerance", 1.0e-5f);
-        position_solver_params_.max_iter = RosUtils::getParameterOr<int>(node_, "agent_positioning.max_iterations", 100);
+        position_solver_params_.eps = RosUtils::getParameterOr<float>(node_, "positioning.eps", 1.0e-1f);
+        position_solver_params_.tol = RosUtils::getParameterOr<float>(node_, "positioning.convergence_tolerance", 1.0e-5f);
+        position_solver_params_.max_iter = RosUtils::getParameterOr<int>(node_, "positioning.max_iterations", 100);
         // Get PSO parameters
-        position_solver_params_.num_particles = RosUtils::getParameterOr<int>(node_, "agent_positioning.num_particles", 50);
-        position_solver_params_.w_max = RosUtils::getParameterOr<float>(node_, "agent_positioning.w_max", 0.4f);
-        position_solver_params_.w_min = RosUtils::getParameterOr<float>(node_, "agent_positioning.w_min", 0.1f);
-        position_solver_params_.c1 = RosUtils::getParameterOr<float>(node_, "agent_positioning.c1", 1.0f);
-        position_solver_params_.c2 = RosUtils::getParameterOr<float>(node_, "agent_positioning.c2", 1.0f);
-        position_solver_params_.stagnation_limit = RosUtils::getParameterOr<int>(node_, "agent_positioning.stagnation_limit", 5);
+        position_solver_params_.num_particles = RosUtils::getParameterOr<int>(node_, "positioning.num_particles", 50);
+        position_solver_params_.w_max = RosUtils::getParameterOr<float>(node_, "positioning.w_max", 0.4f);
+        position_solver_params_.w_min = RosUtils::getParameterOr<float>(node_, "positioning.w_min", 0.1f);
+        position_solver_params_.c1 = RosUtils::getParameterOr<float>(node_, "positioning.c1", 1.0f);
+        position_solver_params_.c2 = RosUtils::getParameterOr<float>(node_, "positioning.c2", 1.0f);
+        position_solver_params_.stagnation_limit = RosUtils::getParameterOr<int>(node_, "positioning.stagnation_limit", 5);
         // Get ALC-PSO parameters
-        position_solver_params_.max_lifespan = RosUtils::getParameterOr<int>(node_, "agent_positioning.max_lifespan", 60);
-        position_solver_params_.num_challenger_tests = RosUtils::getParameterOr<int>(node_, "agent_positioning.num_challenger_tests", 10);
+        position_solver_params_.max_lifespan = RosUtils::getParameterOr<int>(node_, "positioning.max_lifespan", 60);
+        position_solver_params_.num_challenger_tests = RosUtils::getParameterOr<int>(node_, "positioning.num_challenger_tests", 10);
         // Get Nesterov parameters
-        position_solver_params_.lipschitz_constant = RosUtils::getParameterOr<float>(node_, "agent_positioning.lipschitz_constant", 0.0f);
+        position_solver_params_.lipschitz_constant = RosUtils::getParameterOr<float>(node_, "positioning.lipschitz_constant", 0.0f);
 
         // Initialize data
         agents_.clear();

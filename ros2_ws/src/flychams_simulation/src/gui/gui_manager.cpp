@@ -12,7 +12,7 @@ namespace flychams::simulation
     {
         // Get parameters from parameter server
         // Get update rate
-        update_rate_ = RosUtils::getParameterOr<float>(node_, "gui_manager.update_rate", 20.0f);
+        update_rate_ = RosUtils::getParameterOr<float>(node_, "update_rate", 20.0f);
 
         // Initialize GUI mode
         gui_mode_ = GuiMode::IDLE;

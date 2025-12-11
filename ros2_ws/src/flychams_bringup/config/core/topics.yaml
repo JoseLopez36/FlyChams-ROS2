@@ -1,4 +1,4 @@
-/flychams/**:
+/**:
   ros__parameters:
     # Global topics
     global_topics:

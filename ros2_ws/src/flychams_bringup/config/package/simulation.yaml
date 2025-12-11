@@ -1,21 +1,24 @@
-/flychams/**:
+/**/gui_manager_node:
   ros__parameters:
-    # GUI manager parameters
-    gui_manager:
-      update_rate: 20.0 # (Hz)
+    # Update rate (Hz)
+    update_rate: 20.0
 
-    # Metrics factory parameters
-    metrics_factory:
-      update_rate: 10.0 # (Hz)
+/**/metrics_factory_node:
+  ros__parameters:
+    # Update rate (Hz)
+    update_rate: 10.0
 
-    # Marker factory parameters
-    marker_factory:
-      update_rate: 10.0 # (Hz)
+/**/marker_factory_node:
+  ros__parameters:
+    # Update rate (Hz)
+    update_rate: 10.0
 
-    # Target state parameters
-    target_state:
-      update_rate: 20.0 # (Hz)
-      
-    # Target control parameters
-    target_control:
-      update_rate: 20.0 # (Hz)
+/**/target_state_node:
+  ros__parameters:
+    # Update rate (Hz)
+    update_rate: 20.0
+
+/**/target_control_node:
+  ros__parameters:
+    # Update rate (Hz)
+    update_rate: 20.0

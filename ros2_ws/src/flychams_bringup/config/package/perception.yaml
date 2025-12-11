@@ -1,18 +1,20 @@
-/flychams/**:
+/**/target_clustering_node:
   ros__parameters:
-    # Target clustering
-    target_clustering:
-      clustering_rate: 3.33 # (Hz)
-      # Persistence parameters
+    # Update rate (Hz)
+    clustering_rate: 3.33
+    # Persistence parameters
+    persistence:
       ini_bonding_coef: 1.0           # Initial bonding coefficient
       max_bonding_coef: 1.0           # Maximum bonding coefficient
       bonding_coef_time_to_max: 100.0 # Time from 0 to max bonding coefficient (s)
       max_hysteresis_ratio: 0.4       # Maximum hysteresis ratio
       min_hysteresis_ratio: 0.2       # Minimum hysteresis ratio
 
-    # Cluster analysis
-    cluster_analysis:
-      analysis_rate: 20.0 # (Hz)
-      # Circle parameters
+/**/cluster_analysis_node:
+  ros__parameters:
+    # Update rate (Hz)
+    analysis_rate: 20.0
+    # Enclosing circle parameters
+    enclosing_circle:
       min_circle_radius: 0.3
       margin_circle_radius: 1.0

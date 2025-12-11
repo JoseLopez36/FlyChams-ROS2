@@ -12,7 +12,7 @@ namespace flychams::simulation
     {
         // Get parameters from parameter server
         // Get update rate
-        update_rate_ = RosUtils::getParameterOr<float>(node_, "marker_factory.update_rate", 10.0f);
+        update_rate_ = RosUtils::getParameterOr<float>(node_, "update_rate", 10.0f);
 
         // Initialize data
         agents_.clear();

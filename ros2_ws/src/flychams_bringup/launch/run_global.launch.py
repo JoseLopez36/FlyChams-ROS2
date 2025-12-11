@@ -38,25 +38,31 @@ def launch_setup(context, *args, **kwargs):
         'core',
         'frames.yaml'
     ])
-    recording_path = PathJoinSubstitution([
-        FindPackageShare('flychams_bringup'),
-        'config',
-        'recording',
-        'recording.yaml'
-    ])
     
     # Package parameters
-    perception_path = PathJoinSubstitution([
+    bringup_path = PathJoinSubstitution([
         FindPackageShare('flychams_bringup'),
         'config',
         'package',
-        'perception.yaml'
+        'bringup.yaml'
+    ])
+    control_path = PathJoinSubstitution([
+        FindPackageShare('flychams_bringup'),
+        'config',
+        'package',
+        'control.yaml'
     ])
     coordination_path = PathJoinSubstitution([
         FindPackageShare('flychams_bringup'),
         'config',
         'package',
         'coordination.yaml'
+    ])
+    perception_path = PathJoinSubstitution([
+        FindPackageShare('flychams_bringup'),
+        'config',
+        'package',
+        'perception.yaml'
     ])
     simulation_path = PathJoinSubstitution([
         FindPackageShare('flychams_bringup'),
@@ -274,24 +280,6 @@ def launch_setup(context, *args, **kwargs):
                     topics_path, 
                     frames_path, 
                     simulation_path,
-                    {'use_sim_time': is_simulated}
-                ]
-            )
-        )
-
-    # ============= RECORDING NODES =============
-    # Conditionally add AirSim Record Camera node
-    if nodes['airsim_record_camera'][0]:
-        ld.append(
-            Node(
-                package='airsim_wrapper',
-                executable='airsim_record_camera',
-                name='airsim_record_camera',
-                output='screen',
-                namespace='airsim/global',
-                arguments=['--ros-args', '--log-level', nodes['airsim_record_camera'][1]],
-                parameters=[
-                    recording_path,
                     {'use_sim_time': is_simulated}
                 ]
             )

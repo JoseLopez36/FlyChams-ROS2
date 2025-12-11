@@ -12,7 +12,7 @@ namespace flychams::coordination
     {
         // Get parameters from parameter server
         // Get update rate
-        update_rate_ = RosUtils::getParameterOr<float>(node_, "agent_tracking.tracking_rate", 20.0f);
+        update_rate_ = RosUtils::getParameterOr<float>(node_, "tracking_rate", 20.0f);
 
         // Initialize data
         agent_ = Agent();

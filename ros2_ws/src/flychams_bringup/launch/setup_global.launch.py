@@ -38,6 +38,38 @@ def launch_setup(context, *args, **kwargs):
         'core',
         'frames.yaml'
     ])
+    
+    # Package parameters
+    bringup_path = PathJoinSubstitution([
+        FindPackageShare('flychams_bringup'),
+        'config',
+        'package',
+        'bringup.yaml'
+    ])
+    control_path = PathJoinSubstitution([
+        FindPackageShare('flychams_bringup'),
+        'config',
+        'package',
+        'control.yaml'
+    ])
+    coordination_path = PathJoinSubstitution([
+        FindPackageShare('flychams_bringup'),
+        'config',
+        'package',
+        'coordination.yaml'
+    ])
+    perception_path = PathJoinSubstitution([
+        FindPackageShare('flychams_bringup'),
+        'config',
+        'package',
+        'perception.yaml'
+    ])
+    simulation_path = PathJoinSubstitution([
+        FindPackageShare('flychams_bringup'),
+        'config',
+        'package',
+        'simulation.yaml'
+    ])
 
     # Set environment variable to control ROS logger output
     os.environ['RCUTILS_LOGGING_USE_STDOUT'] = '0' # Disable logging to stdout
@@ -71,8 +103,9 @@ def launch_setup(context, *args, **kwargs):
                 arguments=['--ros-args', '--log-level', nodes['registrator'][1]],
                 parameters=[
                     system_path, 
-                    topics_path, 
-                    frames_path
+                    topics_path,
+                    frames_path,
+                    bringup_path
                 ]
             )
         )

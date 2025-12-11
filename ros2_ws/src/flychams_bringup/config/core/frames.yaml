@@ -1,4 +1,4 @@
-/flychams/**:
+/**:
   ros__parameters:
     # Global frames
     global_frames:

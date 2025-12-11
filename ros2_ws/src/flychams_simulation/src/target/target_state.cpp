@@ -12,7 +12,7 @@ namespace flychams::simulation
     {
         // Get parameters from parameter server
         // Get update rate
-        update_rate_ = RosUtils::getParameterOr<float>(node_, "target_state.update_rate", 20.0f);
+        update_rate_ = RosUtils::getParameterOr<float>(node_, "update_rate", 20.0f);
 
         // Compute command timeout
         cmd_timeout_ = (1.0f / update_rate_) * 1.25f;

@@ -1,4 +1,4 @@
-/flychams/**:
+/**:
   ros__parameters:
     # Simulation settings
     simulation:
