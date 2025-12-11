@@ -25,21 +25,20 @@ namespace flychams::bringup
 		local_position_odom_rate_ = RosUtils::getParameterOr<float>(node_, "local_position_odom_rate", 50.0f);
 
 		// Create service client for setting message intervals
-		// Based on user's specification: /flychams/<AGENT_ID>/mavros/set_message_interval
-		std::string service_name = "/flychams/" + agent_id_ + "/mavros/set_message_interval";
+		std::string service_name = "/mavros/" + agent_id_ + "/set_message_interval";
 		set_message_interval_client_ = node_->create_client<mavros_msgs::srv::MessageInterval>(service_name);
+		RCLCPP_INFO(node_->get_logger(), "Created service client for: %s (agent: %s)", service_name.c_str(), agent_id_.c_str());
 
 		// Launch mavros
 		launchMavros();
 
 		// Schedule stream rate configuration after a delay to allow mavros to start
-		// Use a timer to retry until the service is available
-		configure_stream_rate_timer_ = node_->create_wall_timer(
-			std::chrono::seconds(2),
+		RCLCPP_INFO(node_->get_logger(), "Creating stream rate configuration timer for agent %s", agent_id_.c_str());
+		configure_stream_rate_timer_ = RosUtils::createWallTimer(node_, 0.5f,
 			[this]() {
+				RCLCPP_INFO(node_->get_logger(), "Timer callback triggered for agent %s", agent_id_.c_str());
 				this->configureStreamRates();
-			}
-		);
+			}, module_cb_group_);
 	}
 
 	void MavrosManager::onShutdown()
@@ -115,10 +114,14 @@ namespace flychams::bringup
 
 	void MavrosManager::configureStreamRates()
 	{
+		RCLCPP_INFO(node_->get_logger(), "Attempting to configure stream rates for agent %s", agent_id_.c_str());
+
 		// Check if service is available
-		if (!set_message_interval_client_->wait_for_service(std::chrono::milliseconds(100)))
+		if (!set_message_interval_client_->wait_for_service(std::chrono::milliseconds(1000)))
 		{
 			// Service not available yet, will retry on next timer callback
+			RCLCPP_INFO(node_->get_logger(), "Service '%s' not available yet for agent %s, will retry",
+				set_message_interval_client_->get_service_name(), agent_id_.c_str());
 			return;
 		}
 

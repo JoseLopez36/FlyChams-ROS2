@@ -41,6 +41,16 @@ def launch_setup(context, *args, **kwargs):
         'core',
         'frames.yaml'
     ])
+
+    # Package parameters
+    bringup_path = PathJoinSubstitution([
+        FindPackageShare('flychams_bringup'),
+        'config',
+        'package',
+        'bringup.yaml'
+    ])
+
+    # Mavros parameters
     mavros_path = PathJoinSubstitution([
         FindPackageShare('flychams_bringup'),
         'config',
@@ -70,27 +80,28 @@ def launch_setup(context, *args, **kwargs):
     # Get the node activation settings from config
     nodes = {
         # Agent setup nodes
-        'mavros': launch.get('mavros', [True, 'info'])
+        'mavros_manager': launch.get('mavros_manager', [True, 'info'])
     }
 
     # Conditionally add MavROS Manager node
-    if nodes['mavros'][0]:
+    if nodes['mavros_manager'][0]:
         ld.append(
             Node(
                 package='flychams_bringup',
-                executable='mavros_node',
-                name='mavros_node',
+                executable='mavros_manager_node',
+                name='mavros_manager_node',
                 output='screen' if is_simulated else 'log',
                 namespace='flychams/' + agent_id,
-                arguments=['--ros-args', '--log-level', nodes['mavros'][1]],
+                arguments=['--ros-args', '--log-level', nodes['mavros_manager'][1]],
                 parameters=[
                     system_path,
                     topics_path,
                     frames_path,
+                    bringup_path,
                     mavros_path,
                     plugin_lists_path,
                     {'agent_id': agent_id},
-                    {'tgt_system': 1, 'fcu_url': 'udp://:14030@172.17.0.2:14280'}
+                    {'use_sim_time': is_simulated}
                 ]
             )
         )

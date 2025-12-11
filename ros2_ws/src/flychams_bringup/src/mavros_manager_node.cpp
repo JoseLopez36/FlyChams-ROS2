@@ -17,10 +17,10 @@ using namespace flychams::bringup;
  * @date 2025-12-01
  * ════════════════════════════════════════════════════════════════
  */
-class MavrosNode : public BaseNode
+class MavrosManagerNode : public BaseNode
 {
 public: // Constructor/Destructor
-    MavrosNode(const std::string& node_name, const rclcpp::NodeOptions& options)
+    MavrosManagerNode(const std::string& node_name, const rclcpp::NodeOptions& options)
         : BaseNode(node_name, options)
     {
         // Nothing to do
@@ -59,7 +59,7 @@ int main(int argc, char** argv)
     options.allow_undeclared_parameters(true);
     options.automatically_declare_parameters_from_overrides(true);
     // Create and initialize node
-    auto node = std::make_shared<MavrosNode>("mavros_node", options);
+    auto node = std::make_shared<MavrosManagerNode>("mavros_manager_node", options);
     node->init();
     // Spin node
     rclcpp::spin(node);

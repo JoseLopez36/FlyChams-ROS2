@@ -41,9 +41,9 @@ target_link_libraries(registrator_node ${PROJECT_NAME})
 ament_target_dependencies(registrator_node rclcpp flychams_core)
 
 # Create executable for mavros node
-add_executable(mavros_node src/mavros_node.cpp)
-target_link_libraries(mavros_node ${PROJECT_NAME})
-ament_target_dependencies(mavros_node rclcpp mavros_msgs flychams_core)
+add_executable(mavros_manager_node src/mavros_manager_node.cpp)
+target_link_libraries(mavros_manager_node ${PROJECT_NAME})
+ament_target_dependencies(mavros_manager_node rclcpp mavros_msgs flychams_core)
 
 # Create executable for settings node
 add_executable(settings_node src/settings_node.cpp)
@@ -58,7 +58,7 @@ install(TARGETS ${PROJECT_NAME}
   INCLUDES DESTINATION include
 )
 
-install(TARGETS registrator_node mavros_node settings_node
+install(TARGETS registrator_node mavros_manager_node settings_node
   RUNTIME DESTINATION lib/${PROJECT_NAME}
 )
 

@@ -40,13 +40,18 @@ namespace flychams::bringup
 
 	private: // Data
 		pid_t mavros_pid_;
-		core::ClientPtr<mavros_msgs::srv::MessageInterval> set_message_interval_client_;
-		rclcpp::TimerBase::SharedPtr configure_stream_rate_timer_;
 
 	public: // Methods
 		void launchMavros();
 		void shutdownMavros();
 		void configureStreamRates();
+
+	private: // ROS Components
+		// Timer
+		core::TimerPtr configure_stream_rate_timer_;
+
+		// Client
+		core::ClientPtr<mavros_msgs::srv::MessageInterval> set_message_interval_client_;
 	};
 
 } // namespace flychams::bringup
