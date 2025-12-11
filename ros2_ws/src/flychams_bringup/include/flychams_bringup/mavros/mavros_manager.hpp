@@ -3,6 +3,9 @@
 // Base module include
 #include "flychams_core/base/base_module.hpp"
 
+// Mavros includes
+#include <mavros_msgs/srv/message_interval.hpp>
+
 namespace flychams::bringup
 {
 	/**
@@ -33,13 +36,17 @@ namespace flychams::bringup
 		core::ID agent_id_;
 		std::string fcu_url_;
 		int tgt_system_;
+		float local_position_odom_rate_;  // Local position odometry stream rate in Hz
 
 	private: // Data
 		pid_t mavros_pid_;
+		core::ClientPtr<mavros_msgs::srv::MessageInterval> set_message_interval_client_;
+		rclcpp::TimerBase::SharedPtr configure_stream_rate_timer_;
 
 	public: // Methods
 		void launchMavros();
 		void shutdownMavros();
+		void configureStreamRates();
 	};
 
 } // namespace flychams::bringup

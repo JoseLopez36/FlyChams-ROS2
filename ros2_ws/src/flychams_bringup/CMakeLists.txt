@@ -9,6 +9,7 @@ endif()
 # Find dependencies
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
+find_package(mavros_msgs REQUIRED)
 find_package(flychams_core REQUIRED)
 
 # Create bringup library
@@ -26,7 +27,7 @@ target_include_directories(${PROJECT_NAME} PUBLIC
 
 # Export dependencies
 ament_target_dependencies(${PROJECT_NAME}
-  rclcpp flychams_core
+  rclcpp mavros_msgs flychams_core
 )
 
 # Link to required libraries
@@ -42,7 +43,7 @@ ament_target_dependencies(registrator_node rclcpp flychams_core)
 # Create executable for mavros node
 add_executable(mavros_node src/mavros_node.cpp)
 target_link_libraries(mavros_node ${PROJECT_NAME})
-ament_target_dependencies(mavros_node rclcpp flychams_core)
+ament_target_dependencies(mavros_node rclcpp mavros_msgs flychams_core)
 
 # Create executable for settings node
 add_executable(settings_node src/settings_node.cpp)
