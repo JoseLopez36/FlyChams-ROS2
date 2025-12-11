@@ -4,14 +4,14 @@
 # Log levels: debug, info, warn, error, fatal
 
 # ------------------- GLOBAL SETUP NODES -------------------\
-# Registrator node
-registrator: [false, 'info']
+# Element registrator node
+element_registrator: [false, 'info']
 # AirSim node
 airsim: [true, 'error']
 
 # ------------------- AGENT SETUP NODES -------------------
-# MavROS node
-mavros: [true, 'info']
+# MavROS manager node
+mavros_manager: [true, 'info']
 
 # ------------------- GLOBAL RUN NODES -------------------
 # Perception nodes

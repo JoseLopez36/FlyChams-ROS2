@@ -87,20 +87,20 @@ def launch_setup(context, *args, **kwargs):
     # Get the node activation settings from config
     nodes = {
         # Global setup nodes
-        'registrator': launch.get('registrator', [True, 'info']),
+        'element_registrator': launch.get('element_registrator', [True, 'info']),
         'airsim': launch.get('airsim', [True, 'info'])
     }
 
     # Conditionally add Registrator node
-    if nodes['registrator'][0]:
+    if nodes['element_registrator'][0]:
         ld.append(
             Node(
                 package='flychams_bringup',
-                executable='registrator_node',
-                name='registrator_node',
+                executable='element_registrator_node',
+                name='element_registrator_node',
                 output='screen',
                 namespace='flychams/global',
-                arguments=['--ros-args', '--log-level', nodes['registrator'][1]],
+                arguments=['--ros-args', '--log-level', nodes['element_registrator'][1]],
                 parameters=[
                     system_path, 
                     topics_path,

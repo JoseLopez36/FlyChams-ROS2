@@ -20,10 +20,10 @@ using namespace flychams::bringup;
  * @date 2025-02-28
  * ════════════════════════════════════════════════════════════════
  */
-class RegistratorNode : public BaseRegistratorNode
+class ElementRegistratorNode : public BaseRegistratorNode
 {
 public: // Constructor/Destructor
-    RegistratorNode(const std::string& node_name, const rclcpp::NodeOptions& options)
+    ElementRegistratorNode(const std::string& node_name, const rclcpp::NodeOptions& options)
         : BaseRegistratorNode(node_name, options)
     {
         // Nothing to do
@@ -130,7 +130,7 @@ int main(int argc, char** argv)
     options.allow_undeclared_parameters(true);
     options.automatically_declare_parameters_from_overrides(true);
     // Create and initialize node
-    auto node = std::make_shared<RegistratorNode>("registrator_node", options);
+    auto node = std::make_shared<ElementRegistratorNode>("element_registrator_node", options);
     node->init();
     // Spin node
     rclcpp::spin(node);
