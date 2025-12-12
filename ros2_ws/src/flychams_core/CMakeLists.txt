@@ -43,6 +43,8 @@ add_library(${PROJECT_NAME} SHARED
   src/base/base_registrator_node.cpp
   src/base/base_discoverer_node.cpp
   src/base/base_module.cpp
+  src/settings/mission_settings_parser.cpp
+  src/settings/settings_tools.cpp
   src/utils/math_utils.cpp
   src/utils/tf_utils.cpp
   src/utils/vision_utils.cpp

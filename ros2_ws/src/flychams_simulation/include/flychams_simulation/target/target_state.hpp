@@ -25,7 +25,7 @@ namespace flychams::simulation
     class TargetState : public core::BaseModule
     {
     public: // Constructor/Destructor
-        TargetState(const core::ID& target_id, core::NodePtr node, core::ConfigTools::SharedPtr config_tools, core::TopicTools::SharedPtr topic_tools, core::TransformTools::SharedPtr transform_tools, core::CallbackGroupPtr module_cb_group)
+        TargetState(const core::ID& target_id, core::NodePtr node, core::SettingsTools::SharedPtr config_tools, core::TopicTools::SharedPtr topic_tools, core::TransformTools::SharedPtr transform_tools, core::CallbackGroupPtr module_cb_group)
             : BaseModule(node, config_tools, topic_tools, transform_tools, module_cb_group), target_id_(target_id)
         {
             init();

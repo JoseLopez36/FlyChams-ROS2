@@ -1,7 +1,7 @@
 #pragma once
 
 // Tools includes
-#include "flychams_core/config/config_tools.hpp"
+#include "flychams_core/settings/settings_tools.hpp"
 
 namespace flychams::core
 {
@@ -19,7 +19,7 @@ namespace flychams::core
     class TopicTools
     {
     public: // Constructor/Destructor
-        TopicTools(NodePtr node, const ConfigTools::SharedPtr& config_tools)
+        TopicTools(NodePtr node, const SettingsTools::SharedPtr& config_tools)
             : node_(node), config_tools_(config_tools)
         {
             // Get topic config
@@ -128,7 +128,7 @@ namespace flychams::core
         NodePtr node_;
 
         // Config tools
-        ConfigTools::SharedPtr config_tools_;
+        SettingsTools::SharedPtr config_tools_;
 
     public: // Topic getters
         // Global topics

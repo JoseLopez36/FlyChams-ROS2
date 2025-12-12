@@ -16,7 +16,7 @@ namespace flychams::bringup
 	class TargetRegistration : public core::BaseModule
 	{
 	public: // Constructor/Destructor
-		TargetRegistration(core::NodePtr node, core::ConfigTools::SharedPtr config_tools, core::TopicTools::SharedPtr topic_tools, core::TransformTools::SharedPtr transform_tools, core::CallbackGroupPtr module_cb_group)
+		TargetRegistration(core::NodePtr node, core::SettingsTools::SharedPtr config_tools, core::TopicTools::SharedPtr topic_tools, core::TransformTools::SharedPtr transform_tools, core::CallbackGroupPtr module_cb_group)
 			: BaseModule(node, config_tools, topic_tools, transform_tools, module_cb_group)
 		{
 			init();

@@ -1,7 +1,7 @@
 #pragma once
 
 // Tools includes
-#include "flychams_core/config/config_tools.hpp"
+#include "flychams_core/settings/settings_tools.hpp"
 #include "flychams_core/ros/topic_tools.hpp"
 #include "flychams_core/ros/transform_tools.hpp"
 
@@ -59,7 +59,7 @@ namespace flychams::core
         NodePtr node_;
         const std::string node_name_;
         // Tools
-        ConfigTools::SharedPtr config_tools_;
+        SettingsTools::SharedPtr config_tools_;
         TopicTools::SharedPtr topic_tools_;
         TransformTools::SharedPtr transform_tools_;
         // Registered elements

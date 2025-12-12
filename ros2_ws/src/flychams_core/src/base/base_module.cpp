@@ -2,7 +2,7 @@
 
 namespace flychams::core
 {
-    BaseModule::BaseModule(NodePtr node, ConfigTools::SharedPtr config_tools, TopicTools::SharedPtr topic_tools, TransformTools::SharedPtr transform_tools, CallbackGroupPtr module_cb_group)
+    BaseModule::BaseModule(NodePtr node, SettingsTools::SharedPtr config_tools, TopicTools::SharedPtr topic_tools, TransformTools::SharedPtr transform_tools, CallbackGroupPtr module_cb_group)
         : node_(node), config_tools_(config_tools), topic_tools_(topic_tools), transform_tools_(transform_tools), module_cb_group_(module_cb_group)
     {
         // Nothing to do

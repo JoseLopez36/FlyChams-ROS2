@@ -7,7 +7,7 @@ using namespace flychams::core;
 
 namespace flychams::simulation
 {
-    SimulationTools::SharedPtr createSimulationTools(NodePtr node, const ConfigTools::SharedPtr& config_tools)
+    SimulationTools::SharedPtr createSimulationTools(NodePtr node, const SettingsTools::SharedPtr& config_tools)
     {
         // Get framework
         const SimulationFramework framework = config_tools->getSystem().simulation_framework;

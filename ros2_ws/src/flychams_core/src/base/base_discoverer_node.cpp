@@ -15,7 +15,7 @@ namespace flychams::core
         RCLCPP_INFO(node_->get_logger(), "Starting %s node...", node_name_.c_str());
 
         // Create tools
-        config_tools_ = std::make_shared<ConfigTools>(node_);
+        config_tools_ = std::make_shared<SettingsTools>(node_);
         topic_tools_ = std::make_shared<TopicTools>(node_, config_tools_);
         transform_tools_ = std::make_shared<TransformTools>(node_, config_tools_);
 

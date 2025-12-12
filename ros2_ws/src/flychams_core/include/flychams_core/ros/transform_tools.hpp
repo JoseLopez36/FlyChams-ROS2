@@ -4,7 +4,7 @@
 #include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
 
 // Tools includes
-#include "flychams_core/config/config_tools.hpp"
+#include "flychams_core/settings/settings_tools.hpp"
 
 namespace flychams::core
 {
@@ -24,7 +24,7 @@ namespace flychams::core
     class TransformTools
     {
     public: // Constructor/Destructor
-        TransformTools(NodePtr node, const ConfigTools::SharedPtr& config_tools)
+        TransformTools(NodePtr node, const SettingsTools::SharedPtr& config_tools)
             : node_(node), config_tools_(config_tools)
         {
             // Initialize ROS components
@@ -88,7 +88,7 @@ namespace flychams::core
         StaticBroadcasterPtr static_tf_broadcaster_;
 
         // Config tools
-        ConfigTools::SharedPtr config_tools_;
+        SettingsTools::SharedPtr config_tools_;
 
     public: // Frame getters
         std::string getGlobalFrame()

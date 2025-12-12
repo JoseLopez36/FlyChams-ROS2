@@ -1,7 +1,7 @@
 #pragma once
 
 // Tools includes
-#include "flychams_core/config/config_tools.hpp"
+#include "flychams_core/settings/settings_tools.hpp"
 
 // Core includes
 #include "flychams_core/types/core_types.hpp"
@@ -26,7 +26,7 @@ namespace flychams::simulation
     class SimulationTools
     {
     public: // Constructors/Destructors
-        SimulationTools(core::NodePtr node, const core::ConfigTools::SharedPtr& config_tools)
+        SimulationTools(core::NodePtr node, const core::SettingsTools::SharedPtr& config_tools)
             : node_(node), config_tools_(config_tools)
         {
             // Nothing to do
@@ -107,9 +107,9 @@ namespace flychams::simulation
         core::NodePtr node_;
 
         // Config tools
-        core::ConfigTools::SharedPtr config_tools_;
+        core::SettingsTools::SharedPtr config_tools_;
     };
 
-    SimulationTools::SharedPtr createSimulationTools(core::NodePtr node, const core::ConfigTools::SharedPtr& config_tools);
+    SimulationTools::SharedPtr createSimulationTools(core::NodePtr node, const core::SettingsTools::SharedPtr& config_tools);
 
 } // namespace flychams::simulation

@@ -4,7 +4,7 @@
 #include "flychams_simulation/tools/simulation_tools.hpp"
 
 // Tools includes
-#include "flychams_core/config/config_tools.hpp"
+#include "flychams_core/settings/settings_tools.hpp"
 
 // AirSim interfaces includes
 // Global commands
@@ -38,7 +38,7 @@ namespace flychams::simulation
     class AirsimTools : public SimulationTools
     {
     public: // Constructors/Destructors
-        AirsimTools(core::NodePtr node, const core::ConfigTools::SharedPtr& config_tools);
+        AirsimTools(core::NodePtr node, const core::SettingsTools::SharedPtr& config_tools);
         ~AirsimTools() override;
         void shutdown() override;
 

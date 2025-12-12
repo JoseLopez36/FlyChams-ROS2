@@ -2,7 +2,7 @@
 #pragma once
 
 // Tools includes
-#include "flychams_core/config/config_tools.hpp"
+#include "flychams_core/settings/settings_tools.hpp"
 #include "flychams_core/ros/topic_tools.hpp"
 #include "flychams_core/ros/transform_tools.hpp"
 
@@ -47,7 +47,7 @@ namespace flychams::core
         CallbackGroupPtr node_cb_group_;
         rclcpp::SubscriptionOptions sub_options_with_node_cb_group_;
         // Tools
-        ConfigTools::SharedPtr config_tools_;
+        SettingsTools::SharedPtr config_tools_;
         TopicTools::SharedPtr topic_tools_;
         TransformTools::SharedPtr transform_tools_;
     };

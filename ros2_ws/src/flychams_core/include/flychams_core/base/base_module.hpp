@@ -1,7 +1,7 @@
 #pragma once
 
 // Tools includes
-#include "flychams_core/config/config_tools.hpp"
+#include "flychams_core/settings/settings_tools.hpp"
 #include "flychams_core/ros/topic_tools.hpp"
 #include "flychams_core/ros/transform_tools.hpp"
 
@@ -33,7 +33,7 @@ namespace flychams::core
     class BaseModule
     {
     public: // Constructor/Destructor
-        BaseModule(NodePtr node, ConfigTools::SharedPtr config_tools, TopicTools::SharedPtr topic_tools, TransformTools::SharedPtr transform_tools, CallbackGroupPtr module_cb_group);
+        BaseModule(NodePtr node, SettingsTools::SharedPtr config_tools, TopicTools::SharedPtr topic_tools, TransformTools::SharedPtr transform_tools, CallbackGroupPtr module_cb_group);
 
         void init();
 
@@ -52,7 +52,7 @@ namespace flychams::core
         // Node
         NodePtr node_;
         // Tools
-        ConfigTools::SharedPtr config_tools_;
+        SettingsTools::SharedPtr config_tools_;
         TopicTools::SharedPtr topic_tools_;
         TransformTools::SharedPtr transform_tools_;
         // Callback group
