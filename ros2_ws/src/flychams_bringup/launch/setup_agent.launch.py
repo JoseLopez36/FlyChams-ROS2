@@ -8,6 +8,12 @@ import os
 import yaml
 import tempfile
 
+def load_mission_parameters(mission_settings_path):
+    if not os.path.exists(mission_settings_path):
+        return {}
+    
+    return mission_settings_path
+
 def launch_setup(context, *args, **kwargs):
     # Get agent_id value from LaunchConfiguration
     agent_id = LaunchConfiguration('agent_id').perform(context)
@@ -110,6 +116,13 @@ def launch_setup(context, *args, **kwargs):
     def log_level(node_name: str) -> str:
         return node_log_levels.get(node_name, 'info')
 
+    # Load mission parameters
+    system_file_path = system_path.perform(context).strip()
+    with open(system_file_path, 'r') as f:
+        system_raw = yaml.safe_load(f) or {}
+
+    mission_params_path = load_mission_parameters(system_raw.get('/**').get('ros__parameters').get('path').get('mission_settings_path'))
+
     # Conditionally add MavROS Manager node
     if is_enabled('mavros_manager'):
         ld.append(
@@ -127,6 +140,7 @@ def launch_setup(context, *args, **kwargs):
                     bringup_path,
                     mavros_path,
                     plugin_lists_path,
+                    mission_params_path,
                     {'agent_id': agent_id},
                     {'use_sim_time': is_simulated}
                 ]

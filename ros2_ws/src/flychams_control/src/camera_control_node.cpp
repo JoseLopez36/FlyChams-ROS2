@@ -4,7 +4,7 @@
 #include "flychams_control/camera/camera_control.hpp"
 
 // Core includes
-#include "flychams_core/base/base_node.hpp"
+#include "flychams_core/base/base_node_with_tools.hpp"
 
 using namespace flychams::core;
 using namespace flychams::control;
@@ -18,11 +18,11 @@ using namespace flychams::control;
  * @date 2025-02-28
  * ════════════════════════════════════════════════════════════════
  */
-class CameraControlNode : public BaseNode
+class CameraControlNode : public BaseNodeWithTools
 {
 public: // Constructor/Destructor
     CameraControlNode(const std::string& node_name, const rclcpp::NodeOptions& options)
-        : BaseNode(node_name, options)
+        : BaseNodeWithTools(node_name, options)
     {
         // Nothing to do
     }

@@ -69,6 +69,15 @@ namespace flychams::core
             return node->get_parameter_or(param_name, default_value);
         }
 
+        /**
+         * @brief Set a parameter in the parameter server
+         */
+        template <typename T>
+        static void setParameter(NodePtr node, const std::string& param_name, const T& value)
+        {
+            node->set_parameter(rclcpp::Parameter(param_name, value));
+        }
+
         // ════════════════════════════════════════════════════════════════════════════
         // SERVICES: Service utilities
         // ════════════════════════════════════════════════════════════════════════════

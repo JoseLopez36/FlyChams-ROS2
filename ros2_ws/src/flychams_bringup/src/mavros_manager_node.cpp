@@ -4,7 +4,7 @@
 #include "flychams_bringup/mavros/mavros_manager.hpp"
 
 // Core includes
-#include "flychams_core/base/base_node.hpp"
+#include "flychams_core/base/base_node_with_tools.hpp"
 
 using namespace flychams::core;
 using namespace flychams::bringup;
@@ -17,11 +17,11 @@ using namespace flychams::bringup;
  * @date 2025-12-01
  * ════════════════════════════════════════════════════════════════
  */
-class MavrosManagerNode : public BaseNode
+class MavrosManagerNode : public BaseNodeWithTools
 {
 public: // Constructor/Destructor
     MavrosManagerNode(const std::string& node_name, const rclcpp::NodeOptions& options)
-        : BaseNode(node_name, options)
+        : BaseNodeWithTools(node_name, options)
     {
         // Nothing to do
     }

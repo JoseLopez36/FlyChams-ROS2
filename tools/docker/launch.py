@@ -40,17 +40,17 @@ def get_panes(window):
         return window.list_panes()
     return []
 
-def parse_agents_yaml(path_str):
+def parse_agents_from_mission(path_str):
     path = Path(path_str)
     with open(path, 'r') as f:
-        agents_data = yaml.safe_load(f)
+        mission_data = yaml.safe_load(f)
 
-    agents = agents_data['agents']
+    agents = mission_data['/**']['ros__parameters']['agents']
     
     # Extract agent info
     agent_info = []
-    for agent in agents:
-        if 'id' in agent:
+    for agent_id, agent in agents.items():
+        if isinstance(agent, dict) and 'id' in agent:
             info = {'id': agent['id']}
             # Optional SSH connection info for hardware mode
             if 'ssh' in agent:
@@ -84,10 +84,10 @@ def main():
     
     # Get config paths
     root_dir = script_dir.parent.parent
-    agents_yaml_path = root_dir / 'config' / 'agents.yaml'
+    mission_yaml_path = root_dir / 'config' / 'mission.yaml'
 
     # Get agent info
-    agent_info_list = parse_agents_yaml(agents_yaml_path) 
+    agent_info_list = parse_agents_from_mission(mission_yaml_path) 
     num_agents = len(agent_info_list)
     agent_ids = [info['id'] for info in agent_info_list]
     print(f"Found {num_agents} agents: {agent_ids}")

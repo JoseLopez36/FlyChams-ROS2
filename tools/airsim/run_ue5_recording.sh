@@ -5,4 +5,4 @@ SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 source "$SCRIPT_DIR/../../docker/config.env"
 
 # Launch UE5
-$FLYCHAMS_SIM_UE5_PATH/../LinuxRecording/FlyChamsSim.sh -settings="$FLYCHAMS_ROS2_PATH/config/settings.json"
+$FLYCHAMS_SIM_UE5_PATH/../LinuxRecording/FlyChamsSim.sh -settings="$FLYCHAMS_ROS2_PATH/config/airsim.json"

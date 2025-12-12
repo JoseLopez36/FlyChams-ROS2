@@ -3,8 +3,15 @@ from launch_ros.actions import Node
 from launch.actions import DeclareLaunchArgument, OpaqueFunction
 from launch.substitutions import PathJoinSubstitution, LaunchConfiguration
 from launch_ros.substitutions import FindPackageShare
+from ament_index_python.packages import get_package_share_directory
 import os
 import yaml
+
+def load_mission_parameters(mission_settings_path):
+    if not os.path.exists(mission_settings_path):
+        return {}
+    
+    return mission_settings_path
 
 def launch_setup(context, *args, **kwargs):
     # Get is_simulated value from LaunchConfiguration
@@ -93,6 +100,13 @@ def launch_setup(context, *args, **kwargs):
     def log_level(node_name: str) -> str:
         return node_log_levels.get(node_name, 'info')
 
+    # Load mission parameters
+    system_file_path = system_path.perform(context).strip()
+    with open(system_file_path, 'r') as f:
+        system_raw = yaml.safe_load(f) or {}
+
+    mission_params_path = load_mission_parameters(system_raw.get('/**').get('ros__parameters').get('path').get('mission_settings_path'))
+
     # ============= PERCEPTION NODES =============
     # Conditionally add Target Clustering node
     if is_enabled('target_clustering'):
@@ -109,6 +123,7 @@ def launch_setup(context, *args, **kwargs):
                     topics_path, 
                     frames_path, 
                     perception_path,
+                    mission_params_path,
                     {'use_sim_time': is_simulated}
                 ]
             )
@@ -129,6 +144,7 @@ def launch_setup(context, *args, **kwargs):
                     topics_path, 
                     frames_path, 
                     perception_path,
+                    mission_params_path,
                     {'use_sim_time': is_simulated}
                 ]
             )
@@ -150,6 +166,7 @@ def launch_setup(context, *args, **kwargs):
                     topics_path, 
                     frames_path, 
                     coordination_path,
+                    mission_params_path,
                     {'use_sim_time': is_simulated}
                 ]
             )
@@ -170,6 +187,7 @@ def launch_setup(context, *args, **kwargs):
                     topics_path, 
                     frames_path, 
                     coordination_path,
+                    mission_params_path,
                     {'use_sim_time': is_simulated}
                 ]
             )
@@ -191,6 +209,7 @@ def launch_setup(context, *args, **kwargs):
                     topics_path, 
                     frames_path, 
                     simulation_path,
+                    mission_params_path,
                     {'use_sim_time': is_simulated}
                 ]
             )
@@ -211,6 +230,7 @@ def launch_setup(context, *args, **kwargs):
                     topics_path, 
                     frames_path, 
                     simulation_path,
+                    mission_params_path,
                     {'use_sim_time': is_simulated}
                 ]
             )
@@ -231,6 +251,7 @@ def launch_setup(context, *args, **kwargs):
                     topics_path, 
                     frames_path, 
                     simulation_path,
+                    mission_params_path,
                     {'use_sim_time': is_simulated}
                 ]
             )
@@ -251,6 +272,7 @@ def launch_setup(context, *args, **kwargs):
                     topics_path, 
                     frames_path, 
                     simulation_path,
+                    mission_params_path,
                     {'use_sim_time': is_simulated}
                 ]
             )
@@ -271,6 +293,7 @@ def launch_setup(context, *args, **kwargs):
                     topics_path, 
                     frames_path, 
                     simulation_path,
+                    mission_params_path,
                     {'use_sim_time': is_simulated}
                 ]
             )

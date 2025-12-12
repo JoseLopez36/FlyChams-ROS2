@@ -1,6 +1,6 @@
 # Ignore VScode files
 .vscode/
 .cursor/
-config/settings.json
-config/agents.yaml
+config/mission.yaml
+config/airsim.json
 config/.~lock.Configuration.xlsx\#

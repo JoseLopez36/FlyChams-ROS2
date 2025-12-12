@@ -1,54 +1,49 @@
 #include "rclcpp/rclcpp.hpp"
 
 // Control includes
-#include "flychams_control/camera/camera_frames.hpp"
+#include "flychams_bringup/settings/config_parser.hpp"
 
 // Core includes
-#include "flychams_core/base/base_node_with_tools.hpp"
+#include "flychams_core/base/base_node.hpp"
 
 using namespace flychams::core;
-using namespace flychams::control;
+using namespace flychams::bringup;
 
 /**
  * ════════════════════════════════════════════════════════════════
- * @brief Control node for managing the frames of the agent's
- * cameras (gimbal/camera)
+ * @brief Config node for parsing configuration files to parameter
+ *        server (ROS2)
  * ════════════════════════════════════════════════════════════════
  * @author Jose Francisco Lopez Ruiz
- * @date 2025-12-09
+ * @date 2025-12-12
  * ════════════════════════════════════════════════════════════════
  */
-class CameraFramesNode : public BaseNodeWithTools
+class ConfigParserNode : public BaseNode
 {
 public: // Constructor/Destructor
-    CameraFramesNode(const std::string& node_name, const rclcpp::NodeOptions& options)
-        : BaseNodeWithTools(node_name, options)
+    ConfigParserNode(const std::string& node_name, const rclcpp::NodeOptions& options)
+        : BaseNode(node_name, options)
     {
         // Nothing to do
     }
 
     void onInit() override
     {
-        // Get agent ID
-        agent_id_ = RosUtils::getParameter<std::string>(node_, "agent_id");
+        // Create config parser
+        config_parser_ = std::make_shared<ConfigParser>(node_);
 
-        // Create camera frames
-        camera_frames_ = std::make_shared<CameraFrames>(agent_id_, node_, config_tools_, topic_tools_, transform_tools_, node_cb_group_);
-
-        RCLCPP_INFO(node_->get_logger(), "Camera frames created for agent: %s", agent_id_.c_str());
+        RCLCPP_INFO(node_->get_logger(), "Config parser created");
     }
 
     void onShutdown() override
     {
-        // Destroy camera frames
-        camera_frames_.reset();
+        // Destroy config parser
+        config_parser_.reset();
     }
 
 private: // Components
-    // Agent ID
-    ID agent_id_;
-    // Camera frames
-    CameraFrames::SharedPtr camera_frames_;
+    // Config parser
+    ConfigParser::SharedPtr config_parser_;
 };
 
 int main(int argc, char** argv)
@@ -60,7 +55,7 @@ int main(int argc, char** argv)
     options.allow_undeclared_parameters(true);
     options.automatically_declare_parameters_from_overrides(true);
     // Create and initialize node
-    auto node = std::make_shared<CameraFramesNode>("camera_frames_node", options);
+    auto node = std::make_shared<ConfigParserNode>("config_parser_node", options);
     node->init();
     // Create executor and add node
     rclcpp::executors::MultiThreadedExecutor executor;

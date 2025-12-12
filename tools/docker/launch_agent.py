@@ -63,15 +63,19 @@ def build_ssh_cmd(remote_host, cmd):
     hostname = remote_host['hostname']
     return f"ssh {user}@{hostname} '{cmd}'"
 
-def get_agent_ssh_config(agent_id, agents_yaml_path):
-    path = Path(agents_yaml_path)
+def get_agent_ssh_config(agent_id, mission_yaml_path):
+    path = Path(mission_yaml_path)
     with open(path, 'r') as f:
-        agents_data = yaml.safe_load(f)
+        mission_data = yaml.safe_load(f)
     
-    agents = agents_data['agents']
-    for agent in agents:
-        if agent.get('id') == agent_id:
-            return agent.get('ssh')
+    agents = mission_data['/**']['ros__parameters']['agents']
+    if agent_id in agents:
+        agent = agents[agent_id]
+        if isinstance(agent, dict) and 'ssh' in agent:
+            return {
+                'user': agent.get('ssh').get('user'),
+                'hostname': agent.get('ssh').get('hostname')
+            }
     return None
 
 def main():
@@ -96,7 +100,7 @@ def main():
     script_dir = Path(__file__).resolve().parent
     root_dir = script_dir.parent.parent
     config_env_path = root_dir / 'docker' / 'config.env'
-    agents_yaml_path = root_dir / 'config' / 'agents.yaml'
+    mission_yaml_path = root_dir / 'config' / 'mission.yaml'
 
     # Get is_simulated parameter
     is_simulated = False if launch_mode == "hardware" else True
@@ -108,7 +112,7 @@ def main():
         flychams_ros2_path = f"/home/{user_name}/FlyChams-ROS2"
         
         # Get remote host SSH configuration
-        remote_host = get_agent_ssh_config(args.agent_id, agents_yaml_path)
+        remote_host = get_agent_ssh_config(args.agent_id, mission_yaml_path)
         
         if not remote_host:
             print(f"Error: Agent {args.agent_id} missing SSH configuration for hardware mode")

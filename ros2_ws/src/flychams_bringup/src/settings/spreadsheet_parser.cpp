@@ -1,0 +1,825 @@
+#include "flychams_bringup/settings/spreadsheet_parser.hpp"
+
+using namespace flychams::core;
+
+namespace flychams::bringup
+{
+	MissionConfigPtr SpreadsheetParser::parseSpreadsheet(const std::string& path)
+	{
+		try
+		{
+			// Create output
+			MissionConfigPtr config_ptr = std::make_shared<MissionConfig>();
+
+			// Open document
+			XLDocument doc;
+			doc.suppressWarnings(); // Disable warnings
+			doc.open(path);
+			doc.showWarnings(); // Enable warnings
+			auto book = doc.workbook();
+
+			// 1. Parse Mission Sheet
+			parseMission(book, config_ptr);
+
+			// 2. Parse Environment Sheet
+			parseEnvironment(book, config_ptr);
+
+			// 3. Parse Target Sheet
+			parseTargetGroup(book, config_ptr);
+
+			// 4. Parse Agent Sheet
+			parseAgentTeam(book, config_ptr);
+
+			// Close document
+			doc.close();
+
+			return config_ptr;
+		}
+		catch (const std::exception& e)
+		{
+			throw std::runtime_error("Spreadsheet parsing failed: " + std::string(e.what()));
+		}
+	}
+
+	void SpreadsheetParser::parseMission(OpenXLSX::XLWorkbook& book, MissionConfigPtr config_ptr)
+	{
+		// Open Mission sheet
+		auto sheet = book.worksheet("Mission");
+
+		// Iterate through data rows
+		for (auto& row : sheet.rows())
+		{
+			// Skip first two header rows
+			if (row.rowNumber() < 3)
+				continue;
+
+			try
+			{
+				// Verify row is not empty. If empty, throw error
+				if (isCellEmpty(row.findCell(2)))
+				{
+					throw std::runtime_error("Mission config not found");
+				}
+
+				// Check if the mission is selected
+				if (isCellEmpty(row.findCell(1)))
+				{
+					continue;
+				}
+
+				// Read selected value
+				std::string selected = getCellValue<std::string>(row.findCell(1));
+				if (selected == "X" || selected == "x")
+				{
+					// Populate fields
+					config_ptr->id = getCellValue<std::string>(row.findCell(2));
+
+					config_ptr->name = getCellValue<std::string>(row.findCell(3));
+
+					config_ptr->environment_id = getCellValue<std::string>(row.findCell(4));
+
+					config_ptr->target_group_id = getCellValue<std::string>(row.findCell(5));
+
+					config_ptr->agent_team_id = getCellValue<std::string>(row.findCell(6));
+
+					auto horizontal_constraint_str = getCellValue<std::string>(row.findCell(7));
+					auto horizontal_constraint_vec = parseVector<float>(horizontal_constraint_str, 2, ',');
+					if (horizontal_constraint_vec.size() >= 2)
+					{
+						config_ptr->horizontal_constraint(0) = horizontal_constraint_vec[0];
+						config_ptr->horizontal_constraint(1) = horizontal_constraint_vec[1];
+					}
+
+					auto vertical_constraint_str = getCellValue<std::string>(row.findCell(8));
+					auto vertical_constraint_vec = parseVector<float>(vertical_constraint_str, 2, ',');
+					if (vertical_constraint_vec.size() >= 2)
+					{
+						config_ptr->vertical_constraint(0) = vertical_constraint_vec[0];
+						config_ptr->vertical_constraint(1) = vertical_constraint_vec[1];
+					}
+
+					const std::string& autopilot_str = getCellValue<std::string>(row.findCell(9));
+					config_ptr->autopilot = autopilotFromString(autopilot_str);
+
+					auto start_date_str = getCellValue<std::string>(row.findCell(10));
+					auto start_date_vec = parseVector<int>(start_date_str, 3, '/');
+					if (start_date_vec.size() >= 3)
+					{
+						config_ptr->start_date.year = start_date_vec[2];
+						config_ptr->start_date.month = start_date_vec[1];
+						config_ptr->start_date.day = start_date_vec[0];
+					}
+
+					auto start_hour_str = getCellValue<std::string>(row.findCell(11));
+					auto start_hour_vec = parseVector<int>(start_hour_str, 3, ':');
+					if (start_hour_vec.size() >= 3)
+					{
+						config_ptr->start_hour.hours = start_hour_vec[0];
+						config_ptr->start_hour.minutes = start_hour_vec[1];
+						config_ptr->start_hour.seconds = start_hour_vec[2];
+					}
+
+					// Only first found mission is loaded
+					return;
+				}
+			}
+			catch (const std::exception& e)
+			{
+				throw std::runtime_error("Error loading mission config at row " + std::to_string(row.rowNumber()) + ": " + e.what());
+			}
+		}
+	}
+
+	void SpreadsheetParser::parseEnvironment(OpenXLSX::XLWorkbook& book, MissionConfigPtr config_ptr)
+	{
+		// Open Environment sheet
+		auto sheet = book.worksheet("Environment");
+
+		// Create environment config
+		EnvironmentConfig environment;
+
+		// Iterate through data rows
+		for (auto& row : sheet.rows())
+		{
+			// Skip first two header rows
+			if (row.rowNumber() < 3)
+				continue;
+
+			try
+			{
+				// Verify row is not empty. If empty, throw error
+				if (isCellEmpty(row.findCell(1)))
+				{
+					throw std::runtime_error("Environment config not found");
+				}
+
+				// Read primary key
+				std::string PK = getCellValue<std::string>(row.findCell(1));
+
+				// Verify if the environment is selected
+				if (PK == config_ptr->environment_id)
+				{
+					// Populate fields
+					environment.id = PK;
+
+					environment.name = getCellValue<std::string>(row.findCell(2));
+
+					auto origin_geopoint_str = getCellValue<std::string>(row.findCell(3));
+					auto origin_geopoint_vec = parseVector<float>(origin_geopoint_str, 3, ',');
+					if (origin_geopoint_vec.size() >= 3)
+					{
+						environment.geopoint.latitude = origin_geopoint_vec[0];
+						environment.geopoint.longitude = origin_geopoint_vec[1];
+						environment.geopoint.altitude = origin_geopoint_vec[2];
+					}
+
+					auto wind_velocity_str = getCellValue<std::string>(row.findCell(4));
+					auto wind_velocity_vec = parseVector<float>(wind_velocity_str, 3, ',');
+					if (wind_velocity_vec.size() >= 3)
+					{
+						environment.wind_vel(0) = wind_velocity_vec[0];
+						environment.wind_vel(1) = wind_velocity_vec[1];
+						environment.wind_vel(2) = wind_velocity_vec[2];
+					}
+
+					// Only first found environment is loaded
+					config_ptr->environment = environment;
+					return;
+				}
+			}
+			catch (const std::exception& e)
+			{
+				throw std::runtime_error("Error loading environment config at row " + std::to_string(row.rowNumber()) + ": " + e.what());
+			}
+		}
+	}
+
+	void SpreadsheetParser::parseTargetGroup(OpenXLSX::XLWorkbook& book, MissionConfigPtr config_ptr)
+	{
+		// Open Target sheet
+		auto sheet = book.worksheet("Target");
+
+		// Iterate through data rows
+		for (auto& row : sheet.rows())
+		{
+			// Skip first two header rows
+			if (row.rowNumber() < 3)
+				continue;
+
+			try
+			{
+				// Verify row is not empty
+				if (isCellEmpty(row.findCell(1)))
+					return; // Return filled target group
+
+				// Read foreign key and verify if the target belongs to the group selected
+				std::string FK = getCellValue<std::string>(row.findCell(3));
+
+				if (FK == config_ptr->target_group_id)
+				{
+					// Create instance
+					TargetConfigPtr target = std::make_shared<TargetConfig>();
+
+					// Populate fields
+					target->id = getCellValue<std::string>(row.findCell(1));
+
+					target->name = getCellValue<std::string>(row.findCell(2));
+
+					target->target_group_id = FK;
+
+					const std::string& target_type_str = getCellValue<std::string>(row.findCell(4));
+					target->type = targetTypeFromString(target_type_str);
+
+					target->count = getCellValue<int>(row.findCell(5));
+
+					const std::string& target_priority_str = getCellValue<std::string>(row.findCell(6));
+					target->priority = priorityFromString(target_priority_str);
+
+					target->trajectory_folder = getCellValue<std::string>(row.findCell(7));
+
+					// Add target count times to the map
+					for (int i = 0; i < target->count; i++)
+					{
+						// Create instance
+						TargetConfigPtr target_unit = std::make_shared<TargetConfig>();
+
+						// Populate ID and the rest of the fields
+						std::stringstream ss;
+						ss << target->id << "COUNT" << std::setw(2) << std::setfill('0') << i;
+						target_unit->id = ss.str();
+						target_unit->name = target->name;
+						target_unit->target_group_id = target->target_group_id;
+						target_unit->target_index = i;
+						target_unit->type = target->type;
+						target_unit->count = target->count;
+						target_unit->priority = target->priority;
+						target_unit->trajectory_folder = target->trajectory_folder;
+
+						// Store setting
+						config_ptr->target_group.insert({ target_unit->id, target_unit });
+					}
+				}
+			}
+			catch (const std::exception& e)
+			{
+				throw std::runtime_error("Error loading target config at row " + std::to_string(row.rowNumber()) + ": " + e.what());
+			}
+		}
+	}
+
+	void SpreadsheetParser::parseAgentTeam(OpenXLSX::XLWorkbook& book, MissionConfigPtr config_ptr)
+	{
+		// Open Agent sheet
+		auto sheet = book.worksheet("Agent");
+
+		// Iterate through data rows
+		for (auto& row : sheet.rows())
+		{
+			// Skip first two header rows
+			if (row.rowNumber() < 3)
+				continue;
+
+			try
+			{
+				// Verify row is not empty
+				if (isCellEmpty(row.findCell(1)))
+					return; // Return filled agent team
+
+				// Read foreign key and verify if the agent belongs to the team selected
+				std::string FK = getCellValue<std::string>(row.findCell(3));
+
+				if (FK == config_ptr->agent_team_id)
+				{
+					// Create instance
+					AgentConfigPtr agent = std::make_shared<AgentConfig>();
+
+					// Populate fields
+					agent->id = getCellValue<std::string>(row.findCell(1));
+
+					agent->name = getCellValue<std::string>(row.findCell(2));
+
+					agent->agent_team_id = FK;
+
+					agent->tracking_id = getCellValue<std::string>(row.findCell(4));
+
+					agent->drone_id = getCellValue<std::string>(row.findCell(5));
+
+					auto position_str = getCellValue<std::string>(row.findCell(6));
+					auto position_vec = parseVector<float>(position_str, 3, ',');
+					if (position_vec.size() >= 3)
+					{
+						agent->position(0) = position_vec[0];
+						agent->position(1) = position_vec[1];
+						agent->position(2) = position_vec[2];
+					}
+
+					auto orientation_str = getCellValue<std::string>(row.findCell(7));
+					auto orientation_vec = parseVector<float>(orientation_str, 3, ',');
+					if (orientation_vec.size() >= 3)
+					{
+						agent->orientation(0) = MathUtils::degToRad(orientation_vec[0]);
+						agent->orientation(1) = MathUtils::degToRad(orientation_vec[1]);
+						agent->orientation(2) = MathUtils::degToRad(orientation_vec[2]);
+					}
+
+					agent->max_altitude = getCellValue<float>(row.findCell(8));
+
+					agent->safety_radius = getCellValue<float>(row.findCell(9));
+
+					agent->battery_capacity = getCellValue<float>(row.findCell(10));
+
+					// Parse tracking
+					parseTracking(book, agent);
+
+					// Parse multi-camera set
+					parseMultiCameraSet(book, agent);
+
+					// Parse multi-window set
+					parseMultiWindowSet(book, agent);
+
+					// Parse drone model
+					parseDroneModel(book, agent);
+
+					// Store setting
+					config_ptr->agent_team.insert({ agent->id, agent });
+				}
+			}
+			catch (const std::exception& e)
+			{
+				throw std::runtime_error("Error loading agent config at row " + std::to_string(row.rowNumber()) + ": " + e.what());
+			}
+		}
+	}
+
+	void SpreadsheetParser::parseTracking(OpenXLSX::XLWorkbook& book, AgentConfigPtr agent_ptr)
+	{
+		// Open Tracking sheet
+		auto sheet = book.worksheet("Tracking");
+
+		// Iterate through data rows
+		for (auto& row : sheet.rows())
+		{
+			// Skip first two header rows
+			if (row.rowNumber() < 3)
+				continue;
+
+			try
+			{
+				// Verify row is not empty. If empty, throw error
+				if (isCellEmpty(row.findCell(1)))
+				{
+					throw std::runtime_error("Tracking config not found");
+				}
+
+				// Read primary key and verify if the tracking is selected
+				std::string PK = getCellValue<std::string>(row.findCell(1));
+
+				if (PK == agent_ptr->tracking_id)
+				{
+					// Create instance
+					TrackingConfig tracking;
+
+					// Populate fields
+					tracking.id = PK;
+
+					tracking.name = getCellValue<std::string>(row.findCell(2));
+
+					tracking.observation_set_id = getCellValue<std::string>(row.findCell(3));
+
+					tracking.min_target_size = getCellValue<float>(row.findCell(4));
+
+					tracking.max_target_size = getCellValue<float>(row.findCell(5));
+
+					tracking.ref_target_size = getCellValue<float>(row.findCell(6));
+
+					// Only first found tracking is loaded
+					agent_ptr->tracking = tracking;
+					return;
+				}
+			}
+			catch (const std::exception& e)
+			{
+				throw std::runtime_error("Error loading tracking config at row " + std::to_string(row.rowNumber()) + ": " + e.what());
+			}
+		}
+	}
+
+	void SpreadsheetParser::parseMultiCameraSet(OpenXLSX::XLWorkbook& book, AgentConfigPtr agent_ptr)
+	{
+		// Open MultiCamera sheet
+		auto sheet = book.worksheet("MultiCamera");
+
+		// Iterate through data rows
+		for (auto& row : sheet.rows())
+		{
+			// Skip first two header rows
+			if (row.rowNumber() < 3)
+				continue;
+
+			try
+			{
+				// Verify row is not empty
+				if (isCellEmpty(row.findCell(1)))
+					return; // Return filled multi-camera set
+
+				// Read foreign key and verify if the multi-camera belongs to the observation set selected
+				std::string FK = getCellValue<std::string>(row.findCell(3));
+
+				if (FK == agent_ptr->tracking.observation_set_id)
+				{
+					// Create instance
+					MultiCameraConfigPtr multi_camera = std::make_shared<MultiCameraConfig>();
+
+					// Populate fields
+					multi_camera->id = getCellValue<std::string>(row.findCell(1));
+
+					multi_camera->name = getCellValue<std::string>(row.findCell(2));
+
+					multi_camera->observation_set_id = FK;
+
+					multi_camera->camera_id = getCellValue<std::string>(row.findCell(4));
+
+					multi_camera->gimbal_id = getCellValue<std::string>(row.findCell(5));
+
+					const std::string& role_str = getCellValue<std::string>(row.findCell(6));
+					multi_camera->role = observationRoleFromString(role_str);
+
+					auto position_str = getCellValue<std::string>(row.findCell(7));
+					auto position_vec = parseVector<float>(position_str, 3, ',');
+					if (position_vec.size() >= 3)
+					{
+						multi_camera->position(0) = position_vec[0];
+						multi_camera->position(1) = position_vec[1];
+						multi_camera->position(2) = position_vec[2];
+					}
+
+					auto orientation_str = getCellValue<std::string>(row.findCell(8));
+					auto orientation_vec = parseVector<float>(orientation_str, 3, ',');
+					if (orientation_vec.size() >= 3)
+					{
+						multi_camera->orientation(0) = MathUtils::degToRad(orientation_vec[0]);
+						multi_camera->orientation(1) = MathUtils::degToRad(orientation_vec[1]);
+						multi_camera->orientation(2) = MathUtils::degToRad(orientation_vec[2]);
+					}
+
+					multi_camera->min_focal = getCellValue<float>(row.findCell(9)) / 1000.0f;
+
+					multi_camera->max_focal = getCellValue<float>(row.findCell(10)) / 1000.0f;
+
+					multi_camera->ref_focal = getCellValue<float>(row.findCell(11)) / 1000.0f;
+
+					// Parse camera model
+					parseCameraModel(book, multi_camera);
+
+					// Parse gimbal model
+					parseGimbalModel(book, multi_camera);
+
+					// Store setting
+					agent_ptr->tracking.multi_camera_set.insert({ multi_camera->id, multi_camera });
+				}
+			}
+			catch (const std::exception& e)
+			{
+				throw std::runtime_error("Error loading multi-camera config at row " + std::to_string(row.rowNumber()) + ": " + e.what());
+			}
+		}
+	}
+
+	void SpreadsheetParser::parseMultiWindowSet(OpenXLSX::XLWorkbook& book, AgentConfigPtr agent_ptr)
+	{
+		// Open MultiWindow sheet
+		auto sheet = book.worksheet("MultiWindow");
+
+		// Iterate through data rows
+		for (auto& row : sheet.rows())
+		{
+			// Skip first two header rows
+			if (row.rowNumber() < 3)
+				continue;
+
+			try
+			{
+				// Verify row is not empty
+				if (isCellEmpty(row.findCell(1)))
+					return; // Return filled multi-window set
+
+				// Read foreign key and verify if the window belongs to the observation set selected
+				std::string FK = getCellValue<std::string>(row.findCell(3));
+
+				if (FK == agent_ptr->tracking.observation_set_id)
+				{
+					// Create instance
+					MultiWindowConfigPtr multi_window = std::make_shared<MultiWindowConfig>();
+
+					// Populate fields
+					multi_window->id = getCellValue<std::string>(row.findCell(1));
+
+					multi_window->name = getCellValue<std::string>(row.findCell(2));
+
+					multi_window->observation_set_id = FK;
+
+					auto resolution_str = getCellValue<std::string>(row.findCell(4));
+					auto resolution_vec = parseVector<int>(resolution_str, 2, 'x');
+					if (resolution_vec.size() >= 2)
+					{
+						multi_window->resolution(0) = resolution_vec[0];
+						multi_window->resolution(1) = resolution_vec[1];
+					}
+
+					multi_window->min_lambda = getCellValue<float>(row.findCell(5));
+
+					multi_window->max_lambda = getCellValue<float>(row.findCell(6));
+
+					multi_window->ref_lambda = getCellValue<float>(row.findCell(7));
+
+					// Store setting
+					agent_ptr->tracking.multi_window_set.insert({ multi_window->id, multi_window });
+				}
+			}
+			catch (const std::exception& e)
+			{
+				throw std::runtime_error("Error loading multi-window config at row " + std::to_string(row.rowNumber()) + ": " + e.what());
+			}
+		}
+	}
+
+	void SpreadsheetParser::parseDroneModel(OpenXLSX::XLWorkbook& book, AgentConfigPtr agent_ptr)
+	{
+		// Open Drone sheet
+		auto sheet = book.worksheet("Drone");
+
+		// Iterate through data rows
+		for (auto& row : sheet.rows())
+		{
+			// Skip first two header rows
+			if (row.rowNumber() < 3)
+				continue;
+
+			try
+			{
+				// Verify row is not empty. If empty, throw error
+				if (isCellEmpty(row.findCell(1)))
+				{
+					throw std::runtime_error("Drone config not found");
+				}
+
+				// Read primary key and verify if the drone model is selected
+				std::string PK = getCellValue<std::string>(row.findCell(1));
+
+				if (PK == agent_ptr->drone_id)
+				{
+					// Create instance
+					DroneConfig drone;
+
+					// Populate fields
+					drone.id = PK;
+
+					drone.name = getCellValue<std::string>(row.findCell(2));
+
+					const std::string& drone_type_str = getCellValue<std::string>(row.findCell(3));
+					drone.type = droneTypeFromString(drone_type_str);
+
+					drone.cruise_speed = getCellValue<float>(row.findCell(4));
+
+					drone.max_speed = getCellValue<float>(row.findCell(5));
+
+					drone.enable_barometer = getCellValue<bool>(row.findCell(6));
+
+					auto barometer_str = getCellValue<std::string>(row.findCell(7));
+					auto barometer_vec = parseVector<float>(barometer_str, 1, ',');
+					if (barometer_vec.size() >= 1)
+					{
+						drone.barometer.white_noise_sigma = barometer_vec[0];
+					}
+
+					drone.enable_imu = getCellValue<bool>(row.findCell(8));
+
+					auto imu_str = getCellValue<std::string>(row.findCell(9));
+					auto imu_vec = parseVector<float>(imu_str, 2, ',');
+					if (imu_vec.size() >= 2)
+					{
+						drone.imu.angular_white_noise_sigma = imu_vec[0];
+						drone.imu.velocity_white_noise_sigma = imu_vec[1];
+					}
+
+					drone.enable_gps = getCellValue<bool>(row.findCell(10));
+
+					auto gps_str = getCellValue<std::string>(row.findCell(11));
+					auto gps_vec = parseVector<float>(gps_str, 4, ',');
+					if (gps_vec.size() >= 4)
+					{
+						drone.gps.eph_initial = gps_vec[0];
+						drone.gps.epv_initial = gps_vec[1];
+						drone.gps.eph_final = gps_vec[2];
+						drone.gps.epv_final = gps_vec[3];
+					}
+
+					drone.enable_magnetometer = getCellValue<bool>(row.findCell(12));
+
+					auto magnetometer_str = getCellValue<std::string>(row.findCell(13));
+					auto magnetometer_vec = parseVector<float>(magnetometer_str, 2, ',');
+					if (magnetometer_vec.size() >= 2)
+					{
+						drone.magnetometer.white_noise_sigma = magnetometer_vec[0];
+						drone.magnetometer.white_noise_bias = magnetometer_vec[1];
+					}
+
+					drone.base_weight = getCellValue<float>(row.findCell(14));
+
+					drone.max_payload_weight = getCellValue<float>(row.findCell(15));
+
+					drone.hover_power = getCellValue<float>(row.findCell(16));
+
+					drone.cruise_power = getCellValue<float>(row.findCell(17));
+
+					drone.load_factor = getCellValue<float>(row.findCell(18));
+
+					// Only first found drone is loaded
+					agent_ptr->drone = drone;
+					return;
+				}
+			}
+			catch (const std::exception& e)
+			{
+				throw std::runtime_error("Error loading drone config at row " + std::to_string(row.rowNumber()) + ": " + e.what());
+			}
+		}
+	}
+
+	void SpreadsheetParser::parseCameraModel(OpenXLSX::XLWorkbook& book, MultiCameraConfigPtr multi_camera_ptr)
+	{
+		// Open Camera sheet
+		auto sheet = book.worksheet("Camera");
+
+		// Iterate through data rows
+		for (auto& row : sheet.rows())
+		{
+			// Skip first two header rows
+			if (row.rowNumber() < 3)
+				continue;
+
+			try
+			{
+				// Verify row is not empty. If empty, throw error
+				if (isCellEmpty(row.findCell(1)))
+				{
+					throw std::runtime_error("Camera config not found");
+				}
+
+				// Read primary key and verify if the camera model is selected
+				std::string PK = getCellValue<std::string>(row.findCell(1));
+
+				if (PK == multi_camera_ptr->camera_id)
+				{
+					// Create instance
+					CameraConfig camera;
+
+					// Populate fields
+					camera.id = PK;
+
+					camera.name = getCellValue<std::string>(row.findCell(2));
+
+					const std::string& type_str = getCellValue<std::string>(row.findCell(3));
+					camera.type = cameraTypeFromString(type_str);
+
+					auto resolution_str = getCellValue<std::string>(row.findCell(4));
+					auto resolution_vec = parseVector<int>(resolution_str, 2, 'x');
+					if (resolution_vec.size() >= 2)
+					{
+						camera.resolution(0) = resolution_vec[0];
+						camera.resolution(1) = resolution_vec[1];
+					}
+
+					auto sensor_size_str = getCellValue<std::string>(row.findCell(5));
+					auto sensor_size_vec = parseVector<float>(sensor_size_str, 2, 'x');
+					if (sensor_size_vec.size() >= 2)
+					{
+						camera.sensor_size(0) = sensor_size_vec[0] / 1000.0f;
+						camera.sensor_size(1) = sensor_size_vec[1] / 1000.0f;
+					}
+
+					auto distortion_str = getCellValue<std::string>(row.findCell(6));
+					auto distortion_vec = parseVector<float>(distortion_str, 5, ',');
+					if (distortion_vec.size() >= 5)
+					{
+						camera.distortion.K1 = distortion_vec[0];
+						camera.distortion.K2 = distortion_vec[1];
+						camera.distortion.K3 = distortion_vec[2];
+						camera.distortion.P1 = distortion_vec[3];
+						camera.distortion.P2 = distortion_vec[4];
+					}
+
+					camera.enable_sensor_noise = getCellValue<bool>(row.findCell(7));
+
+					auto sensor_noise_str = getCellValue<std::string>(row.findCell(8));
+					auto sensor_noise_vec = parseVector<float>(sensor_noise_str, 3, ',');
+					if (sensor_noise_vec.size() >= 3)
+					{
+						camera.sensor_noise.rand_contrib = sensor_noise_vec[0];
+						camera.sensor_noise.rand_size = sensor_noise_vec[1];
+						camera.sensor_noise.rand_speed = sensor_noise_vec[2];
+					}
+
+					camera.weight = getCellValue<float>(row.findCell(9));
+
+					camera.idle_power = getCellValue<float>(row.findCell(10));
+
+					camera.active_power = getCellValue<float>(row.findCell(11));
+
+					// Only first found camera is loaded
+					multi_camera_ptr->camera = camera;
+					return;
+				}
+			}
+			catch (const std::exception& e)
+			{
+				throw std::runtime_error("Error loading camera config at row " + std::to_string(row.rowNumber()) + ": " + e.what());
+			}
+		}
+	}
+
+	void SpreadsheetParser::parseGimbalModel(OpenXLSX::XLWorkbook& book, MultiCameraConfigPtr multi_camera_ptr)
+	{
+		// Open Gimbal sheet
+		auto sheet = book.worksheet("Gimbal");
+
+		// Iterate through data rows
+		for (auto& row : sheet.rows())
+		{
+			// Skip first two header rows
+			if (row.rowNumber() < 3)
+				continue;
+
+			try
+			{
+				// Verify row is not empty. If empty, throw error
+				if (isCellEmpty(row.findCell(1)))
+				{
+					throw std::runtime_error("Gimbal config not found");
+				}
+
+				// Read primary key and verify if the gimbal model is selected
+				std::string PK = getCellValue<std::string>(row.findCell(1));
+
+				if (PK == multi_camera_ptr->gimbal_id)
+				{
+					// Create instance
+					GimbalConfig gimbal;
+
+					// Populate fields
+					gimbal.id = PK;
+
+					gimbal.name = getCellValue<std::string>(row.findCell(2));
+
+					gimbal.enable_roll = getCellValue<bool>(row.findCell(3));
+
+					auto roll_str = getCellValue<std::string>(row.findCell(4));
+					auto roll_vec = parseVector<float>(roll_str, 3, ',');
+					if (roll_vec.size() >= 3)
+					{
+						gimbal.roll.min_angle = roll_vec[0];
+						gimbal.roll.max_angle = roll_vec[1];
+						gimbal.roll.max_speed = roll_vec[2];
+					}
+
+					gimbal.enable_pitch = getCellValue<bool>(row.findCell(5));
+
+					auto pitch_str = getCellValue<std::string>(row.findCell(6));
+					auto pitch_vec = parseVector<float>(pitch_str, 3, ',');
+					if (pitch_vec.size() >= 3)
+					{
+						gimbal.pitch.min_angle = pitch_vec[0];
+						gimbal.pitch.max_angle = pitch_vec[1];
+						gimbal.pitch.max_speed = pitch_vec[2];
+					}
+
+					gimbal.enable_yaw = getCellValue<bool>(row.findCell(7));
+
+					auto yaw_str = getCellValue<std::string>(row.findCell(8));
+					auto yaw_vec = parseVector<float>(yaw_str, 3, ',');
+					if (yaw_vec.size() >= 3)
+					{
+						gimbal.yaw.min_angle = yaw_vec[0];
+						gimbal.yaw.max_angle = yaw_vec[1];
+						gimbal.yaw.max_speed = yaw_vec[2];
+					}
+
+					gimbal.weight = getCellValue<float>(row.findCell(9));
+
+					gimbal.idle_power = getCellValue<float>(row.findCell(10));
+
+					gimbal.active_power = getCellValue<float>(row.findCell(11));
+
+					// Only first found gimbal is loaded
+					multi_camera_ptr->gimbal = gimbal;
+					return;
+				}
+			}
+			catch (const std::exception& e)
+			{
+				throw std::runtime_error("Error loading gimbal config at row " + std::to_string(row.rowNumber()) + ": " + e.what());
+			}
+		}
+	}
+
+} // namespace flychams::bringup

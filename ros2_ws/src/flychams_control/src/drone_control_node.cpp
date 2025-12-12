@@ -4,7 +4,7 @@
 #include "flychams_control/drone/drone_control.hpp"
 
 // Core includes
-#include "flychams_core/base/base_node.hpp"
+#include "flychams_core/base/base_node_with_tools.hpp"
 
 using namespace flychams::core;
 using namespace flychams::control;
@@ -17,11 +17,11 @@ using namespace flychams::control;
  * @date 2025-03-31
  * ════════════════════════════════════════════════════════════════
  */
-class DroneControlNode : public BaseNode
+class DroneControlNode : public BaseNodeWithTools
 {
 public: // Constructor/Destructor
     DroneControlNode(const std::string& node_name, const rclcpp::NodeOptions& options)
-        : BaseNode(node_name, options)
+        : BaseNodeWithTools(node_name, options)
     {
         // Nothing to do
     }

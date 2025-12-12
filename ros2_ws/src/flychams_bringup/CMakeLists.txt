@@ -18,6 +18,9 @@ set(BRINGUP_SRC
   src/registration/target_registration.cpp
   src/registration/cluster_registration.cpp
   src/mavros/mavros_manager.cpp
+  src/settings/mission_settings_creator.cpp
+  src/settings/airsim_settings_creator.cpp
+  src/settings/spreadsheet_parser.cpp
 )
 add_library(${PROJECT_NAME} SHARED ${BRINGUP_SRC})
 target_include_directories(${PROJECT_NAME} PUBLIC
@@ -45,9 +48,10 @@ add_executable(mavros_manager_node src/mavros_manager_node.cpp)
 target_link_libraries(mavros_manager_node ${PROJECT_NAME})
 ament_target_dependencies(mavros_manager_node rclcpp mavros_msgs flychams_core)
 
-# Create executable for settings node
-add_executable(settings_node src/settings_node.cpp)
-ament_target_dependencies(settings_node rclcpp flychams_core)
+# Create executable for settings creator node
+add_executable(settings_creator_node src/settings_creator_node.cpp)
+target_link_libraries(settings_creator_node ${PROJECT_NAME})
+ament_target_dependencies(settings_creator_node rclcpp flychams_core)
 
 # Install targets and headers
 install(TARGETS ${PROJECT_NAME}
@@ -58,7 +62,7 @@ install(TARGETS ${PROJECT_NAME}
   INCLUDES DESTINATION include
 )
 
-install(TARGETS element_registrator_node mavros_manager_node settings_node
+install(TARGETS element_registrator_node mavros_manager_node settings_creator_node
   RUNTIME DESTINATION lib/${PROJECT_NAME}
 )
 

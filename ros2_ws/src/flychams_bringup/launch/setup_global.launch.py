@@ -3,8 +3,15 @@ from launch_ros.actions import Node
 from launch.actions import DeclareLaunchArgument, OpaqueFunction
 from launch.substitutions import PathJoinSubstitution, LaunchConfiguration
 from launch_ros.substitutions import FindPackageShare
+from ament_index_python.packages import get_package_share_directory
 import os
 import yaml
+
+def load_mission_parameters(mission_settings_path):
+    if not os.path.exists(mission_settings_path):
+        return {}
+    
+    return mission_settings_path
 
 def launch_setup(context, *args, **kwargs):
     # Get is_simulated value from LaunchConfiguration
@@ -93,7 +100,15 @@ def launch_setup(context, *args, **kwargs):
     def log_level(node_name: str) -> str:
         return node_log_levels.get(node_name, 'info')
 
-    # Conditionally add Registrator node
+    # Load mission parameters
+    system_file_path = system_path.perform(context).strip()
+    with open(system_file_path, 'r') as f:
+        system_raw = yaml.safe_load(f) or {}
+
+    mission_params_path = load_mission_parameters(system_raw.get('/**').get('ros__parameters').get('path').get('mission_settings_path'))
+    
+    # ============= BRINGUP NODES =============
+    # Conditionally add Element Registrator node
     if is_enabled('element_registrator'):
         ld.append(
             Node(
@@ -107,11 +122,13 @@ def launch_setup(context, *args, **kwargs):
                     system_path, 
                     topics_path,
                     frames_path,
-                    bringup_path
+                    bringup_path,
+                    mission_params_path
                 ]
             )
         )
 
+    # ============= AIRSIM NODES =============
     # Conditionally add AirSim node
     if is_enabled('airsim'):
         ld.append(

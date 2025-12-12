@@ -34,12 +34,12 @@ def generate_launch_description():
     # Generate launch description
     ld = []
 
-    # Add Settings node
+    # Add Settings Creator node
     ld.append(
         Node(
             package='flychams_bringup',
-            executable='settings_node',
-            name='settings_node',
+            executable='settings_creator_node',
+            name='settings_creator_node',
             output='screen',
             namespace='flychams',
             parameters=[

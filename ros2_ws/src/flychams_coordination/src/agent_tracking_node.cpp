@@ -4,7 +4,7 @@
 #include "flychams_coordination/tracking/agent_tracking.hpp"
 
 // Core includes
-#include "flychams_core/base/base_node.hpp"
+#include "flychams_core/base/base_node_with_tools.hpp"
 
 using namespace flychams::core;
 using namespace flychams::coordination;
@@ -18,11 +18,11 @@ using namespace flychams::coordination;
  * @date 2025-02-28
  * ════════════════════════════════════════════════════════════════
  */
-class AgentTrackingNode : public BaseNode
+class AgentTrackingNode : public BaseNodeWithTools
 {
 public: // Constructor/Destructor
     AgentTrackingNode(const std::string& node_name, const rclcpp::NodeOptions& options)
-        : BaseNode(node_name, options)
+        : BaseNodeWithTools(node_name, options)
     {
         // Nothing to do
     }

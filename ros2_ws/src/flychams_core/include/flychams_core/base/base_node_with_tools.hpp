@@ -1,4 +1,10 @@
+
 #pragma once
+
+// Tools includes
+#include "flychams_core/config/config_tools.hpp"
+#include "flychams_core/ros/topic_tools.hpp"
+#include "flychams_core/ros/transform_tools.hpp"
 
 // Core includes
 #include "flychams_core/types/core_types.hpp"
@@ -9,25 +15,25 @@ namespace flychams::core
 {
     /**
      * ════════════════════════════════════════════════════════════════
-     * @brief Base node with common functionality
+     * @brief Base node with common functionality and tools
      * ════════════════════════════════════════════════════════════════
      * @author Jose Francisco Lopez Ruiz
-     * @date 2025-02-28
+     * @date 2025-12-12
      * ════════════════════════════════════════════════════════════════
      */
-    class BaseNode : public rclcpp::Node
+    class BaseNodeWithTools : public rclcpp::Node
     {
     public: // Constructor/Destructor
-        BaseNode(const std::string& node_name, const rclcpp::NodeOptions& options);
+        BaseNodeWithTools(const std::string& node_name, const rclcpp::NodeOptions& options);
         
         void init();
 
-        virtual ~BaseNode();
+        virtual ~BaseNodeWithTools();
 
         void shutdown();
 
     public: // Types
-        using SharedPtr = std::shared_ptr<BaseNode>;
+        using SharedPtr = std::shared_ptr<BaseNodeWithTools>;
 
     protected: // Overridable methods
         virtual void onInit() {}
@@ -40,6 +46,10 @@ namespace flychams::core
         // Callback group
         CallbackGroupPtr node_cb_group_;
         rclcpp::SubscriptionOptions sub_options_with_node_cb_group_;
+        // Tools
+        ConfigTools::SharedPtr config_tools_;
+        TopicTools::SharedPtr topic_tools_;
+        TransformTools::SharedPtr transform_tools_;
     };
 
 } // namespace flychams::core

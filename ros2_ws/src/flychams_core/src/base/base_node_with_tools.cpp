@@ -1,14 +1,14 @@
-#include "flychams_core/base/base_node.hpp"
+#include "flychams_core/base/base_node_with_tools.hpp"
 
 namespace flychams::core
 {
-    BaseNode::BaseNode(const std::string& node_name, const rclcpp::NodeOptions& options)
+    BaseNodeWithTools::BaseNodeWithTools(const std::string& node_name, const rclcpp::NodeOptions& options)
         : Node(node_name, options), node_name_(node_name)
     {
         // Nothing to do
     }
 
-    void BaseNode::init()
+    void BaseNodeWithTools::init()
     {
         // Get node pointer
         node_ = this->shared_from_this();
@@ -18,21 +18,30 @@ namespace flychams::core
         node_cb_group_ = node_->create_callback_group(rclcpp::CallbackGroupType::MutuallyExclusive);
         sub_options_with_node_cb_group_.callback_group = node_cb_group_;
 
+        // Create tools
+        config_tools_ = std::make_shared<ConfigTools>(node_);
+        topic_tools_ = std::make_shared<TopicTools>(node_, config_tools_);
+        transform_tools_ = std::make_shared<TransformTools>(node_, config_tools_);
+
         // Call on init overridable method
         onInit();
         RCLCPP_INFO(node_->get_logger(), "%s node running", node_name_.c_str());
     }
 
-    BaseNode::~BaseNode()
+    BaseNodeWithTools::~BaseNodeWithTools()
     {
         shutdown();
     }
 
-    void BaseNode::shutdown()
+    void BaseNodeWithTools::shutdown()
     {
         RCLCPP_INFO(node_->get_logger(), "Shutting down %s node...", node_name_.c_str());
         // Call on shutdown overridable method
         onShutdown();
+        // Destroy tools
+        config_tools_.reset();
+        topic_tools_.reset();
+        transform_tools_.reset();
     }
 
 } // namespace flychams::core

@@ -1,11 +1,9 @@
 #pragma once
 
-// Config includes
-#include "flychams_core/config/spreadsheet_parser.hpp"
-#include "flychams_core/config/airsim_settings_creator.hpp"
-#include "flychams_core/config/agents_yaml_creator.hpp"
-
 // Core includes
+#include "flychams_core/types/core_types.hpp"
+#include "flychams_core/types/config_types.hpp"
+#include "flychams_core/types/ros_types.hpp"
 #include "flychams_core/utils/math_utils.hpp"
 #include "flychams_core/utils/ros_utils.hpp"
 
@@ -13,12 +11,12 @@ namespace flychams::core
 {
     /**
      * ════════════════════════════════════════════════════════════════
-     * @brief Config Manager for handling configuration parsing and
-     * utilities.
+     * @brief Config Manager for getting configuration parameters from the
+     * ROS2 parameters server.
      *
      * @details
-     * This class provides utilities for managing the configuration of the
-     * FlyChams system.
+     * This class provides utilities for getting configuration parameters
+     * from the ROS2 parameters server.
      * ════════════════════════════════════════════════════════════════
      * @author Jose Francisco Lopez Ruiz
      * @date 2025-02-28
@@ -30,22 +28,25 @@ namespace flychams::core
         ConfigTools(NodePtr node)
             : node_(node)
         {
-            // Parse the configuration spreadsheet
-            const std::string& path = RosUtils::getParameter<std::string>(node_, "path.config_spreadsheet_path");
-            try
-            {
-                RCLCPP_INFO(node_->get_logger(), "Parsing config spreadsheet: %s", path.c_str());
-                config_ptr_ = SpreadsheetParser::parseSpreadsheet(path);
-                RCLCPP_INFO(node_->get_logger(), "Config spreadsheet parsed successfully");
-            }
-            catch (const std::exception& e)
-            {
-                RCLCPP_ERROR(node_->get_logger(), "Error parsing config spreadsheet: %s", e.what());
-                rclcpp::shutdown();
-            }
+            // Initialize config pointer
+            config_ptr_ = std::make_shared<MissionConfig>();
 
-            // Get parameters from node
-            parseParameters(config_ptr_);
+            // Set prefixes for parameters (matching config_parser.cpp)
+            std::string mission_prefix = "mission.";
+            std::string environment_prefix = "environment.";
+            std::string targets_prefix = "targets.";
+            std::string agents_prefix = "agents.";
+
+            // Parse mission parameters from ROS2 parameters server
+            parseMissionParameters(mission_prefix, config_ptr_);
+            parseEnvironmentParameters(environment_prefix, config_ptr_);
+            parseTargetParameters(targets_prefix, config_ptr_);
+            parseAgentParameters(agents_prefix, config_ptr_);
+
+            // Parse system, topics and frames parameters from ROS2 parameters server
+            parseSystemParameters(config_ptr_);
+            parseTopicParameters(config_ptr_);
+            parseFrameParameters(config_ptr_);
         }
 
         ~ConfigTools()
@@ -55,10 +56,7 @@ namespace flychams::core
 
         void shutdown()
         {
-            // Destroy config
-            config_ptr_.reset();
-            // Destroy node
-            node_.reset();
+            // Nothing to do
         }
 
     public: // Types
@@ -70,57 +68,6 @@ namespace flychams::core
 
         // ROS components
         NodePtr node_;
-
-    public: // Settings utilities
-
-        void createAirsimSettings() const
-        {
-            const std::string& path = RosUtils::getParameter<std::string>(node_, "path.airsim_settings_path");
-            if (!AirsimSettingsCreator::createAirsimSettings(config_ptr_, path))
-            {
-                RCLCPP_ERROR(node_->get_logger(), "Failed to create AirSim settings.json at %s", path.c_str());
-                rclcpp::shutdown();
-            }
-            else
-            {
-                RCLCPP_INFO(node_->get_logger(), "AirSim settings.json created successfully at %s", path.c_str());
-            }
-        }
-
-        void createAgentsYaml() const
-        {
-            // Get path from parameters, default to config/agents.yaml if not specified
-            std::string path;
-            try
-            {
-                path = RosUtils::getParameter<std::string>(node_, "path.agents_yaml_path");
-            }
-            catch (const std::exception&)
-            {
-                // Default path relative to config spreadsheet
-                const std::string& spreadsheet_path = RosUtils::getParameter<std::string>(node_, "path.config_spreadsheet_path");
-                // Extract directory path manually
-                size_t last_slash = spreadsheet_path.find_last_of("/\\");
-                if (last_slash != std::string::npos)
-                {
-                    path = spreadsheet_path.substr(0, last_slash + 1) + "agents.yaml";
-                }
-                else
-                {
-                    path = "agents.yaml";
-                }
-            }
-
-            if (!AgentsYamlCreator::createAgentsYaml(config_ptr_, path))
-            {
-                RCLCPP_ERROR(node_->get_logger(), "Failed to create agents.yaml at %s", path.c_str());
-                rclcpp::shutdown();
-            }
-            else
-            {
-                RCLCPP_INFO(node_->get_logger(), "agents.yaml created successfully at %s", path.c_str());
-            }
-        }
 
     public: // Raw getter methods
 
@@ -427,18 +374,291 @@ namespace flychams::core
         }
 
     private: // Parameter parsing
-        void parseParameters(MissionConfigPtr& config_ptr)
+        void parseMissionParameters(const std::string& prefix, MissionConfigPtr& config_ptr)
         {
-            // Parse system, topics and frames parameters
-            parseSystemParameters(config_ptr);
-            parseTopicParameters(config_ptr);
-            parseFrameParameters(config_ptr);
+            config_ptr->id = RosUtils::getParameter<std::string>(node_, prefix + "id");
+            config_ptr->name = RosUtils::getParameter<std::string>(node_, prefix + "name");
+
+            config_ptr->environment_id = RosUtils::getParameter<std::string>(node_, prefix + "environment_id");
+            config_ptr->target_group_id = RosUtils::getParameter<std::string>(node_, prefix + "target_group_id");
+            config_ptr->agent_team_id = RosUtils::getParameter<std::string>(node_, prefix + "agent_team_id"); 
+
+            config_ptr->horizontal_constraint(0) = RosUtils::getParameter<float>(node_, prefix + "horizontal_constraint.min");
+            config_ptr->horizontal_constraint(1) = RosUtils::getParameter<float>(node_, prefix + "horizontal_constraint.max");
+
+            config_ptr->vertical_constraint(0) = RosUtils::getParameter<float>(node_, prefix + "vertical_constraint.min");
+            config_ptr->vertical_constraint(1) = RosUtils::getParameter<float>(node_, prefix + "vertical_constraint.max");
+            
+            const int8_t autopilot_int = RosUtils::getParameter<int8_t>(node_, prefix + "autopilot");
+            config_ptr->autopilot = static_cast<Autopilot>(autopilot_int);
+            
+            config_ptr->start_date.year = RosUtils::getParameter<int64_t>(node_, prefix + "start_date.year");
+            config_ptr->start_date.month = RosUtils::getParameter<int64_t>(node_, prefix + "start_date.month");
+            config_ptr->start_date.day = RosUtils::getParameter<int64_t>(node_, prefix + "start_date.day");
+            
+            config_ptr->start_hour.hours = RosUtils::getParameter<int64_t>(node_, prefix + "start_hour.hours");
+            config_ptr->start_hour.minutes = RosUtils::getParameter<int64_t>(node_, prefix + "start_hour.minutes");
+            config_ptr->start_hour.seconds = RosUtils::getParameter<int64_t>(node_, prefix + "start_hour.seconds");
+        }
+
+        void parseEnvironmentParameters(const std::string& prefix, MissionConfigPtr& config_ptr)
+        {
+            config_ptr->environment.id = RosUtils::getParameter<std::string>(node_, prefix + "id");
+            config_ptr->environment.name = RosUtils::getParameter<std::string>(node_, prefix + "name");
+            
+            config_ptr->environment.geopoint.latitude = RosUtils::getParameter<double>(node_, prefix + "geopoint.latitude");
+            config_ptr->environment.geopoint.longitude = RosUtils::getParameter<double>(node_, prefix + "geopoint.longitude");
+            config_ptr->environment.geopoint.altitude = RosUtils::getParameter<double>(node_, prefix + "geopoint.altitude");
+            
+            config_ptr->environment.wind_vel.x() = RosUtils::getParameter<float>(node_, prefix + "wind_vel.x");
+            config_ptr->environment.wind_vel.y() = RosUtils::getParameter<float>(node_, prefix + "wind_vel.y");
+            config_ptr->environment.wind_vel.z() = RosUtils::getParameter<float>(node_, prefix + "wind_vel.z");
+        }
+
+        void parseTargetParameters(const std::string& prefix, MissionConfigPtr& config_ptr)
+        {
+            // Get target ID list and iterate over them
+            std::vector<std::string> target_ids = RosUtils::getParameter<std::vector<std::string>>(node_, prefix + "id_list");
+            for (const auto& target_id : target_ids)
+            {
+                auto target = std::make_shared<TargetConfig>();
+                target->id = target_id;
+                const std::string target_prefix = prefix + target_id + ".";
+                
+                target->name = RosUtils::getParameter<std::string>(node_, target_prefix + "name");
+                target->target_group_id = RosUtils::getParameter<std::string>(node_, target_prefix + "target_group_id");
+                target->target_index = RosUtils::getParameter<int>(node_, target_prefix + "target_index");
+                
+                const int8_t type_int = RosUtils::getParameter<int8_t>(node_, target_prefix + "type");
+                target->type = static_cast<TargetType>(type_int);
+                
+                target->count = RosUtils::getParameter<int>(node_, target_prefix + "count");
+                
+                const int8_t priority_int = RosUtils::getParameter<int8_t>(node_, target_prefix + "priority");
+                target->priority = static_cast<Priority>(priority_int);
+                
+                target->trajectory_folder = RosUtils::getParameter<std::string>(node_, target_prefix + "trajectory_folder");
+                
+                config_ptr->target_group[target_id] = target;
+            }
+        }
+
+        void parseAgentParameters(const std::string& prefix, MissionConfigPtr& config_ptr)
+        {
+            // Get agent ID list and iterate over them
+            std::vector<std::string> agent_ids = RosUtils::getParameter<std::vector<std::string>>(node_, prefix + "id_list");
+            for (const auto& agent_id : agent_ids)
+            {
+                auto agent = std::make_shared<AgentConfig>();
+                agent->id = agent_id;
+                const std::string agent_prefix = prefix + agent_id + ".";
+                
+                agent->name = RosUtils::getParameter<std::string>(node_, agent_prefix + "name");
+                agent->agent_team_id = RosUtils::getParameter<std::string>(node_, agent_prefix + "agent_team_id");
+                agent->tracking_id = RosUtils::getParameter<std::string>(node_, agent_prefix + "tracking_id");
+                agent->drone_id = RosUtils::getParameter<std::string>(node_, agent_prefix + "drone_id");
+                
+                // Parse position (x, y, z)
+                agent->position.x() = RosUtils::getParameter<double>(node_, agent_prefix + "position.x");
+                agent->position.y() = RosUtils::getParameter<double>(node_, agent_prefix + "position.y");
+                agent->position.z() = RosUtils::getParameter<double>(node_, agent_prefix + "position.z");
+                
+                // Parse orientation (roll, pitch, yaw)
+                agent->orientation.x() = RosUtils::getParameter<double>(node_, agent_prefix + "orientation.roll");
+                agent->orientation.y() = RosUtils::getParameter<double>(node_, agent_prefix + "orientation.pitch");
+                agent->orientation.z() = RosUtils::getParameter<double>(node_, agent_prefix + "orientation.yaw");
+                
+                agent->safety_radius = RosUtils::getParameter<float>(node_, agent_prefix + "safety_radius");
+                agent->max_altitude = RosUtils::getParameter<float>(node_, agent_prefix + "max_altitude");
+                agent->battery_capacity = RosUtils::getParameter<float>(node_, agent_prefix + "battery_capacity");
+                
+                parseTrackingParameters(agent, agent_prefix + "tracking.");
+                parseDroneParameters(agent, agent_prefix + "drone.");
+                
+                config_ptr->agent_team[agent_id] = agent;
+            }
+        }
+
+        void parseTrackingParameters(AgentConfigPtr& agent, const std::string& prefix)
+        {
+            agent->tracking.id = RosUtils::getParameter<std::string>(node_, prefix + "id");
+            agent->tracking.name = RosUtils::getParameter<std::string>(node_, prefix + "name");
+            agent->tracking.observation_set_id = RosUtils::getParameter<std::string>(node_, prefix + "observation_set_id");
+            agent->tracking.min_target_size = RosUtils::getParameter<float>(node_, prefix + "min_target_size");
+            agent->tracking.max_target_size = RosUtils::getParameter<float>(node_, prefix + "max_target_size");
+            agent->tracking.ref_target_size = RosUtils::getParameter<float>(node_, prefix + "ref_target_size");
+            
+            // Get multi camera ID list and iterate over them
+            std::vector<std::string> multi_camera_ids = RosUtils::getParameter<std::vector<std::string>>(node_, prefix + "multi_cameras.ids");
+            for (const auto& multi_camera_id : multi_camera_ids)
+            {
+                auto multi_camera = std::make_shared<MultiCameraConfig>();
+                multi_camera->id = multi_camera_id;
+                parseMultiCameraParameters(multi_camera, prefix + "multi_cameras." + multi_camera_id + ".");
+                agent->tracking.multi_camera_set[multi_camera_id] = multi_camera;
+            }
+            
+            // Get multi window ID list and iterate over them
+            std::vector<std::string> multi_window_ids = RosUtils::getParameter<std::vector<std::string>>(node_, prefix + "multi_windows.ids");
+            for (const auto& multi_window_id : multi_window_ids)
+            {
+                auto multi_window = std::make_shared<MultiWindowConfig>();
+                multi_window->id = multi_window_id;
+                parseMultiWindowParameters(multi_window, prefix + "multi_windows." + multi_window_id + ".");
+                agent->tracking.multi_window_set[multi_window_id] = multi_window;
+            }
+        }
+
+        void parseMultiCameraParameters(MultiCameraConfigPtr& multi_camera, const std::string& prefix)
+        {
+            multi_camera->name = RosUtils::getParameter<std::string>(node_, prefix + "name");
+            multi_camera->observation_set_id = RosUtils::getParameter<std::string>(node_, prefix + "observation_set_id");
+            multi_camera->camera_id = RosUtils::getParameter<std::string>(node_, prefix + "camera_id");
+            multi_camera->gimbal_id = RosUtils::getParameter<std::string>(node_, prefix + "gimbal_id");
+            
+            const int8_t role_int = RosUtils::getParameter<int8_t>(node_, prefix + "role");
+            multi_camera->role = static_cast<ObservationRole>(role_int);
+            
+            // Parse position (x, y, z)
+            multi_camera->position.x() = RosUtils::getParameter<double>(node_, prefix + "position.x");
+            multi_camera->position.y() = RosUtils::getParameter<double>(node_, prefix + "position.y");
+            multi_camera->position.z() = RosUtils::getParameter<double>(node_, prefix + "position.z");
+            
+            // Parse orientation (roll, pitch, yaw)
+            multi_camera->orientation.x() = RosUtils::getParameter<double>(node_, prefix + "orientation.roll");
+            multi_camera->orientation.y() = RosUtils::getParameter<double>(node_, prefix + "orientation.pitch");
+            multi_camera->orientation.z() = RosUtils::getParameter<double>(node_, prefix + "orientation.yaw");
+            
+            multi_camera->min_focal = RosUtils::getParameter<float>(node_, prefix + "min_focal");
+            multi_camera->max_focal = RosUtils::getParameter<float>(node_, prefix + "max_focal");
+            multi_camera->ref_focal = RosUtils::getParameter<float>(node_, prefix + "ref_focal");
+            
+            parseCameraParameters(multi_camera, prefix + "camera.");
+            parseGimbalParameters(multi_camera, prefix + "gimbal.");
+        }
+
+        void parseMultiWindowParameters(MultiWindowConfigPtr& multi_window, const std::string& prefix)
+        {
+            multi_window->name = RosUtils::getParameter<std::string>(node_, prefix + "name");
+            multi_window->observation_set_id = RosUtils::getParameter<std::string>(node_, prefix + "observation_set_id");
+            
+            // Parse resolution (width, height)
+            multi_window->resolution(0) = RosUtils::getParameter<int64_t>(node_, prefix + "resolution.width");
+            multi_window->resolution(1) = RosUtils::getParameter<int64_t>(node_, prefix + "resolution.height");
+            
+            multi_window->min_lambda = RosUtils::getParameter<float>(node_, prefix + "min_lambda");
+            multi_window->max_lambda = RosUtils::getParameter<float>(node_, prefix + "max_lambda");
+            multi_window->ref_lambda = RosUtils::getParameter<float>(node_, prefix + "ref_lambda");
+        }
+
+        void parseCameraParameters(MultiCameraConfigPtr& multi_camera, const std::string& prefix)
+        {
+            multi_camera->camera.id = RosUtils::getParameter<std::string>(node_, prefix + "id");
+            multi_camera->camera.name = RosUtils::getParameter<std::string>(node_, prefix + "name");
+            
+            const int8_t type_int = RosUtils::getParameter<int8_t>(node_, prefix + "type");
+            multi_camera->camera.type = static_cast<CameraType>(type_int);
+            
+            // Parse resolution (width, height)
+            multi_camera->camera.resolution(0) = RosUtils::getParameter<int64_t>(node_, prefix + "resolution.width");
+            multi_camera->camera.resolution(1) = RosUtils::getParameter<int64_t>(node_, prefix + "resolution.height");
+            
+            // Parse sensor_size (width, height)
+            multi_camera->camera.sensor_size(0) = RosUtils::getParameter<double>(node_, prefix + "sensor_size.width");
+            multi_camera->camera.sensor_size(1) = RosUtils::getParameter<double>(node_, prefix + "sensor_size.height");
+            
+            // Parse distortion (K1, K2, K3, P1, P2)
+            multi_camera->camera.distortion.K1 = RosUtils::getParameter<double>(node_, prefix + "distortion.K1");
+            multi_camera->camera.distortion.K2 = RosUtils::getParameter<double>(node_, prefix + "distortion.K2");
+            multi_camera->camera.distortion.K3 = RosUtils::getParameter<double>(node_, prefix + "distortion.K3");
+            multi_camera->camera.distortion.P1 = RosUtils::getParameter<double>(node_, prefix + "distortion.P1");
+            multi_camera->camera.distortion.P2 = RosUtils::getParameter<double>(node_, prefix + "distortion.P2");
+            
+            multi_camera->camera.enable_sensor_noise = RosUtils::getParameter<bool>(node_, prefix + "enable_sensor_noise");
+            
+            // Parse sensor_noise (rand_contrib, rand_size, rand_speed)
+            multi_camera->camera.sensor_noise.rand_contrib = RosUtils::getParameter<double>(node_, prefix + "sensor_noise.rand_contrib");
+            multi_camera->camera.sensor_noise.rand_size = RosUtils::getParameter<double>(node_, prefix + "sensor_noise.rand_size");
+            multi_camera->camera.sensor_noise.rand_speed = RosUtils::getParameter<double>(node_, prefix + "sensor_noise.rand_speed");
+            
+            multi_camera->camera.weight = RosUtils::getParameter<float>(node_, prefix + "weight");
+            multi_camera->camera.idle_power = RosUtils::getParameter<float>(node_, prefix + "idle_power");
+            multi_camera->camera.active_power = RosUtils::getParameter<float>(node_, prefix + "active_power");
+        }
+
+        void parseGimbalParameters(MultiCameraConfigPtr& multi_camera, const std::string& prefix)
+        {
+            multi_camera->gimbal.id = RosUtils::getParameter<std::string>(node_, prefix + "id");
+            multi_camera->gimbal.name = RosUtils::getParameter<std::string>(node_, prefix + "name");
+            multi_camera->gimbal.enable_roll = RosUtils::getParameter<bool>(node_, prefix + "enable_roll");
+            
+            // Parse roll (min_angle, max_angle, max_speed)
+            multi_camera->gimbal.roll.min_angle = RosUtils::getParameter<double>(node_, prefix + "roll.min_angle");
+            multi_camera->gimbal.roll.max_angle = RosUtils::getParameter<double>(node_, prefix + "roll.max_angle");
+            multi_camera->gimbal.roll.max_speed = RosUtils::getParameter<double>(node_, prefix + "roll.max_speed");
+            
+            multi_camera->gimbal.enable_pitch = RosUtils::getParameter<bool>(node_, prefix + "enable_pitch");
+            
+            // Parse pitch (min_angle, max_angle, max_speed)
+            multi_camera->gimbal.pitch.min_angle = RosUtils::getParameter<double>(node_, prefix + "pitch.min_angle");
+            multi_camera->gimbal.pitch.max_angle = RosUtils::getParameter<double>(node_, prefix + "pitch.max_angle");
+            multi_camera->gimbal.pitch.max_speed = RosUtils::getParameter<double>(node_, prefix + "pitch.max_speed");
+            
+            multi_camera->gimbal.enable_yaw = RosUtils::getParameter<bool>(node_, prefix + "enable_yaw");
+            
+            // Parse yaw (min_angle, max_angle, max_speed)
+            multi_camera->gimbal.yaw.min_angle = RosUtils::getParameter<double>(node_, prefix + "yaw.min_angle");
+            multi_camera->gimbal.yaw.max_angle = RosUtils::getParameter<double>(node_, prefix + "yaw.max_angle");
+            multi_camera->gimbal.yaw.max_speed = RosUtils::getParameter<double>(node_, prefix + "yaw.max_speed");
+            
+            multi_camera->gimbal.weight = RosUtils::getParameter<float>(node_, prefix + "weight");
+            multi_camera->gimbal.idle_power = RosUtils::getParameter<float>(node_, prefix + "idle_power");
+            multi_camera->gimbal.active_power = RosUtils::getParameter<float>(node_, prefix + "active_power");
+        }
+
+        void parseDroneParameters(AgentConfigPtr& agent, const std::string& prefix)
+        {
+            agent->drone.id = RosUtils::getParameter<std::string>(node_, prefix + "id");
+            agent->drone.name = RosUtils::getParameter<std::string>(node_, prefix + "name");
+            
+            const int8_t type_int = RosUtils::getParameter<int8_t>(node_, prefix + "type");
+            agent->drone.type = static_cast<DroneType>(type_int);
+            
+            agent->drone.cruise_speed = RosUtils::getParameter<float>(node_, prefix + "cruise_speed");
+            agent->drone.max_speed = RosUtils::getParameter<float>(node_, prefix + "max_speed");
+            
+            agent->drone.enable_barometer = RosUtils::getParameter<bool>(node_, prefix + "enable_barometer");
+            // Parse barometer (white_noise_sigma)
+            agent->drone.barometer.white_noise_sigma = RosUtils::getParameter<double>(node_, prefix + "barometer.white_noise_sigma");
+            
+            agent->drone.enable_imu = RosUtils::getParameter<bool>(node_, prefix + "enable_imu");
+            // Parse imu (angular_white_noise_sigma, velocity_white_noise_sigma)
+            agent->drone.imu.angular_white_noise_sigma = RosUtils::getParameter<double>(node_, prefix + "imu.angular_white_noise_sigma");
+            agent->drone.imu.velocity_white_noise_sigma = RosUtils::getParameter<double>(node_, prefix + "imu.velocity_white_noise_sigma");
+            
+            agent->drone.enable_gps = RosUtils::getParameter<bool>(node_, prefix + "enable_gps");
+            // Parse gps (eph_initial, epv_initial, eph_final, epv_final)
+            agent->drone.gps.eph_initial = RosUtils::getParameter<double>(node_, prefix + "gps.eph_initial");
+            agent->drone.gps.epv_initial = RosUtils::getParameter<double>(node_, prefix + "gps.epv_initial");
+            agent->drone.gps.eph_final = RosUtils::getParameter<double>(node_, prefix + "gps.eph_final");
+            agent->drone.gps.epv_final = RosUtils::getParameter<double>(node_, prefix + "gps.epv_final");
+            
+            agent->drone.enable_magnetometer = RosUtils::getParameter<bool>(node_, prefix + "enable_magnetometer");
+            // Parse magnetometer (white_noise_sigma, white_noise_bias)
+            agent->drone.magnetometer.white_noise_sigma = RosUtils::getParameter<double>(node_, prefix + "magnetometer.white_noise_sigma");
+            agent->drone.magnetometer.white_noise_bias = RosUtils::getParameter<double>(node_, prefix + "magnetometer.white_noise_bias");
+            
+            agent->drone.base_weight = RosUtils::getParameter<float>(node_, prefix + "base_weight");
+            agent->drone.max_payload_weight = RosUtils::getParameter<float>(node_, prefix + "max_payload_weight");
+            agent->drone.hover_power = RosUtils::getParameter<float>(node_, prefix + "hover_power");
+            agent->drone.cruise_power = RosUtils::getParameter<float>(node_, prefix + "cruise_power");
+            agent->drone.load_factor = RosUtils::getParameter<float>(node_, prefix + "load_factor");
         }
 
         void parseSystemParameters(MissionConfigPtr& config_ptr)
         {
             // Simulation settings
-            const std::string& simulation_framework_str = RosUtils::getParameter<std::string>(node_, "simulation.framework");
+            const std::string simulation_framework_str = RosUtils::getParameter<std::string>(node_, "simulation.framework");
             config_ptr->system.simulation_framework = simulationFrameworkFromString(simulation_framework_str);
             config_ptr->system.clock_speed = RosUtils::getParameter<float>(node_, "simulation.clock_speed");
 
