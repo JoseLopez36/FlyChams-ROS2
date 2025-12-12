@@ -1,0 +1,74 @@
+# Agents configuration for mission launch
+# Generated automatically from configuration spreadsheet
+# Mission ID: MISSION01
+# Mission Name: Single-Agent Test (Multi-Window)
+# Agent Team ID: TEAM01
+
+agents:
+  - id: AGENT01
+    name: "Multi-Window Agent (Single)"
+    agent_team_id: TEAM01
+    tracking_id: TRACKING01
+    drone_id: DRONE00
+    position:
+      x: 10.000
+      y: -2.500
+      z: 0.000
+    orientation:
+      roll: 0.000
+      pitch: 0.000
+      yaw: 0.000
+    max_altitude: 300.00
+    safety_radius: 3.00
+    battery_capacity: 12000.00
+    # SSH configuration for hardware mode (optional)
+    # Uncomment and configure when deploying to Jetson devices
+    # ssh:
+    #   user: "jetson"             # SSH username (default: "jetson")
+    #   hostname: "192.168.1.100"  # IP address or hostname of Jetson
+
+# Example for hardware mode with multiple agents:
+# agents:
+#   - id: AGENT01
+#     name: "Agent 1"
+#     agent_team_id: TEAM01
+#     tracking_id: TRACKING01
+#     drone_id: DRONE01
+#     position:
+#       x: 10.000
+#       y: -2.500
+#       z: 0.000
+#     orientation:
+#       roll: 0.000
+#       pitch: 0.000
+#       yaw: 0.000
+#     max_altitude: 300.00
+#     safety_radius: 3.00
+#     battery_capacity: 12000.00
+#     ssh:
+#       hostname: "192.168.1.100"
+#       user: "jetson"
+#       ssh_key: "~/.ssh/id_rsa"
+#   - id: AGENT02
+#     name: "Agent 2"
+#     agent_team_id: TEAM01
+#     tracking_id: TRACKING02
+#     drone_id: DRONE02
+#     position:
+#       x: 15.000
+#       y: -2.500
+#       z: 0.000
+#     orientation:
+#       roll: 0.000
+#       pitch: 0.000
+#       yaw: 0.000
+#     max_altitude: 300.00
+#     safety_radius: 3.00
+#     battery_capacity: 12000.00
+#     ssh:
+#       hostname: "192.168.1.101"
+#       user: "jetson"
+
+# Summary
+total_agents: 1
+
