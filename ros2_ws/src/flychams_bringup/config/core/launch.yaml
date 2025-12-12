@@ -1,39 +1,55 @@
-# Node launch configuration
-# Set to [enable, log_level]
-# Enable: true launches the node, false does not
-# Log levels: debug, info, warn, error, fatal
+# Node launch configuration:
+# - node_allowlist allows only the listed nodes to be launched
+# - node_log_levels overrides per-node log level; default is 'info'
 
-# ------------------- GLOBAL SETUP NODES -------------------\
-# Element registrator node
-element_registrator: [false, 'info']
-# AirSim node
-airsim: [true, 'error']
+# Node allowlist: Only launch these nodes
+node_allowlist:
+  # Global setup nodes
+  - element_registrator
+  - airsim
+  # Agent setup nodes
+  - mavros_manager
+  # Global runtime nodes
+  - target_clustering
+  - cluster_analysis
+  - agent_assignment
+  - agent_analysis
+  - gui_manager
+  - metrics_factory
+  - marker_factory
+  - target_state
+  - target_control
+  # Agent runtime nodes
+  - drone_frames
+  - drone_state
+  - drone_control
+  - camera_frames
+  - camera_control
+  - agent_positioning
+  - agent_tracking
 
-# ------------------- AGENT SETUP NODES -------------------
-# MavROS manager node
-mavros_manager: [true, 'info']
-
-# ------------------- GLOBAL RUN NODES -------------------
-# Perception nodes
-target_clustering: [false, 'error']
-cluster_analysis: [false, 'error']
-# Coordination nodes
-agent_assignment: [false, 'error']
-agent_analysis: [false, 'error']
-# Simulation nodes
-gui_manager: [false, 'error']
-metrics_factory: [false, 'error']
-marker_factory: [false, 'error']
-target_state: [false, 'error']
-target_control: [false, 'error']
-
-# ------------------- AGENT RUN NODES -------------------
-# Control nodes
-drone_frames: [false, 'error']
-drone_state: [false, 'error']
-drone_control: [false, 'error']
-camera_frames: [false, 'error']
-camera_control: [false, 'error']
-# Coordination nodes
-agent_positioning: [false, 'error']
-agent_tracking: [false, 'error']
+# Per-node log level overrides
+node_log_levels:
+  # Global setup nodes
+  element_registrator: info
+  airsim: info
+  # Agent setup nodes
+  mavros_manager: info
+  # Global runtime nodes
+  target_clustering: info
+  cluster_analysis: info
+  agent_assignment: info
+  agent_analysis: info
+  gui_manager: info
+  metrics_factory: info
+  marker_factory: info
+  target_state: info
+  target_control: info
+  # Agent runtime nodes
+  drone_frames: info
+  drone_state: info
+  drone_control: info
+  camera_frames: info
+  camera_control: info
+  agent_positioning: info
+  agent_tracking: info

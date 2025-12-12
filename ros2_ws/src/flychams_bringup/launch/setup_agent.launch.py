@@ -96,19 +96,22 @@ def launch_setup(context, *args, **kwargs):
     ld = []
 
     # Load the nodes configuration YAML file
-    # Convert from PathJoinSubstitution to path string and load the file
     launch_file_path = launch_path.perform(context).strip()
     with open(launch_file_path, 'r') as f:
-        launch = yaml.safe_load(f)
+        launch_raw = yaml.safe_load(f) or {}
 
-    # Get the node activation settings from config
-    nodes = {
-        # Agent setup nodes
-        'mavros_manager': launch.get('mavros_manager', [True, 'info'])
-    }
+    # Get parameters from the launch file
+    node_allowlist = launch_raw.get('node_allowlist', [])
+    node_log_levels = launch_raw.get('node_log_levels', {})
+
+    def is_enabled(node_name: str) -> bool:
+        return node_name in node_allowlist
+
+    def log_level(node_name: str) -> str:
+        return node_log_levels.get(node_name, 'info')
 
     # Conditionally add MavROS Manager node
-    if nodes['mavros_manager'][0]:
+    if is_enabled('mavros_manager'):
         ld.append(
             Node(
                 package='flychams_bringup',
@@ -116,7 +119,7 @@ def launch_setup(context, *args, **kwargs):
                 name='mavros_manager_node',
                 output='screen' if is_simulated else 'log',
                 namespace='flychams/' + agent_id,
-                arguments=['--ros-args', '--log-level', nodes['mavros_manager'][1]],
+                arguments=['--ros-args', '--log-level', log_level('mavros_manager')],
                 parameters=[
                     system_path,
                     topics_path,

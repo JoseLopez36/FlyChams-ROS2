@@ -80,27 +80,23 @@ def launch_setup(context, *args, **kwargs):
     ld = []
 
     # Load the nodes configuration YAML file
-    # Convert from PathJoinSubstitution to path string and load the file
     launch_file_path = launch_path.perform(context).strip()
     with open(launch_file_path, 'r') as f:
-        launch = yaml.safe_load(f)
-    
-    # Get the node activation settings from config
-    nodes = {
-        # Control nodes (Agent)
-        'drone_frames': launch.get('drone_frames', [True, 'info']),
-        'drone_state': launch.get('drone_state', [True, 'info']),
-        'drone_control': launch.get('drone_control', [True, 'info']),
-        'camera_frames': launch.get('camera_frames', [True, 'info']),
-        'camera_control': launch.get('camera_control', [True, 'info']),
-        # Coordination nodes (Agent)
-        'agent_positioning': launch.get('agent_positioning', [True, 'info']),
-        'agent_tracking': launch.get('agent_tracking', [True, 'info']),
-    }
+        launch_raw = yaml.safe_load(f) or {}
+
+    # Get parameters from the launch file
+    node_allowlist = launch_raw.get('node_allowlist', [])
+    node_log_levels = launch_raw.get('node_log_levels', {})
+
+    def is_enabled(node_name: str) -> bool:
+        return node_name in node_allowlist
+
+    def log_level(node_name: str) -> str:
+        return node_log_levels.get(node_name, 'info')
 
     # ============= CONTROL NODES =============
     # Conditionally add Drone Frames node
-    if nodes['drone_frames'][0]:
+    if is_enabled('drone_frames'):
         ld.append(
             Node(
                 package='flychams_control',
@@ -108,7 +104,7 @@ def launch_setup(context, *args, **kwargs):
                 name='drone_frames_node',
                 output='screen' if is_simulated else 'log',
                 namespace='flychams/' + agent_id,
-                arguments=['--ros-args', '--log-level', nodes['drone_frames'][1]],
+                arguments=['--ros-args', '--log-level', log_level('drone_frames')],
                 parameters=[
                     system_path, 
                     topics_path, 
@@ -121,7 +117,7 @@ def launch_setup(context, *args, **kwargs):
         )
 
     # Conditionally add Drone State node
-    if nodes['drone_state'][0]:
+    if is_enabled('drone_state'):
         ld.append(
             Node(
                 package='flychams_control',
@@ -129,7 +125,7 @@ def launch_setup(context, *args, **kwargs):
                 name='drone_state_node',
                 output='screen' if is_simulated else 'log',
                 namespace='flychams/' + agent_id,
-                arguments=['--ros-args', '--log-level', nodes['drone_state'][1]],
+                arguments=['--ros-args', '--log-level', log_level('drone_state')],
                 parameters=[
                     system_path, 
                     topics_path, 
@@ -142,7 +138,7 @@ def launch_setup(context, *args, **kwargs):
         )
         
     # Conditionally add Drone Control node
-    if nodes['drone_control'][0]:
+    if is_enabled('drone_control'):
         ld.append(
             Node(
                 package='flychams_control',
@@ -150,7 +146,7 @@ def launch_setup(context, *args, **kwargs):
                 name='drone_control_node',
                 output='screen' if is_simulated else 'log',
                 namespace='flychams/' + agent_id,
-                arguments=['--ros-args', '--log-level', nodes['drone_control'][1]],
+                arguments=['--ros-args', '--log-level', log_level('drone_control')],
                 parameters=[
                     system_path, 
                     topics_path, 
@@ -163,7 +159,7 @@ def launch_setup(context, *args, **kwargs):
         )
 
     # Conditionally add Camera Frames node
-    if nodes['camera_frames'][0]:
+    if is_enabled('camera_frames'):
         ld.append(
             Node(
                 package='flychams_control',
@@ -171,7 +167,7 @@ def launch_setup(context, *args, **kwargs):
                 name='camera_frames_node',
                 output='screen' if is_simulated else 'log',
                 namespace='flychams/' + agent_id,
-                arguments=['--ros-args', '--log-level', nodes['camera_frames'][1]],
+                arguments=['--ros-args', '--log-level', log_level('camera_frames')],
                 parameters=[
                     system_path, 
                     topics_path, 
@@ -184,7 +180,7 @@ def launch_setup(context, *args, **kwargs):
         )
         
     # Conditionally add Camera Control node
-    if nodes['camera_control'][0]:
+    if is_enabled('camera_control'):
         ld.append(
             Node(
                 package='flychams_control',
@@ -192,7 +188,7 @@ def launch_setup(context, *args, **kwargs):
                 name='camera_control_node',
                 output='screen' if is_simulated else 'log',
                 namespace='flychams/' + agent_id,
-                arguments=['--ros-args', '--log-level', nodes['camera_control'][1]],
+                arguments=['--ros-args', '--log-level', log_level('camera_control')],
                 parameters=[
                     system_path, 
                     topics_path, 
@@ -206,7 +202,7 @@ def launch_setup(context, *args, **kwargs):
 
     # ============= COORDINATION NODES =============
     # Conditionally add Agent Positioning node
-    if nodes['agent_positioning'][0]:
+    if is_enabled('agent_positioning'):
         ld.append(
             Node(
                 package='flychams_coordination',
@@ -214,7 +210,7 @@ def launch_setup(context, *args, **kwargs):
                 name='agent_positioning_node',
                 output='screen' if is_simulated else 'log',
                 namespace='flychams/' + agent_id,
-                arguments=['--ros-args', '--log-level', nodes['agent_positioning'][1]],
+                arguments=['--ros-args', '--log-level', log_level('agent_positioning')],
                 parameters=[
                     system_path, 
                     topics_path, 
@@ -227,7 +223,7 @@ def launch_setup(context, *args, **kwargs):
         )
 
     # Conditionally add Agent Tracking node
-    if nodes['agent_tracking'][0]:
+    if is_enabled('agent_tracking'):
         ld.append(
             Node(
                 package='flychams_coordination',
@@ -235,7 +231,7 @@ def launch_setup(context, *args, **kwargs):
                 name='agent_tracking_node',
                 output='screen' if is_simulated else 'log',
                 namespace='flychams/' + agent_id,
-                arguments=['--ros-args', '--log-level', nodes['agent_tracking'][1]],
+                arguments=['--ros-args', '--log-level', log_level('agent_tracking')],
                 parameters=[
                     system_path, 
                     topics_path, 

@@ -79,20 +79,22 @@ def launch_setup(context, *args, **kwargs):
     ld = []
 
     # Load the nodes configuration YAML file
-    # Convert from PathJoinSubstitution to path string and load the file
     launch_file_path = launch_path.perform(context).strip()
     with open(launch_file_path, 'r') as f:
-        launch = yaml.safe_load(f)
+        launch_raw = yaml.safe_load(f) or {}
 
-    # Get the node activation settings from config
-    nodes = {
-        # Global setup nodes
-        'element_registrator': launch.get('element_registrator', [True, 'info']),
-        'airsim': launch.get('airsim', [True, 'info'])
-    }
+    # Get parameters from the launch file
+    node_allowlist = launch_raw.get('node_allowlist', [])
+    node_log_levels = launch_raw.get('node_log_levels', {})
+
+    def is_enabled(node_name: str) -> bool:
+        return node_name in node_allowlist
+
+    def log_level(node_name: str) -> str:
+        return node_log_levels.get(node_name, 'info')
 
     # Conditionally add Registrator node
-    if nodes['element_registrator'][0]:
+    if is_enabled('element_registrator'):
         ld.append(
             Node(
                 package='flychams_bringup',
@@ -100,7 +102,7 @@ def launch_setup(context, *args, **kwargs):
                 name='element_registrator_node',
                 output='screen',
                 namespace='flychams/global',
-                arguments=['--ros-args', '--log-level', nodes['element_registrator'][1]],
+                arguments=['--ros-args', '--log-level', log_level('element_registrator')],
                 parameters=[
                     system_path, 
                     topics_path,
@@ -111,7 +113,7 @@ def launch_setup(context, *args, **kwargs):
         )
 
     # Conditionally add AirSim node
-    if nodes['airsim'][0]:
+    if is_enabled('airsim'):
         ld.append(
             Node(
                 package='airsim_wrapper',
@@ -119,7 +121,7 @@ def launch_setup(context, *args, **kwargs):
                 name='airsim_node',
                 output='screen',
                 namespace='airsim',
-                arguments=['--ros-args', '--log-level', nodes['airsim'][1]],
+                arguments=['--ros-args', '--log-level', log_level('airsim')],
                 parameters=[{
                     'update_airsim_state_every_n_sec': 0.020,
                     'update_sim_clock_every_n_sec': 0.001,

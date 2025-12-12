@@ -79,32 +79,23 @@ def launch_setup(context, *args, **kwargs):
     ld = []
 
     # Load the nodes configuration YAML file
-    # Convert from PathJoinSubstitution to path string and load the file
     launch_file_path = launch_path.perform(context).strip()
     with open(launch_file_path, 'r') as f:
-        launch = yaml.safe_load(f)
-    
-    # Get the node activation settings from config
-    nodes = {
-        # Perception nodes (Global)
-        'target_clustering': launch.get('target_clustering', [True, 'info']),
-        'cluster_analysis': launch.get('cluster_analysis', [True, 'info']),
-        # Coordination nodes (Global)
-        'agent_assignment': launch.get('agent_assignment', [True, 'info']),
-        'agent_analysis': launch.get('agent_analysis', [True, 'info']),
-        # Simulation nodes (Global)
-        'gui_manager': launch.get('gui_manager', [True, 'info']),
-        'metrics_factory': launch.get('metrics_factory', [True, 'info']),
-        'marker_factory': launch.get('marker_factory', [True, 'info']),
-        'target_state': launch.get('target_state', [True, 'info']),
-        'target_control': launch.get('target_control', [True, 'info']),
-        # Recording nodes (Global)
-        'airsim_record_camera': launch.get('airsim_record_camera', [True, 'info']),
-    }
+        launch_raw = yaml.safe_load(f) or {}
+
+    # Get parameters from the launch file
+    node_allowlist = launch_raw.get('node_allowlist', [])
+    node_log_levels = launch_raw.get('node_log_levels', {})
+
+    def is_enabled(node_name: str) -> bool:
+        return node_name in node_allowlist
+
+    def log_level(node_name: str) -> str:
+        return node_log_levels.get(node_name, 'info')
 
     # ============= PERCEPTION NODES =============
     # Conditionally add Target Clustering node
-    if nodes['target_clustering'][0]:
+    if is_enabled('target_clustering'):
         ld.append(
             Node(
                 package='flychams_perception',
@@ -112,7 +103,7 @@ def launch_setup(context, *args, **kwargs):
                 name='target_clustering_node',
                 output='screen',
                 namespace='flychams/global',
-                arguments=['--ros-args', '--log-level', nodes['target_clustering'][1]],
+                arguments=['--ros-args', '--log-level', log_level('target_clustering')],
                 parameters=[
                     system_path, 
                     topics_path, 
@@ -124,7 +115,7 @@ def launch_setup(context, *args, **kwargs):
         )
 
     # Conditionally add Cluster Analysis node
-    if nodes['cluster_analysis'][0]:
+    if is_enabled('cluster_analysis'):
         ld.append(
             Node(
                 package='flychams_perception',
@@ -132,7 +123,7 @@ def launch_setup(context, *args, **kwargs):
                 name='cluster_analysis_node',
                 output='screen',
                 namespace='flychams/global',
-                arguments=['--ros-args', '--log-level', nodes['cluster_analysis'][1]],
+                arguments=['--ros-args', '--log-level', log_level('cluster_analysis')],
                 parameters=[
                     system_path, 
                     topics_path, 
@@ -145,7 +136,7 @@ def launch_setup(context, *args, **kwargs):
 
     # ============= COORDINATION NODES =============
     # Conditionally add Agent Assignment node
-    if nodes['agent_assignment'][0]:
+    if is_enabled('agent_assignment'):
         ld.append(
             Node(
                 package='flychams_coordination',
@@ -153,7 +144,7 @@ def launch_setup(context, *args, **kwargs):
                 name='agent_assignment_node',
                 output='screen',
                 namespace='flychams/global',
-                arguments=['--ros-args', '--log-level', nodes['agent_assignment'][1]],
+                arguments=['--ros-args', '--log-level', log_level('agent_assignment')],
                 parameters=[
                     system_path, 
                     topics_path, 
@@ -165,7 +156,7 @@ def launch_setup(context, *args, **kwargs):
         )
 
     # Conditionally add Agent Analysis node
-    if nodes['agent_analysis'][0]:
+    if is_enabled('agent_analysis'):
         ld.append(
             Node(
                 package='flychams_coordination',
@@ -173,7 +164,7 @@ def launch_setup(context, *args, **kwargs):
                 name='agent_analysis_node',
                 output='screen',
                 namespace='flychams/global',
-                arguments=['--ros-args', '--log-level', nodes['agent_analysis'][1]],
+                arguments=['--ros-args', '--log-level', log_level('agent_analysis')],
                 parameters=[
                     system_path, 
                     topics_path, 
@@ -186,7 +177,7 @@ def launch_setup(context, *args, **kwargs):
 
     # ============= SIMULATION NODES =============
     # Conditionally add GUI Manager node
-    if nodes['gui_manager'][0]:
+    if is_enabled('gui_manager'):
         ld.append(
             Node(
                 package='flychams_simulation',
@@ -194,7 +185,7 @@ def launch_setup(context, *args, **kwargs):
                 name='gui_manager_node',
                 output='screen',
                 namespace='flychams/global',
-                arguments=['--ros-args', '--log-level', nodes['gui_manager'][1]],
+                arguments=['--ros-args', '--log-level', log_level('gui_manager')],
                 parameters=[
                     system_path, 
                     topics_path, 
@@ -206,7 +197,7 @@ def launch_setup(context, *args, **kwargs):
         )
 
     # Conditionally add Metrics Factory node
-    if nodes['metrics_factory'][0]:
+    if is_enabled('metrics_factory'):
         ld.append(
             Node(
                 package='flychams_simulation',
@@ -214,7 +205,7 @@ def launch_setup(context, *args, **kwargs):
                 name='metrics_factory_node',
                 output='screen',
                 namespace='flychams/global',
-                arguments=['--ros-args', '--log-level', nodes['metrics_factory'][1]],
+                arguments=['--ros-args', '--log-level', log_level('metrics_factory')],
                 parameters=[
                     system_path, 
                     topics_path, 
@@ -226,7 +217,7 @@ def launch_setup(context, *args, **kwargs):
         )
 
     # Conditionally add Marker Factory node
-    if nodes['marker_factory'][0]:
+    if is_enabled('marker_factory'):
         ld.append(
             Node(
                 package='flychams_simulation',
@@ -234,7 +225,7 @@ def launch_setup(context, *args, **kwargs):
                 name='marker_factory_node',
                 output='screen',
                 namespace='flychams/global',
-                arguments=['--ros-args', '--log-level', nodes['marker_factory'][1]],
+                arguments=['--ros-args', '--log-level', log_level('marker_factory')],
                 parameters=[
                     system_path, 
                     topics_path, 
@@ -246,7 +237,7 @@ def launch_setup(context, *args, **kwargs):
         )
 
     # Conditionally add Target State node
-    if nodes['target_state'][0]:
+    if is_enabled('target_state'):
         ld.append(
             Node(
                 package='flychams_simulation',
@@ -254,7 +245,7 @@ def launch_setup(context, *args, **kwargs):
                 name='target_state_node',
                 output='screen',
                 namespace='flychams/global',
-                arguments=['--ros-args', '--log-level', nodes['target_state'][1]],
+                arguments=['--ros-args', '--log-level', log_level('target_state')],
                 parameters=[
                     system_path, 
                     topics_path, 
@@ -266,7 +257,7 @@ def launch_setup(context, *args, **kwargs):
         )
 
     # Conditionally add Target Control node
-    if nodes['target_control'][0]:
+    if is_enabled('target_control'):
         ld.append(
             Node(
                 package='flychams_simulation',
@@ -274,7 +265,7 @@ def launch_setup(context, *args, **kwargs):
                 name='target_control_node',
                 output='screen',
                 namespace='flychams/global',
-                arguments=['--ros-args', '--log-level', nodes['target_control'][1]],
+                arguments=['--ros-args', '--log-level', log_level('target_control')],
                 parameters=[
                     system_path, 
                     topics_path, 
