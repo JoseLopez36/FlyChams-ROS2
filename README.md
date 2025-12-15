@@ -114,13 +114,33 @@ sudo apt install python3-libtmux
 
 ### 7. Setup and build the system
 
-Run the following command to setup dependencies, build the workspace and generate settings:
+Build the ROS2 workspace and generate AirSim settings:
 
 **Host Machine**
 ```bash
-python3 ./tools/build.py --regenerate-airsim
+# Build AirSim dependencies (in Docker container)
+python3 ./tools/launch_build.py --build-airsim
+
+# Build ROS2 workspace (in Docker container)
+python3 ./tools/launch_build.py --build-ros2 -j 2
+
+# Generate AirSim settings (in Docker container)
+python3 ./tools/launch_build.py --generate-settings
 ```
-*Note: This will launch a temporary container to perform all build and setup operations.*
+
+Alternatively, you can build on the host machine directly:
+```bash
+# Build AirSim dependencies (on host)
+python3 ./tools/launch_build.py --build-on-host --build-airsim
+
+# Build ROS2 workspace (on host)
+python3 ./tools/launch_build.py --build-on-host --build-ros2 -j 2
+
+# Generate AirSim settings (on host)
+python3 ./tools/launch_build.py --build-on-host --generate-settings
+```
+
+*Note: The `-j` flag specifies the number of parallel threads for building. Default is 2. Use `--build-on-host` to build directly on the host machine instead of in a Docker container.*
 
 ## Usage
 
@@ -130,7 +150,7 @@ Run the following command to launch the Unreal Engine simulation with the previo
 
 **Host Machine**
 ```bash
-./path/to/FlyChams-ROS2/tools/airsim/run_ue5.sh
+./tools/shell/run_ue5.sh
 ```
 
 ### 2. Launch the System
@@ -139,44 +159,113 @@ Run the following command to launch the system:
 
 **Host Machine**
 ```bash
+# Launch in simulation mode
 python3 ./tools/launch.py --sim
+
+# Launch in hardware mode
+python3 ./tools/launch.py --hardware
+
+# Launch with custom delay between setup and run (default: 1.0 seconds)
+python3 ./tools/launch.py --sim --delay 2.0
 ```
-*Note: This script handles both setup and run stages in a tmux session. It automatically creates containers for the global tasks and each agent, and then executes the necessary ROS2 launch files.*
 
-The workflow creates a tmux session named `flychams` with two windows:
-1. **Setup**: Creates and configures the Docker containers and ROS2 system.
-2. **Run**: Executes the main application logic inside the containers.
+*Note: This script creates a tmux session named `flychams` and automatically launches all necessary components. It creates windows for:*
+- *GLOBAL: Global coordination tasks*
+- *AGENTxx: One window per agent (from config/mission.yaml)*
+- *PX4-i: PX4 SITL instances (simulation mode only, one per agent)*
+- *VISUALIZATION: RViz visualization*
 
-You can navigate between windows using `Ctrl+B` then `n` (next) or `p` (previous), and detach from the session with `Ctrl+B` then `d`. To reattach, use `tmux attach -t flychams`.
+*You can navigate between windows using `Ctrl+B` then `n` (next) or `p` (previous), and detach from the session with `Ctrl+B` then `d`. To reattach, use `tmux attach -t flychams`. Press `Ctrl+K` to stop the session (with confirmation).*
 
-To stop the system, you can use the stop script:
+To stop the system, use:
 ```bash
-python3 ./tools/stop.py
+# Stop simulation mode
+python3 ./tools/stop.py --sim
+
+# Stop hardware mode
+python3 ./tools/stop.py --hardware
 ```
-This will kill the tmux session and stop all FlyChams containers.
+*This will kill the tmux session and stop all FlyChams containers/processes.*
 
 ### 3. (Optional) Visualization
 
-To view the system in RViz:
+Launch visualization tools:
 
 **Host Machine**
 ```bash
+# Launch RViz
 python3 ./tools/launch_visualization.py
-```
 
-To plot simulation data on runtime, we recommend using `PlotJuggler`. To run it, use the following command:
-
-**Host Machine**
-```bash
+# Launch PlotJuggler
 python3 ./tools/launch_visualization.py --plotjuggler
 ```
 
-You can also plot previous rosbag data by importing them into the PlotJuggler window. More info [here](https://plotjuggler.io/). To record rosbags you must configure it in the `Configuration.xlsx` file and use the following command:
+*Note: Visualization tools run in Docker containers with X11 forwarding enabled. Make sure your X11 server is properly configured.*
 
 **Docker**
 ```bash
 ros2 launch flychams_bringup rosbag.launch.py
 ```
+
+## Tools Reference
+
+The `tools/` directory contains Python scripts and shell scripts for building, launching, and managing the FlyChams system:
+
+### Build Tools
+
+- **`launch_build.py`**: Build ROS2 workspace, AirSim dependencies, or generate AirSim settings
+  - `--build-ros2`: Build ROS2 workspace
+  - `--build-airsim`: Build AirSim dependencies
+  - `--generate-settings`: Generate AirSim settings from configuration
+  - `--build-on-host`: Build on host machine instead of Docker container
+  - `-j N`: Number of parallel threads for ROS2 build (default: 2)
+
+### Launch Tools
+
+- **`launch.py`**: Main launcher that creates a tmux session and launches all system components
+  - `--sim`: Launch in simulation mode
+  - `--hardware`: Launch in hardware mode
+  - `--delay SECONDS`: Delay between setup and run stages (default: 1.0)
+
+- **`launch_global.py`**: Launch global coordination instance
+  - `--sim`: Simulation mode
+  - `--hardware`: Hardware mode
+  - `--delay SECONDS`: Delay between setup and run
+
+- **`launch_agent.py`**: Launch individual agent instance
+  - `--agent-id ID`: Agent identifier (required)
+  - `--sim`: Simulation mode
+  - `--hardware`: Hardware mode
+  - `--delay SECONDS`: Delay between setup and run
+
+- **`launch_px4.py`**: Launch PX4 SITL instance (simulation only)
+  - `--agent-index INDEX`: Agent index (required)
+
+- **`launch_visualization.py`**: Launch visualization tools
+  - `--plotjuggler`: Launch PlotJuggler instead of RViz
+
+### Management Tools
+
+- **`stop.py`**: Stop the FlyChams system
+  - `--sim`: Stop simulation mode
+  - `--hardware`: Stop hardware mode
+
+### Shell Scripts
+
+The `tools/shell/` directory contains shell scripts that are typically called by the Python launchers:
+
+- `build_ros2_ws.sh`: Build ROS2 workspace
+- `build_airsim.sh`: Build AirSim dependencies
+- `create_settings.sh`: Generate AirSim settings
+- `setup_global.sh`: Setup global instance
+- `run_global.sh`: Run global instance
+- `setup_agent.sh`: Setup agent instance
+- `run_agent.sh`: Run agent instance
+- `run_rviz.sh`: Launch RViz
+- `run_plotjuggler.sh`: Launch PlotJuggler
+- `run_ue5.sh`: Launch Unreal Engine 5 simulation
+- `docker_run_px4.sh`: Run PX4 in Docker container
+- `clean_ros2_ws.sh`: Clean ROS2 workspace
 
 ## Configuration
 
