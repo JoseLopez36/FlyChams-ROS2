@@ -92,7 +92,7 @@ namespace flychams::bringup
 	void MissionSettingsCreator::writeTargetsSection(std::ostringstream& yaml, const MissionConfigPtr& config_ptr)
 	{
 		yaml << "    targets:\n";
-		
+
 		// Write id_list
 		yaml << "      id_list: [";
 		bool first = true;
@@ -106,7 +106,7 @@ namespace flychams::bringup
 			first = false;
 		}
 		yaml << "]\n";
-		
+
 		// Write individual targets
 		for (const auto& [target_id, target] : config_ptr->target_group)
 		{
@@ -125,7 +125,7 @@ namespace flychams::bringup
 	void MissionSettingsCreator::writeAgentsSection(std::ostringstream& yaml, const MissionConfigPtr& config_ptr)
 	{
 		yaml << "    agents:\n";
-		
+
 		// Write id_list
 		yaml << "      id_list: [";
 		bool first = true;
@@ -139,7 +139,7 @@ namespace flychams::bringup
 			first = false;
 		}
 		yaml << "]\n";
-		
+
 		// Write individual agents
 		for (const auto& [agent_id, agent] : config_ptr->agent_team)
 		{
@@ -168,6 +168,11 @@ namespace flychams::bringup
 			// Write drone configuration
 			yaml << "        drone:\n";
 			writeDroneSection(yaml, agent->drone, "          ");
+
+			// Write SSH configuration
+			yaml << "        ssh:\n";
+			yaml << "          hostname: \"" << "172.17.0.1" << "\"\n";
+			yaml << "          user: \"" << "jetson" << "\"\n";
 		}
 	}
 
@@ -183,7 +188,7 @@ namespace flychams::bringup
 		if (!tracking.multi_camera_set.empty())
 		{
 			yaml << prefix << "multi_cameras:\n";
-			
+
 			// Write ids list
 			yaml << prefix << "  ids: [";
 			bool first = true;
@@ -197,7 +202,7 @@ namespace flychams::bringup
 				first = false;
 			}
 			yaml << "]\n";
-			
+
 			// Write individual multi_cameras
 			for (const auto& [multi_camera_id, multi_camera] : tracking.multi_camera_set)
 			{
@@ -210,7 +215,7 @@ namespace flychams::bringup
 		if (!tracking.multi_window_set.empty())
 		{
 			yaml << prefix << "multi_windows:\n";
-			
+
 			// Write ids list
 			yaml << prefix << "  ids: [";
 			bool first = true;
@@ -224,7 +229,7 @@ namespace flychams::bringup
 				first = false;
 			}
 			yaml << "]\n";
-			
+
 			// Write individual multi_windows
 			for (const auto& [multi_window_id, multi_window] : tracking.multi_window_set)
 			{

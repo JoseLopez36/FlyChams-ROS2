@@ -45,13 +45,5 @@ USER    $USER_NAME
 WORKDIR /home/${USER_NAME}       
 RUN     echo "source /opt/ros/iron/setup.bash" >> ~/.bashrc
 RUN     echo "export FLYCHAMS_PATH=/home/${USER_NAME}/FlyChams-ROS2" >> ~/.bashrc
-RUN     echo "export AIRSIM_PATH=/home/${USER_NAME}/FlyChams-Cosys-AirSim" >> ~/.bashrc
 RUN     echo "export PX4_PATH=/home/${USER_NAME}/PX4-Autopilot" >> ~/.bashrc
-
-# Aliases
-# Build workspace
-RUN     echo 'alias flychams-build="$FLYCHAMS_PATH/tools/build/build.sh -j 3"' >> ~/.bashrc
-# Clean workspace
-RUN     echo 'alias flychams-clean="$FLYCHAMS_PATH/tools/build/clean.sh"' >> ~/.bashrc
-# Source ROS2 workspace
-RUN     echo 'alias flychams-source="source $FLYCHAMS_PATH/ros2_ws/install/setup.bash"' >> ~/.bashrc
+RUN     echo "export AIRSIM_PATH=/home/${USER_NAME}/FlyChams-Cosys-AirSim" >> ~/.bashrc

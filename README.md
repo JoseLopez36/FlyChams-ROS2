@@ -118,7 +118,7 @@ Run the following command to setup dependencies, build the workspace and generat
 
 **Host Machine**
 ```bash
-python3 ./tools/docker/build.py --regenerate-airsim
+python3 ./tools/build.py --regenerate-airsim
 ```
 *Note: This will launch a temporary container to perform all build and setup operations.*
 
@@ -139,7 +139,7 @@ Run the following command to launch the system:
 
 **Host Machine**
 ```bash
-./tools/docker/launch.py --sim
+python3 ./tools/launch.py --sim
 ```
 *Note: This script handles both setup and run stages in a tmux session. It automatically creates containers for the global tasks and each agent, and then executes the necessary ROS2 launch files.*
 
@@ -151,7 +151,7 @@ You can navigate between windows using `Ctrl+B` then `n` (next) or `p` (previous
 
 To stop the system, you can use the stop script:
 ```bash
-./tools/docker/stop.py
+python3 ./tools/stop.py
 ```
 This will kill the tmux session and stop all FlyChams containers.
 
@@ -161,14 +161,14 @@ To view the system in RViz:
 
 **Host Machine**
 ```bash
-./tools/docker/visualization.sh
+python3 ./tools/launch_visualization.py
 ```
 
 To plot simulation data on runtime, we recommend using `PlotJuggler`. To run it, use the following command:
 
 **Host Machine**
 ```bash
-./tools/docker/visualization.sh --plotjuggler
+python3 ./tools/launch_visualization.py --plotjuggler
 ```
 
 You can also plot previous rosbag data by importing them into the PlotJuggler window. More info [here](https://plotjuggler.io/). To record rosbags you must configure it in the `Configuration.xlsx` file and use the following command:
