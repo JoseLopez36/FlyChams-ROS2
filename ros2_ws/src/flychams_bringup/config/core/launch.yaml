@@ -6,27 +6,27 @@
 node_allowlist:
   # Global setup nodes
   - element_registrator
-  # - airsim
+  - airsim
   # # Agent setup nodes
-  # - mavros_manager
-  # # Global runtime nodes
-  # - target_clustering
-  # - cluster_analysis
-  # - agent_assignment
-  # - agent_analysis
-  # - gui_manager
-  # - metrics_factory
-  # - marker_factory
-  # - target_state
-  # - target_control
-  # # Agent runtime nodes
-  # - drone_frames
-  # - drone_state
-  # - drone_control
-  # - camera_frames
-  # - camera_control
-  # - agent_positioning
-  # - agent_tracking
+  - mavros_manager
+  # Global runtime nodes
+  - target_clustering
+  - cluster_analysis
+  - agent_assignment
+  - agent_analysis
+  - gui_manager
+  - metrics_factory
+  - marker_factory
+  - target_state
+  - target_control
+  # Agent runtime nodes
+  - drone_frames
+  - drone_state
+  - drone_control
+  - camera_frames
+  - camera_control
+  - agent_positioning
+  - agent_tracking
 
 # Per-node log level overrides
 node_log_levels:

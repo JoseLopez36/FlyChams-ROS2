@@ -95,6 +95,7 @@ def main():
     # Setup tmux session
     server = None
     session = None
+    px4_window = None
     setup_window = None
     
     # Get tmux server
@@ -119,6 +120,41 @@ def main():
         if not setup_window:
             setup_window = session.new_window(window_name="Setup")
 
+    # --- PX4 Stage (Simulation Only) ---
+    if launch_mode == "simulation":
+        # Get or create PX4 window
+        px4_window = None
+        for w in get_windows(session):
+            if w.window_name == "PX4":
+                px4_window = w
+                break
+                
+        if not px4_window:
+            px4_window = session.new_window(window_name="PX4")
+        
+        px4_panes = get_panes(px4_window)
+        current_pane = px4_panes[0]
+        
+        # Launch PX4 instances for each agent
+        launch_px4_script = script_dir / "launch_px4.py"
+        for i, agent_info in enumerate(agent_info_list):
+            agent_id = agent_info['id']
+            print(f"Launching PX4 SITL for agent {agent_id}...")
+            
+            px4_cmd = f"python3 {launch_px4_script} --agent-id {agent_id} --agent-index {i}"
+            
+            # Launch PX4 instance in new tmux pane
+            if i > 0:
+                current_pane = px4_window.split_window(attach=False)
+            px4_window.select_layout('tiled')
+            current_pane.send_keys(px4_cmd)
+            
+            # Wait for delay
+            time.sleep(delay)
+        
+        # Wait a bit longer for PX4 to initialize
+        time.sleep(2.0)
+
     # --- Setup Stage ---
     # Launch global instance in tmux
     setup_panes = get_panes(setup_window)
@@ -141,9 +177,9 @@ def main():
         
         launch_agent_script = script_dir / "launch_agent.py"
         if launch_mode == "hardware":
-            agent_setup_cmd = f"python3 {launch_agent_script} --agent-id {agent_id} --agent-index {i} --hardware --mode setup"
+            agent_setup_cmd = f"python3 {launch_agent_script} --agent-id {agent_id} --hardware --mode setup"
         elif launch_mode == "simulation":
-            agent_setup_cmd = f"python3 {launch_agent_script} --agent-id {agent_id}  --agent-index {i} --sim --mode setup"
+            agent_setup_cmd = f"python3 {launch_agent_script} --agent-id {agent_id} --sim --mode setup"
         
         # Launch agent instance in new tmux pane
         current_pane = setup_window.split_window(attach=False)
@@ -181,9 +217,9 @@ def main():
         
         launch_agent_script = script_dir / "launch_agent.py"
         if launch_mode == "hardware":
-            agent_run_cmd = f"python3 {launch_agent_script} --agent-id {agent_id} --agent-index {i} --hardware --mode run"
+            agent_run_cmd = f"python3 {launch_agent_script} --agent-id {agent_id} --hardware --mode run"
         elif launch_mode == "simulation":
-            agent_run_cmd = f"python3 {launch_agent_script} --agent-id {agent_id} --agent-index {i} --sim --mode run"
+            agent_run_cmd = f"python3 {launch_agent_script} --agent-id {agent_id} --sim --mode run"
         
         # Launch agent instance in new tmux pane
         current_pane = run_window.split_window(attach=False)

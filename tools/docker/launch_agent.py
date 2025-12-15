@@ -81,7 +81,6 @@ def get_agent_ssh_config(agent_id, mission_yaml_path):
 def main():
     parser = argparse.ArgumentParser(description="Launch Agent Instance")
     parser.add_argument("--agent-id", required=True, help="Agent ID")
-    parser.add_argument("--agent-index", type=int, help="Agent index for PX4 SITL instance number")
     parser.add_argument("--sim", action="store_true", help="Run in simulation mode")
     parser.add_argument("--hardware", action="store_true", help="Run in hardware mode")
     parser.add_argument("--mode", required=True, choices=["setup", "run"], help="Launch mode: setup or run")
@@ -177,18 +176,8 @@ def main():
         if args.mode == "setup":
             print(f"Setting up agent {args.agent_id} on simulation mode...")
             
-            # Build setup command with PX4 SITL
-            px4_cmd_part = (
-                f"PX4_SIM_HOSTNAME=172.17.0.1 PX4_SIM_MODEL=iris "
-                f"/home/{user_name}/PX4-Autopilot/build/px4_sitl_default/bin/px4 "
-                f"-i {args.agent_index} "
-                f"-d /home/{user_name}/PX4-Autopilot/ROMFS/px4fmu_common "
-                f"-s etc/init.d-posix/rcS"
-            )
-            
+            # Build setup command
             agent_setup_cmd = (
-                f"{px4_cmd_part} & "
-                f"sleep 1.0 && "
                 f"source /opt/ros/iron/setup.bash && "
                 f"source /home/{user_name}/FlyChams-ROS2/ros2_ws/install/setup.bash && "
                 f"/home/{user_name}/FlyChams-ROS2/tools/run/setup_agent.sh {args.agent_id} {is_simulated}"

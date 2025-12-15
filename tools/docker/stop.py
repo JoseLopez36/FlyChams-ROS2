@@ -99,6 +99,7 @@ def main():
             threads = [
                 threading.Thread(target=stop_containers, args=("flychams-global",)),
                 threading.Thread(target=stop_containers, args=("flychams-AGENT*",)),
+                threading.Thread(target=stop_containers, args=("flychams-px4-*",))
             ]
 
             for t in threads:
