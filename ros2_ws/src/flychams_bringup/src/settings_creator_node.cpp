@@ -11,6 +11,7 @@
 #include "flychams_core/types/ros_types.hpp"
 #include "flychams_core/utils/math_utils.hpp"
 #include "flychams_core/utils/ros_utils.hpp"
+#include "flychams_core/settings/mission_settings_parser.hpp"
 
 using namespace flychams::core;
 using namespace flychams::bringup;
@@ -54,6 +55,11 @@ int main(int argc, char** argv)
         RCLCPP_ERROR(node->get_logger(), "Error parsing mission configuration: %s", e.what());
         rclcpp::shutdown();
     }
+
+    // Parse system, topics and frames parameters from ROS2 parameters server
+    MissionSettingsParser::parseSystemParameters(node, config_ptr);
+    MissionSettingsParser::parseTopicParameters(node, config_ptr);
+    MissionSettingsParser::parseFrameParameters(node, config_ptr);
 
     // Generate all settings files
     RCLCPP_INFO(node->get_logger(), "Creating settings files...");

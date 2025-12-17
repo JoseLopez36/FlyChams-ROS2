@@ -8,7 +8,7 @@
     path:
       config_spreadsheet_path: "/home/testuser/FlyChams-ROS2/config/Configuration-Test.xlsx"
       mission_settings_path: "/home/testuser/FlyChams-ROS2/config/mission.yaml"
-      airsim_settings_path: "/home/testuser/FlyChams-ROS2/config/settings.json"
+      airsim_settings_path: "/home/testuser/FlyChams-ROS2/config/airsim.json"
       trajectory_root: "/home/testuser/FlyChams-ROS2/config/Trajectories"
     # GUI settings
     gui:

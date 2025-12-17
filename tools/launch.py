@@ -69,6 +69,127 @@ def setup_kill_key(session_name: str, cmd: str) -> None:
         ]
     )
 
+def setup_simulation(session_name: str, agent_ids: list[str], root_dir: Path, delay: float) -> None:
+    mode_flag = "--sim"
+
+    # Create session
+    tmux_checked(
+        [
+            "new-session",
+            "-d",
+            "-s",
+            session_name,
+            "-n",
+            "UE5",
+            "-c",
+            str(root_dir),
+        ]
+    )
+
+    # Bind Ctrl+K to kill this session (with confirmation prompt)
+    stop_cmd = f"python3 -u {shlex.quote(str(root_dir / 'tools' / 'stop.py'))} {mode_flag}"
+    setup_kill_key(session_name, stop_cmd)
+
+    # Unreal Engine 5
+    ue5_cmd = (
+        f"bash {shlex.quote(str(root_dir / 'tools' / 'shell' / 'run_ue5.sh'))}"
+    )
+    send_keys(session_name, "UE5", ue5_cmd)
+
+    # Get Unreal Engine 5 delay (this ensures UE5 is running before other components are launched)
+    ue5_delay = delay * 10.0
+
+    # PX4 SITL
+    for idx, _agent_id in enumerate(agent_ids):
+        window_name = f"PX4-{idx}"
+        new_window(session_name, window_name, root_dir)
+        px4_cmd = (
+            f"sleep {ue5_delay} && "
+            f"python3 -u {shlex.quote(str(root_dir / 'tools' / 'launch_px4.py'))} "
+            f"--agent-index {idx}"
+        )
+        send_keys(session_name, window_name, px4_cmd)
+
+    # Global
+    new_window(session_name, "GLOBAL", root_dir)
+    global_cmd = (
+        f"sleep {ue5_delay} && "
+        f"python3 -u {shlex.quote(str(root_dir / 'tools' / 'launch_global.py'))} "
+        f"{mode_flag} --delay {delay}"
+    )
+    send_keys(session_name, "GLOBAL", global_cmd)
+
+    # Agents
+    for agent_id in agent_ids:
+        window_name = agent_id
+        new_window(session_name, window_name, root_dir)
+        agent_cmd = (
+            f"sleep {ue5_delay} && "
+            f"python3 -u {shlex.quote(str(root_dir / 'tools' / 'launch_agent.py'))} "
+            f"--agent-id {shlex.quote(agent_id)} {mode_flag} --delay {delay}"
+        )
+        send_keys(session_name, window_name, agent_cmd)
+
+    # Visualization
+    new_window(session_name, "VISUALIZATION", root_dir)
+    viz_cmd = f"python3 -u {shlex.quote(str(root_dir / 'tools' / 'launch_visualization.py'))}"
+    send_keys(session_name, "VISUALIZATION", viz_cmd)
+
+    # Focus GLOBAL
+    tmux_checked(["select-window", "-t", f"{session_name}:GLOBAL"])
+
+    # Attach to session
+    subprocess.run(["tmux", "attach", "-t", session_name])
+
+def setup_hardware(session_name: str, agent_ids: list[str], root_dir: Path, delay: float) -> None:
+    mode_flag = "--hardware"
+
+    # Create session
+    tmux_checked(
+        [
+            "new-session",
+            "-d",
+            "-s",
+            session_name,
+            "-n",
+            "GLOBAL",
+            "-c",
+            str(root_dir),
+        ]
+    )
+
+    # Bind Ctrl+K to kill this session (with confirmation prompt)
+    stop_cmd = f"python3 -u {shlex.quote(str(root_dir / 'tools' / 'stop.py'))} {mode_flag}"
+    setup_kill_key(session_name, stop_cmd)
+
+    # Global
+    global_cmd = (
+        f"python3 -u {shlex.quote(str(root_dir / 'tools' / 'launch_global.py'))} "
+        f"{mode_flag} --delay {delay}"
+    )
+    send_keys(session_name, "GLOBAL", global_cmd)
+
+    # Agents
+    for agent_id in agent_ids:
+        window_name = agent_id
+        new_window(session_name, window_name, root_dir)
+        agent_cmd = (
+            f"python3 -u {shlex.quote(str(root_dir / 'tools' / 'launch_agent.py'))} "
+            f"--agent-id {shlex.quote(agent_id)} {mode_flag} --delay {delay}"
+        )
+        send_keys(session_name, window_name, agent_cmd)
+
+    # Visualization
+    new_window(session_name, "VISUALIZATION", root_dir)
+    viz_cmd = f"python3 -u {shlex.quote(str(root_dir / 'tools' / 'launch_visualization.py'))}"
+    send_keys(session_name, "VISUALIZATION", viz_cmd)
+
+    # Focus GLOBAL
+    tmux_checked(["select-window", "-t", f"{session_name}:GLOBAL"])
+
+    # Attach to session
+    subprocess.run(["tmux", "attach", "-t", session_name])
+
 def main():
     parser = argparse.ArgumentParser(
         description="Launch FlyChams workflow in tmux (GLOBAL, AGENTs, PX4, VISUALIZATION)"
@@ -114,63 +235,20 @@ def main():
     print(f"[LAUNCH] Agents ({len(agent_ids)}): {', '.join(agent_ids) if agent_ids else '(none)'}")
     print(f"[LAUNCH] tmux session: {session_name}")
 
-    # Create session with GLOBAL as first window
-    tmux_checked(
-        [
-            "new-session",
-            "-d",
-            "-s",
-            session_name,
-            "-n",
-            "GLOBAL",
-            "-c",
-            str(root_dir),
-        ]
-    )
-
-    # Bind Ctrl+K to kill this session (with confirmation prompt)
-    mode_flag = "--sim" if launch_mode == LaunchMode.SIMULATION else "--hardware"
-    stop_cmd = f"python3 -u {shlex.quote(str(root_dir / 'tools' / 'stop.py'))} {mode_flag}"
-    setup_kill_key(session_name, stop_cmd)
-
-    # Commands
-    global_cmd = (
-        f"python3 -u {shlex.quote(str(root_dir / 'tools' / 'launch_global.py'))} "
-        f"{mode_flag} --delay {args.delay}"
-    )
-    send_keys(session_name, "GLOBAL", global_cmd)
-
-    # Agents
-    for agent_id in agent_ids:
-        window_name = agent_id
-        new_window(session_name, window_name, root_dir)
-        agent_cmd = (
-            f"python3 -u {shlex.quote(str(root_dir / 'tools' / 'launch_agent.py'))} "
-            f"--agent-id {shlex.quote(agent_id)} {mode_flag} --delay {args.delay}"
-        )
-        send_keys(session_name, window_name, agent_cmd)
-
-    # PX4 SITL (simulation only)
     if launch_mode == LaunchMode.SIMULATION:
-        for idx, _agent_id in enumerate(agent_ids):
-            window_name = f"PX4-{idx}"
-            new_window(session_name, window_name, root_dir)
-            px4_cmd = (
-                f"python3 -u {shlex.quote(str(root_dir / 'tools' / 'launch_px4.py'))} "
-                f"--agent-index {idx}"
-            )
-            send_keys(session_name, window_name, px4_cmd)
-
-    # Visualization (always)
-    new_window(session_name, "VISUALIZATION", root_dir)
-    viz_cmd = f"python3 -u {shlex.quote(str(root_dir / 'tools' / 'launch_visualization.py'))}"
-    send_keys(session_name, "VISUALIZATION", viz_cmd)
-
-    # Focus GLOBAL
-    tmux_checked(["select-window", "-t", f"{session_name}:GLOBAL"])
-
-    # Attach to session
-    subprocess.run(["tmux", "attach", "-t", session_name])
+        # Setup simulation:
+        # 1. UE5
+        # 2. PX4 SITL
+        # 3. GLOBAL
+        # 4. AGENTS
+        # 5. VISUALIZATION
+        setup_simulation(session_name, agent_ids, root_dir, args.delay)
+    elif launch_mode == LaunchMode.HARDWARE:
+        # Setup hardware:
+        # 1. GLOBAL
+        # 2. AGENTS
+        # 3. VISUALIZATION
+        setup_hardware(session_name, agent_ids, root_dir, args.delay)
 
 if __name__ == "__main__":
     main()
