@@ -142,6 +142,9 @@ namespace flychams::core
         const ObservationUnitParameters getObservationUnitParameters(const TrackingConfig& tracking, const MultiCameraConfigPtr& multi_camera) const;
         const ObservationUnitParameters getObservationUnitParameters(const TrackingConfig& tracking, const ObservationUnitParameters& central_camera_params, const MultiWindowConfigPtr& multi_window) const;
 
+    public: // Utility methods
+        void printSettings() const;
+
     private: // ROS components
         // Node
         NodePtr node_;

@@ -1,8 +1,8 @@
 #!/bin/bash
 
 # Arguments
-AGENT_ID=${1:-""}
-IS_SIMULATED=${2:-"False"}
+IS_SIMULATED=${1:-"False"}
+AGENT_ID=${2:-""}
 
 # Check if AGENT_ID is provided
 if [ -z "$AGENT_ID" ]; then

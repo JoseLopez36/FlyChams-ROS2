@@ -6,7 +6,6 @@ from launch_ros.substitutions import FindPackageShare
 from ament_index_python.packages import get_package_share_directory
 import os
 import yaml
-import tempfile
 
 def load_mission_parameters(mission_settings_path):
     if not os.path.exists(mission_settings_path):
@@ -123,6 +122,12 @@ def launch_setup(context, *args, **kwargs):
 
     mission_params_path = load_mission_parameters(system_raw.get('/**').get('ros__parameters').get('path').get('mission_settings_path'))
 
+    # Verify mission parameters file exists
+    if not mission_params_path or not os.path.exists(mission_params_path):
+        raise FileNotFoundError(f"Mission parameters file not found: {mission_params_path}")
+    
+    print(f"Loading mission parameters from: {mission_params_path}")
+    
     # Conditionally add MavROS Manager node
     if is_enabled('mavros_manager'):
         ld.append(

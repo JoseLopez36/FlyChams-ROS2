@@ -106,6 +106,12 @@ def launch_setup(context, *args, **kwargs):
         system_raw = yaml.safe_load(f) or {}
 
     mission_params_path = load_mission_parameters(system_raw.get('/**').get('ros__parameters').get('path').get('mission_settings_path'))
+
+    # Verify mission parameters file exists
+    if not mission_params_path or not os.path.exists(mission_params_path):
+        raise FileNotFoundError(f"Mission parameters file not found: {mission_params_path}")
+    
+    print(f"Loading mission parameters from: {mission_params_path}")
     
     # ============= BRINGUP NODES =============
     # Conditionally add Element Registrator node

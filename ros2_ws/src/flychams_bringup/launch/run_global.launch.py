@@ -107,6 +107,12 @@ def launch_setup(context, *args, **kwargs):
 
     mission_params_path = load_mission_parameters(system_raw.get('/**').get('ros__parameters').get('path').get('mission_settings_path'))
 
+    # Verify mission parameters file exists
+    if not mission_params_path or not os.path.exists(mission_params_path):
+        raise FileNotFoundError(f"Mission parameters file not found: {mission_params_path}")
+    
+    print(f"Loading mission parameters from: {mission_params_path}")
+    
     # ============= PERCEPTION NODES =============
     # Conditionally add Target Clustering node
     if is_enabled('target_clustering'):

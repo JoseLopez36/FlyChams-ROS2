@@ -32,7 +32,7 @@ node_allowlist:
 node_log_levels:
   # Global setup nodes
   element_registrator: info
-  airsim: info
+  airsim: error
   # Agent setup nodes
   mavros_manager: info
   # Global runtime nodes
