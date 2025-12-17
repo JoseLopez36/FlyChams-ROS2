@@ -24,8 +24,8 @@ namespace flychams::core
     class TransformTools
     {
     public: // Constructor/Destructor
-        TransformTools(NodePtr node, const SettingsTools::SharedPtr& config_tools)
-            : node_(node), config_tools_(config_tools)
+        TransformTools(NodePtr node, const SettingsTools::SharedPtr& settings_tools)
+            : node_(node), settings_tools_(settings_tools)
         {
             // Initialize ROS components
             tf_buffer_ = std::make_shared<tf2_ros::Buffer>(node_->get_clock());
@@ -34,7 +34,7 @@ namespace flychams::core
             static_tf_broadcaster_ = std::make_shared<tf2_ros::StaticTransformBroadcaster>(node_);
 
             // Get frame config
-            const auto& frame_config = config_tools_->getFrames();
+            const auto& frame_config = settings_tools_->getFrames();
 
             // Get general frames
             world_frame_ = frame_config.world;
@@ -59,7 +59,7 @@ namespace flychams::core
             tf_broadcaster_.reset();
             static_tf_broadcaster_.reset();
             // Destroy config tools
-            config_tools_.reset();
+            settings_tools_.reset();
             // Destroy node
             node_.reset();
         }
@@ -88,7 +88,7 @@ namespace flychams::core
         StaticBroadcasterPtr static_tf_broadcaster_;
 
         // Config tools
-        SettingsTools::SharedPtr config_tools_;
+        SettingsTools::SharedPtr settings_tools_;
 
     public: // Frame getters
         std::string getGlobalFrame()

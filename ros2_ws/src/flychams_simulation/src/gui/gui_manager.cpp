@@ -21,10 +21,10 @@ namespace flychams::simulation
         agent_ = Agent();
 
         // Create simulation tools
-        simulation_tools_ = createSimulationTools(node_, config_tools_);
+        simulation_tools_ = createSimulationTools(node_, settings_tools_);
 
         // Get system config
-        const auto& system_config = config_tools_->getSystem();
+        const auto& system_config = settings_tools_->getSystem();
 
         // Initialize simulation window commands
         simulation_window_cmds_.clear();

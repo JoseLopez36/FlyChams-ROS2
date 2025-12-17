@@ -33,9 +33,9 @@ public: // Constructor/Destructor
     {
         // Use callback group from registration node (to avoid race conditions)
         // Create registration instances for each element type
-        agent_registration_ = std::make_shared<AgentRegistration>(node_, config_tools_, topic_tools_, transform_tools_, registration_cb_group_);
-        target_registration_ = std::make_shared<TargetRegistration>(node_, config_tools_, topic_tools_, transform_tools_, registration_cb_group_);
-        cluster_registration_ = std::make_shared<ClusterRegistration>(node_, config_tools_, topic_tools_, transform_tools_, registration_cb_group_);
+        agent_registration_ = std::make_shared<AgentRegistration>(node_, settings_tools_, topic_tools_, transform_tools_, registration_cb_group_);
+        target_registration_ = std::make_shared<TargetRegistration>(node_, settings_tools_, topic_tools_, transform_tools_, registration_cb_group_);
+        cluster_registration_ = std::make_shared<ClusterRegistration>(node_, settings_tools_, topic_tools_, transform_tools_, registration_cb_group_);
 
         // Get all elements
         agents_ = agent_registration_->getAgents();
@@ -76,9 +76,9 @@ public: // Constructor/Destructor
         // Publish global origin
         GeoPointStampedMsg origin_msg;
         origin_msg.header = RosUtils::createHeader(node_, transform_tools_->getGlobalFrame());
-        origin_msg.position.latitude = config_tools_->getEnvironment().geopoint.latitude;
-        origin_msg.position.longitude = config_tools_->getEnvironment().geopoint.longitude;
-        origin_msg.position.altitude = config_tools_->getEnvironment().geopoint.altitude;
+        origin_msg.position.latitude = settings_tools_->getEnvironment().geopoint.latitude;
+        origin_msg.position.longitude = settings_tools_->getEnvironment().geopoint.longitude;
+        origin_msg.position.altitude = settings_tools_->getEnvironment().geopoint.altitude;
         global_origin_pub_->publish(origin_msg);
     }
 

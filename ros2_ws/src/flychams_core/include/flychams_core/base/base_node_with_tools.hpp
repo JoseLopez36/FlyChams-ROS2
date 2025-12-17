@@ -25,7 +25,7 @@ namespace flychams::core
     {
     public: // Constructor/Destructor
         BaseNodeWithTools(const std::string& node_name, const rclcpp::NodeOptions& options);
-        
+
         void init();
 
         virtual ~BaseNodeWithTools();
@@ -47,7 +47,7 @@ namespace flychams::core
         CallbackGroupPtr node_cb_group_;
         rclcpp::SubscriptionOptions sub_options_with_node_cb_group_;
         // Tools
-        SettingsTools::SharedPtr config_tools_;
+        SettingsTools::SharedPtr settings_tools_;
         TopicTools::SharedPtr topic_tools_;
         TransformTools::SharedPtr transform_tools_;
     };

@@ -87,7 +87,7 @@ namespace flychams::coordination
         A_.insert(agent_id); // Add agent to ordered set
 
         // Define tracking units IDs
-        const auto& tracking_params = config_tools_->getTrackingParameters(agent_id);
+        const auto& tracking_params = settings_tools_->getTrackingParameters(agent_id);
         agents_[agent_id].tracking_unit_ids.resize(tracking_params.n_t);
         int t_u = 0;
         for (int i = 1; i < tracking_params.n_o; i++)
@@ -295,9 +295,9 @@ namespace flychams::coordination
         PositionSolver::SharedPtr solver = std::make_shared<PositionSolver>();
 
         // Get config
-        const auto& config_ptr = config_tools_->getConfig();
-        const auto& agent_ptr = config_tools_->getAgent(agent_id);
-        const auto& tracking_params = config_tools_->getTrackingParameters(agent_id);
+        const auto& config_ptr = settings_tools_->getConfig();
+        const auto& agent_ptr = settings_tools_->getAgent(agent_id);
+        const auto& tracking_params = settings_tools_->getTrackingParameters(agent_id);
 
         // Get cost parameters for each tracking unit
         CostFunctions::CostParameters cost_params;

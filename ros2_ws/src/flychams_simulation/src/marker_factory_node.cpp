@@ -36,7 +36,7 @@ public: // Constructor/Destructor
     {
         // Use callback group from discovery node (to avoid race conditions)
         // Initialize marker factory
-        marker_factory_ = std::make_shared<MarkerFactory>(node_, config_tools_, topic_tools_, transform_tools_, discovery_cb_group_);
+        marker_factory_ = std::make_shared<MarkerFactory>(node_, settings_tools_, topic_tools_, transform_tools_, discovery_cb_group_);
 
         RCLCPP_INFO(node_->get_logger(), "Marker factory created");
     }

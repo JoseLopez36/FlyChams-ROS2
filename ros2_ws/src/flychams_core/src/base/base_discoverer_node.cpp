@@ -15,9 +15,9 @@ namespace flychams::core
         RCLCPP_INFO(node_->get_logger(), "Starting %s node...", node_name_.c_str());
 
         // Create tools
-        config_tools_ = std::make_shared<SettingsTools>(node_);
-        topic_tools_ = std::make_shared<TopicTools>(node_, config_tools_);
-        transform_tools_ = std::make_shared<TransformTools>(node_, config_tools_);
+        settings_tools_ = std::make_shared<SettingsTools>(node_);
+        topic_tools_ = std::make_shared<TopicTools>(node_, settings_tools_);
+        transform_tools_ = std::make_shared<TransformTools>(node_, settings_tools_);
 
         // Create callback group
         discovery_cb_group_ = node_->create_callback_group(rclcpp::CallbackGroupType::MutuallyExclusive);
@@ -48,7 +48,7 @@ namespace flychams::core
         elements_.clear();
         discovery_sub_.reset();
         // Destroy tools
-        config_tools_.reset();
+        settings_tools_.reset();
         topic_tools_.reset();
         transform_tools_.reset();
     }

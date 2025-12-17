@@ -41,7 +41,7 @@ namespace flychams::coordination
 
         // Get relevant transform frames
         world_frame_ = transform_tools_->getGlobalFrame();
-        const core::TrackingParameters& tracking_params = config_tools_->getTrackingParameters(agent_id_);
+        const core::TrackingParameters& tracking_params = settings_tools_->getTrackingParameters(agent_id_);
         central_optical_frame_ = transform_tools_->getCameraOpticalFrame(agent_id_, tracking_params.observation_units_params[0].id);
 
         // Create and initialize solver
@@ -169,9 +169,9 @@ namespace flychams::coordination
         PositionSolver::SharedPtr solver = std::make_shared<PositionSolver>();
 
         // Get config
-        const auto& config_ptr = config_tools_->getConfig();
-        const auto& agent_ptr = config_tools_->getAgent(agent_id);
-        const auto& tracking_params = config_tools_->getTrackingParameters(agent_id);
+        const auto& config_ptr = settings_tools_->getConfig();
+        const auto& agent_ptr = settings_tools_->getAgent(agent_id);
+        const auto& tracking_params = settings_tools_->getTrackingParameters(agent_id);
 
         // Get cost parameters for each tracking unit
         CostFunctions::CostParameters cost_params;

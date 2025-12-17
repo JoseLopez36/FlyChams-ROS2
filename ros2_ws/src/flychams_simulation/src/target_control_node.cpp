@@ -37,7 +37,7 @@ public: // Constructor/Destructor
     {
         // Use callback group from discovery node (to avoid race conditions)
         // Initialize target control
-        target_control_ = std::make_shared<TargetControl>(node_, config_tools_, topic_tools_, transform_tools_, discovery_cb_group_);
+        target_control_ = std::make_shared<TargetControl>(node_, settings_tools_, topic_tools_, transform_tools_, discovery_cb_group_);
 
         RCLCPP_INFO(node_->get_logger(), "Target control created");
     }

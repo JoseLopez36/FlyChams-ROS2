@@ -22,9 +22,9 @@ namespace flychams::simulation
         target_ = Target();
 
         // Parse trajectory
-        const auto& root = config_tools_->getSystem().trajectory_root;
-        const auto& folder = config_tools_->getTarget(target_id_)->trajectory_folder;
-        const auto& index = config_tools_->getTarget(target_id_)->target_index;
+        const auto& root = settings_tools_->getSystem().trajectory_root;
+        const auto& folder = settings_tools_->getTarget(target_id_)->trajectory_folder;
+        const auto& index = settings_tools_->getTarget(target_id_)->target_index;
         const auto& path = root + "/" + folder + "/" + "TRAJ" + std::to_string(index + 1) + ".csv";
         RCLCPP_INFO(node_->get_logger(), "Target state: Parsing trajectory for target %s with path %s", target_id_.c_str(), path.c_str());
         trajectory_.points = TrajectoryParser::parse(path);

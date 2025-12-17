@@ -2,8 +2,8 @@
 
 namespace flychams::core
 {
-    BaseModule::BaseModule(NodePtr node, SettingsTools::SharedPtr config_tools, TopicTools::SharedPtr topic_tools, TransformTools::SharedPtr transform_tools, CallbackGroupPtr module_cb_group)
-        : node_(node), config_tools_(config_tools), topic_tools_(topic_tools), transform_tools_(transform_tools), module_cb_group_(module_cb_group)
+    BaseModule::BaseModule(NodePtr node, SettingsTools::SharedPtr settings_tools, TopicTools::SharedPtr topic_tools, TransformTools::SharedPtr transform_tools, CallbackGroupPtr module_cb_group)
+        : node_(node), settings_tools_(settings_tools), topic_tools_(topic_tools), transform_tools_(transform_tools), module_cb_group_(module_cb_group)
     {
         // Nothing to do
     }
@@ -27,7 +27,7 @@ namespace flychams::core
         // Call on shutdown overridable method
         onShutdown();
         // Destroy tools
-        config_tools_.reset();
+        settings_tools_.reset();
         topic_tools_.reset();
         transform_tools_.reset();
         // Destroy node

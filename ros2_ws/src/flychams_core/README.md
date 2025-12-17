@@ -39,7 +39,7 @@ This package follows a domain-driven design approach, separating the core domain
 
 ### Tools
 
-- `config_tools.hpp` - Tools for working with configuration objects
+- `settings_tools.hpp` - Tools for working with configuration objects
 - `external_tools.hpp` - Base class for tools that interface with external frameworks (e.g. AirSim)
 - `airsim_tools.hpp` - AirSim-specific utilities for interfacing with the AirSim simulator
 - `topic_tools.hpp` - Utilities for topic naming and management (e.g. topic names, subscriber/publisher creation, etc.)

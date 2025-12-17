@@ -32,7 +32,7 @@ namespace flychams::core
     {
     public: // Constructor/Destructor
         BaseDiscovererNode(const std::string& node_name, const rclcpp::NodeOptions& options);
-        
+
         void init();
 
         virtual ~BaseDiscovererNode();
@@ -60,7 +60,7 @@ namespace flychams::core
         NodePtr node_;
         const std::string node_name_;
         // Tools
-        SettingsTools::SharedPtr config_tools_;
+        SettingsTools::SharedPtr settings_tools_;
         TopicTools::SharedPtr topic_tools_;
         TransformTools::SharedPtr transform_tools_;
         // Discovered elements

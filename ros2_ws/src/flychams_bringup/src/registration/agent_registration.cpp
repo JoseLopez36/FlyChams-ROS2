@@ -12,7 +12,7 @@ namespace flychams::bringup
 	{
 		// Iterate over all agents in the configuration
 		agents_.clear();
-		for (const auto& [agent_id, agent_ptr] : config_tools_->getAgentTeam())
+		for (const auto& [agent_id, agent_ptr] : settings_tools_->getAgentTeam())
 		{
 			// Add agent to list
 			agents_.push_back(agent_id);

@@ -33,7 +33,7 @@ namespace flychams::core
     class BaseModule
     {
     public: // Constructor/Destructor
-        BaseModule(NodePtr node, SettingsTools::SharedPtr config_tools, TopicTools::SharedPtr topic_tools, TransformTools::SharedPtr transform_tools, CallbackGroupPtr module_cb_group);
+        BaseModule(NodePtr node, SettingsTools::SharedPtr settings_tools, TopicTools::SharedPtr topic_tools, TransformTools::SharedPtr transform_tools, CallbackGroupPtr module_cb_group);
 
         void init();
 
@@ -52,7 +52,7 @@ namespace flychams::core
         // Node
         NodePtr node_;
         // Tools
-        SettingsTools::SharedPtr config_tools_;
+        SettingsTools::SharedPtr settings_tools_;
         TopicTools::SharedPtr topic_tools_;
         TransformTools::SharedPtr transform_tools_;
         // Callback group

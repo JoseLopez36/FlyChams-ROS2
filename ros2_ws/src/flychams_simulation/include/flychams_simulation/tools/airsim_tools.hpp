@@ -38,7 +38,7 @@ namespace flychams::simulation
     class AirsimTools : public SimulationTools
     {
     public: // Constructors/Destructors
-        AirsimTools(core::NodePtr node, const core::SettingsTools::SharedPtr& config_tools);
+        AirsimTools(core::NodePtr node, const core::SettingsTools::SharedPtr& settings_tools);
         ~AirsimTools() override;
         void shutdown() override;
 
@@ -77,7 +77,7 @@ namespace flychams::simulation
         int getWindowIndex(const core::ID& window_id) const
         {
             // Get system config
-            const auto& system_config = config_tools_->getSystem();
+            const auto& system_config = settings_tools_->getSystem();
 
             if (window_id == system_config.scenario_view_id)
                 return 0;

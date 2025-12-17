@@ -25,8 +25,8 @@ namespace flychams::perception
 	class ClusterAnalysis : public core::BaseModule
 	{
 	public: // Constructor/Destructor
-		ClusterAnalysis(core::NodePtr node, core::SettingsTools::SharedPtr config_tools, core::TopicTools::SharedPtr topic_tools, core::TransformTools::SharedPtr transform_tools, core::CallbackGroupPtr module_cb_group)
-			: BaseModule(node, config_tools, topic_tools, transform_tools, module_cb_group)
+		ClusterAnalysis(core::NodePtr node, core::SettingsTools::SharedPtr settings_tools, core::TopicTools::SharedPtr topic_tools, core::TransformTools::SharedPtr transform_tools, core::CallbackGroupPtr module_cb_group)
+			: BaseModule(node, settings_tools, topic_tools, transform_tools, module_cb_group)
 		{
 			init();
 		}

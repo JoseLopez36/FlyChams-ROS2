@@ -42,7 +42,7 @@ namespace flychams::coordination
         agents_.insert({ agent_id, Agent() });
 
         // Define agent's central unit ID
-        const auto& tracking_params = config_tools_->getTrackingParameters(agent_id);
+        const auto& tracking_params = settings_tools_->getTrackingParameters(agent_id);
         agents_[agent_id].central_unit_id = tracking_params.observation_units_params[0].id;
 
         // Create agent status subscriber

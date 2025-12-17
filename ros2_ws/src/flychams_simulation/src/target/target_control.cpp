@@ -20,7 +20,7 @@ namespace flychams::simulation
         spawn_index_ = 0;
 
         // Create simulation tools
-        simulation_tools_ = createSimulationTools(node_, config_tools_);
+        simulation_tools_ = createSimulationTools(node_, settings_tools_);
 
         // Set update timer
         update_timer_ = RosUtils::createTimer(node_, update_rate_,
@@ -59,7 +59,7 @@ namespace flychams::simulation
         initial_position.x = -500.0f + spawn_index_ * 2.0f;
         initial_position.y = -500.0f + spawn_index_ * 2.0f;
         initial_position.z = 0.0f;
-        spawnTarget(target_id, initial_position, config_tools_->getTarget(target_id)->type);
+        spawnTarget(target_id, initial_position, settings_tools_->getTarget(target_id)->type);
 
         // Increment spawn index
         spawn_index_++;

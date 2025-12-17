@@ -33,7 +33,7 @@ public: // Constructor/Destructor
         agent_id_ = RosUtils::getParameter<std::string>(node_, "agent_id");
 
         // Create agent tracking
-        agent_tracking_ = std::make_shared<AgentTracking>(agent_id_, node_, config_tools_, topic_tools_, transform_tools_, node_cb_group_);
+        agent_tracking_ = std::make_shared<AgentTracking>(agent_id_, node_, settings_tools_, topic_tools_, transform_tools_, node_cb_group_);
 
         RCLCPP_INFO(node_->get_logger(), "Agent tracking created for agent: %s", agent_id_.c_str());
     }

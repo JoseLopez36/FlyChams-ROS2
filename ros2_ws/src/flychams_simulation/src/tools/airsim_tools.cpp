@@ -10,8 +10,8 @@ namespace flychams::simulation
     // CONSTRUCTOR: Constructor and destructor
     // ════════════════════════════════════════════════════════════════════════════
 
-    AirsimTools::AirsimTools(NodePtr node, const SettingsTools::SharedPtr& config_tools)
-        : SimulationTools(node, config_tools)
+    AirsimTools::AirsimTools(NodePtr node, const SettingsTools::SharedPtr& settings_tools)
+        : SimulationTools(node, settings_tools)
     {
         // Initialize ROS components
         // Global commands

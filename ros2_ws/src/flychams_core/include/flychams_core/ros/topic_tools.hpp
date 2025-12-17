@@ -19,11 +19,11 @@ namespace flychams::core
     class TopicTools
     {
     public: // Constructor/Destructor
-        TopicTools(NodePtr node, const SettingsTools::SharedPtr& config_tools)
-            : node_(node), config_tools_(config_tools)
+        TopicTools(NodePtr node, const SettingsTools::SharedPtr& settings_tools)
+            : node_(node), settings_tools_(settings_tools)
         {
             // Get topic config
-            const auto& topic_config = config_tools_->getTopics();
+            const auto& topic_config = settings_tools_->getTopics();
 
             // Get global topics
             global_topics_.registration = topic_config.registration;
@@ -66,7 +66,7 @@ namespace flychams::core
         void shutdown()
         {
             // Destroy config tools
-            config_tools_.reset();
+            settings_tools_.reset();
             // Destroy node
             node_.reset();
         }
@@ -128,7 +128,7 @@ namespace flychams::core
         NodePtr node_;
 
         // Config tools
-        SettingsTools::SharedPtr config_tools_;
+        SettingsTools::SharedPtr settings_tools_;
 
     public: // Topic getters
         // Global topics

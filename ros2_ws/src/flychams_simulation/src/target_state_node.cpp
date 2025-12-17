@@ -62,7 +62,7 @@ private: // Element management
         auto state_cb_group = node_->create_callback_group(rclcpp::CallbackGroupType::MutuallyExclusive);
 
         // Create target controllers
-        auto target_state = std::make_shared<TargetState>(target_id, node_, config_tools_, topic_tools_, transform_tools_, state_cb_group);
+        auto target_state = std::make_shared<TargetState>(target_id, node_, settings_tools_, topic_tools_, transform_tools_, state_cb_group);
         target_state_.insert(std::make_pair(target_id, target_state));
         RCLCPP_INFO(node_->get_logger(), "Target state created for target %s", target_id.c_str());
     }

@@ -7,16 +7,16 @@ using namespace flychams::core;
 
 namespace flychams::simulation
 {
-    SimulationTools::SharedPtr createSimulationTools(NodePtr node, const SettingsTools::SharedPtr& config_tools)
+    SimulationTools::SharedPtr createSimulationTools(NodePtr node, const SettingsTools::SharedPtr& settings_tools)
     {
         // Get framework
-        const SimulationFramework framework = config_tools->getSystem().simulation_framework;
+        const SimulationFramework framework = settings_tools->getSystem().simulation_framework;
 
         // Create framework tools based on simulation framework
         switch (framework)
         {
         case SimulationFramework::AirSim:
-            return std::make_shared<AirsimTools>(node, config_tools);
+            return std::make_shared<AirsimTools>(node, settings_tools);
         default:
             throw std::runtime_error("Unknown simulation framework: " + std::to_string(static_cast<int>(framework)));
         }

@@ -89,7 +89,7 @@ namespace flychams::control
 			camera_ids[j] = setpoints.ids[i];
 
 			// Get camera configuration
-			const auto& camera_config = config_tools_->getCamera(agent_id_, camera_ids[j]);
+			const auto& camera_config = settings_tools_->getCamera(agent_id_, camera_ids[j]);
 
 			// Get camera quaternion
 			const auto& rotation = setpoints.rotations[i];

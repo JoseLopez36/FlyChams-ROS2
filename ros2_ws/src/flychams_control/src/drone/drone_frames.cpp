@@ -18,7 +18,7 @@ namespace flychams::control
         agent_ = Agent();
 
         // Create mavros communication
-        mavros_comm_ = std::make_shared<MavrosCommunication>(agent_id_, node_, config_tools_, topic_tools_, transform_tools_, module_cb_group_);
+        mavros_comm_ = std::make_shared<MavrosCommunication>(agent_id_, node_, settings_tools_, topic_tools_, transform_tools_, module_cb_group_);
 
         // Subscribe to topics
         agent_.global_origin_sub = topic_tools_->createGlobalOriginSubscriber(

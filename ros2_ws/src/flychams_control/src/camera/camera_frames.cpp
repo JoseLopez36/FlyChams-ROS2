@@ -21,7 +21,7 @@ namespace flychams::control
         camera_communication_ = std::make_shared<CameraCommunication>(agent_id_, node_);
 
         // Get multi camera set
-        auto multi_camera_set = config_tools_->getMultiCameraSet(agent_id_);
+        auto multi_camera_set = settings_tools_->getMultiCameraSet(agent_id_);
 
         // Iterate through all cameras to create initial frames
         for (const auto& [camera_id, camera_config_ptr] : multi_camera_set)
@@ -68,7 +68,7 @@ namespace flychams::control
             const auto& orientation_msg = msg->orientations[i];
 
             // Get camera configuration
-            const auto& camera_config_ptr = config_tools_->getMultiCamera(agent_id_, camera_id);
+            const auto& camera_config_ptr = settings_tools_->getMultiCamera(agent_id_, camera_id);
 
             // Get camera position from config (static relative to body)
             PointMsg position_msg;

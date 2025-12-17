@@ -19,9 +19,9 @@ namespace flychams::core
         sub_options_with_node_cb_group_.callback_group = node_cb_group_;
 
         // Create tools
-        config_tools_ = std::make_shared<SettingsTools>(node_);
-        topic_tools_ = std::make_shared<TopicTools>(node_, config_tools_);
-        transform_tools_ = std::make_shared<TransformTools>(node_, config_tools_);
+        settings_tools_ = std::make_shared<SettingsTools>(node_);
+        topic_tools_ = std::make_shared<TopicTools>(node_, settings_tools_);
+        transform_tools_ = std::make_shared<TransformTools>(node_, settings_tools_);
 
         // Call on init overridable method
         onInit();
@@ -39,7 +39,7 @@ namespace flychams::core
         // Call on shutdown overridable method
         onShutdown();
         // Destroy tools
-        config_tools_.reset();
+        settings_tools_.reset();
         topic_tools_.reset();
         transform_tools_.reset();
     }

@@ -13,10 +13,10 @@ namespace flychams::bringup
 		// Iterate over all agents in the configuration
 		clusters_.clear();
 		int cluster_index = 0;
-		for (const auto& [agent_id, agent_ptr] : config_tools_->getAgentTeam())
+		for (const auto& [agent_id, agent_ptr] : settings_tools_->getAgentTeam())
 		{
 			// Get tracking parameters
-			const auto& tracking_params = config_tools_->getTrackingParameters(agent_id);
+			const auto& tracking_params = settings_tools_->getTrackingParameters(agent_id);
 
 			// Register clusters based on the number of tracking units
 			const int& n_t = tracking_params.n_t;

@@ -19,7 +19,7 @@ namespace flychams::coordination
         solvers_.clear();
 
         // Get tracking parameters
-        tracking_params_ = config_tools_->getTrackingParameters(agent_id_);
+        tracking_params_ = settings_tools_->getTrackingParameters(agent_id_);
 
         // Get relevant transform frames
         world_frame_ = transform_tools_->getGlobalFrame();
@@ -187,7 +187,7 @@ namespace flychams::coordination
                 // Set central camera reference focal length
                 zoom_factor = tracking_params_.observation_units_params[0].upsilon_ref;
                 // Get central camera initial orientation
-                rotation = config_tools_->getMultiCamera(agent_id_, unit.id)->orientation;
+                rotation = settings_tools_->getMultiCamera(agent_id_, unit.id)->orientation;
             }
             else if (unit.type == ObservationType::Window)
             {

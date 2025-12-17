@@ -19,8 +19,8 @@ namespace flychams::control
 		takeoff_altitude_ = RosUtils::getParameterOr<float>(node_, "takeoff_altitude", 1.5f);
 
 		// Get space constraints
-		const auto& config_ptr = config_tools_->getConfig();
-		const auto& agent_ptr = config_tools_->getAgent(agent_id_);
+		const auto& config_ptr = settings_tools_->getConfig();
+		const auto& agent_ptr = settings_tools_->getAgent(agent_id_);
 		float min_horizontal = config_ptr->horizontal_constraint(0);
 		float max_horizontal = config_ptr->horizontal_constraint(1);
 		float min_vertical = config_ptr->vertical_constraint(0);
@@ -39,7 +39,7 @@ namespace flychams::control
 		command_counter_ = 0;
 
 		// Create mavros communication
-		mavros_comm_ = std::make_shared<MavrosCommunication>(agent_id_, node_, config_tools_, topic_tools_, transform_tools_, module_cb_group_);
+		mavros_comm_ = std::make_shared<MavrosCommunication>(agent_id_, node_, settings_tools_, topic_tools_, transform_tools_, module_cb_group_);
 
 		// Subscribe to status, position and setpoint topics
 		agent_.status_sub = topic_tools_->createAgentStatusSubscriber(agent_id_,

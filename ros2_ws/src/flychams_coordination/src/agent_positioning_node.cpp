@@ -33,7 +33,7 @@ public: // Constructor/Destructor
         agent_id_ = RosUtils::getParameter<std::string>(node_, "agent_id");
 
         // Create agent positioning
-        agent_positioning_ = std::make_shared<AgentPositioning>(agent_id_, node_, config_tools_, topic_tools_, transform_tools_, node_cb_group_);
+        agent_positioning_ = std::make_shared<AgentPositioning>(agent_id_, node_, settings_tools_, topic_tools_, transform_tools_, node_cb_group_);
 
         RCLCPP_INFO(node_->get_logger(), "Agent positioning created for agent: %s", agent_id_.c_str());
     }
