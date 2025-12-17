@@ -113,23 +113,42 @@ namespace flychams::control
     void CameraFrames::updateCameraBodyFrame(const core::ID camera_id, const core::PointMsg& position, const core::QuaternionMsg& orientation)
     {
         // Get frames
+        std::string world_frame = transform_tools_->getGlobalFrame();
         std::string body_frame = transform_tools_->getAgentBodyFrame(agent_id_);
         std::string camera_body_frame = transform_tools_->getCameraBodyFrame(agent_id_, camera_id);
 
-        // Get body to camera body transformation
-        Matrix4r body_to_camera_body = Matrix4r::Identity();
+        // Lookup body pose in world using TF
+        PoseStampedMsg pose;
+        pose.header = RosUtils::createHeader(node_, body_frame);
+        pose.pose.position = PointMsg();
+        pose.pose.orientation = QuaternionMsg();
+        pose.pose.orientation.w = 1.0;
+        const PoseStampedMsg wTb = transform_tools_->transformPose(pose, world_frame);
 
-        // Set position
-        body_to_camera_body(0, 3) = position.x;
-        body_to_camera_body(1, 3) = position.y;
-        body_to_camera_body(2, 3) = position.z;
+        // Extract world to body pose
+        const Vector3r wPb(
+            wTb.pose.position.x,
+            wTb.pose.position.y,
+            wTb.pose.position.z);
+        const Quaternionr wQb = RosUtils::fromMsg(wTb.pose.orientation);
+        const Matrix3r wRb = TfUtils::quatToMatrix(wQb);
 
-        // Set orientation
-        Quaternionr orientation_quat = RosUtils::fromMsg(orientation);
-        body_to_camera_body.block<3, 3>(0, 0) = TfUtils::quatToMatrix(orientation_quat);
+        // Camera mounting offset in body frame
+        const Vector3r bPc(position.x, position.y, position.z);
 
-        // Broadcast agent body -> camera body
-        transform_tools_->broadcastTransform(body_frame, camera_body_frame, body_to_camera_body);
+        // Get world to camera body position and orientation
+        const Vector3r wPc = wPb + (wRb * bPc);
+        const Quaternionr wQc = RosUtils::fromMsg(orientation);
+
+        // Build world to camera body transform
+        Matrix4r wTc = Matrix4r::Identity();
+        wTc(0, 3) = wPc.x();
+        wTc(1, 3) = wPc.y();
+        wTc(2, 3) = wPc.z();
+        wTc.block<3, 3>(0, 0) = TfUtils::quatToMatrix(wQc);
+
+        // Broadcast world -> camera body (dynamic)
+        transform_tools_->broadcastTransform(world_frame, camera_body_frame, wTc);
     }
 
 } // namespace flychams::control

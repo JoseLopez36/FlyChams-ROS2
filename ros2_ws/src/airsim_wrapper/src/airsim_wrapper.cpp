@@ -954,21 +954,16 @@ namespace airsim_wrapper
                         camera_ros->body_tf_msg.header.stamp = curr_time;
                         camera_ros->body_tf_msg.transform = get_gimbal_transform_msg_from_airsim(pose.position, pose.orientation);
 
-                        // Transform camera orientation from local frame to vehicle body frame
-                        // camera_body_orientation = vehicle_body^-1 * camera_local_orientation
-                        tf2::Quaternion vehicle_body_quat, camera_local_quat, camera_body_quat;
-                        tf2::fromMsg(vehicle_ros->body_tf_msg.transform.rotation, vehicle_body_quat);
-                        tf2::fromMsg(camera_ros->body_tf_msg.transform.rotation, camera_local_quat);
-                        camera_body_quat = vehicle_body_quat.inverse() * camera_local_quat;
-
-                        // Update camera orientation (in body frame)
-                        geometry_msgs::msg::Quaternion camera_body_orientation;
-                        camera_body_orientation.x = camera_body_quat.x();
-                        camera_body_orientation.y = camera_body_quat.y();
-                        camera_body_orientation.z = camera_body_quat.z();
-                        camera_body_orientation.w = camera_body_quat.w();
+                        // Update camera orientation
+                        tf2::Quaternion camera_orientation_tf2;
+                        tf2::fromMsg(camera_ros->body_tf_msg.transform.rotation, camera_orientation_tf2);
+                        geometry_msgs::msg::Quaternion camera_orientation;
+                        camera_orientation.x = camera_orientation_tf2.x();
+                        camera_orientation.y = camera_orientation_tf2.y();
+                        camera_orientation.z = camera_orientation_tf2.z();
+                        camera_orientation.w = camera_orientation_tf2.w();
                         vehicle_ros->camera_orientation.camera_names.push_back(camera_name);
-                        vehicle_ros->camera_orientation.orientations.push_back(camera_body_orientation);
+                        vehicle_ros->camera_orientation.orientations.push_back(camera_orientation);
                     }
                 }
             }
