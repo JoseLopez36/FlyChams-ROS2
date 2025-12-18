@@ -37,29 +37,11 @@ namespace flychams::simulation
     public: // Types
         using SharedPtr = std::shared_ptr<SimulationGui>;
         using WindowCmd = SimulationTools::WindowCmd;
-        using DrawCmd = SimulationTools::DrawCmd;
         enum class GuiMode
         {
             IDLE,
             RESET,
-            TRACKING
-        };
-        struct Agent
-        {
-            // Status data
-            core::AgentStatus status;
-            bool has_status;
-            // Setpoints data
-            bool has_gui_setpoints;
-            // Subscribers
-            core::SubscriberPtr<core::AgentStatusMsg> status_sub;
-            core::SubscriberPtr<core::GuiSetpointsMsg> gui_setpoints_sub;
-            // Constructor
-            Agent()
-                : status(), has_status(false), has_gui_setpoints(false),
-                status_sub(), gui_setpoints_sub()
-            {
-            }
+            RUNNING
         };
 
     private: // Parameters
@@ -69,22 +51,14 @@ namespace flychams::simulation
     private: // Data
         // GUI mode
         GuiMode gui_mode_;
-        // Agent
-        Agent agent_;
         // Simulation tools
         SimulationTools::SharedPtr simulation_tools_;
         // Window commands
-        std::vector<WindowCmd> simulation_window_cmds_; // Simulation window commands
-        std::vector<WindowCmd> operator_window_cmds_;   // Operator window commands
-        DrawCmd central_draw_cmd_;                      // Central draw command
+        std::vector<WindowCmd> window_cmds_; // Window commands
 
     public: // Public methods
-        void activate() { gui_mode_ = GuiMode::RESET; }
-        void deactivate() { gui_mode_ = GuiMode::IDLE; }
-
-    private: // Callbacks
-        void statusCallback(const core::AgentStatusMsg::SharedPtr msg);
-        void setpointsCallback(const core::GuiSetpointsMsg::SharedPtr msg);
+        void stop() { gui_mode_ = GuiMode::IDLE; }
+        void start() { gui_mode_ = GuiMode::RUNNING; }
 
     private: // GUI management
         void update();
@@ -92,7 +66,6 @@ namespace flychams::simulation
     private: // GUI methods
         void setWindows(const std::vector<WindowCmd>& window_cmds);
         void resetWindows(std::vector<WindowCmd>& window_cmds);
-        void drawWindow(const DrawCmd& draw_cmd);
 
     private: // ROS components
         // Timer

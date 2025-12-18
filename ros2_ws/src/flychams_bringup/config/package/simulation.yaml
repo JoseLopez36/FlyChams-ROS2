@@ -1,3 +1,8 @@
+/**/simulation_gui_node:
+  ros__parameters:
+    # Update rate (Hz)
+    update_rate: 20.0
+
 /**/target_state_node:
   ros__parameters:
     # Update rate (Hz)

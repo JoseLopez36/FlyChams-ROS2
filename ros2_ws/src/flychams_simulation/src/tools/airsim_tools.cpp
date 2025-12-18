@@ -18,6 +18,10 @@ namespace flychams::simulation
         reset_client_ = node_->create_client<Reset>("/airsim/reset");
         run_client_ = node_->create_client<Run>("/airsim/run");
         pause_client_ = node_->create_client<Pause>("/airsim/pause");
+        // Window commands
+        window_image_cmd_group_pub_ = node_->create_publisher<WindowImageCmdGroup>("/airsim/windows/cmd/image", 10);
+        window_rectangle_cmd_pub_ = node_->create_publisher<WindowRectangleCmd>("/airsim/windows/cmd/rectangle", 10);
+        window_string_cmd_pub_ = node_->create_publisher<WindowStringCmd>("/airsim/windows/cmd/string", 10);
         // Tracking commands
         add_target_group_client_ = node_->create_client<AddTargetGroup>("/airsim/targets/cmd/add");
         add_cluster_group_client_ = node_->create_client<AddClusterGroup>("/airsim/clusters/cmd/add");
@@ -43,6 +47,9 @@ namespace flychams::simulation
         remove_all_targets_client_.reset();
         remove_all_clusters_client_.reset();
         // Destroy publishers
+        window_image_cmd_group_pub_.reset();
+        window_rectangle_cmd_pub_.reset();
+        window_string_cmd_pub_.reset();
         update_target_cmd_group_pub_.reset();
         update_cluster_cmd_group_pub_.reset();
         // Destroy node pointer
@@ -78,6 +85,66 @@ namespace flychams::simulation
 
         // Send request and wait for response
         return RosUtils::sendRequest<Pause>(node_, pause_client_, request, 1000);
+    }
+
+    // ════════════════════════════════════════════════════════════════════════════
+    // WINDOW CONTROL: Service-based control methods
+    // ════════════════════════════════════════════════════════════════════════════
+
+    void AirsimTools::setWindows(const std::vector<WindowCmd>& window_cmds)
+    {
+        // Get number of windows
+        const size_t n = window_cmds.size();
+
+        // Create message
+        WindowImageCmdGroup msg;
+        msg.window_indices.resize(n);
+        msg.vehicle_names.resize(n);
+        msg.camera_names.resize(n);
+        msg.corners.resize(n);
+        msg.sizes.resize(n);
+        for (size_t i = 0; i < n; i++)
+        {
+            const auto& cmd = window_cmds[i];
+
+            msg.window_indices[i] = getWindowIndex(cmd.window_id);
+            msg.vehicle_names[i] = cmd.vehicle_id;
+            msg.camera_names[i] = cmd.camera_id;
+            msg.corners[i].x = cmd.crop.x;
+            msg.corners[i].y = cmd.crop.y;
+            msg.sizes[i].x = cmd.crop.w;
+            msg.sizes[i].y = cmd.crop.h;
+        }
+
+        // Publish message
+        window_image_cmd_group_pub_->publish(msg);
+    }
+
+    void AirsimTools::drawWindow(const DrawCmd& draw_cmd)
+    {
+        // Get number of elements to draw
+        const size_t n_rectangles = draw_cmd.rectangles.positions.size();
+        const size_t n_strings = draw_cmd.strings.positions.size();
+
+        // Create rectangle message
+        WindowRectangleCmd rectangle_msg;
+        rectangle_msg.window_index = getWindowIndex(draw_cmd.window_id);
+        rectangle_msg.corners = draw_cmd.rectangles.positions;
+        rectangle_msg.sizes = draw_cmd.rectangles.sizes;
+        rectangle_msg.color = draw_cmd.rectangles.color;
+        rectangle_msg.thickness = draw_cmd.rectangles.thickness;
+
+        // Create string message
+        WindowStringCmd string_msg;
+        string_msg.window_index = getWindowIndex(draw_cmd.window_id);
+        string_msg.strings = draw_cmd.strings.texts;
+        string_msg.positions = draw_cmd.strings.positions;
+        string_msg.color = draw_cmd.strings.color;
+        string_msg.scale = draw_cmd.strings.scale;
+
+        // Publish rectangle and string messages
+        window_rectangle_cmd_pub_->publish(rectangle_msg);
+        window_string_cmd_pub_->publish(string_msg);
     }
 
     // ════════════════════════════════════════════════════════════════════════════

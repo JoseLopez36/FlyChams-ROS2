@@ -97,16 +97,16 @@ def launch_setup(context, *args, **kwargs):
     print(f"Loading mission parameters from: {mission_params_path}")
 
     # ============= DASHBOARD NODES =============
-    # Conditionally add GUI Manager node
-    if is_enabled('gui_manager'):
+    # Conditionally add Operator GUI node
+    if is_enabled('operator_gui'):
         ld.append(
             Node(
-                package='flychams_simulation',
-                executable='gui_manager_node',
-                name='gui_manager_node',
+                package='flychams_dashboard',
+                executable='operator_gui_node',
+                name='operator_gui_node',
                 output='screen',
                 namespace='flychams/global',
-                arguments=['--ros-args', '--log-level', log_level('gui_manager')],
+                arguments=['--ros-args', '--log-level', log_level('operator_gui')],
                 parameters=[
                     system_path, 
                     topics_path, 
@@ -122,7 +122,7 @@ def launch_setup(context, *args, **kwargs):
     if is_enabled('metrics_factory'):
         ld.append(
             Node(
-                package='flychams_simulation',
+                package='flychams_dashboard',
                 executable='metrics_factory_node',
                 name='metrics_factory_node',
                 output='screen',
@@ -143,7 +143,7 @@ def launch_setup(context, *args, **kwargs):
     if is_enabled('marker_factory'):
         ld.append(
             Node(
-                package='flychams_simulation',
+                package='flychams_dashboard',
                 executable='marker_factory_node',
                 name='marker_factory_node',
                 output='screen',

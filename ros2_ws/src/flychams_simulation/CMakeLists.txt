@@ -14,6 +14,7 @@ find_package(flychams_core REQUIRED)
 
 # Create simulation library
 set(SIMULATION_SRC
+  src/gui/simulation_gui.cpp
   src/target/target_state.cpp
   src/target/target_control.cpp
   src/tools/simulation_tools.cpp
@@ -35,6 +36,11 @@ target_link_libraries(${PROJECT_NAME}
   rclcpp::rclcpp
 )
 
+# Create executable for simulation GUI node
+add_executable(simulation_gui_node src/simulation_gui_node.cpp)
+target_link_libraries(simulation_gui_node ${PROJECT_NAME})
+ament_target_dependencies(simulation_gui_node rclcpp airsim_interfaces flychams_core)
+
 # Create executable for target state node
 add_executable(target_state_node src/target_state_node.cpp)
 target_link_libraries(target_state_node ${PROJECT_NAME})
@@ -54,7 +60,7 @@ install(TARGETS ${PROJECT_NAME}
   INCLUDES DESTINATION include
 )
 
-install(TARGETS target_state_node target_control_node
+install(TARGETS simulation_gui_node target_state_node target_control_node
   RUNTIME DESTINATION lib/${PROJECT_NAME}
 )
 

@@ -33,10 +33,10 @@ target_link_libraries(${PROJECT_NAME}
   rclcpp::rclcpp
 )
 
-# Create executable for GUI manager node
-add_executable(gui_manager_node src/gui_manager_node.cpp)
-target_link_libraries(gui_manager_node ${PROJECT_NAME})
-ament_target_dependencies(gui_manager_node rclcpp flychams_core)
+# Create executable for operator GUI node
+add_executable(operator_gui_node src/operator_gui_node.cpp)
+target_link_libraries(operator_gui_node ${PROJECT_NAME})
+ament_target_dependencies(operator_gui_node rclcpp flychams_core)
 
 # Create executable for metrics factory node
 add_executable(metrics_factory_node src/metrics_factory_node.cpp)
@@ -57,7 +57,7 @@ install(TARGETS ${PROJECT_NAME}
   INCLUDES DESTINATION include
 )
 
-install(TARGETS gui_manager_node metrics_factory_node marker_factory_node
+install(TARGETS operator_gui_node metrics_factory_node marker_factory_node
   RUNTIME DESTINATION lib/${PROJECT_NAME}
 )
 

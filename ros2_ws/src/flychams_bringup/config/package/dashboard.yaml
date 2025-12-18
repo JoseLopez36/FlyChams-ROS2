@@ -1,4 +1,4 @@
-/**/gui_manager_node:
+/**/operator_gui_node:
   ros__parameters:
     # Update rate (Hz)
     update_rate: 20.0

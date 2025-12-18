@@ -188,6 +188,27 @@ def launch_setup(context, *args, **kwargs):
         )
 
     # ============= SIMULATION NODES =============
+    # Conditionally add Simulation GUI node
+    if is_enabled('simulation_gui'):
+        ld.append(
+            Node(
+                package='flychams_simulation',
+                executable='simulation_gui_node',
+                name='simulation_gui_node',
+                output='screen',
+                namespace='flychams/global',
+                arguments=['--ros-args', '--log-level', log_level('simulation_gui')],
+                parameters=[
+                    system_path, 
+                    topics_path, 
+                    frames_path, 
+                    simulation_path,
+                    mission_params_path,
+                    {'use_sim_time': is_simulated}
+                ]
+            )
+        )
+
     # Conditionally add Target State node
     if is_enabled('target_state'):
         ld.append(

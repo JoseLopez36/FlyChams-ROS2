@@ -14,6 +14,7 @@ node_allowlist:
   - cluster_analysis
   - agent_assignment
   - agent_analysis
+  - simulation_gui
   - target_state
   - target_control
   # Agent runtime nodes
@@ -25,7 +26,7 @@ node_allowlist:
   - agent_positioning
   - agent_tracking
   # Visualization runtime nodes
-  - gui_manager
+  - operator_gui
   - metrics_factory
   - marker_factory
   - rviz
@@ -42,6 +43,7 @@ node_log_levels:
   cluster_analysis: info
   agent_assignment: info
   agent_analysis: info
+  simulation_gui: info
   target_state: info
   target_control: info
   # Agent runtime nodes
@@ -53,7 +55,7 @@ node_log_levels:
   agent_positioning: info
   agent_tracking: info
   # Visualization runtime nodes
-  gui_manager: info
+  operator_gui: info
   metrics_factory: info
   marker_factory: info
   rviz: error

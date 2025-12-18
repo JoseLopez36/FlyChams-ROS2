@@ -31,28 +31,45 @@ public: // Constructor/Destructor
         // Initialize selected agent
         selected_agent_id_ = "NONE";
 
-        // Initialize GUI managers
-        gui_managers_.clear();
+        // Initialize Simulation GUIs
+        simulation_guis_.clear();
     }
 
     void onShutdown() override
     {
-        // Destroy GUI managers
-        gui_managers_.clear();
+        // Destroy Simulation GUIs
+        simulation_guis_.clear();
     }
 
 private: // Agent management
+    void onAgentSelected()
+    {
+        if (selected_agent_id_ != "NONE")
+        {
+            // Start selected simulation GUI and stop the rest
+            for (const auto& [id, gui] : simulation_guis_)
+            {
+                if (id == selected_agent_id_)
+                {
+                    RCLCPP_INFO(node_->get_logger(), "Starting Simulation GUI for agent %s", selected_agent_id_.c_str());
+                    gui->start();
+                }
+                else
+                {
+                    gui->stop();
+                }
+            }
+        }
+    }
+
     void onAddAgent(const ID& agent_id) override
     {
         // Use callback group from discovery node (to avoid race conditions)
-        // Create and add GUI manager
-        auto manager = std::make_shared<GuiManager>(agent_id, node_, settings_tools_, topic_tools_, transform_tools_, discovery_cb_group_);
-        gui_managers_.insert({ agent_id, manager });
+        // Create and add Simulation GUI
+        auto gui = std::make_shared<SimulationGui>(agent_id, node_, settings_tools_, topic_tools_, transform_tools_, discovery_cb_group_);
+        simulation_guis_.insert({ agent_id, gui });
 
-        RCLCPP_INFO(node_->get_logger(), "GUI manager created for agent %s", agent_id.c_str());
-
-        // Deactivate GUI manager
-        manager->deactivate();
+        RCLCPP_INFO(node_->get_logger(), "Simulation GUI created for agent %s", agent_id.c_str());
 
         // Select agent if no agent is selected
         if (selected_agent_id_ == "NONE")
@@ -64,16 +81,16 @@ private: // Agent management
 
     void onRemoveAgent(const ID& agent_id) override
     {
-        // Remove agent from GUI manager
-        gui_managers_.erase(agent_id);
+        // Remove agent from Simulation GUI
+        simulation_guis_.erase(agent_id);
 
         // Select new agent if it is the one being removed
         if (selected_agent_id_ == agent_id)
         {
             // Get first agent if available
-            if (!gui_managers_.empty())
+            if (!simulation_guis_.empty())
             {
-                auto it = gui_managers_.begin();
+                auto it = simulation_guis_.begin();
                 selected_agent_id_ = it->first;
                 onAgentSelected();
             }
@@ -105,32 +122,11 @@ private: // Agent management
         // Clusters are not handled by this node
     }
 
-    void onAgentSelected()
-    {
-        // Update tracking windows
-        if (selected_agent_id_ != "NONE")
-        {
-            // Activate selected GUI manager and deactivate the rest
-            for (const auto& [id, manager] : gui_managers_)
-            {
-                if (id == selected_agent_id_)
-                {
-                    RCLCPP_INFO(node_->get_logger(), "Activating GUI manager for agent %s", selected_agent_id_.c_str());
-                    manager->activate();
-                }
-                else
-                {
-                    manager->deactivate();
-                }
-            }
-        }
-    }
-
 private: // Components
     // Selected agent
     ID selected_agent_id_;
-    // GUI manager per agent
-    std::unordered_map<ID, GuiManager::SharedPtr> gui_managers_;
+    // Simulation GUI per agent
+    std::unordered_map<ID, SimulationGui::SharedPtr> simulation_guis_;
 };
 
 int main(int argc, char** argv)
