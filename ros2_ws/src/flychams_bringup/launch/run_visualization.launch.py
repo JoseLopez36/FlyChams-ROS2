@@ -18,7 +18,7 @@ def launch_setup(context, *args, **kwargs):
     is_simulated_str = LaunchConfiguration('is_simulated').perform(context)
     # Convert string to boolean for use_sim_time parameter
     is_simulated = is_simulated_str.lower() in ('true', '1', 'yes', 'on')
-    
+
     # Get paths to config files
     # Core parameters
     system_path = PathJoinSubstitution([
@@ -47,15 +47,22 @@ def launch_setup(context, *args, **kwargs):
     ])
     
     # Package parameters
-    bringup_path = PathJoinSubstitution([
+    dashboard_path = PathJoinSubstitution([
         FindPackageShare('flychams_bringup'),
         'config',
         'package',
-        'bringup.yaml'
+        'dashboard.yaml'
+    ])
+
+    # Rviz parameters
+    rviz_path = PathJoinSubstitution([
+        FindPackageShare('flychams_bringup'),
+        'rviz',
+        'default.rviz'
     ])
 
     # Set environment variable to control ROS logger output
-    os.environ['RCUTILS_LOGGING_USE_STDOUT'] = '0' # Disable logging to stdout
+    os.environ['RCUTILS_LOGGING_USE_STDOUT'] = '1' # Enable logging to stdout
     os.environ['RCUTILS_COLORIZED_OUTPUT'] = '1'   # Enable colored output
 
     # Generate launch description
@@ -88,51 +95,85 @@ def launch_setup(context, *args, **kwargs):
         raise FileNotFoundError(f"Mission parameters file not found: {mission_params_path}")
     
     print(f"Loading mission parameters from: {mission_params_path}")
-    
-    # ============= BRINGUP NODES =============
-    # Conditionally add Element Registrator node
-    if is_enabled('element_registrator'):
+
+    # ============= DASHBOARD NODES =============
+    # Conditionally add GUI Manager node
+    if is_enabled('gui_manager'):
         ld.append(
             Node(
-                package='flychams_bringup',
-                executable='element_registrator_node',
-                name='element_registrator_node',
+                package='flychams_simulation',
+                executable='gui_manager_node',
+                name='gui_manager_node',
                 output='screen',
                 namespace='flychams/global',
-                arguments=['--ros-args', '--log-level', log_level('element_registrator')],
+                arguments=['--ros-args', '--log-level', log_level('gui_manager')],
                 parameters=[
                     system_path, 
-                    topics_path,
-                    frames_path,
-                    bringup_path,
-                    mission_params_path
+                    topics_path, 
+                    frames_path, 
+                    dashboard_path,
+                    mission_params_path,
+                    {'use_sim_time': is_simulated}
                 ]
             )
         )
 
-    # ============= AIRSIM NODES =============
-    # Conditionally add AirSim node
-    if is_enabled('airsim'):
+    # Conditionally add Metrics Factory node
+    if is_enabled('metrics_factory'):
         ld.append(
             Node(
-                package='airsim_wrapper',
-                executable='airsim_node',
-                name='airsim_node',
+                package='flychams_simulation',
+                executable='metrics_factory_node',
+                name='metrics_factory_node',
                 output='screen',
-                namespace='airsim',
-                arguments=['--ros-args', '--log-level', log_level('airsim')],
-                parameters=[{
-                    'update_airsim_state_every_n_sec': 0.020,
-                    'update_sim_clock_every_n_sec': 0.001,
-                    'world_frame_id': 'world',
-                    'vehicle_local_frame_id': 'local',
-                    'vehicle_body_frame_id': 'body',
-                    'camera_body_frame_id': 'body',
-                    'camera_optical_frame_id': 'optical',
-                    'host_ip': 'localhost',
-                    'host_port': 41451,
-                    'broadcast_transforms': False
-                }]
+                namespace='flychams/global',
+                arguments=['--ros-args', '--log-level', log_level('metrics_factory')],
+                parameters=[
+                    system_path, 
+                    topics_path, 
+                    frames_path, 
+                    dashboard_path,
+                    mission_params_path,
+                    {'use_sim_time': is_simulated}
+                ]
+            )
+        )
+
+    # Conditionally add Marker Factory node
+    if is_enabled('marker_factory'):
+        ld.append(
+            Node(
+                package='flychams_simulation',
+                executable='marker_factory_node',
+                name='marker_factory_node',
+                output='screen',
+                namespace='flychams/global',
+                arguments=['--ros-args', '--log-level', log_level('marker_factory')],
+                parameters=[
+                    system_path, 
+                    topics_path, 
+                    frames_path, 
+                    dashboard_path,
+                    mission_params_path,
+                    {'use_sim_time': is_simulated}
+                ]
+            )
+        )
+
+    # ============= RVIZ2 NODES =============
+    # Conditionally add Rviz
+    if is_enabled('rviz'):
+        ld.append(
+            Node(
+                package='rviz2',
+                executable='rviz2',
+                name='rviz2',
+                output='screen',
+                arguments=['--ros-args', '--log-level', log_level('rviz')],
+                parameters=[
+                    rviz_path,
+                    {'use_sim_time': is_simulated}
+                ]
             )
         )
 

@@ -21,10 +21,10 @@ namespace flychams::simulation
      * @date 2025-02-27
      * ════════════════════════════════════════════════════════════════
      */
-    class GuiManager : public core::BaseModule
+    class SimulationGui : public core::BaseModule
     {
     public: // Constructor/Destructor
-        GuiManager(const core::ID& agent_id, core::NodePtr node, core::SettingsTools::SharedPtr settings_tools, core::TopicTools::SharedPtr topic_tools, core::TransformTools::SharedPtr transform_tools, core::CallbackGroupPtr module_cb_group)
+        SimulationGui(const core::ID& agent_id, core::NodePtr node, core::SettingsTools::SharedPtr settings_tools, core::TopicTools::SharedPtr topic_tools, core::TransformTools::SharedPtr transform_tools, core::CallbackGroupPtr module_cb_group)
             : BaseModule(node, settings_tools, topic_tools, transform_tools, module_cb_group), agent_id_(agent_id)
         {
             init();
@@ -35,7 +35,7 @@ namespace flychams::simulation
         void onShutdown() override;
 
     public: // Types
-        using SharedPtr = std::shared_ptr<GuiManager>;
+        using SharedPtr = std::shared_ptr<SimulationGui>;
         using WindowCmd = SimulationTools::WindowCmd;
         using DrawCmd = SimulationTools::DrawCmd;
         enum class GuiMode

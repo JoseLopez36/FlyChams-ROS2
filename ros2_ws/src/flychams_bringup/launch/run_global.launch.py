@@ -47,18 +47,6 @@ def launch_setup(context, *args, **kwargs):
     ])
     
     # Package parameters
-    bringup_path = PathJoinSubstitution([
-        FindPackageShare('flychams_bringup'),
-        'config',
-        'package',
-        'bringup.yaml'
-    ])
-    control_path = PathJoinSubstitution([
-        FindPackageShare('flychams_bringup'),
-        'config',
-        'package',
-        'control.yaml'
-    ])
     coordination_path = PathJoinSubstitution([
         FindPackageShare('flychams_bringup'),
         'config',
@@ -200,69 +188,6 @@ def launch_setup(context, *args, **kwargs):
         )
 
     # ============= SIMULATION NODES =============
-    # Conditionally add GUI Manager node
-    if is_enabled('gui_manager'):
-        ld.append(
-            Node(
-                package='flychams_simulation',
-                executable='gui_manager_node',
-                name='gui_manager_node',
-                output='screen',
-                namespace='flychams/global',
-                arguments=['--ros-args', '--log-level', log_level('gui_manager')],
-                parameters=[
-                    system_path, 
-                    topics_path, 
-                    frames_path, 
-                    simulation_path,
-                    mission_params_path,
-                    {'use_sim_time': is_simulated}
-                ]
-            )
-        )
-
-    # Conditionally add Metrics Factory node
-    if is_enabled('metrics_factory'):
-        ld.append(
-            Node(
-                package='flychams_simulation',
-                executable='metrics_factory_node',
-                name='metrics_factory_node',
-                output='screen',
-                namespace='flychams/global',
-                arguments=['--ros-args', '--log-level', log_level('metrics_factory')],
-                parameters=[
-                    system_path, 
-                    topics_path, 
-                    frames_path, 
-                    simulation_path,
-                    mission_params_path,
-                    {'use_sim_time': is_simulated}
-                ]
-            )
-        )
-
-    # Conditionally add Marker Factory node
-    if is_enabled('marker_factory'):
-        ld.append(
-            Node(
-                package='flychams_simulation',
-                executable='marker_factory_node',
-                name='marker_factory_node',
-                output='screen',
-                namespace='flychams/global',
-                arguments=['--ros-args', '--log-level', log_level('marker_factory')],
-                parameters=[
-                    system_path, 
-                    topics_path, 
-                    frames_path, 
-                    simulation_path,
-                    mission_params_path,
-                    {'use_sim_time': is_simulated}
-                ]
-            )
-        )
-
     # Conditionally add Target State node
     if is_enabled('target_state'):
         ld.append(

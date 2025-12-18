@@ -48,12 +48,6 @@ def launch_setup(context, *args, **kwargs):
     ])
     
     # Package parameters
-    bringup_path = PathJoinSubstitution([
-        FindPackageShare('flychams_bringup'),
-        'config',
-        'package',
-        'bringup.yaml'
-    ])
     control_path = PathJoinSubstitution([
         FindPackageShare('flychams_bringup'),
         'config',
@@ -65,18 +59,6 @@ def launch_setup(context, *args, **kwargs):
         'config',
         'package',
         'coordination.yaml'
-    ])
-    perception_path = PathJoinSubstitution([
-        FindPackageShare('flychams_bringup'),
-        'config',
-        'package',
-        'perception.yaml'
-    ])
-    simulation_path = PathJoinSubstitution([
-        FindPackageShare('flychams_bringup'),
-        'config',
-        'package',
-        'simulation.yaml'
     ])
 
     # Set environment variable to control ROS logger output

@@ -11,10 +11,6 @@
 #include <airsim_interfaces/srv/reset.hpp>
 #include <airsim_interfaces/srv/run.hpp>
 #include <airsim_interfaces/srv/pause.hpp>
-// Window commands
-#include <airsim_interfaces/msg/window_image_cmd_group.hpp>
-#include <airsim_interfaces/msg/window_rectangle_cmd.hpp>
-#include <airsim_interfaces/msg/window_string_cmd.hpp>
 // Tracking commands
 #include <airsim_interfaces/srv/add_target_group.hpp>
 #include <airsim_interfaces/srv/add_cluster_group.hpp>
@@ -46,9 +42,6 @@ namespace flychams::simulation
         using ResetSrv = airsim_interfaces::srv::Reset;
         using RunSrv = airsim_interfaces::srv::Run;
         using PauseSrv = airsim_interfaces::srv::Pause;
-        using WindowImageCmdGroupMsg = airsim_interfaces::msg::WindowImageCmdGroup;
-        using WindowRectangleCmdMsg = airsim_interfaces::msg::WindowRectangleCmd;
-        using WindowStringCmdMsg = airsim_interfaces::msg::WindowStringCmd;
         using AddTargetGroupSrv = airsim_interfaces::srv::AddTargetGroup;
         using AddClusterGroupSrv = airsim_interfaces::srv::AddClusterGroup;
         using RemoveAllTargetsSrv = airsim_interfaces::srv::RemoveAllTargets;
@@ -60,10 +53,6 @@ namespace flychams::simulation
         bool resetSimulation() override;
         bool runSimulation() override;
         bool pauseSimulation() override;
-
-    public: // Window control methods
-        void setWindows(const std::vector<WindowCmd>& window_cmds) override;
-        void drawWindow(const DrawCmd& draw_cmd) override;
 
     public: // Tracking control methods
         bool addTargetGroup(const core::IDs& target_ids, const std::vector<core::TargetType>& target_types, const std::vector<core::PointMsg>& positions, const bool& highlight, const std::vector<core::ColorMsg>& highlight_colors) override;
@@ -109,11 +98,6 @@ namespace flychams::simulation
         core::ClientPtr<ResetSrv> reset_client_;
         core::ClientPtr<RunSrv> run_client_;
         core::ClientPtr<PauseSrv> pause_client_;
-
-        // Window commands
-        core::PublisherPtr<WindowImageCmdGroupMsg> window_image_cmd_group_pub_;
-        core::PublisherPtr<WindowRectangleCmdMsg> window_rectangle_cmd_pub_;
-        core::PublisherPtr<WindowStringCmdMsg> window_string_cmd_pub_;
 
         // Tracking commands
         core::ClientPtr<AddTargetGroupSrv> add_target_group_client_;

@@ -54,30 +54,6 @@ def launch_setup(context, *args, **kwargs):
         'package',
         'bringup.yaml'
     ])
-    control_path = PathJoinSubstitution([
-        FindPackageShare('flychams_bringup'),
-        'config',
-        'package',
-        'control.yaml'
-    ])
-    coordination_path = PathJoinSubstitution([
-        FindPackageShare('flychams_bringup'),
-        'config',
-        'package',
-        'coordination.yaml'
-    ])
-    perception_path = PathJoinSubstitution([
-        FindPackageShare('flychams_bringup'),
-        'config',
-        'package',
-        'perception.yaml'
-    ])
-    simulation_path = PathJoinSubstitution([
-        FindPackageShare('flychams_bringup'),
-        'config',
-        'package',
-        'simulation.yaml'
-    ])
 
     # Mavros parameters
     mavros_path = PathJoinSubstitution([
