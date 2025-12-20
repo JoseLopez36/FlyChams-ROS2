@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Launch script for global instance
+Launch script for coordinator instance
 """
 
 import os
@@ -20,7 +20,7 @@ from launchlib.types import LaunchMode
 
 def main():
     # Get arguments
-    parser = argparse.ArgumentParser(description="Launch global instance")
+    parser = argparse.ArgumentParser(description="Launch coordinator instance")
     parser.add_argument("--sim", action="store_true", help="Run in simulation mode")
     parser.add_argument("--hardware", action="store_true", help="Run in hardware mode")
     parser.add_argument("--delay", type=float, default=1.0, help="Delay in seconds between setup and run")
@@ -28,18 +28,18 @@ def main():
 
     # Determine launch mode
     if args.sim and args.hardware:
-        print("[GLOBAL] Error: Cannot use both --sim and --hardware flags")
+        print("[COORDINATOR] Error: Cannot use both --sim and --hardware flags")
         sys.exit(1)
     elif args.sim:
         launch_mode = LaunchMode.SIMULATION
     elif args.hardware:
         launch_mode = LaunchMode.HARDWARE
     else:
-        print("[GLOBAL] Error: No launch mode specified")
+        print("[COORDINATOR] Error: No launch mode specified")
         sys.exit(1)
 
     # Log
-    print(f"[GLOBAL] Launching global instance in {launch_mode.value} mode")
+    print(f"[COORDINATOR] Launching coordinator instance in {launch_mode.value} mode")
 
     # Get script directory
     script_dir = Path(__file__).resolve().parent
@@ -51,46 +51,33 @@ def main():
     # Load environment variables
     env = load_environment(env_path)
 
+    # Get docker username
+    username = env.docker_user_name
+
     # Create Docker container
-    container = DockerContainer(image="flychams-ros2:latest", name="flychams-GLOBAL")
+    container = DockerContainer(image="flychams-ros2:latest", name="flychams-COORDINATOR")
 
     # Create launcher
     launcher = ContainerLauncher(env, container)
 
     # Get is simulated argument
     is_simulated_arg = "true" if launch_mode == LaunchMode.SIMULATION else "false"
-    
-    # Create command
-    setup_cmd = "setup_global.sh" + " " + is_simulated_arg
-    
-    # Get setup shell command
-    setup_shell = launcher.setup(setup_cmd)
-
-    # Log
-    print(f"[GLOBAL] Setup command: {setup_shell}")
-
-    # Execute setup shell command in a separate subprocess
-    setup_process = subprocess.Popen(['bash', '-lc', setup_shell])
-    print(f"[GLOBAL] Launched setup (PID: {setup_process.pid})")
-
-    # Wait a delay for container to be ready
-    time.sleep(args.delay)
 
     # Create command
-    run_cmd = "run_global.sh" + " " + is_simulated_arg
+    cmd = f"/home/{username}/FlyChams-ROS2/tools/shell/run_coordinator.sh {is_simulated_arg}"
     
-    # Get run shell command
-    run_shell = launcher.run(run_cmd)
+    # Get shell command
+    shell = launcher.run(cmd)
 
     # Log
-    print(f"[GLOBAL] Run command: {run_shell}")
+    print(f"[COORDINATOR] Command: {shell}")
 
-    # Execute run shell command in a separate subprocess and wait for it
-    run_process = subprocess.Popen(['bash', '-lc', run_shell])
-    print(f"[GLOBAL] Launched run command (PID: {run_process.pid})")
+    # Execute shell command in a separate subprocess
+    process = subprocess.Popen(['bash', '-lc', shell])
+    print(f"[COORDINATOR] Launched coordinator instance (PID: {process.pid})")
 
-    # Wait for run process to exit
-    run_process.wait()
+    # Wait for process to exit
+    process.wait()
 
     # Restore terminal
     os.system('stty sane 2>/dev/null')

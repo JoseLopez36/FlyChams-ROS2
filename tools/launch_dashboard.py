@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Launch script for visualization (RViz or PlotJuggler)
+Launch script for dashboard instance
 """
 
 import os
@@ -19,15 +19,14 @@ from launchlib.types import LaunchMode
 
 def main():
     # Get arguments
-    parser = argparse.ArgumentParser(description='Launch visualization instance')
-    parser.add_argument('--plotjuggler', action='store_true', help='Run PlotJuggler instead of RViz')
+    parser = argparse.ArgumentParser(description='Launch dashboard instance')
     args = parser.parse_args()
 
     # Determine launch mode
     launch_mode = LaunchMode.SIMULATION
 
     # Log
-    print(f"[VISUALIZATION] Launching visualization instance in {launch_mode.value} mode")
+    print(f"[DASHBOARD] Launching dashboard instance in {launch_mode.value} mode")
 
     # Get script directory
     script_dir = Path(__file__).resolve().parent
@@ -39,8 +38,11 @@ def main():
     # Load environment variables
     env = load_environment(env_path)
 
+    # Get docker username
+    username = env.docker_user_name
+
     # Create Docker container
-    container = DockerContainer(image="flychams-ros2:latest", name="flychams-VISUALIZATION")
+    container = DockerContainer(image="flychams-ros2:latest", name="flychams-DASHBOARD")
 
     # Setup X11 authorization
     container.setup_auth()
@@ -49,23 +51,20 @@ def main():
     launcher = ContainerLauncher(env, container)
     
     # Create command
-    if args.plotjuggler:
-        setup_cmd = "run_plotjuggler.sh"
-    else:
-        setup_cmd = "run_rviz.sh"
+    cmd = f"/home/{username}/FlyChams-ROS2/tools/shell/run_dashboard.sh"
     
-    # Get setup shell command
-    setup_shell = launcher.setup(setup_cmd)
+    # Get shell command
+    shell = launcher.setup(cmd)
 
     # Log
-    print(f"[VISUALIZATION] Setup command: {setup_shell}")
+    print(f"[DASHBOARD] Command: {shell}")
 
-    # Execute setup shell command in a separate subprocess
-    setup_process = subprocess.Popen(['bash', '-lc', setup_shell])
-    print(f"[VISUALIZATION] Launched visualization instance (PID: {setup_process.pid})")
+    # Execute shell command in a separate subprocess
+    process = subprocess.Popen(['bash', '-lc', shell])
+    print(f"[DASHBOARD] Launched dashboard instance (PID: {process.pid})")
 
-    # Wait for setup process to exit
-    setup_process.wait()
+    # Wait for process to exit
+    process.wait()
 
     # Restore terminal
     os.system('stty sane 2>/dev/null')

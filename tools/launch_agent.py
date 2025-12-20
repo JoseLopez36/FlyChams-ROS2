@@ -24,7 +24,6 @@ def main():
     parser.add_argument("--agent-id", required=True, help="Agent ID")
     parser.add_argument("--sim", action="store_true", help="Run in simulation mode")
     parser.add_argument("--hardware", action="store_true", help="Run in hardware mode")
-    parser.add_argument("--delay", type=float, default=1.0, help="Delay in seconds between setup and run")
     args = parser.parse_args()
 
     # Get agent ID
@@ -57,6 +56,9 @@ def main():
     env = load_environment(env_path)
     agent = load_agent(agent_id, mission_path)
 
+    # Get docker username
+    username = env.docker_user_name
+
     # Get is simulated argument
     is_simulated_arg = "true" if launch_mode == LaunchMode.SIMULATION else "false"
 
@@ -69,36 +71,20 @@ def main():
         launcher = AgentContainerLauncher(agent_id, env, container)
         
         # Create command
-        setup_cmd = "setup_agent.sh" + " " + is_simulated_arg
+        cmd = f"/home/{username}/FlyChams-ROS2/tools/shell/run_agent.sh {is_simulated_arg}"
         
-        # Get setup shell command
-        setup_shell = launcher.setup(setup_cmd)
+        # Get shell command
+        shell = launcher.setup(cmd)
 
         # Log
-        print(f"[{agent_id}] Setup command: {setup_shell}")
+        print(f"[{agent_id}] Command: {shell}")
 
-        # Execute setup shell command in a separate subprocess
-        setup_process = subprocess.Popen(['bash', '-lc', setup_shell])
-        print(f"[{agent_id}] Launched setup (PID: {setup_process.pid})")
+        # Execute shell command in a separate subprocess
+        process = subprocess.Popen(['bash', '-lc', shell])
+        print(f"[{agent_id}] Launched agent instance (PID: {process.pid})")
 
-        # Wait a delay for container to be ready
-        time.sleep(args.delay)
-
-        # Create command
-        run_cmd = "run_agent.sh" + " " + is_simulated_arg
-        
-        # Get run shell command
-        run_shell = launcher.run(run_cmd)
-
-        # Log
-        print(f"[{agent_id}] Run command: {run_shell}")
-
-        # Execute run shell command in a separate subprocess and wait for it
-        run_process = subprocess.Popen(['bash', '-lc', run_shell])
-        print(f"[{agent_id}] Launched run command (PID: {run_process.pid})")
-
-        # Wait for run process to exit
-        run_process.wait()
+        # Wait for process to exit
+        process.wait()
 
         # Restore terminal
         os.system('stty sane 2>/dev/null')
@@ -109,36 +95,20 @@ def main():
         launcher = AgentRemoteLauncher(agent_id, agent.ssh)
         
         # Create command
-        setup_cmd = "setup_agent.sh" + " " + is_simulated_arg
+        cmd = f"/home/{username}/FlyChams-ROS2/tools/shell/run_agent.sh {is_simulated_arg}"
         
-        # Get setup shell command
-        setup_shell = launcher.setup(setup_cmd)
+        # Get shell command
+        shell = launcher.run(cmd)
 
         # Log
-        print(f"[{agent_id}] Setup command: {setup_shell}")
+        print(f"[{agent_id}] Command: {shell}")
 
-        # Execute setup shell command in a separate subprocess
-        setup_process = subprocess.Popen(['bash', '-lc', setup_shell])
-        print(f"[{agent_id}] Launched setup (PID: {setup_process.pid})")
+        # Execute shell command in a separate subprocess
+        process = subprocess.Popen(['bash', '-lc', shell])
+        print(f"[{agent_id}] Launched agent instance (PID: {process.pid})")
 
-        # Wait a delay for container to be ready
-        time.sleep(args.delay)
-
-        # Create command
-        run_cmd = "run_agent.sh" + " " + is_simulated_arg
-        
-        # Get run shell command
-        run_shell = launcher.run(run_cmd)
-
-        # Log
-        print(f"[{agent_id}] Run command: {run_shell}")
-
-        # Execute run shell command in a separate subprocess and wait for it
-        run_process = subprocess.Popen(['bash', '-lc', run_shell])
-        print(f"[{agent_id}] Launched run command (PID: {run_process.pid})")
-
-        # Wait for run process to exit
-        run_process.wait()
+        # Wait for process to exit
+        process.wait()
 
         # Restore terminal
         os.system('stty sane 2>/dev/null') 

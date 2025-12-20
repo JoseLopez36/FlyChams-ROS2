@@ -19,20 +19,11 @@ class ContainerLauncher:
         self.docker.set_env(self.get_base_docker_env())
 
     def setup(self, cmd):
-        username = self.env.docker_user_name
-
         # Get base volumes
         base_volumes = self.get_base_volumes()
 
-        # Get base command
-        base_cmd = (
-            "source /opt/ros/iron/setup.bash && "
-            f"source /home/{username}/FlyChams-ROS2/ros2_ws/install/setup.bash && "
-            f"/home/{username}/FlyChams-ROS2/tools/shell/{cmd}"
-        )
-
         # Get run shell command
-        shell = self.docker.get_run_shell(base_volumes, base_cmd)
+        shell = self.docker.get_run_shell(base_volumes, cmd)
 
         # Convert shell command to string
         shell_str = " ".join(shlex.quote(str(arg)) for arg in shell)
@@ -40,17 +31,8 @@ class ContainerLauncher:
         return shell_str
 
     def run(self, cmd):
-        username = self.env.docker_user_name
-
-        # Get base command
-        base_cmd = (
-            "source /opt/ros/iron/setup.bash && "
-            f"source /home/{username}/FlyChams-ROS2/ros2_ws/install/setup.bash && "
-            f"/home/{username}/FlyChams-ROS2/tools/shell/{cmd}"
-        )
-
         # Get exec shell command
-        shell = self.docker.get_exec_shell(base_cmd)
+        shell = self.docker.get_exec_shell(cmd)
 
         # Convert shell command to string
         shell_str = " ".join(shlex.quote(str(arg)) for arg in shell)
@@ -92,20 +74,11 @@ class AgentContainerLauncher():
         self.docker.set_env(self.get_base_docker_env())
 
     def setup(self, cmd):
-        username = self.env.docker_user_name
-
         # Get base volumes
         base_volumes = self.get_base_volumes()
 
-        # Get base command
-        base_cmd = (
-            "source /opt/ros/iron/setup.bash && "
-            f"source /home/{username}/FlyChams-ROS2/ros2_ws/install/setup.bash && "
-            f"/home/{username}/FlyChams-ROS2/tools/shell/{cmd} {self.agent_id}"
-        )
-
         # Get run shell command
-        shell = self.docker.get_run_shell(base_volumes, base_cmd)
+        shell = self.docker.get_run_shell(base_volumes, cmd)
 
         # Convert shell command to string
         shell_str = " ".join(shlex.quote(str(arg)) for arg in shell)
@@ -113,17 +86,8 @@ class AgentContainerLauncher():
         return shell_str
 
     def run(self, cmd):
-        username = self.env.docker_user_name
-
-        # Get base command
-        base_cmd = (
-            "source /opt/ros/iron/setup.bash && "
-            f"source /home/{username}/FlyChams-ROS2/ros2_ws/install/setup.bash && "
-            f"/home/{username}/FlyChams-ROS2/tools/shell/{cmd} {self.agent_id}"
-        )
-
         # Get exec shell command
-        shell = self.docker.get_exec_shell(base_cmd)
+        shell = self.docker.get_exec_shell(cmd)
 
         # Convert shell command to string
         shell_str = " ".join(shlex.quote(str(arg)) for arg in shell)
@@ -164,30 +128,16 @@ class AgentRemoteLauncher():
     def setup(self, cmd):
         username = self.ssh.user
 
-        # Get base command
-        base_cmd = (
-            "source /opt/ros/iron/setup.bash && "
-            f"source /home/{username}/FlyChams-ROS2/ros2_ws/install/setup.bash && "
-            f"/home/{username}/FlyChams-ROS2/tools/shell/{cmd} {self.agent_id}"
-        )
-
         # Get run shell command
-        shell = f"ssh {username}@{self.ssh.hostname} '{base_cmd}'"
+        shell = f"ssh {username}@{self.ssh.hostname} '{cmd}'"
 
         return shell
 
     def run(self, cmd):
         username = self.ssh.user
 
-        # Get base command
-        base_cmd = (
-            "source /opt/ros/iron/setup.bash && "
-            f"source /home/{username}/FlyChams-ROS2/ros2_ws/install/setup.bash && "
-            f"/home/{username}/FlyChams-ROS2/tools/shell/{cmd} {self.agent_id}"
-        )
-
         # Get exec shell command
-        shell = f"ssh {username}@{self.ssh.hostname} '{base_cmd}'"
+        shell = f"ssh {username}@{self.ssh.hostname} '{cmd}'"
 
         return shell
 

@@ -67,17 +67,20 @@ def main():
 
     # Create launcher
     launcher = ContainerLauncher(env, container)
+
+    # Get docker username
+    username = env.docker_user_name
     
     # Create command
     if args.build_ros2:
         if args.j > 0:
-            setup_cmd = f"build_ros2_ws.sh -j {args.j}"
+            setup_cmd = f"/home/{username}/FlyChams-ROS2/tools/shell/build_ros2_ws.sh -j {args.j}"
         else:
-            setup_cmd = "build_ros2_ws.sh"
+            setup_cmd = f"/home/{username}/FlyChams-ROS2/tools/shell/build_ros2_ws.sh"
     elif args.build_airsim:
-        setup_cmd = "build_airsim.sh"
+        setup_cmd = f"/home/{username}/FlyChams-ROS2/tools/shell/build_airsim.sh"
     elif args.generate_settings:
-        setup_cmd = "create_settings.sh"
+        setup_cmd = f"/home/{username}/FlyChams-ROS2/tools/shell/create_settings.sh"
     else:
         print("[BUILD] Error: No build option specified")
         sys.exit(1)

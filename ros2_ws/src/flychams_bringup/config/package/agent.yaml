@@ -1,0 +1,59 @@
+/**:
+  ros__parameters:
+    # Takeoff and landing altitude (m)
+    takeoff_altitude: 3.0
+    landing_altitude: 0.5
+
+/**/drone_control_node:
+  ros__parameters:
+    # Update rate (Hz)
+    update_rate: 10.0
+
+    # Control mode (0: position, 1: velocity)
+    control_mode: 0
+
+/**/mavros_manager_node:
+  ros__parameters:
+    # Mavros launch parameters
+    fcu_url: udp://:14030@172.17.0.2:14280
+    tgt_system: 1
+
+    # Mavros stream rate (Hz)
+    local_position_odom_rate: 800.0
+
+/**/agent_analysis_node:
+  ros__parameters:
+    # Update rate (Hz)
+    analysis_rate: 20.0
+
+/**/agent_positioning_node:
+  ros__parameters:
+    # Update rate (Hz)
+    positioning_rate: 10.0
+
+    # Positioning parameters
+    # Positioning solver mode 
+    # 0: ELLIPSOID_METHOD, 1: NELDER_MEAD_NLOPT, 2: NESTEROV_ALGORITHM, 
+    # 3: L_BFGS_NLOPT, 4: PSO_ALGORITHM, 5: ALC_PSO_ALGORITHM, 6: CMA_ES_ALGORITHM
+    solver_mode: 3
+    # Solver parameters
+    eps: 1.0e-1
+    convergence_tolerance: 1.0e-5
+    max_iterations: 1000
+    # PSO parameters
+    num_particles: 50
+    w_max: 0.4
+    w_min: 0.1
+    c1: 1.0
+    c2: 1.0
+    stagnation_limit: 5
+    # ALC-PSO parameters
+    max_lifespan: 60
+    num_challenger_tests: 10
+    # Nesterov parameters
+    lipschitz_constant: 0.0
+
+/**/agent_tracking_node:
+  ros__parameters:
+    # Update rate (Hz)
+    tracking_rate: 20.0

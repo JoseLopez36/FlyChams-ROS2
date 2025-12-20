@@ -41,18 +41,18 @@ def main():
     # Create launcher
     launcher = PX4ContainerLauncher(agent_index, env)
     
-    # Get setup shell command
-    setup_shell = launcher.setup(root_dir)
+    # Get shell command
+    shell = launcher.setup(root_dir)
 
     # Log
-    print(f"[PX4-{agent_index}] Setup command: {setup_shell}")
+    print(f"[PX4-{agent_index}] Command: {shell}")
 
-    # Execute setup shell command in a separate subprocess
-    setup_process = subprocess.Popen(['bash', '-lc', setup_shell])
-    print(f"[PX4-{agent_index}] Launched setup (PID: {setup_process.pid})")
+    # Execute shell command in a separate subprocess
+    process = subprocess.Popen(['bash', '-lc', shell])
+    print(f"[PX4-{agent_index}] Launched setup (PID: {process.pid})")
 
-    # Wait for setup process to exit
-    setup_process.wait()
+    # Wait for process to exit
+    process.wait()
 
     # Restore terminal
     os.system('stty sane 2>/dev/null')

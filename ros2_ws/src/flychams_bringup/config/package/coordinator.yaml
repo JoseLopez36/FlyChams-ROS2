@@ -1,3 +1,17 @@
+/**/agent_assignment_node:
+  ros__parameters:
+    # Update rate (Hz)
+    assignment_rate: 1.0
+    # Assignment parameters
+    assignment:
+      # Assignment solver mode
+      # 0: SUBOPTIMAL_COMBINATORIAL, 1: OPTIMAL_COMBINATORIAL
+      solver_mode: 0
+      # Optimization weights
+      observation_weight: 1.0
+      distance_weight: 10.0
+      switch_weight: 5000.0
+
 /**/target_clustering_node:
   ros__parameters:
     # Update rate (Hz)

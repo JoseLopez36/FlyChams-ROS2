@@ -1,7 +1,7 @@
 # Ignore config files
-config/mission.yaml
-config/airsim.json
-config/.~lock.Configuration.xlsx\#
+mission.yaml
+airsim.json
+.~lock.Configuration.xlsx\#
 
 # Ignore ROS2 files
 ros2_ws/build/

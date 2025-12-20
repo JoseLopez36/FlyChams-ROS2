@@ -1,8 +1,0 @@
-/**/mavros_manager_node:
-  ros__parameters:
-    # Mavros launch parameters
-    fcu_url: udp://:14030@172.17.0.2:14280
-    tgt_system: 1
-
-    # Mavros stream rate (Hz)
-    local_position_odom_rate: 800.0
