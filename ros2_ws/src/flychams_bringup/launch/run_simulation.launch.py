@@ -14,11 +14,6 @@ def load_mission_parameters(mission_settings_path):
     return mission_settings_path
 
 def launch_setup(context, *args, **kwargs):
-    # Get is_simulated value from LaunchConfiguration
-    is_simulated_str = LaunchConfiguration('is_simulated').perform(context)
-    # Convert string to boolean for use_sim_time parameter
-    is_simulated = is_simulated_str.lower() in ('true', '1', 'yes', 'on')
-    
     # Get paths to config files
     # Core parameters
     system_path = PathJoinSubstitution([
@@ -47,15 +42,15 @@ def launch_setup(context, *args, **kwargs):
     ])
     
     # Package parameters
-    bringup_path = PathJoinSubstitution([
+    simulation_path = PathJoinSubstitution([
         FindPackageShare('flychams_bringup'),
         'config',
         'package',
-        'bringup.yaml'
+        'simulation.yaml'
     ])
 
     # Set environment variable to control ROS logger output
-    os.environ['RCUTILS_LOGGING_USE_STDOUT'] = '0' # Disable logging to stdout
+    os.environ['RCUTILS_LOGGING_USE_STDOUT'] = '1' # Enable logging to stdout
     os.environ['RCUTILS_COLORIZED_OUTPUT'] = '1'   # Enable colored output
 
     # Generate launch description
@@ -88,29 +83,7 @@ def launch_setup(context, *args, **kwargs):
         raise FileNotFoundError(f"Mission parameters file not found: {mission_params_path}")
     
     print(f"Loading mission parameters from: {mission_params_path}")
-    
-    # ============= BRINGUP NODES =============
-    # Conditionally add Element Registrator node
-    if is_enabled('element_registrator'):
-        ld.append(
-            Node(
-                package='flychams_bringup',
-                executable='element_registrator_node',
-                name='element_registrator_node',
-                output='screen',
-                namespace='flychams/global',
-                arguments=['--ros-args', '--log-level', log_level('element_registrator')],
-                parameters=[
-                    system_path, 
-                    topics_path,
-                    frames_path,
-                    bringup_path,
-                    mission_params_path
-                ]
-            )
-        )
 
-    # ============= AIRSIM NODES =============
     # Conditionally add AirSim node
     if is_enabled('airsim'):
         ld.append(
@@ -136,17 +109,72 @@ def launch_setup(context, *args, **kwargs):
             )
         )
 
+    # Conditionally add Simulation GUI node
+    if is_enabled('simulation_gui'):
+        ld.append(
+            Node(
+                package='flychams_simulation',
+                executable='simulation_gui_node',
+                name='simulation_gui_node',
+                output='screen',
+                namespace='flychams/global',
+                arguments=['--ros-args', '--log-level', log_level('simulation_gui')],
+                parameters=[
+                    system_path, 
+                    topics_path, 
+                    frames_path, 
+                    simulation_path,
+                    mission_params_path,
+                    {'use_sim_time': True}
+                ]
+            )
+        )
+
+    # Conditionally add Target State node
+    if is_enabled('target_state'):
+        ld.append(
+            Node(
+                package='flychams_simulation',
+                executable='target_state_node',
+                name='target_state_node',
+                output='screen',
+                namespace='flychams/global',
+                arguments=['--ros-args', '--log-level', log_level('target_state')],
+                parameters=[
+                    system_path, 
+                    topics_path, 
+                    frames_path, 
+                    simulation_path,
+                    mission_params_path,
+                    {'use_sim_time': True}
+                ]
+            )
+        )
+
+    # Conditionally add Target Control node
+    if is_enabled('target_control'):
+        ld.append(
+            Node(
+                package='flychams_simulation',
+                executable='target_control_node',
+                name='target_control_node',
+                output='screen',
+                namespace='flychams/global',
+                arguments=['--ros-args', '--log-level', log_level('target_control')],
+                parameters=[
+                    system_path, 
+                    topics_path, 
+                    frames_path, 
+                    simulation_path,
+                    mission_params_path,
+                    {'use_sim_time': True}
+                ]
+            )
+        )
+
     return ld
 
 def generate_launch_description():
-    # Declare arguments
-    is_simulated_arg = DeclareLaunchArgument(
-        'is_simulated',
-        default_value='True',
-        description='Whether the system is simulated'
-    )
-
     return LaunchDescription([
-        is_simulated_arg,
         OpaqueFunction(function=launch_setup)
     ])

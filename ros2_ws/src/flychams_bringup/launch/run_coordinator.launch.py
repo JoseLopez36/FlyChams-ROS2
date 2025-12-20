@@ -47,23 +47,11 @@ def launch_setup(context, *args, **kwargs):
     ])
     
     # Package parameters
-    coordination_path = PathJoinSubstitution([
+    coordinator_path = PathJoinSubstitution([
         FindPackageShare('flychams_bringup'),
         'config',
         'package',
-        'coordination.yaml'
-    ])
-    perception_path = PathJoinSubstitution([
-        FindPackageShare('flychams_bringup'),
-        'config',
-        'package',
-        'perception.yaml'
-    ])
-    simulation_path = PathJoinSubstitution([
-        FindPackageShare('flychams_bringup'),
-        'config',
-        'package',
-        'simulation.yaml'
+        'coordinator.yaml'
     ])
 
     # Set environment variable to control ROS logger output
@@ -100,8 +88,27 @@ def launch_setup(context, *args, **kwargs):
         raise FileNotFoundError(f"Mission parameters file not found: {mission_params_path}")
     
     print(f"Loading mission parameters from: {mission_params_path}")
+
+    # Conditionally add Element Registrator node
+    if is_enabled('element_registrator'):
+        ld.append(
+            Node(
+                package='flychams_coordinator',
+                executable='element_registrator_node',
+                name='element_registrator_node',
+                output='screen',
+                namespace='flychams/global',
+                arguments=['--ros-args', '--log-level', log_level('element_registrator')],
+                parameters=[
+                    system_path, 
+                    topics_path,
+                    frames_path,
+                    coordinator_path,
+                    mission_params_path
+                ]
+            )
+        )
     
-    # ============= PERCEPTION NODES =============
     # Conditionally add Target Clustering node
     if is_enabled('target_clustering'):
         ld.append(
@@ -116,7 +123,7 @@ def launch_setup(context, *args, **kwargs):
                     system_path, 
                     topics_path, 
                     frames_path, 
-                    perception_path,
+                    coordinator_path,
                     mission_params_path,
                     {'use_sim_time': is_simulated}
                 ]
@@ -137,19 +144,18 @@ def launch_setup(context, *args, **kwargs):
                     system_path, 
                     topics_path, 
                     frames_path, 
-                    perception_path,
+                    coordinator_path,
                     mission_params_path,
                     {'use_sim_time': is_simulated}
                 ]
             )
         )
 
-    # ============= COORDINATION NODES =============
     # Conditionally add Agent Assignment node
     if is_enabled('agent_assignment'):
         ld.append(
             Node(
-                package='flychams_coordination',
+                package='flychams_coordinator',
                 executable='agent_assignment_node',
                 name='agent_assignment_node',
                 output='screen',
@@ -159,92 +165,7 @@ def launch_setup(context, *args, **kwargs):
                     system_path, 
                     topics_path, 
                     frames_path, 
-                    coordination_path,
-                    mission_params_path,
-                    {'use_sim_time': is_simulated}
-                ]
-            )
-        )
-
-    # Conditionally add Agent Analysis node
-    if is_enabled('agent_analysis'):
-        ld.append(
-            Node(
-                package='flychams_coordination',
-                executable='agent_analysis_node',
-                name='agent_analysis_node',
-                output='screen',
-                namespace='flychams/global',
-                arguments=['--ros-args', '--log-level', log_level('agent_analysis')],
-                parameters=[
-                    system_path, 
-                    topics_path, 
-                    frames_path, 
-                    coordination_path,
-                    mission_params_path,
-                    {'use_sim_time': is_simulated}
-                ]
-            )
-        )
-
-    # ============= SIMULATION NODES =============
-    # Conditionally add Simulation GUI node
-    if is_enabled('simulation_gui'):
-        ld.append(
-            Node(
-                package='flychams_simulation',
-                executable='simulation_gui_node',
-                name='simulation_gui_node',
-                output='screen',
-                namespace='flychams/global',
-                arguments=['--ros-args', '--log-level', log_level('simulation_gui')],
-                parameters=[
-                    system_path, 
-                    topics_path, 
-                    frames_path, 
-                    simulation_path,
-                    mission_params_path,
-                    {'use_sim_time': is_simulated}
-                ]
-            )
-        )
-
-    # Conditionally add Target State node
-    if is_enabled('target_state'):
-        ld.append(
-            Node(
-                package='flychams_simulation',
-                executable='target_state_node',
-                name='target_state_node',
-                output='screen',
-                namespace='flychams/global',
-                arguments=['--ros-args', '--log-level', log_level('target_state')],
-                parameters=[
-                    system_path, 
-                    topics_path, 
-                    frames_path, 
-                    simulation_path,
-                    mission_params_path,
-                    {'use_sim_time': is_simulated}
-                ]
-            )
-        )
-
-    # Conditionally add Target Control node
-    if is_enabled('target_control'):
-        ld.append(
-            Node(
-                package='flychams_simulation',
-                executable='target_control_node',
-                name='target_control_node',
-                output='screen',
-                namespace='flychams/global',
-                arguments=['--ros-args', '--log-level', log_level('target_control')],
-                parameters=[
-                    system_path, 
-                    topics_path, 
-                    frames_path, 
-                    simulation_path,
+                    coordinator_path,
                     mission_params_path,
                     {'use_sim_time': is_simulated}
                 ]

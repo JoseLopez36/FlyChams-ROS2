@@ -5,6 +5,7 @@
       registration: "/flychams/bringup/registration"                          # Registration.msg (custom)
       global_origin: "/flychams/bringup/global_origin"                        # GeoPointStamped.msg
       metrics: "/flychams/dashboard/global/metrics"                           # GlobalMetrics.msg (custom)
+
     # Agent topics
     agent_topics:
       status: "/flychams/control/AGENTID/status"                              # AgentStatus.msg (custom)
@@ -17,18 +18,21 @@
       observation_setpoints: "/flychams/coordination/AGENTID/setpoint/observation"  # AgentObservationSetpoints.msg (custom)
       metrics: "/flychams/dashboard/AGENTID/metrics"                          # AgentMetrics.msg (custom)
       markers: "/flychams/dashboard/AGENTID/markers"                          # MarkerArray.msg
+
     # Target topics
     target_topics:
       true_position: "/flychams/targets/TARGETID/true_position"               # PointStamped.msg
       est_position: "/flychams/perception/TARGETID/est_position"              # PointStamped.msg
       metrics: "/flychams/dashboard/TARGETID/metrics"                         # TargetMetrics.msg (custom)
       markers: "/flychams/dashboard/TARGETID/markers"                         # MarkerArray.msg
+
     # Cluster topics
     cluster_topics:
       assignment: "/flychams/perception/CLUSTERID/assignment"                 # ClusterAssignment.msg (custom)
       geometry: "/flychams/perception/CLUSTERID/geometry"                     # ClusterGeometry.msg (custom)
       metrics: "/flychams/dashboard/CLUSTERID/metrics"                        # ClusterMetrics.msg (custom)
       markers: "/flychams/dashboard/CLUSTERID/markers"                        # MarkerArray.msg
+      
     # GUI topics
     gui_topics:
       setpoints: "/flychams/simulation/AGENTID/setpoint/gui"                  # GuiSetpoints.msg (custom)

@@ -48,17 +48,25 @@ def launch_setup(context, *args, **kwargs):
     ])
     
     # Package parameters
-    control_path = PathJoinSubstitution([
+    agent_path = PathJoinSubstitution([
         FindPackageShare('flychams_bringup'),
         'config',
         'package',
-        'control.yaml'
+        'agent.yaml'
     ])
-    coordination_path = PathJoinSubstitution([
+
+    # Mavros parameters
+    mavros_path = PathJoinSubstitution([
         FindPackageShare('flychams_bringup'),
         'config',
-        'package',
-        'coordination.yaml'
+        'mavros',
+        'mavros.yaml'
+    ])
+    plugin_lists_path = PathJoinSubstitution([
+        FindPackageShare('flychams_bringup'),
+        'config',
+        'mavros',
+        'pluginlists.yaml'
     ])
 
     # Set environment variable to control ROS logger output
@@ -96,12 +104,35 @@ def launch_setup(context, *args, **kwargs):
     
     print(f"Loading mission parameters from: {mission_params_path}")
 
-    # ============= CONTROL NODES =============
+    # Conditionally add MavROS Manager node
+    if is_enabled('mavros_manager'):
+        ld.append(
+            Node(
+                package='flychams_agent',
+                executable='mavros_manager_node',
+                name='mavros_manager_node',
+                output='screen' if is_simulated else 'log',
+                namespace='flychams/' + agent_id,
+                arguments=['--ros-args', '--log-level', log_level('mavros_manager')],
+                parameters=[
+                    system_path,
+                    topics_path,
+                    frames_path,
+                    agent_path,
+                    mavros_path,
+                    plugin_lists_path,
+                    mission_params_path,
+                    {'agent_id': agent_id},
+                    {'use_sim_time': is_simulated}
+                ]
+            )
+        )
+
     # Conditionally add Drone Frames node
     if is_enabled('drone_frames'):
         ld.append(
             Node(
-                package='flychams_control',
+                package='flychams_agent',
                 executable='drone_frames_node',
                 name='drone_frames_node',
                 output='screen' if is_simulated else 'log',
@@ -111,7 +142,7 @@ def launch_setup(context, *args, **kwargs):
                     system_path, 
                     topics_path, 
                     frames_path, 
-                    control_path,
+                    agent_path,
                     mission_params_path,
                     {'agent_id': agent_id},
                     {'use_sim_time': is_simulated}
@@ -123,7 +154,7 @@ def launch_setup(context, *args, **kwargs):
     if is_enabled('drone_state'):
         ld.append(
             Node(
-                package='flychams_control',
+                package='flychams_agent',
                 executable='drone_state_node',
                 name='drone_state_node',
                 output='screen' if is_simulated else 'log',
@@ -133,7 +164,7 @@ def launch_setup(context, *args, **kwargs):
                     system_path, 
                     topics_path, 
                     frames_path, 
-                    control_path,
+                    agent_path,
                     mission_params_path,
                     {'agent_id': agent_id},
                     {'use_sim_time': is_simulated}
@@ -145,7 +176,7 @@ def launch_setup(context, *args, **kwargs):
     if is_enabled('drone_control'):
         ld.append(
             Node(
-                package='flychams_control',
+                package='flychams_agent',
                 executable='drone_control_node',
                 name='drone_control_node',
                 output='screen' if is_simulated else 'log',
@@ -155,7 +186,7 @@ def launch_setup(context, *args, **kwargs):
                     system_path, 
                     topics_path, 
                     frames_path, 
-                    control_path,
+                    agent_path,
                     mission_params_path,
                     {'agent_id': agent_id},
                     {'use_sim_time': is_simulated}
@@ -167,7 +198,7 @@ def launch_setup(context, *args, **kwargs):
     if is_enabled('camera_frames'):
         ld.append(
             Node(
-                package='flychams_control',
+                package='flychams_agent',
                 executable='camera_frames_node',
                 name='camera_frames_node',
                 output='screen' if is_simulated else 'log',
@@ -177,7 +208,7 @@ def launch_setup(context, *args, **kwargs):
                     system_path, 
                     topics_path, 
                     frames_path, 
-                    control_path,
+                    agent_path,
                     mission_params_path,
                     {'agent_id': agent_id},
                     {'use_sim_time': is_simulated}
@@ -189,7 +220,7 @@ def launch_setup(context, *args, **kwargs):
     if is_enabled('camera_control'):
         ld.append(
             Node(
-                package='flychams_control',
+                package='flychams_agent',
                 executable='camera_control_node',
                 name='camera_control_node',
                 output='screen' if is_simulated else 'log',
@@ -199,7 +230,7 @@ def launch_setup(context, *args, **kwargs):
                     system_path, 
                     topics_path, 
                     frames_path, 
-                    control_path,
+                    agent_path,
                     mission_params_path,
                     {'agent_id': agent_id},
                     {'use_sim_time': is_simulated}
@@ -207,12 +238,33 @@ def launch_setup(context, *args, **kwargs):
             )
         )
 
-    # ============= COORDINATION NODES =============
+    # Conditionally add Agent Analysis node
+    if is_enabled('agent_analysis'):
+        ld.append(
+            Node(
+                package='flychams_agent',
+                executable='agent_analysis_node',
+                name='agent_analysis_node',
+                output='screen' if is_simulated else 'log',
+                namespace='flychams/' + agent_id,
+                arguments=['--ros-args', '--log-level', log_level('agent_analysis')],
+                parameters=[
+                    system_path, 
+                    topics_path, 
+                    frames_path, 
+                    agent_path,
+                    mission_params_path,
+                    {'agent_id': agent_id},
+                    {'use_sim_time': is_simulated}
+                ]
+            )
+        )
+
     # Conditionally add Agent Positioning node
     if is_enabled('agent_positioning'):
         ld.append(
             Node(
-                package='flychams_coordination',
+                package='flychams_agent',
                 executable='agent_positioning_node',
                 name='agent_positioning_node',
                 output='screen' if is_simulated else 'log',
@@ -222,7 +274,7 @@ def launch_setup(context, *args, **kwargs):
                     system_path, 
                     topics_path, 
                     frames_path, 
-                    coordination_path,
+                    agent_path,
                     mission_params_path,
                     {'agent_id': agent_id},
                     {'use_sim_time': is_simulated}
@@ -234,7 +286,7 @@ def launch_setup(context, *args, **kwargs):
     if is_enabled('agent_tracking'):
         ld.append(
             Node(
-                package='flychams_coordination',
+                package='flychams_agent',
                 executable='agent_tracking_node',
                 name='agent_tracking_node',
                 output='screen' if is_simulated else 'log',
@@ -244,7 +296,7 @@ def launch_setup(context, *args, **kwargs):
                     system_path, 
                     topics_path, 
                     frames_path, 
-                    coordination_path,
+                    agent_path,
                     mission_params_path,
                     {'agent_id': agent_id},
                     {'use_sim_time': is_simulated}

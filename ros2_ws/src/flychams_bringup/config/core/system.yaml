@@ -4,12 +4,14 @@
     simulation:
       framework: AirSim
       clock_speed: 1.0    # Clock speed multiplier (1.0 = real-time)
+
     # Path settings
     path:
       config_spreadsheet_path: "/home/testuser/FlyChams-ROS2/config/Configuration-Test.xlsx"
       mission_settings_path: "/home/testuser/FlyChams-ROS2/config/mission.yaml"
       airsim_settings_path: "/home/testuser/FlyChams-ROS2/config/airsim.json"
       trajectory_root: "/home/testuser/FlyChams-ROS2/config/Trajectories"
+      
     # GUI settings
     gui:
       # Scenario view settings

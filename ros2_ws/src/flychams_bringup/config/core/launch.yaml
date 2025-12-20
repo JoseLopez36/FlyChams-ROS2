@@ -4,58 +4,54 @@
 
 # Node allowlist: Only launch these nodes
 node_allowlist:
-  # Global setup nodes
+  # Coordinator nodes
   - element_registrator
-  - airsim
-  # # Agent setup nodes
-  - mavros_manager
-  # Global runtime nodes
   - target_clustering
   - cluster_analysis
   - agent_assignment
-  - agent_analysis
-  - simulation_gui
-  - target_state
-  - target_control
-  # Agent runtime nodes
+  # Agent nodes
+  - mavros_manager
   - drone_frames
   - drone_state
   - drone_control
   - camera_frames
   - camera_control
+  - agent_analysis
   - agent_positioning
   - agent_tracking
-  # Visualization runtime nodes
-  - operator_gui
+  # Dashboard nodes
   - metrics_factory
   - marker_factory
   - rviz
+  # Simulation nodes
+  - airsim
+  - simulation_gui
+  - target_state
+  - target_control
 
 # Per-node log level overrides
 node_log_levels:
-  # Global setup nodes
-  element_registrator: info
-  airsim: error
-  # Agent setup nodes
-  mavros_manager: info
-  # Global runtime nodes
-  target_clustering: info
-  cluster_analysis: info
-  agent_assignment: info
-  agent_analysis: info
-  simulation_gui: info
-  target_state: info
-  target_control: info
-  # Agent runtime nodes
-  drone_frames: info
-  drone_state: info
-  drone_control: info
-  camera_frames: info
-  camera_control: info
-  agent_positioning: info
-  agent_tracking: info
-  # Visualization runtime nodes
-  operator_gui: info
-  metrics_factory: info
-  marker_factory: info
-  rviz: error
+  # Coordinator nodes
+  element_registrator: "info"
+  target_clustering: "info"
+  cluster_analysis: "info"
+  agent_assignment: "info"
+  # Agent nodes
+  mavros_manager: "info"
+  drone_frames: "info"
+  drone_state: "info"
+  drone_control: "info"
+  camera_frames: "info"
+  camera_control: "info"
+  agent_analysis: "info"
+  agent_positioning: "info"
+  agent_tracking: "info"
+  # Dashboard nodes
+  metrics_factory: "info"
+  marker_factory: "info"
+  rviz: "info"
+  # Simulation nodes
+  airsim: "info"
+  simulation_gui: "info"
+  target_state: "info"
+  target_control: "info"

@@ -54,7 +54,7 @@ namespace flychams::agent
 	{
 		// Build the launch command
 		std::stringstream cmd;
-		cmd << "ros2 launch flychams_bringup run_mavros.launch.py agent_id:=" << agent_id_ << " fcu_url:=" << fcu_url_ << " tgt_system:=" << tgt_system_;
+		cmd << "ros2 launch flychams_bringup mavros.launch.py agent_id:=" << agent_id_ << " fcu_url:=" << fcu_url_ << " tgt_system:=" << tgt_system_;
 
 		// Fork a new process to launch mavros
 		pid_t pid = fork();

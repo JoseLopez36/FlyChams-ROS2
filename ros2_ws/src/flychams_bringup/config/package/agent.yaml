@@ -32,26 +32,27 @@
     positioning_rate: 10.0
 
     # Positioning parameters
-    # Positioning solver mode 
-    # 0: ELLIPSOID_METHOD, 1: NELDER_MEAD_NLOPT, 2: NESTEROV_ALGORITHM, 
-    # 3: L_BFGS_NLOPT, 4: PSO_ALGORITHM, 5: ALC_PSO_ALGORITHM, 6: CMA_ES_ALGORITHM
-    solver_mode: 3
-    # Solver parameters
-    eps: 1.0e-1
-    convergence_tolerance: 1.0e-5
-    max_iterations: 1000
-    # PSO parameters
-    num_particles: 50
-    w_max: 0.4
-    w_min: 0.1
-    c1: 1.0
-    c2: 1.0
-    stagnation_limit: 5
-    # ALC-PSO parameters
-    max_lifespan: 60
-    num_challenger_tests: 10
-    # Nesterov parameters
-    lipschitz_constant: 0.0
+    positioning:
+      # Positioning solver mode 
+      # 0: ELLIPSOID_METHOD, 1: NELDER_MEAD_NLOPT, 2: NESTEROV_ALGORITHM, 
+      # 3: L_BFGS_NLOPT, 4: PSO_ALGORITHM, 5: ALC_PSO_ALGORITHM, 6: CMA_ES_ALGORITHM
+      solver_mode: 3
+      # Solver parameters
+      eps: 1.0e-1
+      convergence_tolerance: 1.0e-5
+      max_iterations: 1000
+      # PSO parameters
+      num_particles: 50
+      w_max: 0.4
+      w_min: 0.1
+      c1: 1.0
+      c2: 1.0
+      stagnation_limit: 5
+      # ALC-PSO parameters
+      max_lifespan: 60
+      num_challenger_tests: 10
+      # Nesterov parameters
+      lipschitz_constant: 0.0
 
 /**/agent_tracking_node:
   ros__parameters:

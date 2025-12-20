@@ -96,28 +96,6 @@ def launch_setup(context, *args, **kwargs):
     
     print(f"Loading mission parameters from: {mission_params_path}")
 
-    # ============= DASHBOARD NODES =============
-    # Conditionally add Operator GUI node
-    if is_enabled('operator_gui'):
-        ld.append(
-            Node(
-                package='flychams_dashboard',
-                executable='operator_gui_node',
-                name='operator_gui_node',
-                output='screen',
-                namespace='flychams/global',
-                arguments=['--ros-args', '--log-level', log_level('operator_gui')],
-                parameters=[
-                    system_path, 
-                    topics_path, 
-                    frames_path, 
-                    dashboard_path,
-                    mission_params_path,
-                    {'use_sim_time': is_simulated}
-                ]
-            )
-        )
-
     # Conditionally add Metrics Factory node
     if is_enabled('metrics_factory'):
         ld.append(
@@ -160,7 +138,6 @@ def launch_setup(context, *args, **kwargs):
             )
         )
 
-    # ============= RVIZ2 NODES =============
     # Conditionally add Rviz
     if is_enabled('rviz'):
         ld.append(
