@@ -11,10 +11,18 @@
 
   <!-- Build tool -->
   <buildtool_depend>ament_cmake</buildtool_depend>
+  <buildtool_depend>ament_cmake_python</buildtool_depend>
 
   <!-- Dependencies -->
   <depend>rclcpp</depend>
   <depend>flychams_core</depend>
+  <depend>rclpy</depend>
+  <depend>std_msgs</depend>
+  <depend>geometry_msgs</depend>
+  <depend>flychams_interfaces</depend>
+
+  <!-- Build dependencies -->
+  <build_depend>python3-setuptools</build_depend>
 
   <!-- Export -->
   <export>

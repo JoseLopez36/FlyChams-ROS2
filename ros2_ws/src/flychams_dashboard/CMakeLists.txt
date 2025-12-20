@@ -8,6 +8,7 @@ endif()
 
 # Find dependencies
 find_package(ament_cmake REQUIRED)
+find_package(ament_cmake_python REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(flychams_core REQUIRED)
 
@@ -42,6 +43,12 @@ add_executable(marker_factory_node src/marker_factory_node.cpp)
 target_link_libraries(marker_factory_node ${PROJECT_NAME})
 ament_target_dependencies(marker_factory_node rclcpp flychams_core)
 
+# Install operator interface node script
+install(PROGRAMS
+  flychams_dashboard/nodes/operator_interface_node.py
+  DESTINATION lib/${PROJECT_NAME}
+)
+
 # Install targets and headers
 install(TARGETS ${PROJECT_NAME}
   EXPORT ${PROJECT_NAME}
@@ -67,4 +74,8 @@ ament_export_dependencies(
 )
 ament_export_libraries(${PROJECT_NAME})
 ament_export_include_directories(include)
+
+# Install Python package
+ament_python_install_package(${PROJECT_NAME})
+
 ament_package()

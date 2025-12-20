@@ -126,6 +126,27 @@ def launch_setup(context, *args, **kwargs):
             )
         )
 
+    # Conditionally add Operator Interface node (Python GUI)
+    if is_enabled('operator_interface'):
+        ld.append(
+            Node(
+                package='flychams_dashboard',
+                executable='operator_interface_node',
+                name='operator_interface_node',
+                output='screen',
+                namespace='flychams/global',
+                arguments=['--ros-args', '--log-level', log_level('operator_interface')],
+                parameters=[
+                    system_path, 
+                    topics_path, 
+                    frames_path, 
+                    dashboard_path,
+                    mission_path,
+                    {'use_sim_time': is_simulated}
+                ]
+            )
+        )
+
     # Conditionally add Rviz
     if is_enabled('rviz'):
         rviz_config_path = rviz_path.perform(context).strip()

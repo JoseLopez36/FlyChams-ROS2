@@ -1,0 +1,2 @@
+"""FlyChams Dashboard Python package"""
+
