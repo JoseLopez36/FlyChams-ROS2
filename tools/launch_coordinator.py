@@ -67,7 +67,7 @@ def main():
     cmd = f"/home/{username}/FlyChams-ROS2/tools/shell/run_coordinator.sh {is_simulated_arg}"
     
     # Get shell command
-    shell = launcher.run(cmd)
+    shell = launcher.setup(cmd)
 
     # Log
     print(f"[COORDINATOR] Command: {shell}")

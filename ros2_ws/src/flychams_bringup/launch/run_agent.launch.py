@@ -3,15 +3,8 @@ from launch_ros.actions import Node
 from launch.actions import DeclareLaunchArgument, OpaqueFunction
 from launch.substitutions import PathJoinSubstitution, LaunchConfiguration
 from launch_ros.substitutions import FindPackageShare
-from ament_index_python.packages import get_package_share_directory
 import os
 import yaml
-
-def load_mission_parameters(mission_settings_path):
-    if not os.path.exists(mission_settings_path):
-        return {}
-    
-    return mission_settings_path
 
 def launch_setup(context, *args, **kwargs):
     # Get agent_id value from LaunchConfiguration
@@ -45,6 +38,13 @@ def launch_setup(context, *args, **kwargs):
         'config',
         'core',
         'frames.yaml'
+    ])
+    
+    # Mission parameters
+    mission_path = PathJoinSubstitution([
+        FindPackageShare('flychams_bringup'),
+        'config',
+        'mission.yaml'
     ])
     
     # Package parameters
@@ -91,19 +91,6 @@ def launch_setup(context, *args, **kwargs):
     def log_level(node_name: str) -> str:
         return node_log_levels.get(node_name, 'info')
 
-    # Load mission parameters
-    system_file_path = system_path.perform(context).strip()
-    with open(system_file_path, 'r') as f:
-        system_raw = yaml.safe_load(f) or {}
-
-    mission_params_path = load_mission_parameters(system_raw.get('/**').get('ros__parameters').get('path').get('mission_settings_path'))
-    
-    # Verify mission parameters file exists
-    if not mission_params_path or not os.path.exists(mission_params_path):
-        raise FileNotFoundError(f"Mission parameters file not found: {mission_params_path}")
-    
-    print(f"Loading mission parameters from: {mission_params_path}")
-
     # Conditionally add MavROS Manager node
     if is_enabled('mavros_manager'):
         ld.append(
@@ -121,7 +108,7 @@ def launch_setup(context, *args, **kwargs):
                     agent_path,
                     mavros_path,
                     plugin_lists_path,
-                    mission_params_path,
+                    mission_path,
                     {'agent_id': agent_id},
                     {'use_sim_time': is_simulated}
                 ]
@@ -143,7 +130,7 @@ def launch_setup(context, *args, **kwargs):
                     topics_path, 
                     frames_path, 
                     agent_path,
-                    mission_params_path,
+                    mission_path,
                     {'agent_id': agent_id},
                     {'use_sim_time': is_simulated}
                 ]
@@ -165,7 +152,7 @@ def launch_setup(context, *args, **kwargs):
                     topics_path, 
                     frames_path, 
                     agent_path,
-                    mission_params_path,
+                    mission_path,
                     {'agent_id': agent_id},
                     {'use_sim_time': is_simulated}
                 ]
@@ -187,7 +174,7 @@ def launch_setup(context, *args, **kwargs):
                     topics_path, 
                     frames_path, 
                     agent_path,
-                    mission_params_path,
+                    mission_path,
                     {'agent_id': agent_id},
                     {'use_sim_time': is_simulated}
                 ]
@@ -209,7 +196,7 @@ def launch_setup(context, *args, **kwargs):
                     topics_path, 
                     frames_path, 
                     agent_path,
-                    mission_params_path,
+                    mission_path,
                     {'agent_id': agent_id},
                     {'use_sim_time': is_simulated}
                 ]
@@ -231,7 +218,7 @@ def launch_setup(context, *args, **kwargs):
                     topics_path, 
                     frames_path, 
                     agent_path,
-                    mission_params_path,
+                    mission_path,
                     {'agent_id': agent_id},
                     {'use_sim_time': is_simulated}
                 ]
@@ -253,7 +240,7 @@ def launch_setup(context, *args, **kwargs):
                     topics_path, 
                     frames_path, 
                     agent_path,
-                    mission_params_path,
+                    mission_path,
                     {'agent_id': agent_id},
                     {'use_sim_time': is_simulated}
                 ]
@@ -275,7 +262,7 @@ def launch_setup(context, *args, **kwargs):
                     topics_path, 
                     frames_path, 
                     agent_path,
-                    mission_params_path,
+                    mission_path,
                     {'agent_id': agent_id},
                     {'use_sim_time': is_simulated}
                 ]
@@ -297,7 +284,7 @@ def launch_setup(context, *args, **kwargs):
                     topics_path, 
                     frames_path, 
                     agent_path,
-                    mission_params_path,
+                    mission_path,
                     {'agent_id': agent_id},
                     {'use_sim_time': is_simulated}
                 ]

@@ -50,7 +50,7 @@ def main():
     # Get config paths
     root_dir = script_dir.parent
     env_path = root_dir / '.env'
-    mission_path = root_dir / 'config' / 'mission.yaml'
+    mission_path = root_dir / 'ros2_ws' / 'src' / 'flychams_bringup' / 'config' / 'mission.yaml'
 
     # Load environment variables
     env = load_environment(env_path)
@@ -71,7 +71,7 @@ def main():
         launcher = AgentContainerLauncher(agent_id, env, container)
         
         # Create command
-        cmd = f"/home/{username}/FlyChams-ROS2/tools/shell/run_agent.sh {is_simulated_arg}"
+        cmd = f"/home/{username}/FlyChams-ROS2/tools/shell/run_agent.sh {is_simulated_arg} {agent_id}"
         
         # Get shell command
         shell = launcher.setup(cmd)
@@ -95,7 +95,7 @@ def main():
         launcher = AgentRemoteLauncher(agent_id, agent.ssh)
         
         # Create command
-        cmd = f"/home/{username}/FlyChams-ROS2/tools/shell/run_agent.sh {is_simulated_arg}"
+        cmd = f"/home/{username}/FlyChams-ROS2/tools/shell/run_agent.sh {is_simulated_arg} {agent_id}"
         
         # Get shell command
         shell = launcher.run(cmd)

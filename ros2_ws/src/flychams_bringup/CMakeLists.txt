@@ -16,6 +16,11 @@ add_executable(settings_creator_node src/settings_creator_node.cpp)
 target_link_libraries(settings_creator_node rclcpp::rclcpp flychams_core::flychams_core)
 ament_target_dependencies(settings_creator_node rclcpp flychams_core)
 
+# Install executable
+install(TARGETS settings_creator_node
+  RUNTIME DESTINATION lib/${PROJECT_NAME}
+)
+
 # Install launch and config files
 install(
   DIRECTORY launch/ 
@@ -31,3 +36,4 @@ ament_export_dependencies(
   rclcpp
   flychams_core
 )
+ament_package()

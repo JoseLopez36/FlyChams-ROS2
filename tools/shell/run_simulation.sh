@@ -12,5 +12,5 @@ else
 fi
 
 # Launch FlyChams with AirSim
-echo "Running FlyingChameleons dashboard..."
-ros2 launch flychams_bringup run_dashboard.launch.py
+echo "Running FlyingChameleons simulation..."
+ros2 launch flychams_bringup run_simulation.launch.py

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Launch script for dashboard instance
+Launch script for simulation instance
 """
 
 import os
@@ -17,7 +17,7 @@ from launchlib.loaders import load_environment
 
 def main():
     # Log
-    print(f"[DASHBOARD] Launching dashboard instance")
+    print(f"[SIMULATION] Launching simulation instance")
 
     # Get script directory
     script_dir = Path(__file__).resolve().parent
@@ -33,7 +33,7 @@ def main():
     username = env.docker_user_name
 
     # Create Docker container
-    container = DockerContainer(image="flychams-ros2:latest", name="flychams-DASHBOARD")
+    container = DockerContainer(image="flychams-ros2:latest", name="flychams-SIMULATION")
 
     # Setup X11 authorization
     container.setup_auth()
@@ -42,17 +42,17 @@ def main():
     launcher = ContainerLauncher(env, container)
     
     # Create command
-    cmd = f"/home/{username}/FlyChams-ROS2/tools/shell/run_dashboard.sh"
+    cmd = f"/home/{username}/FlyChams-ROS2/tools/shell/run_simulation.sh"
     
     # Get shell command
     shell = launcher.setup(cmd)
 
     # Log
-    print(f"[DASHBOARD] Command: {shell}")
+    print(f"[SIMULATION] Command: {shell}")
 
     # Execute shell command in a separate subprocess
     process = subprocess.Popen(['bash', '-lc', shell])
-    print(f"[DASHBOARD] Launched dashboard instance (PID: {process.pid})")
+    print(f"[SIMULATION] Launched simulation instance (PID: {process.pid})")
 
     # Wait for process to exit
     process.wait()

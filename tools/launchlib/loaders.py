@@ -66,7 +66,7 @@ def load_agents(path: Path) -> list[Agent]:
 
 def load_agent(agent_id: str, path: Path) -> Agent:
     """
-    Load agent specs from generated config/mission.yaml
+    Load agent specs from generated mission.yaml
     """
     with open(path, "r") as f:
         data = yaml.safe_load(f) or {}
