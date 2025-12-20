@@ -50,7 +50,7 @@ def main():
 
     # Get config paths
     root_dir = script_dir.parent
-    env_path = root_dir / 'docker' / 'config.env'
+    env_path = root_dir / '.env'
     mission_path = root_dir / 'config' / 'mission.yaml'
 
     # Load environment variables

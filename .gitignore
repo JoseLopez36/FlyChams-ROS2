@@ -3,6 +3,11 @@ config/mission.yaml
 config/airsim.json
 config/.~lock.Configuration.xlsx\#
 
+# Ignore ROS2 files
+ros2_ws/build/
+ros2_ws/install/
+ros2_ws/log/
+
 # Ignore IDE files
 .vscode/
 .cursor/

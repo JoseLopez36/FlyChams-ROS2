@@ -1,6 +1,6 @@
 #!/bin/bash
 
-source "$FLYCHAMS_ROS2_PATH/docker/config.env"
+source "$FLYCHAMS_ROS2_PATH/.env"
 
 cd $FLYCHAMS_SIM_UE5_PATH || { echo "Directory $FLYCHAMS_SIM_UE5_PATH was not found."; exit 1; }
 

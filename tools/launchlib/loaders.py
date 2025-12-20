@@ -11,7 +11,7 @@ from .types import Environment, Agent, AgentSSH
 
 def load_environment(path: Path) -> Environment:
     """
-    Load environment from docker/config.env file
+    Load environment from .env file
     """
     if path.exists():
         with open(path, "r") as f:

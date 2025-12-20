@@ -1,13 +1,13 @@
 #include "rclcpp/rclcpp.hpp"
 
-// Simulation includes
-#include "flychams_simulation/marker/marker_factory.hpp"
+// Dashboard includes
+#include "flychams_dashboard/marker/marker_factory.hpp"
 
 // Core includes
 #include "flychams_core/base/base_discoverer_node.hpp"
 
 using namespace flychams::core;
-using namespace flychams::simulation;
+using namespace flychams::dashboard;
 
 /**
  * ════════════════════════════════════════════════════════════════

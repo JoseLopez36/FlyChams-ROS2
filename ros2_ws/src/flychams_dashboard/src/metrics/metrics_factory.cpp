@@ -1,8 +1,8 @@
-#include "flychams_simulation/metrics/metrics_factory.hpp"
+#include "flychams_dashboard/metrics/metrics_factory.hpp"
 
 using namespace flychams::core;
 
-namespace flychams::simulation
+namespace flychams::dashboard
 {
     // ════════════════════════════════════════════════════════════════════════════
     // CONSTRUCTOR: Constructor and destructor
@@ -393,4 +393,4 @@ namespace flychams::simulation
         curr_metrics.average_speed = curr_metrics.distance_traveled / curr_metrics.time_elapsed;
     }
 
-} // namespace flychams::simulation
+} // namespace flychams::dashboard

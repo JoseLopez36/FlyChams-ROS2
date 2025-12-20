@@ -82,11 +82,11 @@ You need to have an UE project with the FlyChams-Cosys-AirSim plugin installed. 
 
 ### 4. Setup environment variables
 
-Configure the environment variables in the `docker/config.env` file. Edit these variables to match your local paths:
+Configure the environment variables in the `.env` file. Edit these variables to match your local paths:
 
 **Host Machine**
 ```bash
-# Shared paths
+# Paths
 FLYCHAMS_ROS2_PATH=${HOME}/Documents/FlyChams-ROS2
 FLYCHAMS_AIRSIM_PATH=${HOME}/Documents/FlyChams-Cosys-AirSim
 FLYCHAMS_PX4_PATH=${HOME}/Documents/PX4-Autopilot
@@ -99,7 +99,7 @@ Run the following command to build the docker image:
 
 **Host Machine**
 ```bash
-./docker/build.sh
+./tools/docker/build_image.sh
 ```
 *Note: This will build the docker image. It may take a while to build the image.*
 

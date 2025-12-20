@@ -13,7 +13,6 @@ find_package(flychams_core REQUIRED)
 
 # Create dashboard library
 set(DASHBOARD_SRC
-  src/gui/gui_manager.cpp
   src/metrics/metrics_factory.cpp
   src/marker/marker_factory.cpp
 )
@@ -32,11 +31,6 @@ ament_target_dependencies(${PROJECT_NAME}
 target_link_libraries(${PROJECT_NAME}
   rclcpp::rclcpp
 )
-
-# Create executable for operator GUI node
-add_executable(operator_gui_node src/operator_gui_node.cpp)
-target_link_libraries(operator_gui_node ${PROJECT_NAME})
-ament_target_dependencies(operator_gui_node rclcpp flychams_core)
 
 # Create executable for metrics factory node
 add_executable(metrics_factory_node src/metrics_factory_node.cpp)
@@ -57,7 +51,7 @@ install(TARGETS ${PROJECT_NAME}
   INCLUDES DESTINATION include
 )
 
-install(TARGETS operator_gui_node metrics_factory_node marker_factory_node
+install(TARGETS metrics_factory_node marker_factory_node
   RUNTIME DESTINATION lib/${PROJECT_NAME}
 )
 

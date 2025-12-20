@@ -46,7 +46,7 @@ def main():
 
     # Get config paths
     root_dir = script_dir.parent
-    env_path = root_dir / 'docker' / 'config.env'
+    env_path = root_dir / '.env'
 
     # Load environment variables
     env = load_environment(env_path)
