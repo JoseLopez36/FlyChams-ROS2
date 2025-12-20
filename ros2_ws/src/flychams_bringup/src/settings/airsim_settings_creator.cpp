@@ -15,6 +15,7 @@ namespace flychams::bringup
         writeGeneralSection(config_ptr, settings);
         writeVehiclesSection(config_ptr, settings["Vehicles"]);
         writeSubWindowsSection(config_ptr, settings["SubWindows"]);
+        writeStreamsSection(config_ptr, settings["Streams"]);
 
         // Write settings to file
         std::ofstream file(path);
@@ -309,35 +310,38 @@ namespace flychams::bringup
         int idx = 0;
         subwindows = nlohmann::ordered_json::array();
 
+        // Get first agent id
+        const auto& agent_id = config_ptr->agent_team.begin()->first;
+
         // Scene view sub-window
         subwindows.push_back({ {"WindowID", idx++},
-                                {"CameraName", ""},
+                                {"CameraName", "SCENARIOCAM"},
                                 {"ImageType", 0},
-                                {"VehicleName", ""},
+                                {"VehicleName", agent_id},
                                 {"Visible", true} });
 
         // Agent view sub-window
         subwindows.push_back({ {"WindowID", idx++},
-                                {"CameraName", ""},
+                                {"CameraName", "AGENTCAM"},
                                 {"ImageType", 0},
-                                {"VehicleName", ""},
+                                {"VehicleName", agent_id},
                                 {"Visible", true} });
 
         // Map view sub-window
         subwindows.push_back({ {"WindowID", idx++},
-                                {"CameraName", ""},
+                                {"CameraName", "MAPVIEW"},
                                 {"ImageType", 0},
                                 {"VehicleName", ""},
                                 {"Visible", true} });
 
         // Payload view sub-window
         subwindows.push_back({ {"WindowID", idx++},
-                                {"CameraName", ""},
+                                {"CameraName", "PAYLOADCAM"},
                                 {"ImageType", 0},
-                                {"VehicleName", ""},
+                                {"VehicleName", agent_id},
                                 {"Visible", true} });
 
-        // Tracking views sub-windows
+        // Tracking views sub-windows (leave empty for now)
         for (int i = 0; i < config_ptr->system.tracking_view_ids.size(); i++)
         {
             subwindows.push_back({ {"WindowID", idx++},
@@ -345,6 +349,25 @@ namespace flychams::bringup
                                     {"ImageType", 0},
                                     {"VehicleName", ""},
                                     {"Visible", true} });
+        }
+    }
+
+    void AirsimSettingsCreator::writeStreamsSection(const MissionConfigPtr& config_ptr, nlohmann::ordered_json& streams)
+    {
+        streams = nlohmann::ordered_json::array();
+
+        // Iterate over all agents to stream their cameras
+        int udp_port = 5000;
+        for (const auto& [agent_id, agent_ptr] : config_ptr->agent_team)
+        {
+            for (const auto& [camera_id, camera_ptr] : agent_ptr->tracking.multi_camera_set)
+            {
+                streams.push_back({ {"CameraName", camera_id},
+                                     {"ImageType", 0},
+                                     {"VehicleName", agent_id},
+                                     {"UdpPort", udp_port} });
+                udp_port++;
+            }
         }
     }
 

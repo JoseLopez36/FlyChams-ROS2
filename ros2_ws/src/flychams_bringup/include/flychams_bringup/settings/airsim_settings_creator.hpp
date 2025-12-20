@@ -43,6 +43,7 @@ namespace flychams::bringup
         static void writeInternalCamerasSection(const core::ID& agent_id, const core::MissionConfigPtr& config_ptr, nlohmann::ordered_json& cameras);
         static void writeExternalCamerasSection(const core::ID& agent_id, const core::MissionConfigPtr& config_ptr, nlohmann::ordered_json& cameras);
         static void writeSubWindowsSection(const core::MissionConfigPtr& config_ptr, nlohmann::ordered_json& subwindows);
+        static void writeStreamsSection(const core::MissionConfigPtr& config_ptr, nlohmann::ordered_json& streams);
     };
 
 } // namespace flychams::bringup
