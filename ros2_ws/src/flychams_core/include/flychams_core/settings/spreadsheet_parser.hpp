@@ -21,7 +21,7 @@
 #include "flychams_core/types/config_types.hpp"
 #include "flychams_core/utils/math_utils.hpp"
 
-namespace flychams::bringup
+namespace flychams::core
 {
 	/**
 	 * ════════════════════════════════════════════════════════════════
@@ -194,4 +194,4 @@ namespace flychams::bringup
 		}
 	};
 
-} // namespace flychams::bringup
+} // namespace flychams::core

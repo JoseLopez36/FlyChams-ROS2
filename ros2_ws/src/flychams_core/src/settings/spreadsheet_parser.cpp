@@ -1,8 +1,6 @@
-#include "flychams_bringup/settings/spreadsheet_parser.hpp"
+#include "flychams_core/settings/spreadsheet_parser.hpp"
 
-using namespace flychams::core;
-
-namespace flychams::bringup
+namespace flychams::core
 {
 	MissionConfigPtr SpreadsheetParser::parseSpreadsheet(const std::string& path)
 	{
@@ -822,4 +820,4 @@ namespace flychams::bringup
 		}
 	}
 
-} // namespace flychams::bringup
+} // namespace flychams::core

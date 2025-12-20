@@ -1,7 +1,7 @@
 #pragma once
 
 // Assignment solver include
-#include "flychams_coordinator/assignment/assignment_solver.hpp"
+#include "flychams_core/assignment/assignment_solver.hpp"
 
 // Base module include
 #include "flychams_core/base/base_module.hpp"
@@ -47,7 +47,7 @@ namespace flychams::coordinator
             // Publisher
             core::PublisherPtr<core::AgentAssignmentMsg> assignment_pub;
             // Position solver
-            PositionSolver::SharedPtr position_solver;
+            core::PositionSolver::SharedPtr position_solver;
             // Constructor
             Agent()
                 : status(), has_status(false), position(), has_position(false), status_sub(), position_sub(), assignment_pub(), position_solver()
@@ -80,8 +80,8 @@ namespace flychams::coordinator
     private: // Parameters
         float update_rate_;
         // Position solver parameters
-        PositionSolver::SolverMode position_solver_mode_;
-        PositionSolver::Parameters position_solver_params_;
+        core::PositionSolver::SolverMode position_solver_mode_;
+        core::PositionSolver::Parameters position_solver_params_;
         // Transform parameters
         std::string world_frame_;
         std::unordered_map<core::ID, std::string> central_optical_frame_map_;
@@ -96,7 +96,7 @@ namespace flychams::coordinator
         // Assignment data
         core::RowVectorXi X_prev_;
         // Assignment solver
-        AssignmentSolver::SharedPtr solver_;
+        core::AssignmentSolver::SharedPtr solver_;
 
     public: // Public methods
         void addAgent(const core::ID& agent_id);
@@ -113,8 +113,8 @@ namespace flychams::coordinator
         void update();
 
     private: // Utility methods
-        PositionSolver::SharedPtr createPositionSolver(const std::string& agent_id, const PositionSolver::Parameters& solver_params, const PositionSolver::SolverMode& solver_mode);
-        std::vector<CostFunctions::UnitCostParameters> createUnitParameters(const core::TrackingParameters& tracking_params);
+        core::PositionSolver::SharedPtr createPositionSolver(const std::string& agent_id, const core::PositionSolver::Parameters& solver_params, const core::PositionSolver::SolverMode& solver_mode);
+        std::vector<core::CostFunctions::UnitCostParameters> createUnitParameters(const core::TrackingParameters& tracking_params);
 
     private: // ROS components
         // Timer

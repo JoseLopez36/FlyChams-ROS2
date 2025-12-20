@@ -326,9 +326,9 @@ namespace flychams::core
         RCLCPP_INFO(node_->get_logger(), "  Vertical Constraint: [%.3f, %.3f]",
             config_ptr_->vertical_constraint(0), config_ptr_->vertical_constraint(1));
         RCLCPP_INFO(node_->get_logger(), "  Autopilot: %s", autopilotToString(config_ptr_->autopilot).c_str());
-        RCLCPP_INFO(node_->get_logger(), "  Start Date: %ld/%02ld/%02ld",
+        RCLCPP_INFO(node_->get_logger(), "  Start Date: %d/%02d/%02d",
             config_ptr_->start_date.year, config_ptr_->start_date.month, config_ptr_->start_date.day);
-        RCLCPP_INFO(node_->get_logger(), "  Start Hour: %02ld:%02ld:%02ld",
+        RCLCPP_INFO(node_->get_logger(), "  Start Hour: %02d:%02d:%02d",
             config_ptr_->start_hour.hours, config_ptr_->start_hour.minutes, config_ptr_->start_hour.seconds);
 
 // Environment Parameters
@@ -410,7 +410,7 @@ namespace flychams::core
                 RCLCPP_INFO(node_->get_logger(), "          ID: %s", multi_camera->camera.id.c_str());
                 RCLCPP_INFO(node_->get_logger(), "          Name: %s", multi_camera->camera.name.c_str());
                 RCLCPP_INFO(node_->get_logger(), "          Type: %s", cameraTypeToString(multi_camera->camera.type).c_str());
-                RCLCPP_INFO(node_->get_logger(), "          Resolution: %ld x %ld",
+                RCLCPP_INFO(node_->get_logger(), "          Resolution: %d x %d",
                     multi_camera->camera.resolution(0), multi_camera->camera.resolution(1));
                 RCLCPP_INFO(node_->get_logger(), "          Sensor Size: %.6f x %.6f",
                     multi_camera->camera.sensor_size(0), multi_camera->camera.sensor_size(1));
@@ -463,7 +463,7 @@ namespace flychams::core
                 RCLCPP_INFO(node_->get_logger(), "      [MULTI-WINDOW: %s]", multi_window_id.c_str());
                 RCLCPP_INFO(node_->get_logger(), "        Name: %s", multi_window->name.c_str());
                 RCLCPP_INFO(node_->get_logger(), "        Observation Set ID: %s", multi_window->observation_set_id.c_str());
-                RCLCPP_INFO(node_->get_logger(), "        Resolution: %ld x %ld",
+                RCLCPP_INFO(node_->get_logger(), "        Resolution: %d x %d",
                     multi_window->resolution(0), multi_window->resolution(1));
                 RCLCPP_INFO(node_->get_logger(), "        Lambda: min=%.3f, max=%.3f, ref=%.3f",
                     multi_window->min_lambda, multi_window->max_lambda, multi_window->ref_lambda);

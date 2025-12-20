@@ -11,7 +11,7 @@
 #include "flychams_core/types/core_types.hpp"
 #include "flychams_core/utils/math_utils.hpp"
 
-namespace flychams::coordinator
+namespace flychams::core
 {
 	/**
 	 * ════════════════════════════════════════════════════════════════
@@ -521,4 +521,4 @@ namespace flychams::coordinator
 		}
 	};
 
-} // namespace flychams::coordinator
+} // namespace flychams::core

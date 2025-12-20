@@ -1,8 +1,7 @@
 #pragma once
 
 // Position solver include
-#include "flychams_agent/positioning/cost_functions.hpp"
-#include "flychams_agent/positioning/position_solver.hpp"
+#include "flychams_core/positioning/position_solver.hpp"
 
 // Base module include
 #include "flychams_core/base/base_module.hpp"
@@ -65,8 +64,8 @@ namespace flychams::agent
         core::ID agent_id_;
         float update_rate_;
         // Position solver parameters
-        PositionSolver::SolverMode solver_mode_;
-        PositionSolver::Parameters solver_params_;
+        core::PositionSolver::SolverMode solver_mode_;
+        core::PositionSolver::Parameters solver_params_;
         // Transform parameters
         std::string world_frame_;
         std::string central_optical_frame_;
@@ -75,7 +74,7 @@ namespace flychams::agent
         // Agent
         Agent agent_;
         // Position solver
-        PositionSolver::SharedPtr solver_;
+        core::PositionSolver::SharedPtr solver_;
 
     private: // Callbacks
         void statusCallback(const core::AgentStatusMsg::SharedPtr msg);
@@ -86,8 +85,8 @@ namespace flychams::agent
         void update();
 
     private: // Positioning methods
-        PositionSolver::SharedPtr createSolver(const std::string& agent_id, const PositionSolver::Parameters& solver_params, const PositionSolver::SolverMode& solver_mode);
-        std::vector<CostFunctions::UnitCostParameters> createUnitParameters(const core::TrackingParameters& tracking_params);
+        core::PositionSolver::SharedPtr createSolver(const std::string& agent_id, const core::PositionSolver::Parameters& solver_params, const core::PositionSolver::SolverMode& solver_mode);
+        std::vector<core::CostFunctions::UnitCostParameters> createUnitParameters(const core::TrackingParameters& tracking_params);
 
     private: // ROS components
         // Timer

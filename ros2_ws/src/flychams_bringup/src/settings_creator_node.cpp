@@ -1,9 +1,9 @@
 #include "rclcpp/rclcpp.hpp"
 
 // Settings includes
-#include "flychams_bringup/settings/spreadsheet_parser.hpp"
-#include "flychams_bringup/settings/mission_settings_creator.hpp"
-#include "flychams_bringup/settings/airsim_settings_creator.hpp"
+#include "flychams_core/settings/spreadsheet_parser.hpp"
+#include "flychams_core/settings/mission_settings_creator.hpp"
+#include "flychams_core/settings/airsim_settings_creator.hpp"
 
 // Core includes
 #include "flychams_core/types/core_types.hpp"
@@ -14,7 +14,6 @@
 #include "flychams_core/settings/mission_settings_parser.hpp"
 
 using namespace flychams::core;
-using namespace flychams::bringup;
 
 /**
  * ════════════════════════════════════════════════════════════════

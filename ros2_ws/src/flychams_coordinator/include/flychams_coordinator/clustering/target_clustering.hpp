@@ -1,7 +1,7 @@
 #pragma once
 
 // K-Means modified include
-#include "flychams_coordinator/clustering/k_means_mod.hpp"
+#include "flychams_core/clustering/k_means_mod.hpp"
 
 // Base module include
 #include "flychams_core/base/base_module.hpp"
@@ -77,7 +77,7 @@ namespace flychams::coordinator
 		core::RowVectorXi assignments_prev_;
 		bool is_first_run_;
 		// K-Means clustering solver
-		KMeansMod::SharedPtr k_means_solver_;
+		core::KMeansMod::SharedPtr k_means_solver_;
 		// Time step
 		core::Time last_update_time_;
 

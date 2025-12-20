@@ -13,7 +13,7 @@
 #include "flychams_core/utils/math_utils.hpp"
 #include "flychams_core/utils/ros_utils.hpp"
 
-namespace flychams::bringup
+namespace flychams::core
 {
 	/**
 	 * ════════════════════════════════════════════════════════════════
@@ -48,4 +48,4 @@ namespace flychams::bringup
 		static void writeDroneSection(std::ostringstream& yaml, const core::DroneConfig& drone, const std::string& prefix);
 	};
 
-} // namespace flychams::bringup
+} // namespace flychams::core

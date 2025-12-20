@@ -7,12 +7,12 @@
 #include <functional>
 
 // Position solver
-#include "flychams_coordinator/positioning/position_solver.hpp"
+#include "flychams_core/positioning/position_solver.hpp"
 
 // Utilities
 #include "flychams_core/types/core_types.hpp"
 
-namespace flychams::coordinator
+namespace flychams::core
 {
     /**
      * ════════════════════════════════════════════════════════════════
@@ -479,4 +479,4 @@ namespace flychams::coordinator
         }
     };
 
-} // namespace flychams::coordinator
+} // namespace flychams::core

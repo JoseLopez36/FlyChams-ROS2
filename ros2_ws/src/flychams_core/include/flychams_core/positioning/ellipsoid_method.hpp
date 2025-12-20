@@ -1,12 +1,12 @@
 #pragma once
 
 // Cost functions
-#include "flychams_coordination/positioning/cost_functions.hpp"
+#include "flychams_core/positioning/cost_functions.hpp"
 
 // Utilities
 #include "flychams_core/types/core_types.hpp"
 
-namespace flychams::coordination
+namespace flychams::core
 {
     /**
      * ════════════════════════════════════════════════════════════════
@@ -306,4 +306,4 @@ namespace flychams::coordination
         }
     };
 
-} // namespace flychams::coordination
+} // namespace flychams::core

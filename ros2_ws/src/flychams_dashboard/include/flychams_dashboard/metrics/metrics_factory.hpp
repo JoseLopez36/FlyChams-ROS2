@@ -3,7 +3,7 @@
 // Base module include
 #include "flychams_core/base/base_module.hpp"
 
-namespace flychams::simulation
+namespace flychams::dashboard
 {
     /**
      * ════════════════════════════════════════════════════════════════
@@ -145,4 +145,4 @@ namespace flychams::simulation
         core::TimerPtr update_timer_;
     };
 
-} // namespace flychams::simulation
+} // namespace flychams::dashboard

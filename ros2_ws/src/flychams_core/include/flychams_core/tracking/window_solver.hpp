@@ -5,7 +5,7 @@
 #include "flychams_core/utils/math_utils.hpp"
 #include "flychams_core/utils/vision_utils.hpp"
 
-namespace flychams::agent
+namespace flychams::core
 {
     /**
      * ════════════════════════════════════════════════════════════════
@@ -130,4 +130,4 @@ namespace flychams::agent
         }
     };
 
-} // namespace flychams::agent
+} // namespace flychams::core

@@ -1,8 +1,8 @@
-#include "flychams_bringup/registration/target_registration.hpp"
+#include "flychams_coordinator/registration/target_registration.hpp"
 
 using namespace flychams::core;
 
-namespace flychams::bringup
+namespace flychams::coordinator
 {
 	// ════════════════════════════════════════════════════════════════════════════
 	// CONSTRUCTOR: Constructor and destructor
@@ -25,4 +25,4 @@ namespace flychams::bringup
 		targets_.clear();
 	}
 
-} // namespace flychams::bringup
+} // namespace flychams::coordinator

@@ -15,17 +15,16 @@ find_package(flychams_core REQUIRED)
 
 # Create control library
 set(CONTROL_SRC
+  src/mavros/mavros_manager.cpp
   src/drone/drone_frames.cpp
   src/drone/drone_state.cpp
   src/drone/drone_control.cpp
   src/camera/camera_frames.cpp
   src/camera/camera_control.cpp
-  src/mavros/mavros_manager.cpp
   src/communication/mavros_communication.cpp
   src/communication/camera_communication.cpp
   src/analysis/agent_analysis.cpp
   src/positioning/agent_positioning.cpp
-  src/positioning/position_solver.cpp
   src/tracking/agent_tracking.cpp
 )
 add_library(${PROJECT_NAME} SHARED ${CONTROL_SRC})
@@ -43,6 +42,11 @@ ament_target_dependencies(${PROJECT_NAME}
 target_link_libraries(${PROJECT_NAME}
   rclcpp::rclcpp
 )
+
+# Create executable for mavros manager node
+add_executable(mavros_manager_node src/mavros_manager_node.cpp)
+target_link_libraries(mavros_manager_node ${PROJECT_NAME})
+ament_target_dependencies(mavros_manager_node rclcpp mavros_msgs flychams_core)
 
 # Create executable for drone frames node
 add_executable(drone_frames_node src/drone_frames_node.cpp)
@@ -68,11 +72,6 @@ ament_target_dependencies(camera_frames_node rclcpp airsim_interfaces flychams_c
 add_executable(camera_control_node src/camera_control_node.cpp)
 target_link_libraries(camera_control_node ${PROJECT_NAME})
 ament_target_dependencies(camera_control_node rclcpp airsim_interfaces flychams_core)
-
-# Create executable for mavros manager node
-add_executable(mavros_manager_node src/mavros_manager_node.cpp)
-target_link_libraries(mavros_manager_node ${PROJECT_NAME})
-ament_target_dependencies(mavros_manager_node rclcpp mavros_msgs flychams_core)
 
 # Create executable for agent analysis node
 add_executable(agent_analysis_node src/agent_analysis_node.cpp)

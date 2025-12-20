@@ -1,25 +1,25 @@
 #pragma once
 
-// Standard includes
-#include <iostream>
+// Non-Linear Optimization Library: https://github.com/stevengj/nlopt
+#include <nlopt.hpp>
 
 // Cost functions
-#include "flychams_coordination/positioning/cost_functions.hpp"
+#include "flychams_core/positioning/cost_functions.hpp"
 
 // Utilities
 #include "flychams_core/types/core_types.hpp"
 
-namespace flychams::coordination
+namespace flychams::core
 {
     /**
      * ════════════════════════════════════════════════════════════════
-     * @brief Solver for agent positioning using Nesterov's algorithm
+     * @brief Solver for agent positioning using Nelder-Mead method
      * ════════════════════════════════════════════════════════════════
      * @author Jose Francisco Lopez Ruiz
-     * @date 2025-04-24
+     * @date 2025-04-17
      * ════════════════════════════════════════════════════════════════
      */
-    class NesterovAlgorithm
+    class NelderMeadNLopt
     {
     public: // Types
         // Parameters
@@ -33,9 +33,6 @@ namespace flychams::coordination
             float eps = 1e-1f;
             float tol = 1e-5f;
             int max_iter = 100;
-
-            // Nesterov parameters
-            float lipschitz_constant = 0.0f;
         };
         // Data
         struct Data
@@ -54,7 +51,9 @@ namespace flychams::coordination
         Parameters params_;
 
     private: // Data
-        // Data
+        // NLopt optimizer instance
+        nlopt_opt opt_;
+        // Cost function data
         Data data_;
 
     public: // Public methods
@@ -75,13 +74,35 @@ namespace flychams::coordination
             data_.tab_r = core::RowVectorXr::Zero(data_.cost_params.n_o);
             data_.x_hat = core::Vector3r::Zero();
             data_.wTcentral = core::Matrix4r::Identity();
+
+            // Create an NLopt optimizer
+            opt_ = nlopt_create(NLOPT_LN_NELDERMEAD, 3); // 3 is the dimension of the problem
+
+            // Optimizer options
+            nlopt_set_xtol_rel(opt_, static_cast<double>(params_.tol)); // Set convergence tolerance
+            nlopt_set_maxeval(opt_, params_.max_iter);                  // Maximum number of function evaluations
         }
         void destroy()
         {
-            // Nothing to destroy
+            if (opt_)
+            {
+                nlopt_destroy(opt_);
+            }
         }
         core::Vector3r run(const core::Matrix3Xr& tab_P, const core::RowVectorXr& tab_r, const core::Vector3r& x0, const core::Matrix4r& wTcentral, float& J)
         {
+            // Check if NLopt optimizer is initialized
+            if (!opt_)
+            {
+                throw std::runtime_error("NLopt optimizer not initialized");
+            }
+
+            // Define the optimization bounds
+            const double lb[3] = { static_cast<double>(params_.x_min(0)), static_cast<double>(params_.x_min(1)), static_cast<double>(params_.x_min(2)) };
+            const double ub[3] = { static_cast<double>(params_.x_max(0)), static_cast<double>(params_.x_max(1)), static_cast<double>(params_.x_max(2)) };
+            nlopt_set_lower_bounds(opt_, lb);
+            nlopt_set_upper_bounds(opt_, ub);
+
             // Clip position to constraints
             core::Vector3r x0_clipped = x0;
             x0_clipped(0) = std::min(std::max(x0(0), params_.x_min(0)), params_.x_max(0));
@@ -112,9 +133,12 @@ namespace flychams::coordination
         {
             float J = 0.0f;
 
+            // Set the objective cost function J1 along with the data
+            nlopt_set_min_objective(opt_, funJ1, &data_);
+
             // Optimize for J1
-            x_opt = x0;
-            J = optimize(x_opt, false);
+            x_opt = x0; // Start from initial position
+            J = optimize(x_opt);
 
             return J;
         }
@@ -134,8 +158,11 @@ namespace flychams::coordination
                 // Define the x_hat parameter of cost function J2
                 data_.x_hat << x_opt_prev[0], x_opt_prev[1], x_opt_prev[2];
 
+                // Set the objective cost function J2 along with the data
+                nlopt_set_min_objective(opt_, funJ2, &data_);
+
                 // Optimize for J2
-                J = optimize(x_opt, true);
+                J = optimize(x_opt);
 
                 // Compute the norm of difference
                 x_diff = (x_opt - x_opt_prev).norm();
@@ -148,86 +175,46 @@ namespace flychams::coordination
         }
 
     private: // Optimization methods
-        float optimize(core::Vector3r& x_opt, bool convex_relaxation)
+        float optimize(core::Vector3r& x_opt)
         {
-            // Check Lipschitz constant (if not provided, it will be computed heuristically)
-            float L = params_.lipschitz_constant;
-            if (L <= 1e-6f)
-            {
-                // Compute Lipschitz constant using the number of tracking units
-                L = 15.0f * (static_cast<float>(data_.cost_params.n_o) + 1.0f);
-            }
+            double x_opt_nlopt[3] = { static_cast<double>(x_opt(0)), static_cast<double>(x_opt(1)), static_cast<double>(x_opt(2)) };
 
-            // Initialize variables
-            float f_prev = HUGE_VALF;
-            core::Vector3r x = x_opt;
-            core::Vector3r x_prev = x_opt;
-            float theta = 1.0f;
-            float theta_prev = 1.0f;
+            // Call the optimization algorithm
+            // J: optimal value of the cost function
+            // x_opt: value that minimizes the cost function
+            double J;
+            nlopt_optimize(opt_, x_opt_nlopt, &J);
 
-            // Iterate until convergence or max iterations
-            for (int k = 0; k < params_.max_iter; k++)
-            {
-                float beta = (theta_prev - 1.0f) / theta;
+            // Update the position
+            x_opt << static_cast<float>(x_opt_nlopt[0]), static_cast<float>(x_opt_nlopt[1]), static_cast<float>(x_opt_nlopt[2]);
 
-                // Calculate position for the k-th iteration
-                core::Vector3r y = x + beta * (x - x_prev);
+            // Return the optimal value of the cost function
+            return static_cast<float>(J);
+        }
 
-                // Compute the cost function and gradient with the current position
-                float f;
-                core::Vector3r grad_f;
-                if (convex_relaxation)
-                    f = CostFunctions::J2(data_.tab_P, data_.tab_r, y, data_.x_hat, data_.wTcentral, data_.cost_params, grad_f);
-                else
-                    f = CostFunctions::J1(data_.tab_P, data_.tab_r, y, data_.wTcentral, data_.cost_params, grad_f);
+        static double funJ1(unsigned n, const double* x, double* grad, void* data)
+        {
+            // Extract data
+            core::Vector3r x_vec(static_cast<float>(x[0]), static_cast<float>(x[1]), static_cast<float>(x[2]));
+            Data* data_ptr = reinterpret_cast<Data*>(data);
 
-                // Check if the cost function is increasing
-                if (f > f_prev)
-                {
-                    // Reset the momentum (avoids overshooting)
-                    x_prev = x;
-                    theta = 1.0f;
-                    theta_prev = 1.0f;
-                }
+            // Calculate the cost for J1
+            float J1 = CostFunctions::J1(data_ptr->tab_P, data_ptr->tab_r, x_vec, data_ptr->wTcentral, data_ptr->cost_params);
 
-                // Accelerated gradient step
-                core::Vector3r x_next = y - (1.0f / L) * grad_f;
+            return static_cast<double>(J1);
+        }
 
-                // Limit to the constraints
-                if (x_next.x() < params_.x_min.x()) x_next.x() = params_.x_min.x();
-                if (x_next.x() > params_.x_max.x()) x_next.x() = params_.x_max.x();
-                if (x_next.y() < params_.x_min.y()) x_next.y() = params_.x_min.y();
-                if (x_next.y() > params_.x_max.y()) x_next.y() = params_.x_max.y();
-                if (x_next.z() < params_.x_min.z()) x_next.z() = params_.x_min.z();
-                if (x_next.z() > params_.x_max.z()) x_next.z() = params_.x_max.z();
+        static double funJ2(unsigned n, const double* x, double* grad, void* data)
+        {
+            // Extract data
+            core::Vector3r x_vec(static_cast<float>(x[0]), static_cast<float>(x[1]), static_cast<float>(x[2]));
+            Data* data_ptr = reinterpret_cast<Data*>(data);
 
-                // Check convergence
-                float norm_diff = (x_next - x).norm();
-                if (norm_diff < params_.tol)
-                {
-                    break;
-                }
+            // Calculate the cost for J2
+            float J2 = CostFunctions::J2(data_ptr->tab_P, data_ptr->tab_r, x_vec, data_ptr->x_hat, data_ptr->wTcentral, data_ptr->cost_params);
 
-                // Update theta
-                theta_prev = theta;
-                theta = 0.5f * (1.0f + std::sqrt(1.0f + 4.0f * std::pow(theta, 2)));
-
-                // Update xk and xk_prev
-                x_prev = x;
-                x = x_next;
-            }
-
-            // Evaluate the final cost (without gradient)
-            float f;
-            if (convex_relaxation)
-                f = CostFunctions::J2(data_.tab_P, data_.tab_r, x, data_.x_hat, data_.wTcentral, data_.cost_params);
-            else
-                f = CostFunctions::J1(data_.tab_P, data_.tab_r, x, data_.wTcentral, data_.cost_params);
-
-            // Return the cost function value and position
-            x_opt = x;
-            return f;
+            return static_cast<double>(J2);
         }
     };
 
-} // namespace flychams::coordination
+} // namespace flychams::core

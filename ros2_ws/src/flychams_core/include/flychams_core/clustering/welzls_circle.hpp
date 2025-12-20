@@ -7,7 +7,7 @@
 #include <cmath>
 #include <algorithm>
 
-namespace flychams::coordinator
+namespace flychams::core
 {
     /**
      * ════════════════════════════════════════════════════════════════
@@ -159,4 +159,4 @@ namespace flychams::coordinator
         }
     };
 
-} // namespace flychams::coordinator
+} // namespace flychams::core

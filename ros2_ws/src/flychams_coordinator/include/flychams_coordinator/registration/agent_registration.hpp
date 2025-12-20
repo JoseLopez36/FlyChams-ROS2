@@ -3,7 +3,7 @@
 // Base module include
 #include "flychams_core/base/base_module.hpp"
 
-namespace flychams::bringup
+namespace flychams::coordinator
 {
 	/**
 	 * ════════════════════════════════════════════════════════════════
@@ -36,4 +36,4 @@ namespace flychams::bringup
 		const core::IDs& getAgents() const { return agents_; }
 	};
 
-} // namespace flychams::bringup
+} // namespace flychams::coordinator

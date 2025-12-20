@@ -14,12 +14,10 @@
 
   <!-- Dependencies -->
   <depend>rclcpp</depend>
-  <depend>mavros_msgs</depend>
   <depend>flychams_core</depend>
   
   <!-- Runtime dependencies -->
   <exec_depend>ros2launch</exec_depend>
-  <exec_depend>tf2_ros</exec_depend>
   <exec_depend>rviz2</exec_depend>
 
   <!-- Export -->

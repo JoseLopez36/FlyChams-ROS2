@@ -15,7 +15,7 @@
 #include "flychams_core/utils/vision_utils.hpp"
 #include "flychams_core/utils/tf_utils.hpp"
 
-namespace flychams::bringup
+namespace flychams::core
 {
     /**
      * ════════════════════════════════════════════════════════════════
@@ -46,4 +46,4 @@ namespace flychams::bringup
         static void writeStreamsSection(const core::MissionConfigPtr& config_ptr, nlohmann::ordered_json& streams);
     };
 
-} // namespace flychams::bringup
+} // namespace flychams::core

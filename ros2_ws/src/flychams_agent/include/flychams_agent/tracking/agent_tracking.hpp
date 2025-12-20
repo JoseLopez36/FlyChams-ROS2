@@ -1,7 +1,7 @@
 #pragma once
 
 // Tracking includes
-#include "flychams_agent/tracking/observation_solver.hpp"
+#include "flychams_core/tracking/observation_solver.hpp"
 
 // Base module include
 #include "flychams_core/base/base_module.hpp"
@@ -70,7 +70,7 @@ namespace flychams::agent
         // Agent
         Agent agent_;
         // Solvers
-        std::vector<ObservationSolver::SharedPtr> solvers_;
+        std::vector<core::ObservationSolver::SharedPtr> solvers_;
 
     private: // Callbacks
         void statusCallback(const core::AgentStatusMsg::SharedPtr msg);
@@ -81,8 +81,8 @@ namespace flychams::agent
         void update();
 
     private: // Tracking methods
-        std::tuple<float, core::Vector3r> updateCamera(const core::Vector3r& P, const float& r, const core::Matrix4r& T, ObservationSolver::SharedPtr solver);
-        std::tuple<float, core::Crop> updateWindow(const core::Vector3r& P, const float& r, const core::Matrix4r& T, ObservationSolver::SharedPtr solver);
+        std::tuple<float, core::Vector3r> updateCamera(const core::Vector3r& P, const float& r, const core::Matrix4r& T, core::ObservationSolver::SharedPtr solver);
+        std::tuple<float, core::Crop> updateWindow(const core::Vector3r& P, const float& r, const core::Matrix4r& T, core::ObservationSolver::SharedPtr solver);
 
     private: // ROS components
         // Timer

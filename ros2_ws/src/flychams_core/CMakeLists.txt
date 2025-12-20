@@ -23,13 +23,14 @@ find_package(OpenCV REQUIRED)
 find_package(mavros REQUIRED)
 find_package(flychams_interfaces REQUIRED)
 
-## Find GeographicLib
+# Find GeographicLib
 set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH};/usr/share/cmake/geographiclib")
 find_package(GeographicLib REQUIRED)
 
 # Add external libraries
 add_subdirectory(external/OpenXLSX ${CMAKE_CURRENT_BINARY_DIR}/OpenXLSX_build)
 add_subdirectory(external/json ${CMAKE_CURRENT_BINARY_DIR}/json_build)
+add_subdirectory(external/nlopt ${CMAKE_CURRENT_BINARY_DIR}/nlopt_build)
 
 # Include directories
 include_directories(
@@ -43,12 +44,16 @@ add_library(${PROJECT_NAME} SHARED
   src/base/base_registrator_node.cpp
   src/base/base_discoverer_node.cpp
   src/base/base_module.cpp
+  src/settings/spreadsheet_parser.cpp
   src/settings/mission_settings_parser.cpp
+  src/settings/airsim_settings_creator.cpp
+  src/settings/mission_settings_creator.cpp
   src/settings/settings_tools.cpp
   src/utils/math_utils.cpp
   src/utils/tf_utils.cpp
   src/utils/vision_utils.cpp
   src/utils/ros_utils.cpp
+  external/hungarian-algorithm-cpp/Hungarian.cpp
 )
 
 target_include_directories(${PROJECT_NAME} PUBLIC
@@ -58,6 +63,8 @@ target_include_directories(${PROJECT_NAME} PUBLIC
   $<INSTALL_INTERFACE:include>
   ${OpenCV_INCLUDE_DIRS}
   ${GeographicLib_INCLUDE_DIRS}
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/external/hungarian-algorithm-cpp>
+  $<INSTALL_INTERFACE:include>
 )
 
 target_link_libraries(${PROJECT_NAME}
@@ -68,6 +75,7 @@ target_link_libraries(${PROJECT_NAME}
     ${OpenCV_LIBS}
     OpenXLSX::OpenXLSX
     ${GeographicLib_LIBRARIES}
+    nlopt
 )
 
 ament_target_dependencies(${PROJECT_NAME}
@@ -103,6 +111,10 @@ install(
   DIRECTORY external/json/single_include/
   DESTINATION include
 )
+install(
+  DIRECTORY external/hungarian-algorithm-cpp/
+  DESTINATION include
+)
 
 # Install library
 install(TARGETS ${PROJECT_NAME}
@@ -115,6 +127,15 @@ install(TARGETS ${PROJECT_NAME}
 
 # Install and export OpenXLSX
 install(TARGETS OpenXLSX
+  EXPORT ${PROJECT_NAME}
+  LIBRARY DESTINATION lib
+  ARCHIVE DESTINATION lib
+  RUNTIME DESTINATION bin
+  INCLUDES DESTINATION include
+)
+
+# Install and export NLopt
+install(TARGETS nlopt
   EXPORT ${PROJECT_NAME}
   LIBRARY DESTINATION lib
   ARCHIVE DESTINATION lib

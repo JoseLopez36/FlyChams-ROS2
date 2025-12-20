@@ -1,8 +1,6 @@
-#include "flychams_bringup/settings/mission_settings_creator.hpp"
+#include "flychams_core/settings/mission_settings_creator.hpp"
 
-using namespace flychams::core;
-
-namespace flychams::bringup
+namespace flychams::core
 {
 	// ════════════════════════════════════════════════════════════════════════════
 	// YAML CREATION: Static methods for creating mission.yaml file
@@ -389,4 +387,4 @@ namespace flychams::bringup
 		yaml << prefix << "load_factor: " << std::fixed << std::setprecision(3) << drone.load_factor << "\n";
 	}
 
-} // namespace flychams::bringup
+} // namespace flychams::core

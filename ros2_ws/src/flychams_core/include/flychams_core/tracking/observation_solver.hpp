@@ -1,14 +1,14 @@
 #pragma once
 
 // Tracking includes
-#include "flychams_agent/tracking/camera_solver.hpp"
-#include "flychams_agent/tracking/window_solver.hpp"
+#include "flychams_core/tracking/camera_solver.hpp"
+#include "flychams_core/tracking/window_solver.hpp"
 
 // Utilities
 #include "flychams_core/types/core_types.hpp"
 #include "flychams_core/utils/math_utils.hpp"
 
-namespace flychams::agent
+namespace flychams::core
 {
     /**
      * ════════════════════════════════════════════════════════════════
@@ -90,4 +90,4 @@ namespace flychams::agent
         }
     };
 
-} // namespace flychams::agent
+} // namespace flychams::core

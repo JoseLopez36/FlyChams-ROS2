@@ -1,8 +1,8 @@
-#include "flychams_bringup/registration/cluster_registration.hpp"
+#include "flychams_coordinator/registration/cluster_registration.hpp"
 
 using namespace flychams::core;
 
-namespace flychams::bringup
+namespace flychams::coordinator
 {
 	// ════════════════════════════════════════════════════════════════════════════
 	// CONSTRUCTOR: Constructor and destructor
@@ -42,4 +42,4 @@ namespace flychams::bringup
 		clusters_.clear();
 	}
 
-} // namespace flychams::bringup
+} // namespace flychams::coordinator

@@ -4,7 +4,7 @@
 #include "flychams_core/types/core_types.hpp"
 #include "flychams_core/utils/math_utils.hpp"
 
-namespace flychams::agent
+namespace flychams::core
 {
     /**
      * ════════════════════════════════════════════════════════════════
@@ -186,4 +186,4 @@ namespace flychams::agent
         }
     };
 
-} // namespace flychams::agent
+} // namespace flychams::core

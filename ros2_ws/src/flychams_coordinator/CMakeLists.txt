@@ -11,25 +11,18 @@ find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(flychams_core REQUIRED)
 
-# Add external libraries
-add_subdirectory(external/nlopt ${CMAKE_CURRENT_BINARY_DIR}/nlopt_build)
-
 # Create coordinator library
 set(COORD_SRC
-  src/assignment/agent_assignment.cpp
-  src/assignment/assignment_solver.cpp
-  src/clustering/target_clustering.cpp
-  src/analysis/cluster_analysis.cpp
   src/registration/agent_registration.cpp
   src/registration/target_registration.cpp
   src/registration/cluster_registration.cpp
-  external/hungarian-algorithm-cpp/Hungarian.cpp
+  src/clustering/target_clustering.cpp
+  src/analysis/cluster_analysis.cpp
+  src/assignment/agent_assignment.cpp
 )
 add_library(${PROJECT_NAME} SHARED ${COORD_SRC})
 target_include_directories(${PROJECT_NAME} PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-  $<INSTALL_INTERFACE:include>
-  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/external/hungarian-algorithm-cpp>
   $<INSTALL_INTERFACE:include>
 )
 
@@ -41,13 +34,12 @@ ament_target_dependencies(${PROJECT_NAME}
 # Link to required libraries
 target_link_libraries(${PROJECT_NAME}
   rclcpp::rclcpp
-  nlopt
 )
 
-# Create executable for agent assignment node
-add_executable(agent_assignment_node src/agent_assignment_node.cpp)
-target_link_libraries(agent_assignment_node ${PROJECT_NAME})
-ament_target_dependencies(agent_assignment_node rclcpp flychams_core)
+# Create executable for element registrator node
+add_executable(element_registrator_node src/element_registrator_node.cpp)
+target_link_libraries(element_registrator_node ${PROJECT_NAME})
+ament_target_dependencies(element_registrator_node rclcpp flychams_core)
 
 # Create executable for target clustering node
 add_executable(target_clustering_node src/target_clustering_node.cpp)
@@ -59,22 +51,13 @@ add_executable(cluster_analysis_node src/cluster_analysis_node.cpp)
 target_link_libraries(cluster_analysis_node ${PROJECT_NAME})
 ament_target_dependencies(cluster_analysis_node rclcpp flychams_core)
 
-# Create executable for element registrator node
-add_executable(element_registrator_node src/element_registrator_node.cpp)
-target_link_libraries(element_registrator_node ${PROJECT_NAME})
-ament_target_dependencies(element_registrator_node rclcpp flychams_core)
+# Create executable for agent assignment node
+add_executable(agent_assignment_node src/agent_assignment_node.cpp)
+target_link_libraries(agent_assignment_node ${PROJECT_NAME})
+ament_target_dependencies(agent_assignment_node rclcpp flychams_core)
 
 # Install targets and headers
 install(TARGETS ${PROJECT_NAME}
-  EXPORT ${PROJECT_NAME}
-  LIBRARY DESTINATION lib
-  ARCHIVE DESTINATION lib
-  RUNTIME DESTINATION bin
-  INCLUDES DESTINATION include
-)
-
-# Install and export NLopt
-install(TARGETS nlopt
   EXPORT ${PROJECT_NAME}
   LIBRARY DESTINATION lib
   ARCHIVE DESTINATION lib
