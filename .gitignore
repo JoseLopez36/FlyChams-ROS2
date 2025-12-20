@@ -1,6 +1,8 @@
-# Ignore VScode files
-.vscode/
-.cursor/
+# Ignore config files
 config/mission.yaml
 config/airsim.json
 config/.~lock.Configuration.xlsx\#
+
+# Ignore IDE files
+.vscode/
+.cursor/
