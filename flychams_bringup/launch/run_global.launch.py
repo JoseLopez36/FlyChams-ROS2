@@ -106,7 +106,7 @@ def launch_setup(context, *args, **kwargs):
     if is_enabled('target_clustering'):
         ld.append(
             Node(
-                package='flychams_perception',
+                package='flychams_coordinator',
                 executable='target_clustering_node',
                 name='target_clustering_node',
                 output='screen',
@@ -127,7 +127,7 @@ def launch_setup(context, *args, **kwargs):
     if is_enabled('cluster_analysis'):
         ld.append(
             Node(
-                package='flychams_perception',
+                package='flychams_coordinator',
                 executable='cluster_analysis_node',
                 name='cluster_analysis_node',
                 output='screen',

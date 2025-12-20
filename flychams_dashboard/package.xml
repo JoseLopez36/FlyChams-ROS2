@@ -2,9 +2,9 @@
 <?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
   <name>flychams_dashboard</name>
-  <version>0.0.1</version>
+  <version>1.0.0</version>
   <description>
-    Dashboard package for FlyingChameleons. Contains logic for displaying data visually. It also creates useful metrics.
+    Dashboard package for FlyingChameleons
   </description>
   <maintainer email="josloprui6@alum.us.es">Jose Francisco Lopez Ruiz</maintainer>
   <license>Apache-2.0</license>

@@ -1,0 +1,119 @@
+cmake_minimum_required(VERSION 3.8)
+project(flychams_agent)
+
+# Default to C++17
+if(NOT CMAKE_CXX_STANDARD)
+  set(CMAKE_CXX_STANDARD 17)
+endif()
+
+# Find dependencies
+find_package(ament_cmake REQUIRED)
+find_package(rclcpp REQUIRED)
+find_package(mavros_msgs REQUIRED)
+find_package(airsim_interfaces REQUIRED)
+find_package(flychams_core REQUIRED)
+
+# Create control library
+set(CONTROL_SRC
+  src/drone/drone_frames.cpp
+  src/drone/drone_state.cpp
+  src/drone/drone_control.cpp
+  src/camera/camera_frames.cpp
+  src/camera/camera_control.cpp
+  src/mavros/mavros_manager.cpp
+  src/communication/mavros_communication.cpp
+  src/communication/camera_communication.cpp
+  src/analysis/agent_analysis.cpp
+  src/positioning/agent_positioning.cpp
+  src/positioning/position_solver.cpp
+  src/tracking/agent_tracking.cpp
+)
+add_library(${PROJECT_NAME} SHARED ${CONTROL_SRC})
+target_include_directories(${PROJECT_NAME} PUBLIC
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+  $<INSTALL_INTERFACE:include>
+)
+
+# Export dependencies
+ament_target_dependencies(${PROJECT_NAME}
+  rclcpp mavros_msgs airsim_interfaces flychams_core
+)
+
+# Link to required libraries
+target_link_libraries(${PROJECT_NAME}
+  rclcpp::rclcpp
+)
+
+# Create executable for drone frames node
+add_executable(drone_frames_node src/drone_frames_node.cpp)
+target_link_libraries(drone_frames_node ${PROJECT_NAME})
+ament_target_dependencies(drone_frames_node rclcpp mavros_msgs flychams_core)
+
+# Create executable for drone state node
+add_executable(drone_state_node src/drone_state_node.cpp)
+target_link_libraries(drone_state_node ${PROJECT_NAME})
+ament_target_dependencies(drone_state_node rclcpp mavros_msgs flychams_core)
+
+# Create executable for drone control node
+add_executable(drone_control_node src/drone_control_node.cpp)
+target_link_libraries(drone_control_node ${PROJECT_NAME})
+ament_target_dependencies(drone_control_node rclcpp mavros_msgs flychams_core)
+
+# Create executable for camera frames node
+add_executable(camera_frames_node src/camera_frames_node.cpp)
+target_link_libraries(camera_frames_node ${PROJECT_NAME})
+ament_target_dependencies(camera_frames_node rclcpp airsim_interfaces flychams_core)
+
+# Create executable for camera control node
+add_executable(camera_control_node src/camera_control_node.cpp)
+target_link_libraries(camera_control_node ${PROJECT_NAME})
+ament_target_dependencies(camera_control_node rclcpp airsim_interfaces flychams_core)
+
+# Create executable for mavros manager node
+add_executable(mavros_manager_node src/mavros_manager_node.cpp)
+target_link_libraries(mavros_manager_node ${PROJECT_NAME})
+ament_target_dependencies(mavros_manager_node rclcpp mavros_msgs flychams_core)
+
+# Create executable for agent analysis node
+add_executable(agent_analysis_node src/agent_analysis_node.cpp)
+target_link_libraries(agent_analysis_node ${PROJECT_NAME})
+ament_target_dependencies(agent_analysis_node rclcpp flychams_core)
+
+# Create executable for agent positioning node
+add_executable(agent_positioning_node src/agent_positioning_node.cpp)
+target_link_libraries(agent_positioning_node ${PROJECT_NAME})
+ament_target_dependencies(agent_positioning_node rclcpp flychams_core)
+
+# Create executable for agent tracking node
+add_executable(agent_tracking_node src/agent_tracking_node.cpp)
+target_link_libraries(agent_tracking_node ${PROJECT_NAME})
+ament_target_dependencies(agent_tracking_node rclcpp flychams_core)
+
+# Install targets and headers
+install(TARGETS ${PROJECT_NAME}
+  EXPORT ${PROJECT_NAME}
+  LIBRARY DESTINATION lib
+  ARCHIVE DESTINATION lib
+  RUNTIME DESTINATION bin
+  INCLUDES DESTINATION include
+)
+
+install(TARGETS drone_frames_node drone_state_node drone_control_node camera_frames_node camera_control_node mavros_manager_node agent_analysis_node agent_positioning_node agent_tracking_node
+  RUNTIME DESTINATION lib/${PROJECT_NAME}
+)
+
+install(DIRECTORY include/
+  DESTINATION include
+)
+
+# Export package
+ament_export_targets(${PROJECT_NAME} HAS_LIBRARY_TARGET)
+ament_export_dependencies(
+  rclcpp
+  mavros_msgs
+  airsim_interfaces
+  flychams_core
+)
+ament_export_libraries(${PROJECT_NAME})
+ament_export_include_directories(include)
+ament_package()

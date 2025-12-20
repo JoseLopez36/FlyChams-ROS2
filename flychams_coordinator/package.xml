@@ -1,10 +1,10 @@
 <?xml version="1.0"?>
 <?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
-  <name>flychams_bringup</name>
+  <name>flychams_coordinator</name>
   <version>1.0.0</version>
   <description>
-    Bringup package for FlyingChameleons
+    Coordinator package for FlyingChameleons
   </description>
   <maintainer email="josloprui6@alum.us.es">Jose Francisco Lopez Ruiz</maintainer>
   <license>Apache-2.0</license>
@@ -14,13 +14,7 @@
 
   <!-- Dependencies -->
   <depend>rclcpp</depend>
-  <depend>mavros_msgs</depend>
   <depend>flychams_core</depend>
-  
-  <!-- Runtime dependencies -->
-  <exec_depend>ros2launch</exec_depend>
-  <exec_depend>tf2_ros</exec_depend>
-  <exec_depend>rviz2</exec_depend>
 
   <!-- Export -->
   <export>

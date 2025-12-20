@@ -28,7 +28,7 @@ The project leverages:
 | `flychams_core`         | Core domain models, utilities, and interfaces   |
 | `flychams_bringup`      | Launch files and configuration for the system   |
 | `flychams_control`      | Control algorithms for aerial agents            |
-| `flychams_perception`   | Perception algorithms for clustering targets    |
+| `flychams_coordinator`   | Perception algorithms for clustering targets    |
 | `flychams_coordination` | Coordination algorithms for multi-agent systems |
 | `flychams_simulation`   | Manager for simulation framework                |
 | `flychams_interfaces`   | Custom message and service for FlyChams         |
@@ -293,7 +293,7 @@ FlyChams-ROS2/
 │       ├── flychams_core/          # Core domain models, utilities and interfaces
 │       ├── flychams_bringup/       # Launch and configuration
 │       ├── flychams_control/       # Agent control
-│       ├── flychams_perception/    # Target perception
+│       ├── flychams_coordinator/    # Target perception
 │       ├── flychams_coordination/  # Multi-agent coordination
 │       ├── flychams_simulation/    # Simulation manager
 │       ├── flychams_interfaces/    # Custom message and service for FlyChams
