@@ -23,7 +23,6 @@ def main():
     parser = argparse.ArgumentParser(description="Launch coordinator instance")
     parser.add_argument("--sim", action="store_true", help="Run in simulation mode")
     parser.add_argument("--hardware", action="store_true", help="Run in hardware mode")
-    parser.add_argument("--delay", type=float, default=1.0, help="Delay in seconds between setup and run")
     args = parser.parse_args()
 
     # Determine launch mode

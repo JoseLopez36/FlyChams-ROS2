@@ -49,9 +49,9 @@ node_log_levels:
   # Dashboard nodes
   metrics_factory: "info"
   marker_factory: "info"
-  rviz: "info"
+  rviz: "error"
   # Simulation nodes
-  airsim: "info"
+  airsim: "error"
   simulation_gui: "info"
   target_state: "info"
   target_control: "info"

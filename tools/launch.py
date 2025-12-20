@@ -1,12 +1,6 @@
 #!/usr/bin/env python3
 """
 Workflow launcher
-
-Creates a tmux session with one window per instance, launching in order:
-  1) GLOBAL
-  2) AGENTxx (from config/mission.yaml)
-  3) PX4-i (simulation only; i = agent index)
-  4) VISUALIZATION
 """
 
 from __future__ import annotations
@@ -69,7 +63,7 @@ def setup_kill_key(session_name: str, cmd: str) -> None:
         ]
     )
 
-def setup_simulation(session_name: str, agent_ids: list[str], root_dir: Path, delay: float) -> None:
+def setup_simulation(session_name: str, agent_ids: list[str], root_dir: Path) -> None:
     # Get mode flag
     mode_flag = "--sim"
 
@@ -101,6 +95,14 @@ def setup_simulation(session_name: str, agent_ids: list[str], root_dir: Path, de
     )
     send_keys(session_name, "UE5", ue5_cmd)
 
+    # Simulation
+    new_window(session_name, "SIMULATION", root_dir)
+    simulation_cmd = (
+        f"sleep {delay_1} && "
+        f"python3 -u {shlex.quote(str(root_dir / 'tools' / 'launch_simulation.py'))} "
+    )
+    send_keys(session_name, "SIMULATION", simulation_cmd)
+
     # PX4 SITL
     for idx, _agent_id in enumerate(agent_ids):
         window_name = f"PX4-{idx}"
@@ -112,14 +114,14 @@ def setup_simulation(session_name: str, agent_ids: list[str], root_dir: Path, de
         )
         send_keys(session_name, window_name, px4_cmd)
 
-    # Global
-    new_window(session_name, "GLOBAL", root_dir)
-    global_cmd = (
+    # Coordinator
+    new_window(session_name, "COORDINATOR", root_dir)
+    coordinator_cmd = (
         f"sleep {delay_1} && "
-        f"python3 -u {shlex.quote(str(root_dir / 'tools' / 'launch_global.py'))} "
-        f"{mode_flag} --delay {delay}"
+        f"python3 -u {shlex.quote(str(root_dir / 'tools' / 'launch_coordinator.py'))} "
+        f"{mode_flag}"
     )
-    send_keys(session_name, "GLOBAL", global_cmd)
+    send_keys(session_name, "COORDINATOR", coordinator_cmd)
 
     # Agents
     for agent_id in agent_ids:
@@ -128,25 +130,25 @@ def setup_simulation(session_name: str, agent_ids: list[str], root_dir: Path, de
         agent_cmd = (
             f"sleep {delay_1 + delay_2} && "
             f"python3 -u {shlex.quote(str(root_dir / 'tools' / 'launch_agent.py'))} "
-            f"--agent-id {shlex.quote(agent_id)} {mode_flag} --delay {delay}"
+            f"--agent-id {shlex.quote(agent_id)} {mode_flag}"
         )
         send_keys(session_name, window_name, agent_cmd)
 
-    # Visualization
-    new_window(session_name, "VISUALIZATION", root_dir)
-    viz_cmd = (
+    # Dashboard
+    new_window(session_name, "DASHBOARD", root_dir)
+    dashboard_cmd = (
         f"sleep {delay_1} && "
-        f"python3 -u {shlex.quote(str(root_dir / 'tools' / 'launch_visualization.py'))}"
+        f"python3 -u {shlex.quote(str(root_dir / 'tools' / 'launch_dashboard.py'))}"
     )
-    send_keys(session_name, "VISUALIZATION", viz_cmd)
+    send_keys(session_name, "DASHBOARD", dashboard_cmd)
 
-    # Focus GLOBAL
-    tmux_checked(["select-window", "-t", f"{session_name}:GLOBAL"])
+    # Focus COORDINATOR
+    tmux_checked(["select-window", "-t", f"{session_name}:COORDINATOR"])
 
     # Attach to session
     subprocess.run(["tmux", "attach", "-t", session_name])
 
-def setup_hardware(session_name: str, agent_ids: list[str], root_dir: Path, delay: float) -> None:
+def setup_hardware(session_name: str, agent_ids: list[str], root_dir: Path) -> None:
     # Get mode flag
     mode_flag = "--hardware"
 
@@ -161,7 +163,7 @@ def setup_hardware(session_name: str, agent_ids: list[str], root_dir: Path, dela
             "-s",
             session_name,
             "-n",
-            "GLOBAL",
+            "COORDINATOR",
             "-c",
             str(root_dir),
         ]
@@ -171,12 +173,12 @@ def setup_hardware(session_name: str, agent_ids: list[str], root_dir: Path, dela
     stop_cmd = f"python3 -u {shlex.quote(str(root_dir / 'tools' / 'stop.py'))} {mode_flag}"
     setup_kill_key(session_name, stop_cmd)
 
-    # Global
-    global_cmd = (
-        f"python3 -u {shlex.quote(str(root_dir / 'tools' / 'launch_global.py'))} "
-        f"{mode_flag} --delay {delay}"
+    # Coordinator
+    coordinator_cmd = (
+        f"python3 -u {shlex.quote(str(root_dir / 'tools' / 'launch_coordinator.py'))} "
+        f"{mode_flag}"
     )
-    send_keys(session_name, "GLOBAL", global_cmd)
+    send_keys(session_name, "COORDINATOR", coordinator_cmd)
 
     # Agents
     for agent_id in agent_ids:
@@ -185,42 +187,41 @@ def setup_hardware(session_name: str, agent_ids: list[str], root_dir: Path, dela
         agent_cmd = (
             f"sleep {delay_1} && "
             f"python3 -u {shlex.quote(str(root_dir / 'tools' / 'launch_agent.py'))} "
-            f"--agent-id {shlex.quote(agent_id)} {mode_flag} --delay {delay}"
+            f"--agent-id {shlex.quote(agent_id)} {mode_flag}"
         )
         send_keys(session_name, window_name, agent_cmd)
 
-    # Visualization
-    new_window(session_name, "VISUALIZATION", root_dir)
-    viz_cmd = (
-        f"python3 -u {shlex.quote(str(root_dir / 'tools' / 'launch_visualization.py'))}"
+    # Dashboard
+    new_window(session_name, "DASHBOARD", root_dir)
+    dashboard_cmd = (
+        f"python3 -u {shlex.quote(str(root_dir / 'tools' / 'launch_dashboard.py'))}"
     )
-    send_keys(session_name, "VISUALIZATION", viz_cmd)
+    send_keys(session_name, "DASHBOARD", dashboard_cmd)
 
-    # Focus GLOBAL
-    tmux_checked(["select-window", "-t", f"{session_name}:GLOBAL"])
+    # Focus COORDINATOR
+    tmux_checked(["select-window", "-t", f"{session_name}:COORDINATOR"])
 
     # Attach to session
     subprocess.run(["tmux", "attach", "-t", session_name])
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Launch FlyChams workflow in tmux (GLOBAL, AGENTs, PX4, VISUALIZATION)"
+        description="Launch FlyChams workflow in tmux"
     )
     parser.add_argument("--sim", action="store_true", help="Run in simulation mode")
     parser.add_argument("--hardware", action="store_true", help="Run in hardware mode")
-    parser.add_argument("--delay", type=float, default=1.0, help="Delay in seconds between setup and run")
     args = parser.parse_args()
 
     # Determine launch mode
     if args.sim and args.hardware:
-        print("[GLOBAL] Error: Cannot use both --sim and --hardware flags")
+        print("[LAUNCH] Error: Cannot use both --sim and --hardware flags")
         sys.exit(1)
     elif args.sim:
         launch_mode = LaunchMode.SIMULATION
     elif args.hardware:
         launch_mode = LaunchMode.HARDWARE
     else:
-        print("[GLOBAL] Error: No launch mode specified")
+        print("[LAUNCH] Error: No launch mode specified")
         sys.exit(1)
 
     # Get script directory
@@ -228,7 +229,7 @@ def main():
 
     # Get config paths
     root_dir = script_dir.parent
-    mission_path = root_dir / 'config' / 'mission.yaml'
+    mission_path = root_dir / 'ros2_ws' / 'src' / 'flychams_bringup' / 'config' / 'mission.yaml'
 
     session_name = "flychams"
     if session_exists(session_name):
@@ -251,16 +252,16 @@ def main():
         # Setup simulation:
         # 1. UE5
         # 2. PX4 SITL
-        # 3. GLOBAL
+        # 3. COORDINATOR
         # 4. AGENTS
-        # 5. VISUALIZATION
-        setup_simulation(session_name, agent_ids, root_dir, args.delay)
+        # 5. DASHBOARD
+        setup_simulation(session_name, agent_ids, root_dir)
     elif launch_mode == LaunchMode.HARDWARE:
         # Setup hardware:
-        # 1. GLOBAL
+        # 1. COORDINATOR
         # 2. AGENTS
-        # 3. VISUALIZATION
-        setup_hardware(session_name, agent_ids, root_dir, args.delay)
+        # 3. DASHBOARD
+        setup_hardware(session_name, agent_ids, root_dir)
 
 if __name__ == "__main__":
     main()

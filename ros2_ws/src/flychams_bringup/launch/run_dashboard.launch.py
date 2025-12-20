@@ -57,6 +57,7 @@ def launch_setup(context, *args, **kwargs):
     # Rviz parameters
     rviz_path = PathJoinSubstitution([
         FindPackageShare('flychams_bringup'),
+        'config',
         'rviz',
         'default.rviz'
     ])
@@ -127,15 +128,19 @@ def launch_setup(context, *args, **kwargs):
 
     # Conditionally add Rviz
     if is_enabled('rviz'):
+        rviz_config_path = rviz_path.perform(context).strip()
         ld.append(
             Node(
                 package='rviz2',
                 executable='rviz2',
                 name='rviz2',
                 output='screen',
-                arguments=['--ros-args', '--log-level', log_level('rviz')],
+                arguments=[
+                    '-d', rviz_config_path,
+                    '--ros-args',
+                    '--log-level', log_level('rviz')
+                ],
                 parameters=[
-                    rviz_path,
                     {'use_sim_time': is_simulated}
                 ]
             )

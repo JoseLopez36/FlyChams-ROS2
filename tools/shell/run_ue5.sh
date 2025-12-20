@@ -6,6 +6,6 @@ cd $FLYCHAMS_SIM_UE5_PATH || { echo "Directory $FLYCHAMS_SIM_UE5_PATH was not fo
 
 echo "Running UE5 simulation..."
 
-./FlyChamsSim.sh -settings="$FLYCHAMS_ROS2_PATH/config/airsim.json"
+./FlyChamsSim.sh -settings="$FLYCHAMS_ROS2_PATH/ros2_ws/src/flychams_bringup/config/airsim.json"
 
 echo "UE5 simulation running successfully"
