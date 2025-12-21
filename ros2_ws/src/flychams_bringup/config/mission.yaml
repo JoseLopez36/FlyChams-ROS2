@@ -162,8 +162,8 @@
                 name: "Operational Conditions O1 (ultra-high-resolution camera)"
                 type: 1
                 resolution:
-                  width: 7680
-                  height: 4320
+                  width: 1920
+                  height: 1080
                 sensor_size:
                   width: 0.013200
                   height: 0.007425

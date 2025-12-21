@@ -44,6 +44,16 @@ RUN     apt-get update && \
         libfontconfig1-dev \
         libx11-6 \
         libx11-dev \
+        gstreamer1.0-plugins-base \
+        gstreamer1.0-plugins-good \
+        gstreamer1.0-plugins-bad \
+        gstreamer1.0-plugins-ugly \
+        gstreamer1.0-tools \
+        libpulse0 \
+        libpulse-dev \
+        libpipewire-0.3-0 \
+        libpipewire-0.3-dev \
+        pipewire \
         && rm -rf /var/lib/apt/lists/* && \
         apt-get clean
 

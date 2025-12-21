@@ -339,13 +339,13 @@ namespace flychams::core
                                 {"VehicleName", agent_id},
                                 {"Visible", true} });
 
-        // Tracking views sub-windows (leave empty for now)
-        for (int i = 0; i < config_ptr->system.tracking_view_ids.size(); i++)
+        // Tracking views sub-windows (use first agent's tracking views)
+        for (const auto& [camera_id, camera_ptr] : config_ptr->agent_team[agent_id]->tracking.multi_camera_set)
         {
             subwindows.push_back({ {"WindowID", idx++},
-                                    {"CameraName", ""},
+                                    {"CameraName", camera_id},
                                     {"ImageType", 0},
-                                    {"VehicleName", ""},
+                                    {"VehicleName", agent_id},
                                     {"Visible", true} });
         }
     }

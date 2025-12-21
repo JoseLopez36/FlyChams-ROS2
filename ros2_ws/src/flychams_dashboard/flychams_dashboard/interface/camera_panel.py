@@ -1,9 +1,9 @@
 """Camera view widget for displaying UDP/RTP video streams"""
 
-from PyQt6.QtWidgets import QWidget, QVBoxLayout, QLabel, QTabWidget
-from PyQt6.QtCore import Qt, QTimer
-from PyQt6.QtGui import QImage, QPixmap
-import cv2
+from PyQt6.QtWidgets import QWidget, QVBoxLayout, QLabel, QTabWidget, QStackedWidget
+from PyQt6.QtCore import Qt, QTimer, QUrl
+from PyQt6.QtMultimedia import QMediaPlayer
+from PyQt6.QtMultimediaWidgets import QVideoWidget
 from typing import Optional
 from .styles import (
     LABEL_STYLE_CONNECTING,
@@ -12,72 +12,90 @@ from .styles import (
     TAB_WIDGET_STYLE
 )
 
-
-class CameraFeedWidget(QWidget):
-    """Widget for a single camera feed"""
+class CameraFeed(QWidget):
+    """Widget for a single camera feed using QtMultimedia"""
     
-    def __init__(self, stream_url: str):
+    def __init__(self, port: int = 5000):
         super().__init__()
         
-        self.stream_url = stream_url
-        self.cap: Optional[cv2.VideoCapture] = None
-        self.label = QLabel('Connecting...')
-        self.label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.label.setStyleSheet(LABEL_STYLE_CONNECTING)
+        self.port = port
+        self.media_player: Optional[QMediaPlayer] = None
+        
+        # Create stacked widget to switch between video and status label
+        self.stacked_widget = QStackedWidget(self)
+        
+        # Status label for connection state
+        self.status_label = QLabel('Connecting...')
+        self.status_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.status_label.setStyleSheet(LABEL_STYLE_CONNECTING)
+        
+        # Video widget for QtMultimedia
+        self.video_widget = QVideoWidget()
+        self.video_widget.setStyleSheet("background-color: black;")
+        
+        # Add widgets to stack
+        self.stacked_widget.addWidget(self.status_label)  # Index 0
+        self.stacked_widget.addWidget(self.video_widget)  # Index 1
+        self.stacked_widget.setCurrentIndex(0)  # Show status label initially
         
         layout = QVBoxLayout(self)
-        layout.addWidget(self.label)
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.addWidget(self.stacked_widget)
         
-        # Timer for updating frames
-        self.timer = QTimer()
-        self.timer.timeout.connect(self.update_frame)
-        self.timer.start(33)  # ~30 FPS
-        
-        # Try to open stream
-        self.connect_stream()
+        # Try to start stream after widget is shown
+        QTimer.singleShot(100, self.connect_stream)
     
     def connect_stream(self):
-        """Connect to the video stream"""
+        """Connect to the video stream using QtMultimedia"""
         try:
-            self.cap = cv2.VideoCapture(self.stream_url)
-            if not self.cap.isOpened():
-                self.label.setText(f'Failed to open stream:\n{self.stream_url}')
-                self.cap = None
+            # Create media player
+            self.media_player = QMediaPlayer(self)
+            self.media_player.setVideoOutput(self.video_widget)
+            
+            # Connect to error signal to handle connection issues
+            self.media_player.errorOccurred.connect(self._handle_error)
+            self.media_player.mediaStatusChanged.connect(self._handle_media_status_changed)
+            
+            # Set up RTP stream URL
+            stream_url = QUrl(f"udp://127.0.0.1:{self.port}")
+            
+            # Set media source
+            self.media_player.setSource(stream_url)
+            
+            # Start playback
+            self.media_player.play()
+            
+            # Switch to video widget after a short delay
+            QTimer.singleShot(1000, lambda: self.stacked_widget.setCurrentIndex(1))
+                
         except Exception as e:
-            self.label.setText(f'Error connecting:\n{str(e)}')
-            self.cap = None
+            self.status_label.setText(f'Error connecting to port {self.port}:\n{str(e)}')
+            self.stacked_widget.setCurrentIndex(0)
     
-    def update_frame(self):
-        """Update the displayed frame"""
-        if self.cap is None or not self.cap.isOpened():
-            return
-        
-        ret, frame = self.cap.read()
-        if not ret:
-            return
-        
-        # Convert BGR to RGB
-        frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-        
-        # Resize to fit widget
-        height, width, channel = frame_rgb.shape
-        bytes_per_line = 3 * width
-        q_image = QImage(frame_rgb.data, width, height, bytes_per_line, QImage.Format.Format_RGB888)
-        
-        # Scale to fit label while maintaining aspect ratio
-        pixmap = QPixmap.fromImage(q_image)
-        scaled_pixmap = pixmap.scaled(
-            self.label.size(),
-            Qt.AspectRatioMode.KeepAspectRatio,
-            Qt.TransformationMode.SmoothTransformation
-        )
-        self.label.setPixmap(scaled_pixmap)
+    def _handle_error(self, error, error_string):
+        """Handle media player errors"""
+        error_msg = error_string if error_string else f"Media player error: {error}"
+        self.status_label.setText(f'Error connecting to port {self.port}:\n{error_msg}')
+        self.stacked_widget.setCurrentIndex(0)
+    
+    def _handle_media_status_changed(self, status):
+        """Handle media status changes"""
+        if status == QMediaPlayer.MediaStatus.LoadedMedia:
+            # Media loaded successfully, switch to video widget
+            self.stacked_widget.setCurrentIndex(1)
+        elif status == QMediaPlayer.MediaStatus.InvalidMedia:
+            # Invalid media, show error
+            self.status_label.setText(f'Invalid media on port {self.port}')
+            self.stacked_widget.setCurrentIndex(0)
     
     def closeEvent(self, event):
         """Clean up when widget is closed"""
-        if self.cap:
-            self.cap.release()
-        self.timer.stop()
+        # Stop and cleanup media player
+        if self.media_player:
+            self.media_player.stop()
+            self.media_player.setSource(QUrl())
+            self.media_player = None
+        
         event.accept()
 
 
@@ -102,28 +120,30 @@ class CameraPanel(QWidget):
         layout.addWidget(self.tab_widget)
         
         # Placeholder message with improved styling
-        placeholder = QLabel('No camera feeds configured.\n\n'
-                          'To add a feed, configure UDP/RTP stream URLs.')
+        placeholder = QLabel('No camera feeds configured\n\n'
+                          'To add a feed, configure UDP/RTP stream')
         placeholder.setAlignment(Qt.AlignmentFlag.AlignCenter)
         placeholder.setStyleSheet(LABEL_STYLE_PLACEHOLDER)
         self.tab_widget.addTab(placeholder, 'No Feeds')
-    
-    def add_camera_feed(self, feed_id: str, stream_url: str):
-        """Add a camera feed"""
+
+    # ================================ Signal callbacks ================================
+    def add_agent(self, agent_id: str, port: int = 5000):
+        """Add a camera feed for an agent
+        """
         # Remove placeholder if present
         if self.tab_widget.count() == 1:
             widget = self.tab_widget.widget(0)
             if isinstance(widget, QLabel) and 'No camera feeds' in widget.text():
                 self.tab_widget.removeTab(0)
         
-        # Create feed widget
-        feed_widget = CameraFeedWidget(stream_url)
-        self.tab_widget.addTab(feed_widget, feed_id)
-    
-    def remove_camera_feed(self, feed_id: str):
-        """Remove a camera feed"""
+        # Create feed widget with specified port
+        feed_widget = CameraFeed(port=port)
+        self.tab_widget.addTab(feed_widget, agent_id)
+
+    def remove_agent(self, agent_id: str):
+        """Remove a camera feed for an agent"""
         for i in range(self.tab_widget.count()):
-            if self.tab_widget.tabText(i) == feed_id:
+            if self.tab_widget.tabText(i) == agent_id:
                 widget = self.tab_widget.widget(i)
                 self.tab_widget.removeTab(i)
                 if widget:
@@ -132,17 +152,7 @@ class CameraPanel(QWidget):
         
         # Add placeholder if no feeds remain
         if self.tab_widget.count() == 0:
-            placeholder = QLabel('No camera feeds configured.')
+            placeholder = QLabel('No camera feeds configured')
             placeholder.setAlignment(Qt.AlignmentFlag.AlignCenter)
             placeholder.setStyleSheet(LABEL_STYLE_PLACEHOLDER)
             self.tab_widget.addTab(placeholder, 'No Feeds')
-
-    def add_agent(self, agent_id: str):
-        """Add a camera feed for an agent"""
-        # TODO: Implement
-        pass
-
-    def remove_agent(self, agent_id: str):
-        """Remove a camera feed for an agent"""
-        # TODO: Implement
-        pass

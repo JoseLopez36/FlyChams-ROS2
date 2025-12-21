@@ -110,8 +110,8 @@
                     "CaptureSettings": [
                         {
                             "ImageType": 0,
-                            "Width": 7680,
-                            "Height": 4320,
+                            "Width": 1920,
+                            "Height": 1080,
                             "SensorWidth": 0.013199999928474426,
                             "SensorHeight": 0.007424999959766865,
                             "FOV_Degrees": 131.11209106445313,
@@ -229,37 +229,9 @@
         },
         {
             "WindowID": 4,
-            "CameraName": "",
+            "CameraName": "MULTICAMERA05",
             "ImageType": 0,
-            "VehicleName": "",
-            "Visible": true
-        },
-        {
-            "WindowID": 5,
-            "CameraName": "",
-            "ImageType": 0,
-            "VehicleName": "",
-            "Visible": true
-        },
-        {
-            "WindowID": 6,
-            "CameraName": "",
-            "ImageType": 0,
-            "VehicleName": "",
-            "Visible": true
-        },
-        {
-            "WindowID": 7,
-            "CameraName": "",
-            "ImageType": 0,
-            "VehicleName": "",
-            "Visible": true
-        },
-        {
-            "WindowID": 8,
-            "CameraName": "",
-            "ImageType": 0,
-            "VehicleName": "",
+            "VehicleName": "AGENT01",
             "Visible": true
         }
     ],
