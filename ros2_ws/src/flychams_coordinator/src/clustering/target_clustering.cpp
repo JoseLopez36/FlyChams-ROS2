@@ -174,12 +174,12 @@ namespace flychams::coordinator
 		}
 
 		// Perform clustering with available points
-		RCLCPP_INFO(node_->get_logger(), "Target clustering: Performing clustering...");
+		RCLCPP_DEBUG(node_->get_logger(), "Target clustering: Performing clustering...");
 		const auto& assignments = k_means_solver_->run(K, tab_P, assignments_prev_, mode, dt);
-		RCLCPP_INFO(node_->get_logger(), "Target clustering: Clustering completed: ");
+		RCLCPP_DEBUG(node_->get_logger(), "Target clustering: Clustering completed: ");
 		for (int i = 0; i < n; i++)
 		{
-			RCLCPP_INFO(node_->get_logger(), "Target clustering:     %d", assignments(i));
+			RCLCPP_DEBUG(node_->get_logger(), "Target clustering:     %d", assignments(i));
 		}
 
 		// Update previous assignments

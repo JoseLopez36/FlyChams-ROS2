@@ -145,7 +145,7 @@ namespace flychams::agent
         Vector3r optimal_position = solver_->run(tab_P, tab_r, x0, wTcentral, J);
         const auto& end = std::chrono::high_resolution_clock::now();
         float time_elapsed = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
-        RCLCPP_INFO(node_->get_logger(), "Agent positioning: Computed optimal position (J = %.2f): (xOpt = %.2f, %.2f, %.2f) in %.2f us",
+        RCLCPP_DEBUG(node_->get_logger(), "Agent positioning: Computed optimal position (J = %.2f): (xOpt = %.2f, %.2f, %.2f) in %.2f us",
             J, optimal_position(0), optimal_position(1), optimal_position(2), time_elapsed);
 
         // Publish position

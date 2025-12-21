@@ -272,9 +272,9 @@ namespace flychams::agent
 			const PointStampedMsg local_setpoint = transform_tools_->transformPoint(agent_.setpoint, local_frame);
 
 			mavros_comm_->setLocalPosition(local_setpoint.point.x, local_setpoint.point.y, local_setpoint.point.z);
-			RCLCPP_INFO(node_->get_logger(), "Drone control: Setpoint sent to agent %s",
+			RCLCPP_DEBUG(node_->get_logger(), "Drone control: Setpoint sent to agent %s",
 				agent_id_.c_str());
-			RCLCPP_INFO(node_->get_logger(), "Drone control: Setpoint: %f, %f, %f",
+			RCLCPP_DEBUG(node_->get_logger(), "Drone control: Setpoint: %f, %f, %f",
 				agent_.setpoint.point.x, agent_.setpoint.point.y, agent_.setpoint.point.z);
 			return true;
 		}

@@ -243,7 +243,7 @@ namespace flychams::coordinator
         }
 
         // Perform agent assignment
-        RCLCPP_INFO(node_->get_logger(), "Agent assignment: Performing agent assignment...");
+        RCLCPP_DEBUG(node_->get_logger(), "Agent assignment: Performing agent assignment...");
         RowVectorXi X = solver_->run(tab_x, tab_P, tab_r, X_prev_, wTcentral_array, solvers);
 
         // Update previous assignment
@@ -275,10 +275,10 @@ namespace flychams::coordinator
             agents_[agent_id].assignment_pub->publish(msg);
 
             // Log assignment
-            RCLCPP_INFO(node_->get_logger(), "Agent assignment: Agent %s assigned to %d clusters", agent_id.c_str(), n);
+            RCLCPP_DEBUG(node_->get_logger(), "Agent assignment: Agent %s assigned to %d clusters", agent_id.c_str(), n);
             for (int i = 0; i < n; i++)
             {
-                RCLCPP_INFO(node_->get_logger(), "Agent assignment:     - Unit %s    - Cluster %s", msg.unit_ids[i].c_str(), msg.cluster_ids[i].c_str());
+                RCLCPP_DEBUG(node_->get_logger(), "Agent assignment:     - Unit %s    - Cluster %s", msg.unit_ids[i].c_str(), msg.cluster_ids[i].c_str());
             }
 
             k++;

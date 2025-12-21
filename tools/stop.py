@@ -74,13 +74,10 @@ def main():
                 t.start()
             for t in threads:
                 t.join()
-
-            # Stop UE5
-            subprocess.run("pkill -f 'FlyChamsSim.sh' || true", shell=True)
             
-            print("[STOP] FlyChams session stopped successfully")
+            print("[STOP] FlyChams stopped successfully")
         except Exception as e:
-            print(f"[STOP] Error stopping session: {e}")
+            print(f"[STOP] Error stopping FlyChams: {e}")
 
     elif launch_mode == LaunchMode.HARDWARE:
         try:
@@ -103,12 +100,9 @@ def main():
             for t in threads:
                 t.join()
             
-            print("[STOP] FlyChams session stopped successfully")
+            print("[STOP] FlyChams stopped successfully")
         except Exception as e:
-            print(f"[STOP] Error stopping session: {e}")
-
-    # Wait for 10 seconds
-    time.sleep(10)
+            print(f"[STOP] Error stopping FlyChams: {e}")
 
     # Kill Tmux Session
     try:
@@ -121,12 +115,10 @@ def main():
             name = getattr(s, 'session_name', None) or s.get('session_name')
             if name == session_name:
                 s.kill()
-                print(f"[STOP] Tmux session '{session_name}' killed.")
+                print(f"[STOP] Tmux session '{session_name}' killed")
                 break
-        else:
-            print(f"[STOP] Tmux session '{session_name}' not found.")
     except Exception as e:
-        print(f"[STOP] Error managing tmux session: {e}")
+        print(f"[STOP] Error killing Tmux session: {e}")
 
 if __name__ == "__main__":
     main()
