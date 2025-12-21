@@ -76,6 +76,9 @@ class LaunchPanel(QWidget):
         # Dictionary to track terminals for each component
         self.terminals = {}
         
+        # Track if "No Process" tab exists
+        self.has_no_process_tab = False
+        
         # Queue for thread-safe logging from background threads
         self.log_queue = queue.Queue()
         
@@ -169,13 +172,25 @@ class LaunchPanel(QWidget):
         layout.addWidget(self.terminal_tabs)
         
         # Create initial terminal tab
-        initial_terminal = Terminal(placeholder_text="Press Launch Coordinator to start the system")
-        self.terminals["General"] = initial_terminal
-        self.terminal_tabs.addTab(initial_terminal, "General")
+        initial_terminal = Terminal(placeholder_text="Press a button to start the system")
+        self.terminals["No Process"] = initial_terminal
+        self.terminal_tabs.addTab(initial_terminal, "No Process")
+        self.has_no_process_tab = True
     
     # ================================ Terminal methods ================================
     def get_or_create_terminal(self, component_name: str) -> Terminal:
         """Get or create a terminal tab for a component"""
+        # Remove "No Process" tab if this is the first real process
+        if self.has_no_process_tab and component_name != "No Process":
+            # Find and remove the "No Process" tab
+            for i in range(self.terminal_tabs.count()):
+                if self.terminal_tabs.tabText(i) == "No Process":
+                    self.terminal_tabs.removeTab(i)
+                    if "No Process" in self.terminals:
+                        del self.terminals["No Process"]
+                    self.has_no_process_tab = False
+                    break
+        
         if component_name not in self.terminals:
             # Create new terminal for this component
             terminal = Terminal()
@@ -198,20 +213,9 @@ class LaunchPanel(QWidget):
     
     def log(self, message: str, component_name: str = None):
         """Add a message to the log for a specific component"""
-        if component_name is None:
-            # If no component specified, log to first tab or create a default one
-            if not self.terminals:
-                component_name = "General"
-            else:
-                # Use the currently active tab
-                current_index = self.terminal_tabs.currentIndex()
-                if current_index >= 0:
-                    component_name = self.terminal_tabs.tabText(current_index)
-                else:
-                    component_name = "General"
-        
-        terminal = self.get_or_create_terminal(component_name)
-        terminal.append_line(message)
+        if component_name is not None:
+            terminal = self.get_or_create_terminal(component_name)
+            terminal.append_line(message)
     
     def read_process_output(self, process: subprocess.Popen, component_name: str):
         """Read stdout and stderr from a process and append to terminal"""
@@ -433,8 +437,6 @@ class LaunchPanel(QWidget):
         
         # Add to layout
         self.agent_buttons_layout.addWidget(agent_row)
-        
-        self.log(f'Agent {agent_id} added (index: {agent_index})', "General")
     
     def remove_agent(self, agent_id: str):
         """Handle agent removal - remove buttons for this agent"""
@@ -448,5 +450,3 @@ class LaunchPanel(QWidget):
             del self.agent_buttons[agent_id]
             if agent_id in self.agents:
                 del self.agents[agent_id]
-            
-            self.log(f'Agent {agent_id} removed', "General")
