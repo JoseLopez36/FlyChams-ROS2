@@ -5,6 +5,7 @@ from PyQt6.QtCore import Qt, QPointF
 from PyQt6.QtGui import QPainter, QPen, QBrush, QColor, QFont
 from typing import Dict
 from geometry_msgs.msg import Point
+from .styles import COLOR_BACKGROUND_PRIMARY
 
 
 class MapPanel(QWidget):
@@ -26,7 +27,7 @@ class MapPanel(QWidget):
         self.offset_y = 0.0
         
         self.setMinimumSize(400, 400)
-        self.setStyleSheet('background-color: #1e1e1e;')
+        self.setStyleSheet(f'background-color: {COLOR_BACKGROUND_PRIMARY};')
     
     def paintEvent(self, event):
         """Paint the map visualization"""
