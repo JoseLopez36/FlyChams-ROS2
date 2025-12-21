@@ -11,9 +11,11 @@ from .docker import DockerContainer
 class ContainerLauncher:
     """Base class for docker-based launchers"""
 
-    def __init__(self, env: Environment, container: DockerContainer):
+    def __init__(self, env: Environment, container: DockerContainer, mount_docker_sock: bool = False):
         self.env = env
         self.docker = container
+
+        self.mount_docker_sock = mount_docker_sock
 
         # Set docker environment
         self.docker.set_env(self.get_base_docker_env())
@@ -54,13 +56,15 @@ class ContainerLauncher:
 
     def get_base_volumes(self):
         username = self.env.docker_user_name
-        return {
-            "/var/run/docker.sock": "/var/run/docker.sock",
+        volumes = {
             "/tmp/.X11-unix": "/tmp/.X11-unix",
             self.env.flychams_ros2_path: f"/home/{username}/FlyChams-ROS2",
             self.env.flychams_px4_path: f"/home/{username}/PX4-Autopilot",
             self.env.flychams_airsim_path: f"/home/{username}/FlyChams-Cosys-AirSim"
         }
+        if self.mount_docker_sock:
+            volumes["/var/run/docker.sock"] = "/var/run/docker.sock"
+        return volumes
 
 class AgentContainerLauncher():
     """Base class for docker-based agent launchers"""

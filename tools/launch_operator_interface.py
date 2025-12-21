@@ -39,7 +39,7 @@ def main():
     container.setup_auth()
 
     # Create launcher
-    launcher = ContainerLauncher(env, container)
+    launcher = ContainerLauncher(env, container, mount_docker_sock=True)
     
     # Create command
     cmd = f"/home/{username}/FlyChams-ROS2/tools/shell/run_operator_interface.sh"

@@ -29,6 +29,7 @@ RUN     apt-get update && \
         ros-iron-plotjuggler-ros \
         python3-pip \
         docker.io \
+        x11-xserver-utils \
         libxcb-cursor0 \
         libxcb-cursor-dev \
         libxcb1 \

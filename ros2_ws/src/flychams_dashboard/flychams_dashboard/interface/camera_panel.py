@@ -128,3 +128,12 @@ class CameraPanel(QWidget):
             placeholder.setStyleSheet('color: gray;')
             self.tab_widget.addTab(placeholder, 'No Feeds')
 
+    def add_agent(self, agent_id: str):
+        """Add a camera feed for an agent"""
+        # TODO: Implement
+        pass
+
+    def remove_agent(self, agent_id: str):
+        """Remove a camera feed for an agent"""
+        # TODO: Implement
+        pass

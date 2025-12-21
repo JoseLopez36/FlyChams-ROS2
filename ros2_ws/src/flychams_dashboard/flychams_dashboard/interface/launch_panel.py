@@ -1,14 +1,21 @@
 """Mission launch panel with buttons to launch system components"""
 
 from PyQt6.QtGui import QFont
-from PyQt6.QtWidgets import QWidget, QVBoxLayout, QPlainTextEdit, QPushButton, QLabel, QGroupBox, QTabWidget
+from PyQt6.QtWidgets import QWidget, QVBoxLayout, QPlainTextEdit, QPushButton, QLabel, QTabWidget, QHBoxLayout
 from PyQt6.QtCore import QTimer
 import subprocess
 from pathlib import Path
 import os
-import shlex
 import threading
 import queue
+import re
+from typing import Dict
+
+def strip_ansi_codes(text: str) -> str:
+    """Remove ANSI escape codes from text"""
+    # Pattern to match ANSI escape sequences: ESC[ followed by numbers/semicolons and ending with m
+    ansi_escape = re.compile(r'\x1b\[[0-9;]*m')
+    return ansi_escape.sub('', text)
 
 class Terminal(QWidget):
     """Read-only terminal-like text area with an append API"""
@@ -61,6 +68,11 @@ class LaunchPanel(QWidget):
         self.log_timer.timeout.connect(self.process_log_queue)
         self.log_timer.start(100)  # Check every 100ms
         
+        # Track agents and their indices
+        self.agents: Dict[str, int] = {}  # agent_id -> agent_index
+        self.agent_buttons: Dict[str, Dict[str, QPushButton]] = {}  # agent_id -> {'agent': button, 'px4': button}
+        self.next_agent_index = 0
+        
         self.setup_ui()
 
         # Get FlyChams path environment variable
@@ -83,10 +95,6 @@ class LaunchPanel(QWidget):
         self.launch_coordinator_btn = QPushButton('Launch Coordinator')
         self.launch_coordinator_btn.clicked.connect(self.launch_coordinator)
         layout.addWidget(self.launch_coordinator_btn)
-         
-        self.launch_agents_btn = QPushButton('Launch Agents')
-        self.launch_agents_btn.clicked.connect(self.launch_agents)
-        layout.addWidget(self.launch_agents_btn)
 
         self.launch_dashboard_btn = QPushButton('Launch Dashboard')
         self.launch_dashboard_btn.clicked.connect(self.launch_dashboard)
@@ -96,13 +104,20 @@ class LaunchPanel(QWidget):
         self.launch_simulation_btn.clicked.connect(self.launch_simulation)
         layout.addWidget(self.launch_simulation_btn)
 
-        self.launch_px4_btn = QPushButton('Launch PX4')
-        self.launch_px4_btn.clicked.connect(self.launch_px4)
-        layout.addWidget(self.launch_px4_btn)      
-
         self.stop_btn = QPushButton('STOP')
         self.stop_btn.clicked.connect(self.stop)
         layout.addWidget(self.stop_btn)
+        
+        # Separator label for agent-specific buttons
+        self.agent_separator_label = QLabel('Agent Controls')
+        self.agent_separator_label.setStyleSheet('font-size: 14px; font-weight: bold; margin-top: 10px;')
+        layout.addWidget(self.agent_separator_label)
+        
+        # Container for agent buttons (will be populated dynamically)
+        self.agent_buttons_container = QWidget()
+        self.agent_buttons_layout = QVBoxLayout(self.agent_buttons_container)
+        self.agent_buttons_layout.setContentsMargins(0, 0, 0, 0)
+        layout.addWidget(self.agent_buttons_container)
         
         # Create tabbed terminal widget
         self.terminal_tabs = QTabWidget()
@@ -113,6 +128,7 @@ class LaunchPanel(QWidget):
         self.terminals["General"] = initial_terminal
         self.terminal_tabs.addTab(initial_terminal, "General")
     
+    # ================================ Terminal methods ================================
     def get_or_create_terminal(self, component_name: str) -> Terminal:
         """Get or create a terminal tab for a component"""
         if component_name not in self.terminals:
@@ -159,6 +175,8 @@ class LaunchPanel(QWidget):
                 for line in iter(stream.readline, b''):
                     if line:
                         line_str = line.decode('utf-8', errors='replace').rstrip()
+                        # Strip ANSI escape codes
+                        line_str = strip_ansi_codes(line_str)
                         prefix = "[STDERR] " if is_stderr else ""
                         self.log_queue.put((component_name, f"{prefix}{line_str}"))
             except Exception as e:
@@ -172,6 +190,7 @@ class LaunchPanel(QWidget):
         stdout_thread.start()
         stderr_thread.start()
     
+    # ================================ Launch methods ================================
     def launch_coordinator(self):
         """Launch the coordinator"""
         component_name = "Coordinator"
@@ -201,13 +220,35 @@ class LaunchPanel(QWidget):
             self.read_process_output(process, component_name)
         except Exception as e:
             self.log(f'ERROR launching coordinator: {e}', component_name)
-    
-    def launch_agents(self):
-        """Launch every registered agent"""
-        component_name = "Agents"
-        self.log(f'Launching agents...', component_name)
-        # TODO: Implement
-        self.log(f'Agents launch not yet implemented', component_name)
+
+    def launch_agent(self, agent_id: str):
+        """Launch a specific agent by ID"""
+        component_name = agent_id
+        script_path = self.tools_dir / 'launch_agent.py'
+        if not script_path.exists():
+            self.log(f'ERROR: Script not found: {script_path}', component_name)
+            return
+        
+        self.log(f'Launching agent {agent_id}...', component_name)
+        try:
+            # Launch in background
+            process = subprocess.Popen(
+                [
+                    'python3',
+                    '-u',
+                    str(script_path),
+                    '--agent-id', agent_id,
+                    '--sim'
+                ],
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                cwd=str(self.tools_dir.parent)
+            )
+            self.log(f'Agent {agent_id} launched (PID: {process.pid})', component_name)
+            # Start reading output
+            self.read_process_output(process, component_name)
+        except Exception as e:
+            self.log(f'ERROR launching agent {agent_id}: {e}', component_name)
 
     def launch_dashboard(self):
         """Launch the dashboard"""
@@ -255,12 +296,33 @@ class LaunchPanel(QWidget):
         except Exception as e:
             self.log(f'ERROR launching simulation: {e}', component_name)
 
-    def launch_px4(self):
-        """Launch PX4 for every registered agent"""
-        component_name = "PX4"
-        self.log(f'Launching PX4...', component_name)
-        # TODO: Implement
-        self.log(f'PX4 launch not yet implemented', component_name)
+    def launch_px4(self, agent_id: str, agent_index: int):
+        """Launch PX4 for a specific agent"""
+        component_name = f"PX4-{agent_index}"
+        script_path = self.tools_dir / 'launch_px4.py'
+        if not script_path.exists():
+            self.log(f'ERROR: Script not found: {script_path}', component_name)
+            return
+        
+        self.log(f'Launching PX4 for agent {agent_id} (index: {agent_index})...', component_name)
+        try:
+            # Launch in background
+            process = subprocess.Popen(
+                [
+                    'python3',
+                    '-u',
+                    str(script_path),
+                    '--agent-index', str(agent_index)
+                ],
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                cwd=str(self.tools_dir.parent)
+            )
+            self.log(f'PX4 for agent {agent_id} launched (PID: {process.pid})', component_name)
+            # Start reading output
+            self.read_process_output(process, component_name)
+        except Exception as e:
+            self.log(f'ERROR launching PX4 for agent {agent_id}: {e}', component_name)
 
     def stop(self):
         """Stop all FlyChams components"""
@@ -284,3 +346,59 @@ class LaunchPanel(QWidget):
             self.read_process_output(process, component_name)
         except Exception as e:
             self.log(f'ERROR stopping FlyChams: {e}', component_name)
+
+    # ================================ Signal callbacks ================================
+    def add_agent(self, agent_id: str):
+        """Handle agent addition - create buttons for this agent"""
+        # Assign agent index
+        agent_index = self.next_agent_index
+        self.agents[agent_id] = agent_index
+        self.next_agent_index += 1
+        
+        # Create buttons for this agent
+        agent_row = QWidget()
+        agent_row_layout = QHBoxLayout(agent_row)
+        agent_row_layout.setContentsMargins(0, 0, 0, 0)
+        
+        # Agent launch button
+        agent_btn = QPushButton(f'Launch {agent_id}')
+        agent_btn.clicked.connect(lambda checked, aid=agent_id: self.launch_agent(aid))
+        agent_row_layout.addWidget(agent_btn)
+        
+        # PX4 launch button for this agent
+        px4_btn = QPushButton(f'Launch PX4-{agent_index}')
+        def make_px4_handler(aid: str):
+            def handler(checked):
+                idx = self.agents.get(aid)
+                if idx is not None:
+                    self.launch_px4(aid, idx)
+            return handler
+        px4_btn.clicked.connect(make_px4_handler(agent_id))
+        agent_row_layout.addWidget(px4_btn)
+        
+        # Store buttons
+        self.agent_buttons[agent_id] = {
+            'agent': agent_btn,
+            'px4': px4_btn,
+            'widget': agent_row
+        }
+        
+        # Add to layout
+        self.agent_buttons_layout.addWidget(agent_row)
+        
+        self.log(f'Agent {agent_id} added (index: {agent_index})', "General")
+    
+    def remove_agent(self, agent_id: str):
+        """Handle agent removal - remove buttons for this agent"""
+        if agent_id in self.agent_buttons:
+            # Remove widget from layout
+            widget = self.agent_buttons[agent_id]['widget']
+            self.agent_buttons_layout.removeWidget(widget)
+            widget.deleteLater()
+            
+            # Remove from tracking
+            del self.agent_buttons[agent_id]
+            if agent_id in self.agents:
+                del self.agents[agent_id]
+            
+            self.log(f'Agent {agent_id} removed', "General")

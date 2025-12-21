@@ -6,6 +6,7 @@ Launch script for simulation instance
 import os
 import sys
 import subprocess
+import shlex
 from pathlib import Path
 
 TOOLS_DIR = Path(__file__).resolve().parent
@@ -32,11 +33,13 @@ def main():
     # Get docker username
     username = env.docker_user_name
 
+    # Launch Unreal Engine 5
+    ue5_cmd = f"bash {shlex.quote(str(root_dir / 'tools' / 'shell' / 'run_ue5.sh'))}"
+    ue5_process = subprocess.Popen(['bash', '-lc', ue5_cmd])
+    print(f"[SIMULATION] Launched Unreal Engine 5 (PID: {ue5_process.pid})")
+
     # Create Docker container
     container = DockerContainer(image="flychams-ros2:latest", name="flychams-SIMULATION")
-
-    # Setup X11 authorization
-    container.setup_auth()
 
     # Create launcher
     launcher = ContainerLauncher(env, container)

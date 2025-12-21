@@ -31,9 +31,9 @@ class OperatorInterface(Node):
     """Operator interface that discovers and tracks agents, targets and clusters"""
 
     # Element types matching C++ enum (0: agent, 1: target, 2: cluster)
-    ELEMENT_TYPE_AGENT = 0
-    ELEMENT_TYPE_TARGET = 1
-    ELEMENT_TYPE_CLUSTER = 2
+    ELEMENT_TYPE_AGENT = 1
+    ELEMENT_TYPE_TARGET = 2
+    ELEMENT_TYPE_CLUSTER = 3
 
     def __init__(self, signals: OperatorInterfaceSignals):
         # Initialize node with parameter support
@@ -104,7 +104,7 @@ class OperatorInterface(Node):
             element_type = element.type
             
             current_elements.add(element_id)
-            
+
             # Add element if it doesn't exist already
             if element_id not in self.elements:
                 self.elements[element_id] = element_type
@@ -333,6 +333,7 @@ def main(args=None):
     finally:
         # Cleanup
         node.get_logger().info('Shutting down operator interface node')
+        main_window.close()
         executor.shutdown()
         node.destroy_node()
         rclpy.shutdown()

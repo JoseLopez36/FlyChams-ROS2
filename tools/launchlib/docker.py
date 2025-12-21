@@ -30,7 +30,7 @@ class DockerContainer:
         """Generate shell command string for docker run"""
         shell: list[str] = ["docker", "run"]
         shell.append("--rm")
-        shell.append("-it")
+        # shell.append("-it")
         shell += ["--name", self.name]
         shell += ["--network", "host"]
         shell.append("--privileged")
@@ -47,7 +47,7 @@ class DockerContainer:
     def get_exec_shell(self, cmd):
         """Generate shell command string for docker exec"""
         shell: list[str] = ["docker", "exec"]
-        shell.append("-it")
+        # shell.append("-it")
         shell.append(self.name)
         shell += ["bash", "-lc", cmd]
         return shell

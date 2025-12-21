@@ -25,7 +25,7 @@ echo "PX4_DOCKER_REPO: $PX4_DOCKER_REPO";
 CCACHE_DIR=${HOME}/.ccache
 mkdir -p "${CCACHE_DIR}"
 
-docker run -it --rm --name ${PX4_DOCKER_NAME} -w "${SRC_DIR}" \
+docker run --rm --name ${PX4_DOCKER_NAME} -w "${SRC_DIR}" \
 	--env=AWS_ACCESS_KEY_ID \
 	--env=AWS_SECRET_ACCESS_KEY \
 	--env=BRANCH_NAME \

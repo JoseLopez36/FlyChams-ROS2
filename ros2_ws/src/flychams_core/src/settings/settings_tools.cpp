@@ -153,17 +153,17 @@ namespace flychams::core
         params.s_ref = s_ref_pix * params.rho; // [m]  
 
         // Print unit parameters for debugging
-        RCLCPP_INFO(node_->get_logger(), "------ Observation unit parameters -------");
-        RCLCPP_INFO(node_->get_logger(), "  Unit ID: %s", params.id.c_str());
-        RCLCPP_INFO(node_->get_logger(), "  Unit type: %s", observationTypeToString(params.type).c_str());
-        RCLCPP_INFO(node_->get_logger(), "  Unit role: %s", observationRoleToString(params.role).c_str());
-        RCLCPP_INFO(node_->get_logger(), "  Zoom factor limits: min=%.3f, max=%.3f, ref=%.3f [m]", params.upsilon_min, params.upsilon_max, params.upsilon_ref);
-        RCLCPP_INFO(node_->get_logger(), "  Regularized pixel size: %.6f [m/pix]", params.rho);
-        RCLCPP_INFO(node_->get_logger(), "  Target size limits: min=%.2f [pix], max=%.2f [pix], ref=%.2f [pix]", params.s_min_pix, params.s_max_pix, params.s_ref_pix);
-        RCLCPP_INFO(node_->get_logger(), "  Camera resolution: %d x %d [pix]", params.camera_params.width, params.camera_params.height);
-        RCLCPP_INFO(node_->get_logger(), "  Sensor dimensions: %.6f x %.6f [m]", params.camera_params.sensor_width, params.camera_params.sensor_height);
-        RCLCPP_INFO(node_->get_logger(), "  Intrinsic matrix K: fx=%f fy=%f cx=%f cy=%f", params.camera_params.K(0, 0), params.camera_params.K(1, 1), params.camera_params.K(0, 2), params.camera_params.K(1, 2));
-        RCLCPP_INFO(node_->get_logger(), "----------------------------------------");
+        RCLCPP_DEBUG(node_->get_logger(), "------ Observation unit parameters -------");
+        RCLCPP_DEBUG(node_->get_logger(), "  Unit ID: %s", params.id.c_str());
+        RCLCPP_DEBUG(node_->get_logger(), "  Unit type: %s", observationTypeToString(params.type).c_str());
+        RCLCPP_DEBUG(node_->get_logger(), "  Unit role: %s", observationRoleToString(params.role).c_str());
+        RCLCPP_DEBUG(node_->get_logger(), "  Zoom factor limits: min=%.3f, max=%.3f, ref=%.3f [m]", params.upsilon_min, params.upsilon_max, params.upsilon_ref);
+        RCLCPP_DEBUG(node_->get_logger(), "  Regularized pixel size: %.6f [m/pix]", params.rho);
+        RCLCPP_DEBUG(node_->get_logger(), "  Target size limits: min=%.2f [pix], max=%.2f [pix], ref=%.2f [pix]", params.s_min_pix, params.s_max_pix, params.s_ref_pix);
+        RCLCPP_DEBUG(node_->get_logger(), "  Camera resolution: %d x %d [pix]", params.camera_params.width, params.camera_params.height);
+        RCLCPP_DEBUG(node_->get_logger(), "  Sensor dimensions: %.6f x %.6f [m]", params.camera_params.sensor_width, params.camera_params.sensor_height);
+        RCLCPP_DEBUG(node_->get_logger(), "  Intrinsic matrix K: fx=%f fy=%f cx=%f cy=%f", params.camera_params.K(0, 0), params.camera_params.K(1, 1), params.camera_params.K(0, 2), params.camera_params.K(1, 2));
+        RCLCPP_DEBUG(node_->get_logger(), "----------------------------------------");
 
         return params;
     }
@@ -228,16 +228,16 @@ namespace flychams::core
         params.s_ref = s_ref_pix * params.rho; // [m]  
 
         // Print unit parameters for debugging
-        RCLCPP_INFO(node_->get_logger(), "------ Observation unit parameters -------");
-        RCLCPP_INFO(node_->get_logger(), "  Unit ID: %s", params.id.c_str());
-        RCLCPP_INFO(node_->get_logger(), "  Unit type: %s", observationTypeToString(params.type).c_str());
-        RCLCPP_INFO(node_->get_logger(), "  Unit role: %s", observationRoleToString(params.role).c_str());
-        RCLCPP_INFO(node_->get_logger(), "  Zoom factor limits: min=%.3f, max=%.3f, ref=%.3f [m]", params.upsilon_min, params.upsilon_max, params.upsilon_ref);
-        RCLCPP_INFO(node_->get_logger(), "  Regularized pixel size: %.6f [m/pix]", params.rho);
-        RCLCPP_INFO(node_->get_logger(), "  Target size limits: min=%.2f [pix], max=%.2f [pix], ref=%.2f [pix]", params.s_min_pix, params.s_max_pix, params.s_ref_pix);
-        RCLCPP_INFO(node_->get_logger(), "  Window full resolution: %d x %d [pix]", params.window_params.full_width, params.window_params.full_height);
-        RCLCPP_INFO(node_->get_logger(), "  Window tracking resolution: %d x %d [pix]", params.window_params.tracking_width, params.window_params.tracking_height);
-        RCLCPP_INFO(node_->get_logger(), "----------------------------------------");
+        RCLCPP_DEBUG(node_->get_logger(), "------ Observation unit parameters -------");
+        RCLCPP_DEBUG(node_->get_logger(), "  Unit ID: %s", params.id.c_str());
+        RCLCPP_DEBUG(node_->get_logger(), "  Unit type: %s", observationTypeToString(params.type).c_str());
+        RCLCPP_DEBUG(node_->get_logger(), "  Unit role: %s", observationRoleToString(params.role).c_str());
+        RCLCPP_DEBUG(node_->get_logger(), "  Zoom factor limits: min=%.3f, max=%.3f, ref=%.3f [m]", params.upsilon_min, params.upsilon_max, params.upsilon_ref);
+        RCLCPP_DEBUG(node_->get_logger(), "  Regularized pixel size: %.6f [m/pix]", params.rho);
+        RCLCPP_DEBUG(node_->get_logger(), "  Target size limits: min=%.2f [pix], max=%.2f [pix], ref=%.2f [pix]", params.s_min_pix, params.s_max_pix, params.s_ref_pix);
+        RCLCPP_DEBUG(node_->get_logger(), "  Window full resolution: %d x %d [pix]", params.window_params.full_width, params.window_params.full_height);
+        RCLCPP_DEBUG(node_->get_logger(), "  Window tracking resolution: %d x %d [pix]", params.window_params.tracking_width, params.window_params.tracking_height);
+        RCLCPP_DEBUG(node_->get_logger(), "----------------------------------------");
 
         return params;
     }
