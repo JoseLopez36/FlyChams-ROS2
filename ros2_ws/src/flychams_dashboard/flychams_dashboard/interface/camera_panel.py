@@ -17,7 +17,16 @@ class CameraFeedWidget(QWidget):
         self.cap: Optional[cv2.VideoCapture] = None
         self.label = QLabel('Connecting...')
         self.label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.label.setStyleSheet('background-color: black; color: white;')
+        self.label.setStyleSheet("""
+            QLabel {
+                background-color: #1a1a1a;
+                color: #cccccc;
+                border: 1px solid #2d2d2d;
+                border-radius: 4px;
+                padding: 20px;
+                font-size: 13px;
+            }
+        """)
         
         layout = QVBoxLayout(self)
         layout.addWidget(self.label)
@@ -82,21 +91,63 @@ class CameraPanel(QWidget):
         super().__init__()
         
         layout = QVBoxLayout(self)
+        layout.setContentsMargins(16, 16, 16, 16)
+        layout.setSpacing(12)
         
-        # Title
+        # Title with improved styling
         title = QLabel('Camera Feeds')
-        title.setStyleSheet('font-size: 14px; font-weight: bold;')
+        title.setStyleSheet("""
+            QLabel {
+                font-size: 18px;
+                font-weight: bold;
+                color: #ffffff;
+                padding: 8px 0px;
+                border-bottom: 2px solid #4a9eff;
+                margin-bottom: 8px;
+            }
+        """)
         layout.addWidget(title)
         
-        # Tab widget for multiple feeds
+        # Tab widget for multiple feeds with improved styling
         self.tab_widget = QTabWidget()
+        self.tab_widget.setStyleSheet("""
+            QTabWidget::pane {
+                border: 1px solid #2d2d2d;
+                background-color: #1e1e1e;
+                border-radius: 4px;
+            }
+            QTabBar::tab {
+                background-color: #2d2d2d;
+                color: #cccccc;
+                padding: 8px 16px;
+                margin-right: 2px;
+                border-top-left-radius: 4px;
+                border-top-right-radius: 4px;
+                min-width: 80px;
+            }
+            QTabBar::tab:selected {
+                background-color: #1e1e1e;
+                color: #4a9eff;
+                border-bottom: 2px solid #4a9eff;
+            }
+            QTabBar::tab:hover:!selected {
+                background-color: #3d3d3d;
+                color: #ffffff;
+            }
+        """)
         layout.addWidget(self.tab_widget)
         
-        # Placeholder message
+        # Placeholder message with improved styling
         placeholder = QLabel('No camera feeds configured.\n\n'
                           'To add a feed, configure UDP/RTP stream URLs.')
         placeholder.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        placeholder.setStyleSheet('color: gray;')
+        placeholder.setStyleSheet("""
+            QLabel {
+                color: #888888;
+                font-size: 13px;
+                padding: 40px;
+            }
+        """)
         self.tab_widget.addTab(placeholder, 'No Feeds')
     
     def add_camera_feed(self, feed_id: str, stream_url: str):
@@ -125,7 +176,13 @@ class CameraPanel(QWidget):
         if self.tab_widget.count() == 0:
             placeholder = QLabel('No camera feeds configured.')
             placeholder.setAlignment(Qt.AlignmentFlag.AlignCenter)
-            placeholder.setStyleSheet('color: gray;')
+            placeholder.setStyleSheet("""
+                QLabel {
+                    color: #888888;
+                    font-size: 13px;
+                    padding: 40px;
+                }
+            """)
             self.tab_widget.addTab(placeholder, 'No Feeds')
 
     def add_agent(self, agent_id: str):

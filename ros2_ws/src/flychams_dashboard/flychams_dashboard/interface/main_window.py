@@ -2,6 +2,7 @@
 
 from PyQt6.QtWidgets import QMainWindow, QWidget, QHBoxLayout, QSplitter, QTabWidget
 from PyQt6.QtCore import Qt
+from PyQt6.QtGui import QPalette, QColor
 from .launch_panel import LaunchPanel
 from .map_panel import MapPanel
 from .camera_panel import CameraPanel
@@ -14,6 +15,9 @@ class MainWindow(QMainWindow):
         
         self.signals = signals
         
+        # Apply dark mode theme
+        self.apply_dark_theme()
+        
         # Configure window
         self.setWindowTitle('FlyChams Operator Interface')
         self.setGeometry(100, 100, 1920, 1080)
@@ -24,9 +28,20 @@ class MainWindow(QMainWindow):
         
         # Create main layout
         main_layout = QHBoxLayout(central_widget)
+        main_layout.setContentsMargins(0, 0, 0, 0)
+        main_layout.setSpacing(0)
         
         # Create splitter for resizable panels
         splitter = QSplitter(Qt.Orientation.Horizontal)
+        splitter.setStyleSheet("""
+            QSplitter::handle {
+                background-color: #2d2d2d;
+                width: 4px;
+            }
+            QSplitter::handle:hover {
+                background-color: #3d3d3d;
+            }
+        """)
         main_layout.addWidget(splitter)
         
         # Launch panel
@@ -37,6 +52,31 @@ class MainWindow(QMainWindow):
         self.tabs = QTabWidget()
         self.tabs.setDocumentMode(True)
         self.tabs.setMovable(True)
+        self.tabs.setStyleSheet("""
+            QTabWidget::pane {
+                border: 1px solid #2d2d2d;
+                background-color: #1e1e1e;
+                border-radius: 4px;
+            }
+            QTabBar::tab {
+                background-color: #2d2d2d;
+                color: #cccccc;
+                padding: 8px 16px;
+                margin-right: 2px;
+                border-top-left-radius: 4px;
+                border-top-right-radius: 4px;
+                min-width: 80px;
+            }
+            QTabBar::tab:selected {
+                background-color: #1e1e1e;
+                color: #ffffff;
+                border-bottom: 2px solid #4a9eff;
+            }
+            QTabBar::tab:hover:!selected {
+                background-color: #3d3d3d;
+                color: #ffffff;
+            }
+        """)
 
         # Map panel
         self.map_panel = MapPanel(signals)
@@ -48,11 +88,90 @@ class MainWindow(QMainWindow):
 
         splitter.addWidget(self.tabs)
         
-        # Set relative sizes (launch panel 1/3, tabs 2/3)
-        splitter.setSizes([int(1920 * (1/3)), int(1920 * (2/3))])
+        # Set relative sizes (launch panel smaller: 1/4, tabs 3/4)
+        splitter.setSizes([int(1920 * (1/4)), int(1920 * (3/4))])
         
         # Connect signals for updates
         self.connect_signals()
+    
+    def apply_dark_theme(self):
+        """Apply a comprehensive dark theme to the application"""
+        palette = QPalette()
+        
+        # Window colors
+        palette.setColor(QPalette.ColorRole.Window, QColor(30, 30, 30))
+        palette.setColor(QPalette.ColorRole.WindowText, QColor(255, 255, 255))
+        
+        # Base colors
+        palette.setColor(QPalette.ColorRole.Base, QColor(30, 30, 30))
+        palette.setColor(QPalette.ColorRole.AlternateBase, QColor(45, 45, 45))
+        
+        # Text colors
+        palette.setColor(QPalette.ColorRole.Text, QColor(255, 255, 255))
+        palette.setColor(QPalette.ColorRole.BrightText, QColor(255, 255, 255))
+        
+        # Button colors
+        palette.setColor(QPalette.ColorRole.Button, QColor(45, 45, 45))
+        palette.setColor(QPalette.ColorRole.ButtonText, QColor(255, 255, 255))
+        
+        # Highlight colors
+        palette.setColor(QPalette.ColorRole.Highlight, QColor(74, 158, 255))
+        palette.setColor(QPalette.ColorRole.HighlightedText, QColor(255, 255, 255))
+        
+        # Disabled colors
+        palette.setColor(QPalette.ColorGroup.Disabled, QPalette.ColorRole.WindowText, QColor(128, 128, 128))
+        palette.setColor(QPalette.ColorGroup.Disabled, QPalette.ColorRole.Text, QColor(128, 128, 128))
+        palette.setColor(QPalette.ColorGroup.Disabled, QPalette.ColorRole.ButtonText, QColor(128, 128, 128))
+        
+        self.setPalette(palette)
+        
+        # Additional global stylesheet
+        self.setStyleSheet("""
+            QMainWindow {
+                background-color: #1e1e1e;
+            }
+            QWidget {
+                background-color: #1e1e1e;
+                color: #ffffff;
+            }
+            QLabel {
+                color: #ffffff;
+            }
+            QScrollBar:vertical {
+                background-color: #2d2d2d;
+                width: 12px;
+                border: none;
+            }
+            QScrollBar::handle:vertical {
+                background-color: #4d4d4d;
+                min-height: 20px;
+                border-radius: 6px;
+                margin: 2px;
+            }
+            QScrollBar::handle:vertical:hover {
+                background-color: #5d5d5d;
+            }
+            QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {
+                height: 0px;
+            }
+            QScrollBar:horizontal {
+                background-color: #2d2d2d;
+                height: 12px;
+                border: none;
+            }
+            QScrollBar::handle:horizontal {
+                background-color: #4d4d4d;
+                min-width: 20px;
+                border-radius: 6px;
+                margin: 2px;
+            }
+            QScrollBar::handle:horizontal:hover {
+                background-color: #5d5d5d;
+            }
+            QScrollBar::add-line:horizontal, QScrollBar::sub-line:horizontal {
+                width: 0px;
+            }
+        """)
     
     def connect_signals(self):
         """Connect Qt signals to GUI update methods"""

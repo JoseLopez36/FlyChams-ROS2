@@ -25,17 +25,27 @@ class Terminal(QWidget):
 
         layout = QVBoxLayout(self)
         layout.setContentsMargins(0, 0, 0, 0)
+        layout.setSpacing(0)
 
         self._output = QPlainTextEdit()
         self._output.setReadOnly(True)
 
-        # Terminal-ish styling
+        # Terminal-ish styling with improved dark theme
         font = QFont("Monospace")
         font.setStyleHint(QFont.StyleHint.Monospace)
+        font.setPointSize(10)
         self._output.setFont(font)
-        self._output.setStyleSheet(
-            "QPlainTextEdit { background-color: #222222; color: #ffffff; }"
-        )
+        self._output.setStyleSheet("""
+            QPlainTextEdit {
+                background-color: #1a1a1a;
+                color: #e0e0e0;
+                border: 1px solid #2d2d2d;
+                border-radius: 4px;
+                padding: 8px;
+                selection-background-color: #4a9eff;
+                selection-color: #ffffff;
+            }
+        """)
 
         if placeholder_text:
             self._output.setPlainText(placeholder_text)
@@ -56,6 +66,13 @@ class LaunchPanel(QWidget):
     
     def __init__(self):
         super().__init__()
+        
+        # Set dark background for the panel
+        self.setStyleSheet("""
+            QWidget {
+                background-color: #1e1e1e;
+            }
+        """)
         
         # Dictionary to track terminals for each component
         self.terminals = {}
@@ -86,41 +103,168 @@ class LaunchPanel(QWidget):
     def setup_ui(self):
         """Set up the UI components"""
         layout = QVBoxLayout(self)
+        layout.setSpacing(12)
+        layout.setContentsMargins(16, 16, 16, 16)
         
-        # Title
+        # Title with improved styling
         title = QLabel('Mission Launch')
-        title.setStyleSheet('font-size: 16px; font-weight: bold;')
+        title.setStyleSheet("""
+            QLabel {
+                font-size: 20px;
+                font-weight: bold;
+                color: #ffffff;
+                padding: 8px 0px;
+                border-bottom: 2px solid #4a9eff;
+                margin-bottom: 8px;
+            }
+        """)
         layout.addWidget(title)
         
-        self.launch_coordinator_btn = QPushButton('Launch Coordinator')
-        self.launch_coordinator_btn.clicked.connect(self.launch_coordinator)
-        layout.addWidget(self.launch_coordinator_btn)
-
-        self.launch_dashboard_btn = QPushButton('Launch Dashboard')
-        self.launch_dashboard_btn.clicked.connect(self.launch_dashboard)
-        layout.addWidget(self.launch_dashboard_btn)
-
-        self.launch_simulation_btn = QPushButton('Launch Simulation')
-        self.launch_simulation_btn.clicked.connect(self.launch_simulation)
-        layout.addWidget(self.launch_simulation_btn)
-
-        self.stop_btn = QPushButton('STOP')
-        self.stop_btn.clicked.connect(self.stop)
-        layout.addWidget(self.stop_btn)
+        # Main launch buttons with compact, homogeneous styling
+        button_style = """
+            QPushButton {
+                background-color: #2d2d2d;
+                color: #e0e0e0;
+                border: 1px solid #3d3d3d;
+                border-radius: 4px;
+                padding: 6px 8px;
+                font-size: 12px;
+                font-weight: bold;
+                text-align: center;
+                min-height: 20px;
+                max-width: 200px;
+            }
+            QPushButton:hover {
+                background-color: #3d3d3d;
+                border: 1px solid #4a9eff;
+                color: #ffffff;
+            }
+            QPushButton:pressed {
+                background-color: #1d1d1d;
+                border: 1px solid #4a9eff;
+            }
+        """
         
         # Separator label for agent-specific buttons
+        self.global_separator_label = QLabel('Global Controls')
+        self.global_separator_label.setStyleSheet("""
+            QLabel {
+                font-size: 16px;
+                font-weight: bold;
+                color: #ffffff;
+                padding: 4px 0px 4px 0px;
+                margin-top: 8px;
+                border-bottom: 1px solid #3d3d3d;
+            }
+        """)
+        layout.addWidget(self.global_separator_label)
+
+        # First row: Coordinator and Dashboard (2 buttons)
+        row1 = QWidget()
+        row1_layout = QHBoxLayout(row1)
+        row1_layout.setContentsMargins(0, 0, 0, 0)
+        row1_layout.setSpacing(8)
+        
+        self.launch_coordinator_btn = QPushButton('LAUNCH COORDINATOR')
+        self.launch_coordinator_btn.setStyleSheet(button_style)
+        self.launch_coordinator_btn.clicked.connect(self.launch_coordinator)
+        row1_layout.addWidget(self.launch_coordinator_btn)
+
+        self.launch_dashboard_btn = QPushButton('LAUNCH DASHBOARD')
+        self.launch_dashboard_btn.setStyleSheet(button_style)
+        self.launch_dashboard_btn.clicked.connect(self.launch_dashboard)
+        row1_layout.addWidget(self.launch_dashboard_btn)
+        
+        layout.addWidget(row1)
+
+        # Second row: Simulation and Stop (2 buttons)
+        row2 = QWidget()
+        row2_layout = QHBoxLayout(row2)
+        row2_layout.setContentsMargins(0, 0, 0, 0)
+        row2_layout.setSpacing(8)
+        
+        self.launch_simulation_btn = QPushButton('LAUNCH SIMULATION')
+        self.launch_simulation_btn.setStyleSheet(button_style)
+        self.launch_simulation_btn.clicked.connect(self.launch_simulation)
+        row2_layout.addWidget(self.launch_simulation_btn)
+
+        self.stop_btn = QPushButton('STOP')
+        self.stop_btn.setStyleSheet("""
+            QPushButton {
+                background-color: #8b2d2d;
+                color: #ffffff;
+                border: 1px solid #9b3d3d;
+                border-radius: 4px;
+                padding: 6px 8px;
+                font-size: 12px;
+                font-weight: bold;
+                text-align: center;
+                min-height: 20px;
+                max-width: 200px;
+            }
+            QPushButton:hover {
+                background-color: #9b3d3d;
+                border: 1px solid #ff4444;
+            }
+            QPushButton:pressed {
+                background-color: #7b1d1d;
+                border: 1px solid #ff4444;
+            }
+        """)
+        self.stop_btn.clicked.connect(self.stop)
+        row2_layout.addWidget(self.stop_btn)
+        
+        layout.addWidget(row2)
+
+        # Separator label for agent-specific buttons
         self.agent_separator_label = QLabel('Agent Controls')
-        self.agent_separator_label.setStyleSheet('font-size: 14px; font-weight: bold; margin-top: 10px;')
+        self.agent_separator_label.setStyleSheet("""
+            QLabel {
+                font-size: 16px;
+                font-weight: bold;
+                color: #ffffff;
+                padding: 4px 0px 4px 0px;
+                margin-top: 8px;
+                border-bottom: 1px solid #3d3d3d;
+            }
+        """)
         layout.addWidget(self.agent_separator_label)
         
         # Container for agent buttons (will be populated dynamically)
         self.agent_buttons_container = QWidget()
         self.agent_buttons_layout = QVBoxLayout(self.agent_buttons_container)
-        self.agent_buttons_layout.setContentsMargins(0, 0, 0, 0)
+        self.agent_buttons_layout.setContentsMargins(0, 0, 0, 8)
+        self.agent_buttons_layout.setSpacing(8)
         layout.addWidget(self.agent_buttons_container)
         
-        # Create tabbed terminal widget
+        # Create tabbed terminal widget with improved styling
         self.terminal_tabs = QTabWidget()
+        self.terminal_tabs.setStyleSheet("""
+            QTabWidget::pane {
+                border: 1px solid #2d2d2d;
+                background-color: #1e1e1e;
+                border-radius: 4px;
+            }
+            QTabBar::tab {
+                background-color: #2d2d2d;
+                color: #cccccc;
+                padding: 6px 12px;
+                margin-right: 2px;
+                border-top-left-radius: 4px;
+                border-top-right-radius: 4px;
+                min-width: 60px;
+                font-size: 12px;
+            }
+            QTabBar::tab:selected {
+                background-color: #1e1e1e;
+                color: #4a9eff;
+                border-bottom: 2px solid #4a9eff;
+            }
+            QTabBar::tab:hover:!selected {
+                background-color: #3d3d3d;
+                color: #ffffff;
+            }
+        """)
         layout.addWidget(self.terminal_tabs)
         
         # Create initial terminal tab
@@ -355,18 +499,65 @@ class LaunchPanel(QWidget):
         self.agents[agent_id] = agent_index
         self.next_agent_index += 1
         
-        # Create buttons for this agent
+        # Create buttons for this agent with improved styling
         agent_row = QWidget()
         agent_row_layout = QHBoxLayout(agent_row)
         agent_row_layout.setContentsMargins(0, 0, 0, 0)
+        agent_row_layout.setSpacing(8)
         
-        # Agent launch button
-        agent_btn = QPushButton(f'Launch {agent_id}')
+        # Agent launch button with homogeneous styling
+        agent_btn = QPushButton(f'LAUNCH {agent_id}')
+        agent_btn.setStyleSheet("""
+            QPushButton {
+                background-color: #2d2d2d;
+                color: #e0e0e0;
+                border: 1px solid #3d3d3d;
+                border-radius: 4px;
+                padding: 6px 8px;
+                font-size: 12px;
+                font-weight: bold;
+                text-align: center;
+                min-height: 20px;
+                max-width: 200px;
+            }
+            QPushButton:hover {
+                background-color: #3d3d3d;
+                border: 1px solid #4a9eff;
+                color: #ffffff;
+            }
+            QPushButton:pressed {
+                background-color: #1d1d1d;
+                border: 1px solid #4a9eff;
+            }
+        """)
         agent_btn.clicked.connect(lambda checked, aid=agent_id: self.launch_agent(aid))
         agent_row_layout.addWidget(agent_btn)
         
-        # PX4 launch button for this agent
-        px4_btn = QPushButton(f'Launch PX4-{agent_index}')
+        # PX4 launch button for this agent with homogeneous styling
+        px4_btn = QPushButton(f'PX4-{agent_index}')
+        px4_btn.setStyleSheet("""
+            QPushButton {
+                background-color: #2d2d2d;
+                color: #e0e0e0;
+                border: 1px solid #3d3d3d;
+                border-radius: 4px;
+                padding: 6px 8px;
+                font-size: 12px;
+                font-weight: bold;
+                text-align: center;
+                min-height: 20px;
+                max-width: 200px;
+            }
+            QPushButton:hover {
+                background-color: #3d3d3d;
+                border: 1px solid #4a9eff;
+                color: #ffffff;
+            }
+            QPushButton:pressed {
+                background-color: #1d1d1d;
+                border: 1px solid #4a9eff;
+            }
+        """)
         def make_px4_handler(aid: str):
             def handler(checked):
                 idx = self.agents.get(aid)
