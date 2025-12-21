@@ -5,45 +5,17 @@ Operator interface node for the FlyingChameleons system
 
 import rclpy
 from rclpy.node import Node
-from geometry_msgs.msg import PointStamped, Point
+from geometry_msgs.msg import PointStamped
 from flychams_interfaces.msg import Registration, ClusterGeometry
 from PyQt6.QtCore import QObject, pyqtSignal
 from PyQt6.QtWidgets import QApplication
 import threading
-from typing import Dict, Optional
-from dataclasses import dataclass
+from typing import Dict
 
-
-@dataclass
-class AgentData:
-    """Data structure for agent information."""
-    position: Optional[Point] = None
-    has_position: bool = False
-    setpoint: Optional[Point] = None
-    has_setpoint: bool = False
-    position_sub: Optional[object] = None
-    position_setpoint_sub: Optional[object] = None
-
-
-@dataclass
-class TargetData:
-    """Data structure for target information."""
-    position: Optional[Point] = None
-    has_position: bool = False
-    position_sub: Optional[object] = None
-
-
-@dataclass
-class ClusterData:
-    """Data structure for cluster information."""
-    center: Optional[Point] = None
-    radius: float = 0.0
-    has_geometry: bool = False
-    geometry_sub: Optional[object] = None
-
+from flychams_dashboard.core import AgentData, TargetData, ClusterData, replace_id_in_topic, spin_ros_node
 
 class OperatorInterfaceSignals(QObject):
-    """Qt signals for thread-safe GUI updates."""
+    """Qt signals for thread-safe GUI updates"""
     agent_added = pyqtSignal(str)
     agent_removed = pyqtSignal(str)
     agent_position_updated = pyqtSignal(str, float, float, float)
@@ -55,11 +27,10 @@ class OperatorInterfaceSignals(QObject):
     cluster_removed = pyqtSignal(str)
     cluster_geometry_updated = pyqtSignal(str, float, float, float, float)
 
-
 class OperatorInterface(Node):
-    """Operator interface that discovers and tracks agents, targets, and clusters."""
+    """Operator interface that discovers and tracks agents, targets and clusters"""
 
-    # Element types matching C++ enum
+    # Element types matching C++ enum (0: agent, 1: target, 2: cluster)
     ELEMENT_TYPE_AGENT = 0
     ELEMENT_TYPE_TARGET = 1
     ELEMENT_TYPE_CLUSTER = 2
@@ -76,8 +47,7 @@ class OperatorInterface(Node):
         self.declare_parameter('update_rate', 10.0)
         self.update_rate = self.get_parameter('update_rate').get_parameter_value().double_value
         
-        # Get topic names from parameters (loaded from topics.yaml via launch file)
-        # Use get_parameter with default values
+        # Get topic names from parameters
         try:
             registration_topic_param = self.get_parameter('global_topics.registration')
             registration_topic = registration_topic_param.get_parameter_value().string_value
@@ -112,7 +82,7 @@ class OperatorInterface(Node):
         self.agents: Dict[str, AgentData] = {}
         self.targets: Dict[str, TargetData] = {}
         self.clusters: Dict[str, ClusterData] = {}
-        self.elements: Dict[str, int] = {}  # element_id -> element_type
+        self.elements: Dict[str, int] = {}  # id -> type
         
         # Create discovery subscriber
         self.registration_sub = self.create_subscription(
@@ -124,12 +94,8 @@ class OperatorInterface(Node):
         
         self.get_logger().info('Operator interface initialized')
 
-    def _replace_id_in_topic(self, topic_pattern: str, placeholder: str, element_id: str) -> str:
-        """Replace placeholder in topic pattern with element ID."""
-        return topic_pattern.replace(placeholder, element_id)
-
     def on_discovery(self, msg: Registration):
-        """Handle registration messages for discovery."""
+        """Handle registration messages for discovery"""
         # Track current elements in this message
         current_elements = set()
         
@@ -169,14 +135,14 @@ class OperatorInterface(Node):
             del self.elements[element_id]
 
     def add_agent(self, agent_id: str):
-        """Add an agent and create its subscribers."""
+        """Add an agent and create its subscribers"""
         self.get_logger().info(f'Adding agent: {agent_id}')
         
         # Create and add agent
         self.agents[agent_id] = AgentData()
         
         # Create agent position subscriber
-        global_position_topic = self._replace_id_in_topic(self.agent_global_position_pattern, 'AGENTID', agent_id)
+        global_position_topic = replace_id_in_topic(self.agent_global_position_pattern, 'AGENTID', agent_id)
         
         self.agents[agent_id].position_sub = self.create_subscription(
             PointStamped,
@@ -186,7 +152,7 @@ class OperatorInterface(Node):
         )
         
         # Create agent position setpoint subscriber
-        setpoint_topic = self._replace_id_in_topic(self.agent_setpoint_pattern, 'AGENTID', agent_id)
+        setpoint_topic = replace_id_in_topic(self.agent_setpoint_pattern, 'AGENTID', agent_id)
         
         self.agents[agent_id].position_setpoint_sub = self.create_subscription(
             PointStamped,
@@ -199,7 +165,7 @@ class OperatorInterface(Node):
         self.signals.agent_added.emit(agent_id)
 
     def remove_agent(self, agent_id: str):
-        """Remove an agent and clean up its subscribers."""
+        """Remove an agent and clean up its subscribers"""
         self.get_logger().info(f'Removing agent: {agent_id}')
         
         if agent_id in self.agents:
@@ -211,14 +177,14 @@ class OperatorInterface(Node):
             self.signals.agent_removed.emit(agent_id)
 
     def add_target(self, target_id: str):
-        """Add a target and create its subscribers."""
+        """Add a target and create its subscribers"""
         self.get_logger().info(f'Adding target: {target_id}')
         
         # Create and add target
         self.targets[target_id] = TargetData()
         
         # Create target position subscriber
-        true_position_topic = self._replace_id_in_topic(self.target_position_pattern, 'TARGETID', target_id)
+        true_position_topic = replace_id_in_topic(self.target_position_pattern, 'TARGETID', target_id)
         
         self.targets[target_id].position_sub = self.create_subscription(
             PointStamped,
@@ -231,7 +197,7 @@ class OperatorInterface(Node):
         self.signals.target_added.emit(target_id)
 
     def remove_target(self, target_id: str):
-        """Remove a target and clean up its subscribers."""
+        """Remove a target and clean up its subscribers"""
         self.get_logger().info(f'Removing target: {target_id}')
         
         if target_id in self.targets:
@@ -243,14 +209,14 @@ class OperatorInterface(Node):
             self.signals.target_removed.emit(target_id)
 
     def add_cluster(self, cluster_id: str):
-        """Add a cluster and create its subscribers."""
+        """Add a cluster and create its subscribers"""
         self.get_logger().info(f'Adding cluster: {cluster_id}')
         
         # Create and add cluster
         self.clusters[cluster_id] = ClusterData()
         
         # Create cluster geometry subscriber
-        geometry_topic = self._replace_id_in_topic(self.cluster_geometry_pattern, 'CLUSTERID', cluster_id)
+        geometry_topic = replace_id_in_topic(self.cluster_geometry_pattern, 'CLUSTERID', cluster_id)
         
         self.clusters[cluster_id].geometry_sub = self.create_subscription(
             ClusterGeometry,
@@ -263,7 +229,7 @@ class OperatorInterface(Node):
         self.signals.cluster_added.emit(cluster_id)
 
     def remove_cluster(self, cluster_id: str):
-        """Remove a cluster and clean up its subscribers."""
+        """Remove a cluster and clean up its subscribers"""
         self.get_logger().info(f'Removing cluster: {cluster_id}')
         
         if cluster_id in self.clusters:
@@ -275,7 +241,7 @@ class OperatorInterface(Node):
             self.signals.cluster_removed.emit(cluster_id)
 
     def agent_position_callback(self, agent_id: str, msg: PointStamped):
-        """Callback for agent position updates."""
+        """Callback for agent position updates"""
         if agent_id in self.agents:
             self.agents[agent_id].position = msg.point
             self.agents[agent_id].has_position = True
@@ -289,7 +255,7 @@ class OperatorInterface(Node):
             )
 
     def agent_position_setpoint_callback(self, agent_id: str, msg: PointStamped):
-        """Callback for agent position setpoint updates."""
+        """Callback for agent position setpoint updates"""
         if agent_id in self.agents:
             self.agents[agent_id].setpoint = msg.point
             self.agents[agent_id].has_setpoint = True
@@ -303,7 +269,7 @@ class OperatorInterface(Node):
             )
 
     def target_position_callback(self, target_id: str, msg: PointStamped):
-        """Callback for target position updates."""
+        """Callback for target position updates"""
         if target_id in self.targets:
             self.targets[target_id].position = msg.point
             self.targets[target_id].has_position = True
@@ -317,7 +283,7 @@ class OperatorInterface(Node):
             )
 
     def cluster_geometry_callback(self, cluster_id: str, msg: ClusterGeometry):
-        """Callback for cluster geometry updates."""
+        """Callback for cluster geometry updates"""
         if cluster_id in self.clusters:
             self.clusters[cluster_id].center = msg.center
             self.clusters[cluster_id].radius = msg.radius
@@ -332,20 +298,8 @@ class OperatorInterface(Node):
                 msg.radius
             )
 
-
-def spin_ros_node(node: OperatorInterface, executor):
-    """Run ROS2 executor in a separate thread."""
-    try:
-        executor.add_node(node)
-        executor.spin()
-    except Exception as e:
-        node.get_logger().error(f'Error in ROS2 executor thread: {e}')
-    finally:
-        executor.shutdown()
-
-
 def main(args=None):
-    """Main entry point for the operator interface node."""
+    """Main entry point for the operator interface node"""
     rclpy.init(args=args)
     
     # Create Qt application
@@ -358,10 +312,10 @@ def main(args=None):
     node = OperatorInterface(signals)
     
     # Import GUI components here to avoid circular imports
-    from flychams_dashboard.gui.main_window import MainWindow
+    from flychams_dashboard.interface.main_window import MainWindow
     
     # Create main window
-    main_window = MainWindow(node, signals)
+    main_window = MainWindow(signals)
     main_window.show()
     
     # Create ROS2 executor for separate thread

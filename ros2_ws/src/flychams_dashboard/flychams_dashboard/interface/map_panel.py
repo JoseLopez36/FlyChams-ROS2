@@ -1,19 +1,18 @@
-"""Top-down map view for visualizing agents, targets, and clusters."""
+"""Top-down map view for visualizing agents, targets, and clusters"""
 
-from PyQt6.QtWidgets import QWidget, QVBoxLayout, QLabel
+from PyQt6.QtWidgets import QWidget
 from PyQt6.QtCore import Qt, QPointF
 from PyQt6.QtGui import QPainter, QPen, QBrush, QColor, QFont
-from typing import Dict, Optional
+from typing import Dict
 from geometry_msgs.msg import Point
 
 
-class MapView(QWidget):
-    """Widget for displaying top-down 2D map visualization."""
+class MapPanel(QWidget):
+    """Widget for displaying top-down 2D map visualization"""
     
-    def __init__(self, operator_interface, signals):
+    def __init__(self, signals):
         super().__init__()
         
-        self.operator_interface = operator_interface
         self.signals = signals
         
         # Data storage
@@ -30,7 +29,7 @@ class MapView(QWidget):
         self.setStyleSheet('background-color: #1e1e1e;')
     
     def paintEvent(self, event):
-        """Paint the map visualization."""
+        """Paint the map visualization"""
         painter = QPainter(self)
         painter.setRenderHint(QPainter.RenderHint.Antialiasing)
         
@@ -64,9 +63,36 @@ class MapView(QWidget):
             # Draw agent
             if agent_data.get('has_position', False):
                 self._draw_agent(painter, agent_id, agent_data, center_x, center_y)
+
+        # If there's no data yet, show a subtle placeholder label.
+        if not self._has_any_drawable_data():
+            self._draw_placeholder(painter, width, height)
+
+    def _has_any_drawable_data(self) -> bool:
+        """Return True if there is any data worth drawing (positions/geometry)."""
+        for agent_data in self.agents.values():
+            if agent_data.get('has_position', False) or agent_data.get('has_setpoint', False):
+                return True
+        for target_data in self.targets.values():
+            if target_data.get('has_position', False):
+                return True
+        for cluster_data in self.clusters.values():
+            if cluster_data.get('has_geometry', False):
+                return True
+        return False
+
+    def _draw_placeholder(self, painter: QPainter, width: int, height: int) -> None:
+        """Draw centered placeholder text when the map is empty."""
+        painter.save()
+        font = QFont()
+        font.setPointSize(12)
+        painter.setFont(font)
+        painter.setPen(QPen(QColor(160, 160, 160)))
+        painter.drawText(0, 0, width, height, int(Qt.AlignmentFlag.AlignCenter), "Map view (empty)")
+        painter.restore()
     
     def _draw_grid(self, painter: QPainter, width: int, height: int, center_x: float, center_y: float):
-        """Draw a grid background."""
+        """Draw a grid background"""
         pen = QPen(QColor(60, 60, 60), 1)
         painter.setPen(pen)
         
@@ -86,7 +112,7 @@ class MapView(QWidget):
         painter.drawLine(int(center_x), int(center_y - 10), int(center_x), int(center_y + 10))
     
     def _draw_agent(self, painter: QPainter, agent_id: str, agent_data: Dict, center_x: float, center_y: float):
-        """Draw an agent as a circle with ID label."""
+        """Draw an agent as a circle with ID label"""
         pos = agent_data.get('position')
         if not pos:
             return
@@ -112,7 +138,7 @@ class MapView(QWidget):
         painter.drawText(int(x + radius + 2), int(y), agent_id)
     
     def _draw_setpoint_line(self, painter: QPainter, agent_data: Dict, center_x: float, center_y: float):
-        """Draw a dashed line from agent position to setpoint."""
+        """Draw a dashed line from agent position to setpoint"""
         pos = agent_data.get('position')
         setpoint = agent_data.get('setpoint')
         if not pos or not setpoint:
@@ -138,7 +164,7 @@ class MapView(QWidget):
         painter.drawEllipse(int(x2 - radius), int(y2 - radius), radius * 2, radius * 2)
     
     def _draw_target(self, painter: QPainter, target_id: str, target_data: Dict, center_x: float, center_y: float):
-        """Draw a target as a triangle marker."""
+        """Draw a target as a triangle marker"""
         pos = target_data.get('position')
         if not pos:
             return
@@ -169,7 +195,7 @@ class MapView(QWidget):
         painter.drawText(int(x + size + 2), int(y), target_id)
     
     def _draw_cluster(self, painter: QPainter, cluster_id: str, cluster_data: Dict, center_x: float, center_y: float):
-        """Draw a cluster as a circle with radius."""
+        """Draw a cluster as a circle with radius"""
         center = cluster_data.get('center')
         radius = cluster_data.get('radius', 0.0)
         if not center or radius <= 0:
@@ -198,7 +224,7 @@ class MapView(QWidget):
                           center_size * 2, center_size * 2)
     
     def add_agent(self, agent_id: str):
-        """Add an agent to the visualization."""
+        """Add an agent to the visualization"""
         self.agents[agent_id] = {
             'has_position': False,
             'has_setpoint': False,
@@ -208,13 +234,13 @@ class MapView(QWidget):
         self.update()
     
     def remove_agent(self, agent_id: str):
-        """Remove an agent from the visualization."""
+        """Remove an agent from the visualization"""
         if agent_id in self.agents:
             del self.agents[agent_id]
         self.update()
     
     def update_agent_position(self, agent_id: str, x: float, y: float, z: float):
-        """Update agent position."""
+        """Update agent position"""
         if agent_id not in self.agents:
             self.add_agent(agent_id)
         
@@ -227,7 +253,7 @@ class MapView(QWidget):
         self.update()
     
     def update_agent_setpoint(self, agent_id: str, x: float, y: float, z: float):
-        """Update agent setpoint."""
+        """Update agent setpoint"""
         if agent_id not in self.agents:
             self.add_agent(agent_id)
         
@@ -240,7 +266,7 @@ class MapView(QWidget):
         self.update()
     
     def add_target(self, target_id: str):
-        """Add a target to the visualization."""
+        """Add a target to the visualization"""
         self.targets[target_id] = {
             'has_position': False,
             'position': None
@@ -248,13 +274,13 @@ class MapView(QWidget):
         self.update()
     
     def remove_target(self, target_id: str):
-        """Remove a target from the visualization."""
+        """Remove a target from the visualization"""
         if target_id in self.targets:
             del self.targets[target_id]
         self.update()
     
     def update_target_position(self, target_id: str, x: float, y: float, z: float):
-        """Update target position."""
+        """Update target position"""
         if target_id not in self.targets:
             self.add_target(target_id)
         
@@ -267,7 +293,7 @@ class MapView(QWidget):
         self.update()
     
     def add_cluster(self, cluster_id: str):
-        """Add a cluster to the visualization."""
+        """Add a cluster to the visualization"""
         self.clusters[cluster_id] = {
             'has_geometry': False,
             'center': None,
@@ -276,13 +302,13 @@ class MapView(QWidget):
         self.update()
     
     def remove_cluster(self, cluster_id: str):
-        """Remove a cluster from the visualization."""
+        """Remove a cluster from the visualization"""
         if cluster_id in self.clusters:
             del self.clusters[cluster_id]
         self.update()
     
     def update_cluster_geometry(self, cluster_id: str, center_x: float, center_y: float, center_z: float, radius: float):
-        """Update cluster geometry."""
+        """Update cluster geometry"""
         if cluster_id not in self.clusters:
             self.add_cluster(cluster_id)
         

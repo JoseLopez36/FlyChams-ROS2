@@ -104,7 +104,7 @@ def launch_setup(context, *args, **kwargs):
                 executable='simulation_gui_node',
                 name='simulation_gui_node',
                 output='screen',
-                namespace='flychams/global',
+                namespace='flychams/simulation',
                 arguments=['--ros-args', '--log-level', log_level('simulation_gui')],
                 parameters=[
                     system_path, 
@@ -125,7 +125,7 @@ def launch_setup(context, *args, **kwargs):
                 executable='target_state_node',
                 name='target_state_node',
                 output='screen',
-                namespace='flychams/global',
+                namespace='flychams/simulation',
                 arguments=['--ros-args', '--log-level', log_level('target_state')],
                 parameters=[
                     system_path, 
@@ -146,7 +146,7 @@ def launch_setup(context, *args, **kwargs):
                 executable='target_control_node',
                 name='target_control_node',
                 output='screen',
-                namespace='flychams/global',
+                namespace='flychams/simulation',
                 arguments=['--ros-args', '--log-level', log_level('target_control')],
                 parameters=[
                     system_path, 

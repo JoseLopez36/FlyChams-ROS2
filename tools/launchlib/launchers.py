@@ -55,6 +55,7 @@ class ContainerLauncher:
     def get_base_volumes(self):
         username = self.env.docker_user_name
         return {
+            "/var/run/docker.sock": "/var/run/docker.sock",
             "/tmp/.X11-unix": "/tmp/.X11-unix",
             self.env.flychams_ros2_path: f"/home/{username}/FlyChams-ROS2",
             self.env.flychams_px4_path: f"/home/{username}/PX4-Autopilot",

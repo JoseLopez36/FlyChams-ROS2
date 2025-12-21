@@ -1,15 +1,14 @@
-"""Camera view widget for displaying UDP/RTP video streams."""
+"""Camera view widget for displaying UDP/RTP video streams"""
 
 from PyQt6.QtWidgets import QWidget, QVBoxLayout, QLabel, QTabWidget
-from PyQt6.QtCore import Qt, QTimer, pyqtSignal
+from PyQt6.QtCore import Qt, QTimer
 from PyQt6.QtGui import QImage, QPixmap
 import cv2
-import numpy as np
-from typing import Dict, Optional
+from typing import Optional
 
 
 class CameraFeedWidget(QWidget):
-    """Widget for a single camera feed."""
+    """Widget for a single camera feed"""
     
     def __init__(self, stream_url: str):
         super().__init__()
@@ -32,7 +31,7 @@ class CameraFeedWidget(QWidget):
         self.connect_stream()
     
     def connect_stream(self):
-        """Connect to the video stream."""
+        """Connect to the video stream"""
         try:
             self.cap = cv2.VideoCapture(self.stream_url)
             if not self.cap.isOpened():
@@ -43,7 +42,7 @@ class CameraFeedWidget(QWidget):
             self.cap = None
     
     def update_frame(self):
-        """Update the displayed frame."""
+        """Update the displayed frame"""
         if self.cap is None or not self.cap.isOpened():
             return
         
@@ -69,15 +68,15 @@ class CameraFeedWidget(QWidget):
         self.label.setPixmap(scaled_pixmap)
     
     def closeEvent(self, event):
-        """Clean up when widget is closed."""
+        """Clean up when widget is closed"""
         if self.cap:
             self.cap.release()
         self.timer.stop()
         event.accept()
 
 
-class CameraView(QWidget):
-    """Widget for displaying multiple camera feeds."""
+class CameraPanel(QWidget):
+    """Widget for displaying multiple camera feeds"""
     
     def __init__(self):
         super().__init__()
@@ -101,7 +100,7 @@ class CameraView(QWidget):
         self.tab_widget.addTab(placeholder, 'No Feeds')
     
     def add_camera_feed(self, feed_id: str, stream_url: str):
-        """Add a camera feed."""
+        """Add a camera feed"""
         # Remove placeholder if present
         if self.tab_widget.count() == 1:
             widget = self.tab_widget.widget(0)
@@ -113,7 +112,7 @@ class CameraView(QWidget):
         self.tab_widget.addTab(feed_widget, feed_id)
     
     def remove_camera_feed(self, feed_id: str):
-        """Remove a camera feed."""
+        """Remove a camera feed"""
         for i in range(self.tab_widget.count()):
             if self.tab_widget.tabText(i) == feed_id:
                 widget = self.tab_widget.widget(i)

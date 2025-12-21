@@ -84,7 +84,7 @@ def launch_setup(context, *args, **kwargs):
                 executable='element_registrator_node',
                 name='element_registrator_node',
                 output='screen',
-                namespace='flychams/global',
+                namespace='flychams/coordinator',
                 arguments=['--ros-args', '--log-level', log_level('element_registrator')],
                 parameters=[
                     system_path, 
@@ -104,7 +104,7 @@ def launch_setup(context, *args, **kwargs):
                 executable='target_clustering_node',
                 name='target_clustering_node',
                 output='screen',
-                namespace='flychams/global',
+                namespace='flychams/coordinator',
                 arguments=['--ros-args', '--log-level', log_level('target_clustering')],
                 parameters=[
                     system_path, 
@@ -125,7 +125,7 @@ def launch_setup(context, *args, **kwargs):
                 executable='cluster_analysis_node',
                 name='cluster_analysis_node',
                 output='screen',
-                namespace='flychams/global',
+                namespace='flychams/coordinator',
                 arguments=['--ros-args', '--log-level', log_level('cluster_analysis')],
                 parameters=[
                     system_path, 
@@ -146,7 +146,7 @@ def launch_setup(context, *args, **kwargs):
                 executable='agent_assignment_node',
                 name='agent_assignment_node',
                 output='screen',
-                namespace='flychams/global',
+                namespace='flychams/coordinator',
                 arguments=['--ros-args', '--log-level', log_level('agent_assignment')],
                 parameters=[
                     system_path, 

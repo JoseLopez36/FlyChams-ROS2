@@ -92,7 +92,7 @@ def launch_setup(context, *args, **kwargs):
                 executable='metrics_factory_node',
                 name='metrics_factory_node',
                 output='screen',
-                namespace='flychams/global',
+                namespace='flychams/dashboard',
                 arguments=['--ros-args', '--log-level', log_level('metrics_factory')],
                 parameters=[
                     system_path, 
@@ -113,29 +113,8 @@ def launch_setup(context, *args, **kwargs):
                 executable='marker_factory_node',
                 name='marker_factory_node',
                 output='screen',
-                namespace='flychams/global',
+                namespace='flychams/dashboard',
                 arguments=['--ros-args', '--log-level', log_level('marker_factory')],
-                parameters=[
-                    system_path, 
-                    topics_path, 
-                    frames_path, 
-                    dashboard_path,
-                    mission_path,
-                    {'use_sim_time': is_simulated}
-                ]
-            )
-        )
-
-    # Conditionally add Operator Interface node (Python GUI)
-    if is_enabled('operator_interface'):
-        ld.append(
-            Node(
-                package='flychams_dashboard',
-                executable='operator_interface_node',
-                name='operator_interface_node',
-                output='screen',
-                namespace='flychams/global',
-                arguments=['--ros-args', '--log-level', log_level('operator_interface')],
                 parameters=[
                     system_path, 
                     topics_path, 

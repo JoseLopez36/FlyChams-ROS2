@@ -13,4 +13,4 @@ fi
 
 # Launch FlyChams with AirSim
 echo "Running FlyingChameleons operator interface..."
-ros2 run flychams_dashboard operator_interface_node.py
+ros2 launch flychams_bringup run_operator_interface.launch.py

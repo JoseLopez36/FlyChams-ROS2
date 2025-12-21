@@ -27,14 +27,38 @@ RUN     apt-get update && \
         apt-get install -y \
         ros-iron-rviz2 \
         ros-iron-plotjuggler-ros \
+        python3-pip \
+        docker.io \
+        libxcb-cursor0 \
+        libxcb-cursor-dev \
+        libxcb1 \
+        libxcb1-dev \
+        libx11-xcb1 \
+        libxkbcommon-x11-0 \
+        libxkbcommon0 \
+        libxkbcommon-dev \
+        libxrender1 \
+        libxrender-dev \
+        libfontconfig1 \
+        libfontconfig1-dev \
+        libx11-6 \
+        libx11-dev \
         && rm -rf /var/lib/apt/lists/* && \
         apt-get clean
+
+# Install Python dependencies for dashboard GUI
+RUN     pip3 install --no-cache-dir \
+        PyQt6 \
+        numpy \
+        opencv-python \
+        libtmux
 
 # Create a non-root user with sudo access
 ARG USER_NAME=testuser
 ENV USER_NAME=${USER_NAME}
 RUN     adduser --disabled-password --gecos '' $USER_NAME \
         && adduser $USER_NAME sudo \
+        && adduser $USER_NAME docker \
         && echo '%sudo ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
 
 # Ensure the user owns their home directory
