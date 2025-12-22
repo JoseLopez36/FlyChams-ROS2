@@ -56,19 +56,14 @@ build_workspace()
 # Function to run the agent container
 run_container() 
 {
-    "$SCRIPT_DIR/docker/launch_agent.sh" "$AGENT_ID"
+    CMD="source /opt/ros/$ROS_DISTRO/setup.bash && cd /home/testuser/FlyChams-ROS2 && source install/docker/setup.bash && ros2 launch launch/agent.launch.py agent_id:=$AGENT_ID is_sim:=True"
+    "$SCRIPT_DIR/docker/launch_agent.sh" "$AGENT_ID" "$CMD"
 }
 
 # Function to stop the agent container
 stop_container() 
 {
-    print_info "Stopping agent container: $AGENT_CONTAINER_NAME"
-    if docker ps --format '{{.Names}}' | grep -q "^${AGENT_CONTAINER_NAME}$"; then
-        docker stop "$AGENT_CONTAINER_NAME"
-        print_info "Container stopped"
-    else
-        print_warn "Container $AGENT_CONTAINER_NAME is not running"
-    fi
+    "$SCRIPT_DIR/docker/stop_agent.sh" "$AGENT_ID"
 }
 
 # Function to remove the agent container

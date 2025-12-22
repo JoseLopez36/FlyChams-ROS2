@@ -84,27 +84,34 @@ generate-settings = "ros2 launch launch/generate_settings.launch.py"
 # Operator tasks
 operator-sim-run = "ros2 launch launch/operator.launch.py is_sim:=True"
 operator-hardware-run = "ros2 launch launch/operator.launch.py is_sim:=False"
+operator-stop = "pkill -f operator"
 operator-rviz = "ros2 run rviz2 rviz2 -d config/rviz/default.rviz"
+operator-rviz-stop = "pkill -f rviz2"
 
 # Coordinator tasks
 coordinator-sim-run = "ros2 launch launch/coordinator.launch.py is_sim:=True"
 coordinator-hardware-run = "ros2 launch launch/coordinator.launch.py is_sim:=False"
+coordinator-stop = "pkill -f coordinator"
 
 # Agent simulation tasks (docker)
 agent-sim-build-image = "bash tools/docker/build.sh"
 agent-sim-build = "bash tools/agent_setup.sh build"
 agent-sim-run = "bash tools/agent_setup.sh run"
-agent-sim-stop = "bash tools/agent_setup.sh stop"
-agent-sim-remove = "bash tools/agent_setup.sh remove"
 agent-sim-shell = "bash tools/agent_setup.sh shell"
+agent-sim-stop = "bash tools/docker/stop_agent.sh"
+agent-sim-remove = "bash tools/agent_setup.sh remove"
 
 # Agent hardware tasks
 agent-hardware-run = "ros2 launch launch/agent.launch.py is_sim:=False"
+agent-hardware-stop = "pkill -f 'ros2 launch launch/agent.launch.py'"
 
 # Simulation tasks
 simulation-run = "ros2 launch launch/simulation.launch.py"
+simulation-stop = "pkill -f simulation"
 simulation-ue5-run = "bash tools/launch_ue5.sh"
+simulation-ue5-stop = "pkill -9 -f FlyChamsSim"
 simulation-px4-run = "bash tools/docker/launch_px4.sh"
+simulation-px4-stop = "bash tools/docker/stop_px4.sh"
 
 
 [activation]

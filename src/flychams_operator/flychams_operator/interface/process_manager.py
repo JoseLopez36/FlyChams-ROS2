@@ -22,19 +22,21 @@ class ProcessManager(QObject):
     
     def __init__(self):
         super().__init__()
-        self.processes = {}  # component -> process
+        self.processes = {}  # component -> {'proc': process, 'stop_cmd': stop_cmd}
         self.log_queue = queue.Queue()
         
         # Timer to process log queue in the main thread
         self.log_timer = QTimer()
-        self.log_timer.timeout.connect(self._process_log_queue)
+        self.log_timer.timeout.connect(self.process_log_queue)
         self.log_timer.start(50)  # Check every 50ms for responsiveness
 
-    def start_process(self, component_name: str, cmd: list):
+    def start_process(self, component_name: str, cmd: list, stop_cmd: list = None):
         """Start a process if not already running"""
-        if component_name in self.processes and self.processes[component_name].poll() is None:
-            self.log_queue.put((component_name, f"Process {component_name} is already running."))
-            return
+        if component_name in self.processes:
+            proc = self.processes[component_name]['proc']
+            if proc.poll() is None:
+                self.log_queue.put((component_name, f"Process {component_name} is already running."))
+                return
 
         self.log_queue.put((component_name, f"Launching {component_name}: {' '.join(cmd)}"))
         
@@ -46,26 +48,53 @@ class ProcessManager(QObject):
                 bufsize=1,
                 universal_newlines=False
             )
-            self.processes[component_name] = process
+            self.processes[component_name] = {
+                'proc': process,
+                'stop_cmd': stop_cmd
+            }
             
             # Start threads to read stdout and stderr
-            threading.Thread(target=self._read_stream, args=(process.stdout, component_name, False), daemon=True).start()
-            threading.Thread(target=self._read_stream, args=(process.stderr, component_name, True), daemon=True).start()
+            threading.Thread(target=self.read_stream, args=(process.stdout, component_name, False), daemon=True).start()
+            threading.Thread(target=self.read_stream, args=(process.stderr, component_name, True), daemon=True).start()
             
             self.log_queue.put((component_name, f"Started {component_name} (PID: {process.pid})"))
         except Exception as e:
             logger.error(f"Failed to start {component_name}: {e}")
             self.log_queue.put((component_name, f"ERROR: Failed to start: {e}"))
 
+    def stop_process(self, component_name: str):
+        """Stop a specific process using its stop command or terminate it"""
+        if component_name not in self.processes:
+            return
+
+        process_info = self.processes[component_name]
+        proc = process_info['proc']
+        stop_cmd = process_info['stop_cmd']
+
+        if proc.poll() is None:
+            if stop_cmd:
+                self.log_queue.put((component_name, f"Stopping {component_name} with command: {' '.join(stop_cmd)}"))
+                try:
+                    subprocess.run(stop_cmd, check=False)
+                except Exception as e:
+                    self.log_queue.put((component_name, f"ERROR running stop command: {e}"))
+                    proc.terminate()
+            else:
+                self.log_queue.put((component_name, f"Stopping {component_name}..."))
+                proc.terminate()
+        
+        # Remove from tracking after attempting to stop
+        del self.processes[component_name]
+
     def stop_all(self):
         """Stop all managed processes"""
-        for name, proc in self.processes.items():
-            if proc.poll() is None:
-                self.log_queue.put((name, f"Stopping {name}..."))
-                proc.terminate()
+        # Create a list of names to avoid dictionary size change during iteration
+        for name in list(self.processes.keys()):
+            if not name.startswith("Operator"):
+             self.stop_process(name)
         self.processes.clear()
 
-    def _read_stream(self, stream, component_name, is_stderr):
+    def read_stream(self, stream, component_name, is_stderr):
         """Background thread worker to read stream lines"""
         try:
             for line in iter(stream.readline, b''):
@@ -79,7 +108,7 @@ class ProcessManager(QObject):
         finally:
             stream.close()
 
-    def _process_log_queue(self):
+    def process_log_queue(self):
         """Flush the queue and emit signals on the main thread"""
         while not self.log_queue.empty():
             try:

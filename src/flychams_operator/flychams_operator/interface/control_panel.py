@@ -176,30 +176,30 @@ class ControlPanel(QWidget):
     
     def launch_coordinator(self):
         task = "coordinator-sim-run" if self.is_sim else "coordinator-hardware-run"
-        self.pm.start_process("Coordinator", ["pixi", "run", task])
+        self.pm.start_process("Coordinator", ["pixi", "run", task], ["pixi", "run", "coordinator-stop"])
 
     def launch_rviz(self):
-        self.pm.start_process("Rviz", ["pixi", "run", "operator-rviz"])
+        self.pm.start_process("Rviz", ["pixi", "run", "operator-rviz"], ["pixi", "run", "operator-rviz-stop"])
 
     def launch_simulation(self):
         if self.is_sim:
-            self.pm.start_process("Simulation", ["pixi", "run", "simulation-run"])
+            self.pm.start_process("Simulation", ["pixi", "run", "simulation-run"], ["pixi", "run", "simulation-stop"])
 
     def launch_ue5(self):
         if self.is_sim:
-            self.pm.start_process("UE5", ["pixi", "run", "simulation-ue5-run"])
+            self.pm.start_process("UE5", ["pixi", "run", "simulation-ue5-run"], ["pixi", "run", "simulation-ue5-stop"])
 
     def launch_agent(self, agent_id):
         if self.is_sim:
-            self.pm.start_process(agent_id, ["pixi", "run", "agent-sim-run", agent_id])
+            self.pm.start_process(agent_id, ["pixi", "run", "agent-sim-run", agent_id], ["pixi", "run", "agent-sim-stop", agent_id])
         else:
             # For hardware, typically we launch the generic agent-hardware-run
             # Note: pixi.toml has agent-hardware-run without ID.
-            self.pm.start_process(f"Agent-{agent_id}", ["pixi", "run", "agent-hardware-run"])
+            self.pm.start_process(f"Agent-{agent_id}", ["pixi", "run", "agent-hardware-run"], ["pixi", "run", "agent-hardware-stop"])
 
     def launch_px4(self, agent_id, index):
         if self.is_sim:
-            self.pm.start_process(f"PX4-{index}", ["pixi", "run", "simulation-px4-run", str(index)])
+            self.pm.start_process(f"PX4-{index}", ["pixi", "run", "simulation-px4-run", str(index)], ["pixi", "run", "simulation-px4-stop", str(index)])
 
     def stop_all(self):
         self.pm.stop_all()

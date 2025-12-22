@@ -32,14 +32,14 @@ CMD=${2:-"bash"}
 # Check if container is already running
 if docker ps --format '{{.Names}}' | grep -q "^${CONTAINER_NAME}$"; then
     echo "Container ${CONTAINER_NAME} is already running. Executing command..."
-    docker exec -it "${CONTAINER_NAME}" bash -c "${CMD}"
+    docker exec "${CONTAINER_NAME}" bash -c "${CMD}"
 elif docker ps -a --format '{{.Names}}' | grep -q "^${CONTAINER_NAME}$"; then
     echo "Container ${CONTAINER_NAME} exists but is stopped. Starting and executing..."
     docker start "${CONTAINER_NAME}"
-    docker exec -it "${CONTAINER_NAME}" bash -c "${CMD}"
+    docker exec "${CONTAINER_NAME}" bash -c "${CMD}"
 else
     echo "Starting new container ${CONTAINER_NAME}..."
-    docker run -it --rm --name "${CONTAINER_NAME}" \
+    docker run --rm --name "${CONTAINER_NAME}" \
         --network host \
         -e ROS_DOMAIN_ID="${ROS_DOMAIN_ID}" \
         -e AGENT_ID="${AGENT_ID}" \
