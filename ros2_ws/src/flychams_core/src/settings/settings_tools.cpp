@@ -404,6 +404,7 @@ namespace flychams::core
                     multi_camera->orientation.x(), multi_camera->orientation.y(), multi_camera->orientation.z());
                 RCLCPP_INFO(node_->get_logger(), "        Focal Length: min=%.6f, max=%.6f, ref=%.6f",
                     multi_camera->min_focal, multi_camera->max_focal, multi_camera->ref_focal);
+                RCLCPP_INFO(node_->get_logger(), "        Stream URL: %s", multi_camera->stream_url.c_str());
 
         // Camera Parameters
                 RCLCPP_INFO(node_->get_logger(), "        [CAMERA]");

@@ -466,6 +466,8 @@ namespace flychams::core
 
 					multi_camera->ref_focal = getCellValue<float>(row.findCell(11)) / 1000.0f;
 
+					multi_camera->stream_url = getCellValue<std::string>(row.findCell(12));
+
 					// Parse camera model
 					parseCameraModel(book, multi_camera);
 

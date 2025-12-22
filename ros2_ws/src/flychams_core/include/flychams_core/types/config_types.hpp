@@ -210,6 +210,7 @@ namespace flychams::core
         float min_focal;
         float max_focal;
         float ref_focal;
+        std::string stream_url;
 
         // External config
         CameraConfig camera;

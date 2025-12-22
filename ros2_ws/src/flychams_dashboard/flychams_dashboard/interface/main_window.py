@@ -170,10 +170,10 @@ class MainWindow(QMainWindow):
         self.signals.cluster_geometry_updated.connect(self.update_cluster_geometry)
     
     # ================================ Signal callbacks ================================
-    def add_agent(self, agent_id: str):
+    def add_agent(self, agent_id: str, stream_urls: list):
         self.launch_panel.add_agent(agent_id)
         self.map_panel.add_agent(agent_id)
-        self.camera_panel.add_agent(agent_id)
+        self.camera_panel.add_agent(agent_id, stream_urls)
     
     def remove_agent(self, agent_id: str):
         self.launch_panel.remove_agent(agent_id)

@@ -45,6 +45,12 @@ def launch_setup(context, *args, **kwargs):
     # Set environment variable to control ROS logger output
     os.environ['RCUTILS_LOGGING_USE_STDOUT'] = '1' # Enable logging to stdout
     os.environ['RCUTILS_COLORIZED_OUTPUT'] = '1'   # Enable colored output
+    
+    # Set environment variables to control Python logging
+    # Log level: DEBUG, INFO, WARNING, ERROR, CRITICAL
+    os.environ.setdefault('PYTHON_LOG_LEVEL', 'INFO')
+    # Enable logging for camera panel module
+    os.environ.setdefault('PYTHON_LOG_MODULES', 'flychams_dashboard.interface.camera_panel')
 
     # Generate launch description
     ld = []

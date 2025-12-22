@@ -117,7 +117,7 @@ namespace flychams::core
 		agent->tracking.ref_target_size = RosUtils::getParameter<float>(node, prefix + "ref_target_size");
 		
 		// Get multi camera ID list and iterate over them
-		std::vector<std::string> multi_camera_ids = RosUtils::getParameter<std::vector<std::string>>(node, prefix + "multi_cameras.ids");
+		std::vector<std::string> multi_camera_ids = RosUtils::getParameterOr<std::vector<std::string>>(node, prefix + "multi_cameras.ids", std::vector<std::string>());
 		for (const auto& multi_camera_id : multi_camera_ids)
 		{
 			auto multi_camera = std::make_shared<MultiCameraConfig>();
@@ -127,7 +127,7 @@ namespace flychams::core
 		}
 		
 		// Get multi window ID list and iterate over them
-		std::vector<std::string> multi_window_ids = RosUtils::getParameter<std::vector<std::string>>(node, prefix + "multi_windows.ids");
+		std::vector<std::string> multi_window_ids = RosUtils::getParameterOr<std::vector<std::string>>(node, prefix + "multi_windows.ids", std::vector<std::string>());
 		for (const auto& multi_window_id : multi_window_ids)
 		{
 			auto multi_window = std::make_shared<MultiWindowConfig>();
@@ -160,6 +160,7 @@ namespace flychams::core
 		multi_camera->min_focal = RosUtils::getParameter<float>(node, prefix + "min_focal");
 		multi_camera->max_focal = RosUtils::getParameter<float>(node, prefix + "max_focal");
 		multi_camera->ref_focal = RosUtils::getParameter<float>(node, prefix + "ref_focal");
+		multi_camera->stream_url = RosUtils::getParameter<std::string>(node, prefix + "stream_url");
 		
 		parseCameraParameters(node, multi_camera, prefix + "camera.");
 		parseGimbalParameters(node, multi_camera, prefix + "gimbal.");

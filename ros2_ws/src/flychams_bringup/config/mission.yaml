@@ -1,16 +1,16 @@
 # Mission configuration file
 # Generated automatically from configuration spreadsheet
-# Mission ID: MISSION01
-# Mission Name: Single-Agent Test (Multi-Window)
+# Mission ID: MISSION00
+# Mission Name: Single-Agent Test (Multi-Camera)
 
 /**:
   ros__parameters:
     mission:
-      id: MISSION01
-      name: "Single-Agent Test (Multi-Window)"
+      id: MISSION00
+      name: "Single-Agent Test (Multi-Camera)"
       environment_id: ENVIRONMENT00
       target_group_id: GROUP02
-      agent_team_id: TEAM01
+      agent_team_id: TEAM00
       horizontal_constraint:
         min: -150.000
         max: 150.000
@@ -112,16 +112,16 @@
         priority: 3
         trajectory_folder: "TargetConfigurationL3"
     agents:
-      id_list: ["AGENT01"]
-      AGENT01:
-        id: AGENT01
-        name: "Multi-Window Agent (Single)"
-        agent_team_id: TEAM01
-        tracking_id: TRACKING01
+      id_list: ["AGENT00"]
+      AGENT00:
+        id: AGENT00
+        name: "Multi-Camera Agent (Single)"
+        agent_team_id: TEAM00
+        tracking_id: TRACKING00
         drone_id: DRONE00
         position:
           x: 10.000
-          y: -2.500
+          y: 0.000
           z: 0.000
         orientation:
           roll: 0.000000
@@ -131,19 +131,19 @@
         max_altitude: 300.000
         battery_capacity: 12000.000
         tracking:
-          id: TRACKING01
-          name: "Multi-Window Tracking (Single)"
-          observation_set_id: SET01
+          id: TRACKING00
+          name: "Multi-Camera Tracking (Single)"
+          observation_set_id: SET00
           min_target_size: 0.200
           max_target_size: 0.900
           ref_target_size: 0.800
           multi_cameras:
-            ids: ["MULTICAMERA05"]
-            MULTICAMERA05:
-              id: MULTICAMERA05
-              name: "Central Head Multi-Window (Single)"
-              observation_set_id: SET01
-              camera_id: CAM04
+            ids: ["MULTICAMERA00", "MULTICAMERA01", "MULTICAMERA02", "MULTICAMERA03", "MULTICAMERA04"]
+            MULTICAMERA00:
+              id: MULTICAMERA00
+              name: "Central Head Multi-Camera (Single)"
+              observation_set_id: SET00
+              camera_id: CAM00
               gimbal_id: GIM00
               role: 1
               position:
@@ -157,9 +157,10 @@
               min_focal: 0.003000
               max_focal: 0.003000
               ref_focal: 0.003000
+              stream_url: "udp://127.0.0.1:5000"
               camera:
-                id: CAM04
-                name: "Operational Conditions O1 (ultra-high-resolution camera)"
+                id: CAM00
+                name: "Operational Conditions O1 (low-resolution central camera)"
                 type: 1
                 resolution:
                   width: 1920
@@ -178,9 +179,9 @@
                   rand_contrib: 0.001000
                   rand_size: 100.000000
                   rand_speed: 50000.000000
-                weight: 0.800
-                idle_power: 3.000
-                active_power: 6.000
+                weight: 0.500
+                idle_power: 2.000
+                active_power: 5.000
               gimbal:
                 id: GIM00
                 name: "Default Gimbal"
@@ -202,48 +203,262 @@
                 weight: 0.400
                 idle_power: 5.000
                 active_power: 15.000
-          multi_windows:
-            ids: ["MULTIWINDOW00", "MULTIWINDOW01", "MULTIWINDOW02", "MULTIWINDOW03"]
-            MULTIWINDOW00:
-              id: MULTIWINDOW00
-              name: "Tracking Window 1 Multi-Window (Single)"
-              observation_set_id: SET01
-              resolution:
-                width: 480
-                height: 270
-              min_lambda: 0.167
-              max_lambda: 1.000
-              ref_lambda: 0.583
-            MULTIWINDOW01:
-              id: MULTIWINDOW01
-              name: "Tracking Window 2 Multi-Window (Single)"
-              observation_set_id: SET01
-              resolution:
-                width: 480
-                height: 270
-              min_lambda: 0.167
-              max_lambda: 1.000
-              ref_lambda: 0.583
-            MULTIWINDOW02:
-              id: MULTIWINDOW02
-              name: "Tracking Window 3 Multi-Window (Single)"
-              observation_set_id: SET01
-              resolution:
-                width: 480
-                height: 270
-              min_lambda: 0.167
-              max_lambda: 1.000
-              ref_lambda: 0.583
-            MULTIWINDOW03:
-              id: MULTIWINDOW03
-              name: "Tracking Window 4 Multi-Window (Single)"
-              observation_set_id: SET01
-              resolution:
-                width: 480
-                height: 270
-              min_lambda: 0.167
-              max_lambda: 1.000
-              ref_lambda: 0.583
+            MULTICAMERA01:
+              id: MULTICAMERA01
+              name: "Tracking Head 1 Multi-Camera (Single)"
+              observation_set_id: SET00
+              camera_id: CAM01
+              gimbal_id: GIM00
+              role: 2
+              position:
+                x: 0.300
+                y: 0.000
+                z: -0.150
+              orientation:
+                roll: 0.000000
+                pitch: 1.570796
+                yaw: 0.000000
+              min_focal: 0.008000
+              max_focal: 0.040000
+              ref_focal: 0.010000
+              stream_url: "udp://127.0.0.1:5001"
+              camera:
+                id: CAM01
+                name: "Operational Conditions O1 (low-resolution tracking camera)"
+                type: 1
+                resolution:
+                  width: 1280
+                  height: 720
+                sensor_size:
+                  width: 0.013200
+                  height: 0.007425
+                distortion:
+                  K1: -0.030000
+                  K2: 0.002000
+                  K3: 0.000000
+                  P1: 0.000500
+                  P2: -0.000400
+                enable_sensor_noise: true
+                sensor_noise:
+                  rand_contrib: 0.001000
+                  rand_size: 100.000000
+                  rand_speed: 50000.000000
+                weight: 0.500
+                idle_power: 2.000
+                active_power: 5.000
+              gimbal:
+                id: GIM00
+                name: "Default Gimbal"
+                enable_roll: true
+                roll:
+                  min_angle: -20.000000
+                  max_angle: 20.000000
+                  max_speed: 180.000000
+                enable_pitch: true
+                pitch:
+                  min_angle: -40.000000
+                  max_angle: 130.000000
+                  max_speed: 180.000000
+                enable_yaw: true
+                yaw:
+                  min_angle: -320.000000
+                  max_angle: 320.000000
+                  max_speed: 270.000000
+                weight: 0.400
+                idle_power: 5.000
+                active_power: 15.000
+            MULTICAMERA02:
+              id: MULTICAMERA02
+              name: "Tracking Head 2 Multi-Camera (Single)"
+              observation_set_id: SET00
+              camera_id: CAM01
+              gimbal_id: GIM00
+              role: 2
+              position:
+                x: 0.000
+                y: 0.300
+                z: -0.150
+              orientation:
+                roll: 0.000000
+                pitch: 1.570796
+                yaw: 1.570796
+              min_focal: 0.008000
+              max_focal: 0.040000
+              ref_focal: 0.010000
+              stream_url: "udp://127.0.0.1:5002"
+              camera:
+                id: CAM01
+                name: "Operational Conditions O1 (low-resolution tracking camera)"
+                type: 1
+                resolution:
+                  width: 1280
+                  height: 720
+                sensor_size:
+                  width: 0.013200
+                  height: 0.007425
+                distortion:
+                  K1: -0.030000
+                  K2: 0.002000
+                  K3: 0.000000
+                  P1: 0.000500
+                  P2: -0.000400
+                enable_sensor_noise: true
+                sensor_noise:
+                  rand_contrib: 0.001000
+                  rand_size: 100.000000
+                  rand_speed: 50000.000000
+                weight: 0.500
+                idle_power: 2.000
+                active_power: 5.000
+              gimbal:
+                id: GIM00
+                name: "Default Gimbal"
+                enable_roll: true
+                roll:
+                  min_angle: -20.000000
+                  max_angle: 20.000000
+                  max_speed: 180.000000
+                enable_pitch: true
+                pitch:
+                  min_angle: -40.000000
+                  max_angle: 130.000000
+                  max_speed: 180.000000
+                enable_yaw: true
+                yaw:
+                  min_angle: -320.000000
+                  max_angle: 320.000000
+                  max_speed: 270.000000
+                weight: 0.400
+                idle_power: 5.000
+                active_power: 15.000
+            MULTICAMERA03:
+              id: MULTICAMERA03
+              name: "Tracking Head 3 Multi-Camera (Single)"
+              observation_set_id: SET00
+              camera_id: CAM01
+              gimbal_id: GIM00
+              role: 2
+              position:
+                x: -0.300
+                y: 0.000
+                z: -0.150
+              orientation:
+                roll: 0.000000
+                pitch: 1.570796
+                yaw: 3.141593
+              min_focal: 0.008000
+              max_focal: 0.040000
+              ref_focal: 0.010000
+              stream_url: "udp://127.0.0.1:5003"
+              camera:
+                id: CAM01
+                name: "Operational Conditions O1 (low-resolution tracking camera)"
+                type: 1
+                resolution:
+                  width: 1280
+                  height: 720
+                sensor_size:
+                  width: 0.013200
+                  height: 0.007425
+                distortion:
+                  K1: -0.030000
+                  K2: 0.002000
+                  K3: 0.000000
+                  P1: 0.000500
+                  P2: -0.000400
+                enable_sensor_noise: true
+                sensor_noise:
+                  rand_contrib: 0.001000
+                  rand_size: 100.000000
+                  rand_speed: 50000.000000
+                weight: 0.500
+                idle_power: 2.000
+                active_power: 5.000
+              gimbal:
+                id: GIM00
+                name: "Default Gimbal"
+                enable_roll: true
+                roll:
+                  min_angle: -20.000000
+                  max_angle: 20.000000
+                  max_speed: 180.000000
+                enable_pitch: true
+                pitch:
+                  min_angle: -40.000000
+                  max_angle: 130.000000
+                  max_speed: 180.000000
+                enable_yaw: true
+                yaw:
+                  min_angle: -320.000000
+                  max_angle: 320.000000
+                  max_speed: 270.000000
+                weight: 0.400
+                idle_power: 5.000
+                active_power: 15.000
+            MULTICAMERA04:
+              id: MULTICAMERA04
+              name: "Tracking Head 4 Multi-Camera (Single)"
+              observation_set_id: SET00
+              camera_id: CAM01
+              gimbal_id: GIM00
+              role: 2
+              position:
+                x: 0.000
+                y: -0.300
+                z: -0.150
+              orientation:
+                roll: 0.000000
+                pitch: 1.570796
+                yaw: 4.712389
+              min_focal: 0.008000
+              max_focal: 0.040000
+              ref_focal: 0.010000
+              stream_url: "udp://127.0.0.1:5004"
+              camera:
+                id: CAM01
+                name: "Operational Conditions O1 (low-resolution tracking camera)"
+                type: 1
+                resolution:
+                  width: 1280
+                  height: 720
+                sensor_size:
+                  width: 0.013200
+                  height: 0.007425
+                distortion:
+                  K1: -0.030000
+                  K2: 0.002000
+                  K3: 0.000000
+                  P1: 0.000500
+                  P2: -0.000400
+                enable_sensor_noise: true
+                sensor_noise:
+                  rand_contrib: 0.001000
+                  rand_size: 100.000000
+                  rand_speed: 50000.000000
+                weight: 0.500
+                idle_power: 2.000
+                active_power: 5.000
+              gimbal:
+                id: GIM00
+                name: "Default Gimbal"
+                enable_roll: true
+                roll:
+                  min_angle: -20.000000
+                  max_angle: 20.000000
+                  max_speed: 180.000000
+                enable_pitch: true
+                pitch:
+                  min_angle: -40.000000
+                  max_angle: 130.000000
+                  max_speed: 180.000000
+                enable_yaw: true
+                yaw:
+                  min_angle: -320.000000
+                  max_angle: 320.000000
+                  max_speed: 270.000000
+                weight: 0.400
+                idle_power: 5.000
+                active_power: 15.000
         drone:
           id: DRONE00
           name: "Operational Conditions O1"

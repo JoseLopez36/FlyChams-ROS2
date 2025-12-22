@@ -10,13 +10,15 @@ from flychams_interfaces.msg import Registration, ClusterGeometry
 from PyQt6.QtCore import QObject, pyqtSignal
 from PyQt6.QtWidgets import QApplication
 import threading
+import logging
+import os
 from typing import Dict
 
 from flychams_dashboard.core import AgentData, TargetData, ClusterData, replace_id_in_topic, spin_ros_node
 
 class OperatorInterfaceSignals(QObject):
     """Qt signals for thread-safe GUI updates"""
-    agent_added = pyqtSignal(str)
+    agent_added = pyqtSignal(str, list)  # agent_id, stream_urls
     agent_removed = pyqtSignal(str)
     agent_position_updated = pyqtSignal(str, float, float, float)
     agent_setpoint_updated = pyqtSignal(str, float, float, float)
@@ -160,9 +162,24 @@ class OperatorInterface(Node):
             lambda msg, aid=agent_id: self.agent_position_setpoint_callback(aid, msg),
             10
         )
+
+        # Get stream URLs from agent configuration
+        stream_urls = []
+        # Get list of multi_camera IDs for this agent
+        multi_cameras_ids_param = f'agents.{agent_id}.tracking.multi_cameras.ids'
+        multi_camera_ids = self.get_parameter(multi_cameras_ids_param).get_parameter_value().string_array_value
+        
+        # Get stream_url for each multi_camera
+        for multi_camera_id in multi_camera_ids:
+            stream_url_param = f'agents.{agent_id}.tracking.multi_cameras.{multi_camera_id}.stream_url'
+            try:
+                stream_url = self.get_parameter(stream_url_param).get_parameter_value().string_value
+                stream_urls.append(stream_url)
+            except Exception as e:
+                self.get_logger().warn(f'Could not get stream_url for {agent_id}/{multi_camera_id}: {e}')
         
         # Emit signal for GUI
-        self.signals.agent_added.emit(agent_id)
+        self.signals.agent_added.emit(agent_id, stream_urls)
 
     def remove_agent(self, agent_id: str):
         """Remove an agent and clean up its subscribers"""
@@ -300,6 +317,25 @@ class OperatorInterface(Node):
 
 def main(args=None):
     """Main entry point for the operator interface node"""
+    # Configure Python logging for camera panel and other dashboard modules
+    log_level_str = os.environ.get('PYTHON_LOG_LEVEL', 'INFO').upper()
+    log_level = getattr(logging, log_level_str, logging.INFO)
+    
+    # Configure root logger
+    logging.basicConfig(
+        level=log_level,
+        format='%(asctime)s [%(levelname)s] [%(name)s] %(message)s',
+        datefmt='%Y-%m-%d %H:%M:%S'
+    )
+    
+    # Get modules to log (default to camera_panel if not specified)
+    log_modules = os.environ.get('PYTHON_LOG_MODULES', 'flychams_dashboard.interface.camera_panel').split(',')
+    for module_name in log_modules:
+        module_name = module_name.strip()
+        if module_name:
+            logger = logging.getLogger(module_name)
+            logger.setLevel(log_level)
+    
     rclpy.init(args=args)
     
     # Create Qt application
