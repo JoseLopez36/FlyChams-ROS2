@@ -72,19 +72,33 @@ colcon build \
   --event-handlers console_direct+ 2>&1
 """
 
-# Run tasks
+# Setup tasks
 generate-settings = "ros2 launch launch/generate_settings.launch.py"
-run-operator = "ros2 launch launch/run_operator.launch.py"
-run-coordinator = "ros2 launch launch/run_coordinator.launch.py"
-run-simulation = "ros2 launch launch/run_simulation.launch.py"
 
-# Agent Docker tasks
-agent-build-image = "bash tools/docker/build.sh"
-agent-build = "bash tools/agent_setup.sh build"
-agent-run = "bash tools/agent_setup.sh run"
-agent-stop = "bash tools/agent_setup.sh stop"
-agent-remove = "bash tools/agent_setup.sh remove"
-agent-shell = "bash tools/agent_setup.sh shell"
+# Operator tasks
+operator-run = "ros2 launch launch/operator.launch.py"
+
+# Coordinator simulation tasks
+coordinator-sim-run = "ros2 launch launch/coordinator.launch.py is_sim:=True"
+
+# Coordinator hardware tasks
+coordinator-hardware-run = "ros2 launch launch/coordinator.launch.py is_sim:=False"
+
+# Agent simulation tasks (docker)
+agent-sim-build-image = "bash tools/docker/build.sh"
+agent-sim-build = "bash tools/agent_setup.sh build"
+agent-sim-run = "bash tools/agent_setup.sh run"
+agent-sim-stop = "bash tools/agent_setup.sh stop"
+agent-sim-remove = "bash tools/agent_setup.sh remove"
+agent-sim-shell = "bash tools/agent_setup.sh shell"
+
+# Agent hardware tasks
+agent-hardware-run = "ros2 launch launch/agent.launch.py is_sim:=False"
+
+# Simulation tasks
+simulation-run = "ros2 launch launch/simulation.launch.py"
+simulation-ue5-run = "bash tools/launch_ue5.sh"
+simulation-px4-run = "bash tools/docker/launch_px4.sh"
 
 
 [activation]

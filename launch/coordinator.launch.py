@@ -2,38 +2,33 @@ from launch import LaunchDescription
 from launch_ros.actions import Node
 from launch.actions import DeclareLaunchArgument, OpaqueFunction
 from launch.substitutions import PathJoinSubstitution, LaunchConfiguration
-from launch_ros.substitutions import FindPackageShare
 import os
 import yaml
 
 def launch_setup(context, *args, **kwargs):
-    # Get is_simulated value from LaunchConfiguration
-    is_simulated_str = LaunchConfiguration('is_simulated').perform(context)
+    # Get is_sim value from LaunchConfiguration
+    is_simulated_str = LaunchConfiguration('is_sim').perform(context)
     # Convert string to boolean for use_sim_time parameter
-    is_simulated = is_simulated_str.lower() in ('true', '1', 'yes', 'on')
+    is_sim = is_simulated_str.lower() in ('true', '1', 'yes', 'on')
 
     # Get paths to config files
     # Core parameters
     system_path = PathJoinSubstitution([
-        FindPackageShare('flychams_bringup'),
         'config',
         'core',
         'system.yaml'
     ])
     launch_path = PathJoinSubstitution([
-        FindPackageShare('flychams_bringup'),
         'config',
         'core',
         'launch.yaml'
     ])
     topics_path = PathJoinSubstitution([
-        FindPackageShare('flychams_bringup'),
         'config',
         'core',
         'topics.yaml'
     ])
     frames_path = PathJoinSubstitution([
-        FindPackageShare('flychams_bringup'),
         'config',
         'core',
         'frames.yaml'
@@ -41,25 +36,16 @@ def launch_setup(context, *args, **kwargs):
     
     # Mission parameters
     mission_path = PathJoinSubstitution([
-        FindPackageShare('flychams_bringup'),
         'config',
+        'generated',
         'mission.yaml'
     ])
     
     # Package parameters
-    dashboard_path = PathJoinSubstitution([
-        FindPackageShare('flychams_bringup'),
+    coordinator_path = PathJoinSubstitution([
         'config',
         'package',
-        'operator.yaml'
-    ])
-
-    # Rviz parameters
-    rviz_path = PathJoinSubstitution([
-        FindPackageShare('flychams_bringup'),
-        'config',
-        'rviz',
-        'default.rviz'
+        'coordinator.yaml'
     ])
 
     # Set environment variable to control ROS logger output
@@ -84,64 +70,85 @@ def launch_setup(context, *args, **kwargs):
     def log_level(node_name: str) -> str:
         return node_log_levels.get(node_name, 'info')
 
-    # Conditionally add Metrics Factory node
-    if is_enabled('metrics_factory'):
+    # Conditionally add Element Registrator node
+    if is_enabled('element_registrator'):
         ld.append(
             Node(
-                package='flychams_operator',
-                executable='metrics_factory_node',
-                name='metrics_factory_node',
+                package='flychams_coordinator',
+                executable='element_registrator_node',
+                name='element_registrator_node',
                 output='screen',
-                namespace='flychams/operator',
-                arguments=['--ros-args', '--log-level', log_level('metrics_factory')],
+                namespace='flychams/coordinator',
+                arguments=['--ros-args', '--log-level', log_level('element_registrator')],
+                parameters=[
+                    system_path, 
+                    topics_path,
+                    frames_path,
+                    coordinator_path,
+                    mission_path
+                ]
+            )
+        )
+    
+    # Conditionally add Target Clustering node
+    if is_enabled('target_clustering'):
+        ld.append(
+            Node(
+                package='flychams_coordinator',
+                executable='target_clustering_node',
+                name='target_clustering_node',
+                output='screen',
+                namespace='flychams/coordinator',
+                arguments=['--ros-args', '--log-level', log_level('target_clustering')],
                 parameters=[
                     system_path, 
                     topics_path, 
                     frames_path, 
-                    dashboard_path,
+                    coordinator_path,
                     mission_path,
-                    {'use_sim_time': is_simulated}
+                    {'use_sim_time': is_sim}
                 ]
             )
         )
 
-    # Conditionally add Marker Factory node
-    if is_enabled('marker_factory'):
+    # Conditionally add Cluster Analysis node
+    if is_enabled('cluster_analysis'):
         ld.append(
             Node(
-                package='flychams_operator',
-                executable='marker_factory_node',
-                name='marker_factory_node',
+                package='flychams_coordinator',
+                executable='cluster_analysis_node',
+                name='cluster_analysis_node',
                 output='screen',
-                namespace='flychams/operator',
-                arguments=['--ros-args', '--log-level', log_level('marker_factory')],
+                namespace='flychams/coordinator',
+                arguments=['--ros-args', '--log-level', log_level('cluster_analysis')],
                 parameters=[
                     system_path, 
                     topics_path, 
                     frames_path, 
-                    dashboard_path,
+                    coordinator_path,
                     mission_path,
-                    {'use_sim_time': is_simulated}
+                    {'use_sim_time': is_sim}
                 ]
             )
         )
 
-    # Conditionally add Rviz
-    if is_enabled('rviz'):
-        rviz_config_path = rviz_path.perform(context).strip()
+    # Conditionally add Agent Assignment node
+    if is_enabled('agent_assignment'):
         ld.append(
             Node(
-                package='rviz2',
-                executable='rviz2',
-                name='rviz2',
+                package='flychams_coordinator',
+                executable='agent_assignment_node',
+                name='agent_assignment_node',
                 output='screen',
-                arguments=[
-                    '-d', rviz_config_path,
-                    '--ros-args',
-                    '--log-level', log_level('rviz')
-                ],
+                namespace='flychams/coordinator',
+                arguments=['--ros-args', '--log-level', log_level('agent_assignment')],
                 parameters=[
-                    {'use_sim_time': is_simulated}
+                    system_path, 
+                    topics_path, 
+                    frames_path, 
+                    coordinator_path,
+                    mission_path,
+                    {'use_sim_time': is_sim}
                 ]
             )
         )
@@ -151,7 +158,7 @@ def launch_setup(context, *args, **kwargs):
 def generate_launch_description():
     # Declare arguments
     is_simulated_arg = DeclareLaunchArgument(
-        'is_simulated',
+        'is_sim',
         default_value='True',
         description='Whether the system is simulated'
     )

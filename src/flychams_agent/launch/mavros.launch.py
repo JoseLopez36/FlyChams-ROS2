@@ -2,9 +2,9 @@ from launch import LaunchDescription
 from launch_ros.actions import Node
 from launch.actions import DeclareLaunchArgument
 from launch.substitutions import PathJoinSubstitution, LaunchConfiguration
+from launch.actions import OpaqueFunction
 from launch_ros.substitutions import FindPackageShare
 from ament_index_python.packages import get_package_share_directory
-from launch.actions import OpaqueFunction
 import tempfile
 import os
 
@@ -54,9 +54,8 @@ def generate_launch_description():
     
     # Config files
     pluginlists_path = PathJoinSubstitution([
-        FindPackageShare('flychams_bringup'),
+        FindPackageShare('flychams_agent'),
         'config',
-        'mavros',
         'pluginlists.yaml'
     ])
     
@@ -69,9 +68,8 @@ def generate_launch_description():
         
         # Resolve the config path
         config_path_resolved = os.path.join(
-            get_package_share_directory('flychams_bringup'),
+            get_package_share_directory('flychams_agent'),
             'config',
-            'mavros',
             'mavros.yaml'
         )
         

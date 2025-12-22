@@ -32,7 +32,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 
 # Source the environment file
-source "$PROJECT_ROOT/.env"
+source "$PROJECT_ROOT/setup.sh"
 
 # Default values
 AGENT_IMAGE_NAME="flychams-agent"
@@ -48,7 +48,7 @@ print_info "ROS Domain ID: $ROS_DOMAIN_ID"
 # Function to build the agent ROS2 workspace
 build_workspace() 
 {
-    CMD="source /opt/ros/$ROS_DISTRO/setup.bash && colcon build --symlink-install --packages-up-to flychams_agent"
+    CMD="source /opt/ros/$ROS_DISTRO/setup.bash && cd /home/testuser/FlyChams-ROS2 && colcon build --symlink-install --build-base build/docker --install-base install/docker --packages-up-to flychams_agent"
 
     # Check if container already exists
     if docker ps -a --format '{{.Names}}' | grep -q "^${AGENT_CONTAINER_NAME}$"; then
@@ -66,7 +66,7 @@ build_workspace()
     fi
     
     # Run the container
-    docker run -it --name "$AGENT_CONTAINER_NAME" \
+    docker run -it --rm --name "$AGENT_CONTAINER_NAME" \
         --network host \
         -e ROS_DOMAIN_ID="$ROS_DOMAIN_ID" \
         -e AGENT_ID="$AGENT_ID" \
@@ -78,29 +78,31 @@ build_workspace()
 # Function to run the agent container
 run_container() 
 {
-    if [ -z "$AGENT_ID" ]; then
-        print_error "Agent ID is required"
-        exit 1
-    fi
-    
-    print_info "Running agent container: $AGENT_CONTAINER_NAME"
-    print_info "Agent ID: $AGENT_ID"
-    print_info "ROS Domain ID: $ROS_DOMAIN_ID"
-    
+    CMD="source /opt/ros/$ROS_DISTRO/setup.bash && cd /home/testuser/FlyChams-ROS2 && source install/docker/setup.bash && ros2 launch launch/agent.launch.py agent_id:=$AGENT_ID is_sim:=True"
+
     # Check if container already exists
     if docker ps -a --format '{{.Names}}' | grep -q "^${AGENT_CONTAINER_NAME}$"; then
-        print_warn "Container $AGENT_CONTAINER_NAME already exists. Removing it..."
-        docker rm -f "$AGENT_CONTAINER_NAME"
+        # Check if container is running
+        if docker ps --format '{{.Names}}' | grep -q "^${AGENT_CONTAINER_NAME}$"; then
+            print_info "Container $AGENT_CONTAINER_NAME is running. Executing commands inside..."
+            docker exec -it "$AGENT_CONTAINER_NAME" bash -c "$CMD"
+        else
+            print_info "Container $AGENT_CONTAINER_NAME exists but is not running. Starting it..."
+            docker start "$AGENT_CONTAINER_NAME"
+            print_info "Executing commands inside..."
+            docker exec -it "$AGENT_CONTAINER_NAME" bash -c "$CMD"
+        fi
+        return
     fi
     
     # Run the container
-    docker run -it --name "$AGENT_CONTAINER_NAME" \
+    docker run -it --rm --name "$AGENT_CONTAINER_NAME" \
         --network host \
         -e ROS_DOMAIN_ID="$ROS_DOMAIN_ID" \
         -e AGENT_ID="$AGENT_ID" \
         -v "$PROJECT_ROOT:/home/testuser/FlyChams-ROS2" \
         "$AGENT_IMAGE_NAME" \
-        bash
+        bash -c "$CMD"
 }
 
 # Function to stop the agent container
@@ -148,7 +150,7 @@ shell_container()
     fi
     
     # Run the container
-    docker run -it --name "$AGENT_CONTAINER_NAME" \
+    docker run -it --rm --name "$AGENT_CONTAINER_NAME" \
         --network host \
         -e ROS_DOMAIN_ID="$ROS_DOMAIN_ID" \
         -e AGENT_ID="$AGENT_ID" \

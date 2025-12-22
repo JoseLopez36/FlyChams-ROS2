@@ -19,7 +19,7 @@ node_allowlist:
   - agent_analysis
   - agent_positioning
   - agent_tracking
-  # Dashboard nodes
+  # Operator nodes
   - metrics_factory
   - marker_factory
   - rviz
@@ -46,7 +46,7 @@ node_log_levels:
   agent_analysis: "info"
   agent_positioning: "info"
   agent_tracking: "info"
-  # Dashboard nodes
+  # Operator nodes
   metrics_factory: "info"
   marker_factory: "info"
   rviz: "error"

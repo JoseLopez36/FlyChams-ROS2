@@ -4,6 +4,8 @@ config/generated/
 # Ignore ROS2 files
 build/
 install/
+build-docker/
+install-docker/
 log/
 
 # Ignore IDE files
