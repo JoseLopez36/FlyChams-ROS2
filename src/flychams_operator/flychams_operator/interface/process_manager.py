@@ -87,11 +87,19 @@ class ProcessManager(QObject):
         del self.processes[component_name]
 
     def stop_all(self):
-        """Stop all managed processes"""
+        """Stop all managed processes in parallel"""
+        threads = []
         # Create a list of names to avoid dictionary size change during iteration
         for name in list(self.processes.keys()):
             if not name.startswith("Operator"):
-             self.stop_process(name)
+                t = threading.Thread(target=self.stop_process, args=(name,), daemon=True)
+                t.start()
+                threads.append(t)
+        
+        # Wait for all stop threads to finish to ensure they are all stopped
+        for t in threads:
+            t.join()
+            
         self.processes.clear()
 
     def read_stream(self, stream, component_name, is_stderr):

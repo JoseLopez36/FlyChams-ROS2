@@ -336,106 +336,106 @@ namespace flychams::core
 
         // Subscribers
         // Global subscribers
-        SubscriberPtr<RegistrationMsg> createRegistrationSubscriber(const std::function<void(const RegistrationMsg::SharedPtr)>& callback, const rclcpp::SubscriptionOptions& options = rclcpp::SubscriptionOptions())
+        SubscriberPtr<RegistrationMsg> createRegistrationSubscriber(std::function<void(const RegistrationMsg::SharedPtr)> callback, const rclcpp::SubscriptionOptions& options = rclcpp::SubscriptionOptions())
         {
             rclcpp::QoS qos = rclcpp::QoS(rclcpp::KeepLast(1)).reliable().transient_local();
-            return node_->create_subscription<RegistrationMsg>(getRegistrationTopic(), qos, callback, options);
+            return node_->create_subscription<RegistrationMsg>(getRegistrationTopic(), qos, std::move(callback), options);
         }
-        SubscriberPtr<GeoPointStampedMsg> createGlobalOriginSubscriber(const std::function<void(const GeoPointStampedMsg::SharedPtr)>& callback, const rclcpp::SubscriptionOptions& options = rclcpp::SubscriptionOptions())
+        SubscriberPtr<GeoPointStampedMsg> createGlobalOriginSubscriber(std::function<void(const GeoPointStampedMsg::SharedPtr)> callback, const rclcpp::SubscriptionOptions& options = rclcpp::SubscriptionOptions())
         {
             rclcpp::QoS qos = rclcpp::QoS(rclcpp::KeepLast(1)).reliable().transient_local();
-            return node_->create_subscription<GeoPointStampedMsg>(getGlobalOriginTopic(), qos, callback, options);
+            return node_->create_subscription<GeoPointStampedMsg>(getGlobalOriginTopic(), qos, std::move(callback), options);
         }
-        SubscriberPtr<GlobalMetricsMsg> createGlobalMetricsSubscriber(const std::function<void(const GlobalMetricsMsg::SharedPtr)>& callback, const rclcpp::SubscriptionOptions& options = rclcpp::SubscriptionOptions())
+        SubscriberPtr<GlobalMetricsMsg> createGlobalMetricsSubscriber(std::function<void(const GlobalMetricsMsg::SharedPtr)> callback, const rclcpp::SubscriptionOptions& options = rclcpp::SubscriptionOptions())
         {
-            return node_->create_subscription<GlobalMetricsMsg>(getGlobalMetricsTopic(), 10, callback, options);
+            return node_->create_subscription<GlobalMetricsMsg>(getGlobalMetricsTopic(), 10, std::move(callback), options);
         }
 
         // Agent subscribers
-        SubscriberPtr<AgentStatusMsg> createAgentStatusSubscriber(const ID& agent_id, const std::function<void(const AgentStatusMsg::SharedPtr)>& callback, const rclcpp::SubscriptionOptions& options = rclcpp::SubscriptionOptions())
+        SubscriberPtr<AgentStatusMsg> createAgentStatusSubscriber(const ID& agent_id, std::function<void(const AgentStatusMsg::SharedPtr)> callback, const rclcpp::SubscriptionOptions& options = rclcpp::SubscriptionOptions())
         {
             rclcpp::QoS qos = rclcpp::QoS(rclcpp::KeepLast(1)).reliable().transient_local();
-            return node_->create_subscription<AgentStatusMsg>(getAgentStatusTopic(agent_id), qos, callback, options);
+            return node_->create_subscription<AgentStatusMsg>(getAgentStatusTopic(agent_id), qos, std::move(callback), options);
         }
-        SubscriberPtr<PointStampedMsg> createAgentLocalPositionSubscriber(const ID& agent_id, const std::function<void(const PointStampedMsg::SharedPtr)>& callback, const rclcpp::SubscriptionOptions& options = rclcpp::SubscriptionOptions())
+        SubscriberPtr<PointStampedMsg> createAgentLocalPositionSubscriber(const ID& agent_id, std::function<void(const PointStampedMsg::SharedPtr)> callback, const rclcpp::SubscriptionOptions& options = rclcpp::SubscriptionOptions())
         {
-            return node_->create_subscription<PointStampedMsg>(getAgentLocalPositionTopic(agent_id), 10, callback, options);
+            return node_->create_subscription<PointStampedMsg>(getAgentLocalPositionTopic(agent_id), 10, std::move(callback), options);
         }
-        SubscriberPtr<PointStampedMsg> createAgentGlobalPositionSubscriber(const ID& agent_id, const std::function<void(const PointStampedMsg::SharedPtr)>& callback, const rclcpp::SubscriptionOptions& options = rclcpp::SubscriptionOptions())
+        SubscriberPtr<PointStampedMsg> createAgentGlobalPositionSubscriber(const ID& agent_id, std::function<void(const PointStampedMsg::SharedPtr)> callback, const rclcpp::SubscriptionOptions& options = rclcpp::SubscriptionOptions())
         {
-            return node_->create_subscription<PointStampedMsg>(getAgentGlobalPositionTopic(agent_id), 10, callback, options);
+            return node_->create_subscription<PointStampedMsg>(getAgentGlobalPositionTopic(agent_id), 10, std::move(callback), options);
         }
-        SubscriberPtr<AgentAssignmentMsg> createAgentAssignmentSubscriber(const ID& agent_id, const std::function<void(const AgentAssignmentMsg::SharedPtr)>& callback, const rclcpp::SubscriptionOptions& options = rclcpp::SubscriptionOptions())
+        SubscriberPtr<AgentAssignmentMsg> createAgentAssignmentSubscriber(const ID& agent_id, std::function<void(const AgentAssignmentMsg::SharedPtr)> callback, const rclcpp::SubscriptionOptions& options = rclcpp::SubscriptionOptions())
         {
             rclcpp::QoS qos = rclcpp::QoS(rclcpp::KeepLast(1)).reliable().transient_local();
-            return node_->create_subscription<AgentAssignmentMsg>(getAgentAssignmentTopic(agent_id), qos, callback, options);
+            return node_->create_subscription<AgentAssignmentMsg>(getAgentAssignmentTopic(agent_id), qos, std::move(callback), options);
         }
-        SubscriberPtr<AgentClustersMsg> createAgentClustersSubscriber(const ID& agent_id, const std::function<void(const AgentClustersMsg::SharedPtr)>& callback, const rclcpp::SubscriptionOptions& options = rclcpp::SubscriptionOptions())
+        SubscriberPtr<AgentClustersMsg> createAgentClustersSubscriber(const ID& agent_id, std::function<void(const AgentClustersMsg::SharedPtr)> callback, const rclcpp::SubscriptionOptions& options = rclcpp::SubscriptionOptions())
         {
-            return node_->create_subscription<AgentClustersMsg>(getAgentClustersTopic(agent_id), 10, callback, options);
+            return node_->create_subscription<AgentClustersMsg>(getAgentClustersTopic(agent_id), 10, std::move(callback), options);
         }
-        SubscriberPtr<PointStampedMsg> createAgentPositionSetpointSubscriber(const ID& agent_id, const std::function<void(const PointStampedMsg::SharedPtr)>& callback, const rclcpp::SubscriptionOptions& options = rclcpp::SubscriptionOptions())
+        SubscriberPtr<PointStampedMsg> createAgentPositionSetpointSubscriber(const ID& agent_id, std::function<void(const PointStampedMsg::SharedPtr)> callback, const rclcpp::SubscriptionOptions& options = rclcpp::SubscriptionOptions())
         {
-            return node_->create_subscription<PointStampedMsg>(getAgentPositionSetpointTopic(agent_id), 10, callback, options);
+            return node_->create_subscription<PointStampedMsg>(getAgentPositionSetpointTopic(agent_id), 10, std::move(callback), options);
         }
-        SubscriberPtr<Float32Msg> createAgentOptimizationDurationSubscriber(const ID& agent_id, const std::function<void(const Float32Msg::SharedPtr)>& callback, const rclcpp::SubscriptionOptions& options = rclcpp::SubscriptionOptions())
+        SubscriberPtr<Float32Msg> createAgentOptimizationDurationSubscriber(const ID& agent_id, std::function<void(const Float32Msg::SharedPtr)> callback, const rclcpp::SubscriptionOptions& options = rclcpp::SubscriptionOptions())
         {
-            return node_->create_subscription<Float32Msg>(getAgentOptimizationDurationTopic(agent_id), 10, callback, options);
+            return node_->create_subscription<Float32Msg>(getAgentOptimizationDurationTopic(agent_id), 10, std::move(callback), options);
         }
-        SubscriberPtr<AgentObservationSetpointsMsg> createAgentObservationSetpointsSubscriber(const ID& agent_id, const std::function<void(const AgentObservationSetpointsMsg::SharedPtr)>& callback, const rclcpp::SubscriptionOptions& options = rclcpp::SubscriptionOptions())
+        SubscriberPtr<AgentObservationSetpointsMsg> createAgentObservationSetpointsSubscriber(const ID& agent_id, std::function<void(const AgentObservationSetpointsMsg::SharedPtr)> callback, const rclcpp::SubscriptionOptions& options = rclcpp::SubscriptionOptions())
         {
-            return node_->create_subscription<AgentObservationSetpointsMsg>(getAgentObservationSetpointsTopic(agent_id), 10, callback, options);
+            return node_->create_subscription<AgentObservationSetpointsMsg>(getAgentObservationSetpointsTopic(agent_id), 10, std::move(callback), options);
         }
-        SubscriberPtr<AgentMetricsMsg> createAgentMetricsSubscriber(const ID& agent_id, const std::function<void(const AgentMetricsMsg::SharedPtr)>& callback, const rclcpp::SubscriptionOptions& options = rclcpp::SubscriptionOptions())
+        SubscriberPtr<AgentMetricsMsg> createAgentMetricsSubscriber(const ID& agent_id, std::function<void(const AgentMetricsMsg::SharedPtr)> callback, const rclcpp::SubscriptionOptions& options = rclcpp::SubscriptionOptions())
         {
-            return node_->create_subscription<AgentMetricsMsg>(getAgentMetricsTopic(agent_id), 10, callback, options);
+            return node_->create_subscription<AgentMetricsMsg>(getAgentMetricsTopic(agent_id), 10, std::move(callback), options);
         }
-        SubscriberPtr<MarkerArrayMsg> createAgentMarkersSubscriber(const ID& agent_id, const std::function<void(const MarkerArrayMsg::SharedPtr)>& callback, const rclcpp::SubscriptionOptions& options = rclcpp::SubscriptionOptions())
+        SubscriberPtr<MarkerArrayMsg> createAgentMarkersSubscriber(const ID& agent_id, std::function<void(const MarkerArrayMsg::SharedPtr)> callback, const rclcpp::SubscriptionOptions& options = rclcpp::SubscriptionOptions())
         {
-            return node_->create_subscription<MarkerArrayMsg>(getAgentMarkersTopic(agent_id), 10, callback, options);
+            return node_->create_subscription<MarkerArrayMsg>(getAgentMarkersTopic(agent_id), 10, std::move(callback), options);
         }
 
         // Target subscribers
-        SubscriberPtr<PointStampedMsg> createTargetTruePositionSubscriber(const ID& target_id, const std::function<void(const PointStampedMsg::SharedPtr)>& callback, const rclcpp::SubscriptionOptions& options = rclcpp::SubscriptionOptions())
+        SubscriberPtr<PointStampedMsg> createTargetTruePositionSubscriber(const ID& target_id, std::function<void(const PointStampedMsg::SharedPtr)> callback, const rclcpp::SubscriptionOptions& options = rclcpp::SubscriptionOptions())
         {
-            return node_->create_subscription<PointStampedMsg>(getTargetTruePositionTopic(target_id), 10, callback, options);
+            return node_->create_subscription<PointStampedMsg>(getTargetTruePositionTopic(target_id), 10, std::move(callback), options);
         }
-        SubscriberPtr<PointStampedMsg> createTargetEstPositionSubscriber(const ID& target_id, const std::function<void(const PointStampedMsg::SharedPtr)>& callback, const rclcpp::SubscriptionOptions& options = rclcpp::SubscriptionOptions())
+        SubscriberPtr<PointStampedMsg> createTargetEstPositionSubscriber(const ID& target_id, std::function<void(const PointStampedMsg::SharedPtr)> callback, const rclcpp::SubscriptionOptions& options = rclcpp::SubscriptionOptions())
         {
-            return node_->create_subscription<PointStampedMsg>(getTargetEstPositionTopic(target_id), 10, callback, options);
+            return node_->create_subscription<PointStampedMsg>(getTargetEstPositionTopic(target_id), 10, std::move(callback), options);
         }
-        SubscriberPtr<TargetMetricsMsg> createTargetMetricsSubscriber(const ID& target_id, const std::function<void(const TargetMetricsMsg::SharedPtr)>& callback, const rclcpp::SubscriptionOptions& options = rclcpp::SubscriptionOptions())
+        SubscriberPtr<TargetMetricsMsg> createTargetMetricsSubscriber(const ID& target_id, std::function<void(const TargetMetricsMsg::SharedPtr)> callback, const rclcpp::SubscriptionOptions& options = rclcpp::SubscriptionOptions())
         {
-            return node_->create_subscription<TargetMetricsMsg>(getTargetMetricsTopic(target_id), 10, callback, options);
+            return node_->create_subscription<TargetMetricsMsg>(getTargetMetricsTopic(target_id), 10, std::move(callback), options);
         }
-        SubscriberPtr<MarkerArrayMsg> createTargetMarkersSubscriber(const ID& target_id, const std::function<void(const MarkerArrayMsg::SharedPtr)>& callback, const rclcpp::SubscriptionOptions& options = rclcpp::SubscriptionOptions())
+        SubscriberPtr<MarkerArrayMsg> createTargetMarkersSubscriber(const ID& target_id, std::function<void(const MarkerArrayMsg::SharedPtr)> callback, const rclcpp::SubscriptionOptions& options = rclcpp::SubscriptionOptions())
         {
-            return node_->create_subscription<MarkerArrayMsg>(getTargetMarkersTopic(target_id), 10, callback, options);
+            return node_->create_subscription<MarkerArrayMsg>(getTargetMarkersTopic(target_id), 10, std::move(callback), options);
         }
 
         // Cluster subscribers
-        SubscriberPtr<ClusterAssignmentMsg> createClusterAssignmentSubscriber(const ID& cluster_id, const std::function<void(const ClusterAssignmentMsg::SharedPtr)>& callback, const rclcpp::SubscriptionOptions& options = rclcpp::SubscriptionOptions())
+        SubscriberPtr<ClusterAssignmentMsg> createClusterAssignmentSubscriber(const ID& cluster_id, std::function<void(const ClusterAssignmentMsg::SharedPtr)> callback, const rclcpp::SubscriptionOptions& options = rclcpp::SubscriptionOptions())
         {
             rclcpp::QoS qos = rclcpp::QoS(rclcpp::KeepLast(1)).reliable().transient_local();
-            return node_->create_subscription<ClusterAssignmentMsg>(getClusterAssignmentTopic(cluster_id), qos, callback, options);
+            return node_->create_subscription<ClusterAssignmentMsg>(getClusterAssignmentTopic(cluster_id), qos, std::move(callback), options);
         }
-        SubscriberPtr<ClusterGeometryMsg> createClusterGeometrySubscriber(const ID& cluster_id, const std::function<void(const ClusterGeometryMsg::SharedPtr)>& callback, const rclcpp::SubscriptionOptions& options = rclcpp::SubscriptionOptions())
+        SubscriberPtr<ClusterGeometryMsg> createClusterGeometrySubscriber(const ID& cluster_id, std::function<void(const ClusterGeometryMsg::SharedPtr)> callback, const rclcpp::SubscriptionOptions& options = rclcpp::SubscriptionOptions())
         {
-            return node_->create_subscription<ClusterGeometryMsg>(getClusterGeometryTopic(cluster_id), 10, callback, options);
+            return node_->create_subscription<ClusterGeometryMsg>(getClusterGeometryTopic(cluster_id), 10, std::move(callback), options);
         }
-        SubscriberPtr<ClusterMetricsMsg> createClusterMetricsSubscriber(const ID& cluster_id, const std::function<void(const ClusterMetricsMsg::SharedPtr)>& callback, const rclcpp::SubscriptionOptions& options = rclcpp::SubscriptionOptions())
+        SubscriberPtr<ClusterMetricsMsg> createClusterMetricsSubscriber(const ID& cluster_id, std::function<void(const ClusterMetricsMsg::SharedPtr)> callback, const rclcpp::SubscriptionOptions& options = rclcpp::SubscriptionOptions())
         {
-            return node_->create_subscription<ClusterMetricsMsg>(getClusterMetricsTopic(cluster_id), 10, callback, options);
+            return node_->create_subscription<ClusterMetricsMsg>(getClusterMetricsTopic(cluster_id), 10, std::move(callback), options);
         }
-        SubscriberPtr<MarkerArrayMsg> createClusterMarkersSubscriber(const ID& cluster_id, const std::function<void(const MarkerArrayMsg::SharedPtr)>& callback, const rclcpp::SubscriptionOptions& options = rclcpp::SubscriptionOptions())
+        SubscriberPtr<MarkerArrayMsg> createClusterMarkersSubscriber(const ID& cluster_id, std::function<void(const MarkerArrayMsg::SharedPtr)> callback, const rclcpp::SubscriptionOptions& options = rclcpp::SubscriptionOptions())
         {
-            return node_->create_subscription<MarkerArrayMsg>(getClusterMarkersTopic(cluster_id), 10, callback, options);
+            return node_->create_subscription<MarkerArrayMsg>(getClusterMarkersTopic(cluster_id), 10, std::move(callback), options);
         }
 
         // GUI subscribers
-        SubscriberPtr<GuiSetpointsMsg> createGuiSetpointsSubscriber(const ID& agent_id, const std::function<void(const GuiSetpointsMsg::SharedPtr)>& callback, const rclcpp::SubscriptionOptions& options = rclcpp::SubscriptionOptions())
+        SubscriberPtr<GuiSetpointsMsg> createGuiSetpointsSubscriber(const ID& agent_id, std::function<void(const GuiSetpointsMsg::SharedPtr)> callback, const rclcpp::SubscriptionOptions& options = rclcpp::SubscriptionOptions())
         {
-            return node_->create_subscription<GuiSetpointsMsg>(getGuiSetpointsTopic(agent_id), 10, callback, options);
+            return node_->create_subscription<GuiSetpointsMsg>(getGuiSetpointsTopic(agent_id), 10, std::move(callback), options);
         }
     };
 
