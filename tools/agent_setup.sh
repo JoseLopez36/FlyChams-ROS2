@@ -37,6 +37,7 @@ source "$PROJECT_ROOT/setup.sh"
 # Default values
 AGENT_IMAGE_NAME="flychams-agent"
 ROS_DOMAIN_ID=${ROS_DOMAIN_ID:-0}
+ROS_DISTRO=${ROS_DISTRO:-humble}
 
 # Set container name
 AGENT_CONTAINER_NAME="flychams-${AGENT_ID}"
@@ -49,60 +50,13 @@ print_info "ROS Domain ID: $ROS_DOMAIN_ID"
 build_workspace() 
 {
     CMD="source /opt/ros/$ROS_DISTRO/setup.bash && cd /home/testuser/FlyChams-ROS2 && colcon build --symlink-install --build-base build/docker --install-base install/docker --packages-up-to flychams_agent"
-
-    # Check if container already exists
-    if docker ps -a --format '{{.Names}}' | grep -q "^${AGENT_CONTAINER_NAME}$"; then
-        # Check if container is running
-        if docker ps --format '{{.Names}}' | grep -q "^${AGENT_CONTAINER_NAME}$"; then
-            print_info "Container $AGENT_CONTAINER_NAME is running. Executing commands inside..."
-            docker exec -it "$AGENT_CONTAINER_NAME" bash -c "$CMD"
-        else
-            print_info "Container $AGENT_CONTAINER_NAME exists but is not running. Starting it..."
-            docker start "$AGENT_CONTAINER_NAME"
-            print_info "Executing commands inside..."
-            docker exec -it "$AGENT_CONTAINER_NAME" bash -c "$CMD"
-        fi
-        return
-    fi
-    
-    # Run the container
-    docker run -it --rm --name "$AGENT_CONTAINER_NAME" \
-        --network host \
-        -e ROS_DOMAIN_ID="$ROS_DOMAIN_ID" \
-        -e AGENT_ID="$AGENT_ID" \
-        -v "$PROJECT_ROOT:/home/testuser/FlyChams-ROS2" \
-        "$AGENT_IMAGE_NAME" \
-        bash -c "$CMD"
+    "$SCRIPT_DIR/docker/launch_agent.sh" "$AGENT_ID" "$CMD"
 }
 
 # Function to run the agent container
 run_container() 
 {
-    CMD="source /opt/ros/$ROS_DISTRO/setup.bash && cd /home/testuser/FlyChams-ROS2 && source install/docker/setup.bash && ros2 launch launch/agent.launch.py agent_id:=$AGENT_ID is_sim:=True"
-
-    # Check if container already exists
-    if docker ps -a --format '{{.Names}}' | grep -q "^${AGENT_CONTAINER_NAME}$"; then
-        # Check if container is running
-        if docker ps --format '{{.Names}}' | grep -q "^${AGENT_CONTAINER_NAME}$"; then
-            print_info "Container $AGENT_CONTAINER_NAME is running. Executing commands inside..."
-            docker exec -it "$AGENT_CONTAINER_NAME" bash -c "$CMD"
-        else
-            print_info "Container $AGENT_CONTAINER_NAME exists but is not running. Starting it..."
-            docker start "$AGENT_CONTAINER_NAME"
-            print_info "Executing commands inside..."
-            docker exec -it "$AGENT_CONTAINER_NAME" bash -c "$CMD"
-        fi
-        return
-    fi
-    
-    # Run the container
-    docker run -it --rm --name "$AGENT_CONTAINER_NAME" \
-        --network host \
-        -e ROS_DOMAIN_ID="$ROS_DOMAIN_ID" \
-        -e AGENT_ID="$AGENT_ID" \
-        -v "$PROJECT_ROOT:/home/testuser/FlyChams-ROS2" \
-        "$AGENT_IMAGE_NAME" \
-        bash -c "$CMD"
+    "$SCRIPT_DIR/docker/launch_agent.sh" "$AGENT_ID"
 }
 
 # Function to stop the agent container
@@ -133,30 +87,17 @@ remove_container()
 shell_container() 
 {
     print_info "Opening shell in agent container"
+    "$SCRIPT_DIR/docker/launch_agent.sh" "$AGENT_ID" "bash"
+}
 
-    # Check if container already exists
-    if docker ps -a --format '{{.Names}}' | grep -q "^${AGENT_CONTAINER_NAME}$"; then
-        # Check if container is running
-        if docker ps --format '{{.Names}}' | grep -q "^${AGENT_CONTAINER_NAME}$"; then
-            print_info "Container $AGENT_CONTAINER_NAME is running. Executing commands inside..."
-            docker exec -it "$AGENT_CONTAINER_NAME" bash
-        else
-            print_info "Container $AGENT_CONTAINER_NAME exists but is not running. Starting it..."
-            docker start "$AGENT_CONTAINER_NAME"
-            print_info "Executing commands inside..."
-            docker exec -it "$AGENT_CONTAINER_NAME" bash
-        fi
-        return
-    fi
-    
-    # Run the container
-    docker run -it --rm --name "$AGENT_CONTAINER_NAME" \
-        --network host \
-        -e ROS_DOMAIN_ID="$ROS_DOMAIN_ID" \
-        -e AGENT_ID="$AGENT_ID" \
-        -v "$PROJECT_ROOT:/home/testuser/FlyChams-ROS2" \
-        "$AGENT_IMAGE_NAME" \
-        bash
+# Function to print usage
+usage() {
+    echo "Usage: $0 {build|run|stop|remove|shell} <agent_id>"
+    echo "  build   - Build the agent workspace inside the container"
+    echo "  run     - Run the agent launch file inside the container"
+    echo "  stop    - Stop the agent container"
+    echo "  remove  - Remove the agent container"
+    echo "  shell   - Open a bash shell inside the container"
 }
 
 case "${1:-help}" in

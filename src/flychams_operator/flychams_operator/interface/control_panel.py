@@ -35,7 +35,7 @@ class ControlPanel(QWidget):
 
         # 1. Header Section
         header_layout = QHBoxLayout()
-        title = QLabel('Mission Control Dashboard')
+        title = QLabel('Mission Control')
         title.setStyleSheet(LABEL_STYLE_TITLE)
         header_layout.addWidget(title)
         main_layout.addLayout(header_layout)

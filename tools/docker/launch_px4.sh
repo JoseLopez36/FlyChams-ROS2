@@ -13,7 +13,7 @@ mkdir -p "${CCACHE_DIR}"
 # Command to run
 CMD="PX4_SIM_HOSTNAME=172.17.0.1 PX4_SIM_MODEL=iris ${FLYCHAMS_PX4_PATH}/build/px4_sitl_default/bin/px4 -i ${AGENT_INDEX} -d ${FLYCHAMS_PX4_PATH}/ROMFS/px4fmu_common -s etc/init.d-posix/rcS"
 
-docker run -it --rm --name "PX4-${AGENT_INDEX}" -w "${FLYCHAMS_PX4_PATH}" \
+docker run --rm --name "PX4-${AGENT_INDEX}" -w "${FLYCHAMS_PX4_PATH}" \
 	--env=AWS_ACCESS_KEY_ID \
 	--env=AWS_SECRET_ACCESS_KEY \
 	--env=BRANCH_NAME \

@@ -114,7 +114,7 @@ LABEL_STYLE_TITLE_MEDIUM = """
 
 LABEL_STYLE_SEPARATOR = """
     QLabel {{
-        font-size: 18px;
+        font-size: 24px;
         font-weight: bold;
         color: {text_primary};
         padding: 4px 0px 4px 0px;
@@ -166,7 +166,7 @@ TAB_WIDGET_STYLE = """
         border-top-left-radius: 4px;
         border-top-right-radius: 4px;
         min-width: 120px;
-        font-size: 15px;
+        font-size: 18px;
     }}
     QTabBar::tab:selected {{
         background-color: {bg_primary};

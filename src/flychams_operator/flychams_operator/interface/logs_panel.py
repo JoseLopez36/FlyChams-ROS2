@@ -3,7 +3,7 @@
 from PyQt5.QtWidgets import QWidget, QVBoxLayout, QTabWidget, QPlainTextEdit, QLabel
 from PyQt5.QtGui import QFont
 from PyQt5.QtCore import Qt
-from .styles import TERMINAL_STYLE, TAB_WIDGET_STYLE_COMPACT, LABEL_STYLE_TITLE_MEDIUM
+from .styles import TERMINAL_STYLE, TAB_WIDGET_STYLE, LABEL_STYLE_TITLE
 
 class Terminal(QPlainTextEdit):
     """Read-only terminal-like text area"""
@@ -33,16 +33,16 @@ class LogsPanel(QWidget):
         layout.setSpacing(12)
         
         title = QLabel('System Logs')
-        title.setStyleSheet(LABEL_STYLE_TITLE_MEDIUM)
+        title.setStyleSheet(LABEL_STYLE_TITLE)
         layout.addWidget(title)
         
         self.tabs = QTabWidget()
-        self.tabs.setStyleSheet(TAB_WIDGET_STYLE_COMPACT)
+        self.tabs.setStyleSheet(TAB_WIDGET_STYLE)
         layout.addWidget(self.tabs)
         
         # Initial placeholder tab
-        self.add_terminal("General")
-        self.terminals["General"].append_line("Waiting for system components...")
+        self.add_terminal("No Processes")
+        self.terminals["No Processes"].append_line("Waiting for system components...")
         
         # Connect to process manager
         self.process_manager.line_received.connect(self.on_line_received)
@@ -52,10 +52,10 @@ class LogsPanel(QWidget):
             terminal = Terminal()
             self.terminals[name] = terminal
             self.tabs.addTab(terminal, name)
-            # Remove placeholder if it's the only one and we're adding something real
-            if name != "General" and "General" in self.terminals and self.tabs.count() == 2:
-                # Keep General for now or just switch? Let's just switch.
+            if name != "No Processes" and "No Processes" in self.terminals and self.tabs.count() == 2:
                 self.tabs.setCurrentWidget(terminal)
+                # Remove the placeholder tab
+                self.tabs.removeTab(self.tabs.indexOf(self.terminals["No Processes"]))
         return self.terminals[name]
 
     def on_line_received(self, component: str, message: str):
