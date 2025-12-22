@@ -1,6 +1,5 @@
 # Ignore config files
-config/airsim.json
-config/mission.yaml
+config/generated/
 
 # Ignore ROS2 files
 build/

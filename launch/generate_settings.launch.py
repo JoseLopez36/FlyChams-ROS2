@@ -9,19 +9,16 @@ def generate_launch_description():
     # Get paths to config files
     # Core parameters
     system_path = PathJoinSubstitution([
-        FindPackageShare('flychams_bringup'),
         'config',
         'core',
         'system.yaml'
     ])
     topics_path = PathJoinSubstitution([
-        FindPackageShare('flychams_bringup'),
         'config',
         'core',
         'topics.yaml'
     ])
     frames_path = PathJoinSubstitution([
-        FindPackageShare('flychams_bringup'),
         'config',
         'core',
         'frames.yaml'
@@ -37,11 +34,11 @@ def generate_launch_description():
     # Add Settings Creator node
     ld.append(
         Node(
-            package='flychams_bringup',
+            package='flychams_core',
             executable='settings_creator_node',
             name='settings_creator_node',
             output='screen',
-            namespace='flychams',
+            namespace='flychams/settings',
             parameters=[
                 system_path, 
                 topics_path, 

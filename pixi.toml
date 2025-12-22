@@ -44,22 +44,10 @@ simulation = ["simulation"]
 [tasks]
 # Build tasks
 clean = "rm -rf build/ install/ log/"
-build = """
-colcon build \
-  --symlink-install \
-  --cmake-args \
-  -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
-  -G Ninja \
-  -DPython3_EXECUTABLE=$PIXI_PROJECT_ROOT/.pixi/envs/default/bin/python \
-  -DPython_EXECUTABLE=$PIXI_PROJECT_ROOT/.pixi/envs/default/bin/python \
-  --event-handlers console_direct+ 2>&1
-"""
 operator-build = """
 colcon build \
   --symlink-install \
-  --cmake-args \
-  -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
-  -G Ninja \
+  --cmake-args -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -G Ninja \
   -DPython3_EXECUTABLE=$PIXI_PROJECT_ROOT/.pixi/envs/default/bin/python \
   -DPython_EXECUTABLE=$PIXI_PROJECT_ROOT/.pixi/envs/default/bin/python \
   --packages-up-to flychams_operator \
@@ -68,9 +56,7 @@ colcon build \
 coordinator-build = """
 colcon build \
   --symlink-install \
-  --cmake-args \
-  -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
-  -G Ninja \
+  --cmake-args -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -G Ninja \
   -DPython3_EXECUTABLE=$PIXI_PROJECT_ROOT/.pixi/envs/default/bin/python \
   -DPython_EXECUTABLE=$PIXI_PROJECT_ROOT/.pixi/envs/default/bin/python \
   --packages-up-to flychams_coordinator \
@@ -79,14 +65,18 @@ colcon build \
 simulation-build = """
 colcon build \
   --symlink-install \
-  --cmake-args \
-  -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
-  -G Ninja \
+  --cmake-args -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -G Ninja \
   -DPython3_EXECUTABLE=$PIXI_PROJECT_ROOT/.pixi/envs/default/bin/python \
   -DPython_EXECUTABLE=$PIXI_PROJECT_ROOT/.pixi/envs/default/bin/python \
   --packages-up-to flychams_simulation airsim_wrapper \
   --event-handlers console_direct+ 2>&1
 """
+
+# Run tasks
+generate-settings = "ros2 launch launch/generate_settings.launch.py"
+run-operator = "ros2 launch launch/run_operator.launch.py"
+run-coordinator = "ros2 launch launch/run_coordinator.launch.py"
+run-simulation = "ros2 launch launch/run_simulation.launch.py"
 
 # Agent Docker tasks
 agent-build-image = "bash tools/docker/build.sh"
