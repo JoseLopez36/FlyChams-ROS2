@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 class CameraFeed(QWidget):
     """Widget for a single camera feed using QtMultimedia"""
     
-    def __init__(self, stream_url: Optional[str] = None):
+    def __init__(self, stream_url: Optional[str] = None, label_text: Optional[str] = None):
         super().__init__()
         
         self.stream_url = stream_url
@@ -29,8 +29,32 @@ class CameraFeed(QWidget):
         else:
             logger.debug("Creating placeholder camera feed (no stream URL)")
         
+        # Create main layout for the feed (header + video/status)
+        layout = QVBoxLayout(self)
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.setSpacing(0)
+        
+        # Add header bar if label text is provided
+        if label_text:
+            header_widget = QWidget()
+            header_widget.setStyleSheet(f"background-color: #2d2d2d; border-top-left-radius: 4px; border-top-right-radius: 4px;")
+            header_layout = QHBoxLayout(header_widget)
+            header_layout.setContentsMargins(8, 4, 8, 4)
+            
+            label = QLabel(label_text.upper())
+            label.setStyleSheet("color: #ffffff; font-size: 12px; font-weight: bold; border: none;")
+            header_layout.addWidget(label)
+            
+            # Add "three dots" icon placeholder
+            dots_label = QLabel("⋮")
+            dots_label.setStyleSheet("color: #ffffff; font-size: 18px; border: none;")
+            header_layout.addStretch()
+            header_layout.addWidget(dots_label)
+            
+            layout.addWidget(header_widget)
+        
         # Create stacked widget to switch between video and status label
-        self.stacked_widget = QStackedWidget(self)
+        self.stacked_widget = QStackedWidget()
         
         # Status label for connection state
         self.status_label = QLabel('No feed' if stream_url is None else 'Connecting...')
@@ -46,8 +70,6 @@ class CameraFeed(QWidget):
         self.stacked_widget.addWidget(self.video_widget)  # Index 1
         self.stacked_widget.setCurrentIndex(0)  # Show status label initially
         
-        layout = QVBoxLayout(self)
-        layout.setContentsMargins(0, 0, 0, 0)
         layout.addWidget(self.stacked_widget)
         
         # Try to start stream after widget is shown
@@ -117,58 +139,52 @@ class CameraFeed(QWidget):
         event.accept()
 
 class AgentCameraComposition(QWidget):
-    """Widget displaying camera feeds for a single agent: camera 0 (50% vertical) + cameras 1-4 (12.5% each)"""
+    """Widget displaying camera feeds for a single agent: 1 large main feed + 2x2 grid of smaller feeds"""
     
     def __init__(self, agent_id: str, stream_urls: list):
         super().__init__()
         
         self.agent_id = agent_id
         self.camera_feeds = []
-        self.fixed_widgets = []  # Store fixed aspect ratio wrappers
         
         logger.info(f"Creating camera composition for agent '{agent_id}' with {len(stream_urls)} stream(s)")
         
-        # Create camera 0 feed (takes 2/4 = 50% of vertical space)
-        if len(stream_urls) > 0:
-            camera_0_feed = CameraFeed(stream_urls[0])
-        else:
-            camera_0_feed = CameraFeed(None)
-        self.camera_feeds.append(camera_0_feed)
+        # Define labels based on the reference image distribution
+        labels = [
+            "CAM 1: WIDE-ANGLE (UHD)",
+            "CAM 2: TARGET A (ZOOM)",
+            "CAM 5: TARGET B (ZOOM)",
+            "CAM 4: TARGET C (ZOOM)",
+            "CAM 5: TARGET D (ZOOM)"
+        ]
         
-        # Create cameras 1-4 feeds (each takes 1/4 of remaining 50% = 12.5% each)
-        for i in range(4):
-            camera_idx = i + 1  # Cameras 1-4
-            if camera_idx < len(stream_urls):
-                feed = CameraFeed(stream_urls[camera_idx])
-            else:
-                feed = CameraFeed(None)  # Placeholder for non-existent camera
+        # Create 5 camera feeds
+        for i in range(5):
+            url = stream_urls[i] if i < len(stream_urls) else None
+            label = labels[i]
+            feed = CameraFeed(url, label)
             self.camera_feeds.append(feed)
         
         # Create main horizontal layout
         main_layout = QHBoxLayout(self)
+        main_layout.setContentsMargins(10, 10, 10, 10)
         main_layout.setSpacing(10)
         
-        # Add left spacer to center content horizontally
-        left_spacer = QSpacerItem(0, 0, QSizePolicy.Expanding, QSizePolicy.Minimum)
-        main_layout.addItem(left_spacer)
+        # Left side: Camera 0 (Main) - occupies more space
+        main_layout.addWidget(self.camera_feeds[0], stretch=2)
         
-        # Add camera 0 feed to main layout
-        main_layout.addWidget(self.camera_feeds[0])
-
-        # Create vertical layout for camera feeds 1 to 4
-        camera_1_to_4_feeds_layout = QVBoxLayout()
-        camera_1_to_4_feeds_layout.setSpacing(10)
+        # Right side: Grid for cameras 1-4 (2x2 layout)
+        grid_layout = QGridLayout()
+        grid_layout.setSpacing(10)
         
-        # Add camera 1 to 4 feeds to layout
-        for i in range(1, 5):
-            camera_1_to_4_feeds_layout.addWidget(self.camera_feeds[i])
-
-        # Add camera 1 to 4 feeds layout to main layout
-        main_layout.addLayout(camera_1_to_4_feeds_layout)
+        # Arrange in 2x2 grid
+        grid_layout.addWidget(self.camera_feeds[1], 0, 0)
+        grid_layout.addWidget(self.camera_feeds[2], 0, 1)
+        grid_layout.addWidget(self.camera_feeds[3], 1, 0)
+        grid_layout.addWidget(self.camera_feeds[4], 1, 1)
         
-        # Add right spacer to center content horizontally
-        right_spacer = QSpacerItem(0, 0, QSizePolicy.Expanding, QSizePolicy.Minimum)
-        main_layout.addItem(right_spacer)
+        # Add the grid layout to main layout with a smaller stretch
+        main_layout.addLayout(grid_layout, stretch=1)
     
     def closeEvent(self, event):
         """Clean up when widget is closed"""
@@ -190,7 +206,7 @@ class CameraPanel(QWidget):
         layout.setSpacing(12)
         
         # Title with improved styling
-        title = QLabel('Camera Feeds')
+        title = QLabel('Monitoring Feeds')
         title.setStyleSheet(LABEL_STYLE_TITLE_MEDIUM)
         layout.addWidget(title)
         

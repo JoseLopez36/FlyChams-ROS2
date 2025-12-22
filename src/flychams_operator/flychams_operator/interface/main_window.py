@@ -1,73 +1,159 @@
 """Main window for the operator interface operator"""
 
-from PyQt5.QtWidgets import QMainWindow, QWidget, QHBoxLayout, QSplitter, QTabWidget
-from PyQt5.QtCore import Qt
-from PyQt5.QtGui import QPalette, QColor
-from .launch_panel import LaunchPanel
+from PyQt5.QtWidgets import (
+    QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, QStackedWidget, 
+    QToolBar, QPushButton, QLabel, QDockWidget, QListWidget, QListWidgetItem,
+    QApplication
+)
+from PyQt5.QtCore import Qt, QSize, QPropertyAnimation, QEasingCurve, QParallelAnimationGroup
+from PyQt5.QtGui import QPalette, QColor, QIcon
+from .control_panel import ControlPanel
+from .logs_panel import LogsPanel
 from .map_panel import MapPanel
 from .camera_panel import CameraPanel
+from .process_manager import ProcessManager
 from .styles import (
-    SPLITTER_STYLE,
-    TAB_WIDGET_STYLE,
     COLOR_BACKGROUND_PRIMARY,
-    COLOR_BACKGROUND_SECONDARY
+    COLOR_BACKGROUND_SECONDARY,
+    NAV_DRAWER_STYLE,
+    TOOLBAR_STYLE,
+    HAMBURGER_BUTTON_STYLE
 )
 
 class MainWindow(QMainWindow):
-    """Main window containing all operator components"""
+    """Main window containing all operator components with hamburger navigation"""
     
     def __init__(self, signals, is_sim: bool):
         super().__init__()
         
         self.signals = signals
+        self.is_sim = is_sim
+        
+        # Initialize Process Manager
+        self.process_manager = ProcessManager()
         
         # Apply dark mode theme
         self.apply_dark_theme()
         
         # Configure window
         self.setWindowTitle('FlyChams Operator Interface')
-        self.setGeometry(100, 100, 1920, 1080)
         
-        # Create central widget
-        central_widget = QWidget()
-        self.setCentralWidget(central_widget)
+        # Get screen geometry and set 16:9 aspect ratio based on full height
+        screen = QApplication.primaryScreen()
+        if screen:
+            screen_geometry = screen.availableGeometry()
+            display_height = screen_geometry.height()
+            target_width = int(display_height * 16 / 9)
+            self.resize(target_width, display_height)
+        else:
+            self.resize(1920, 1080)
+            
+        self.setMinimumSize(1200, 800)
         
-        # Create main layout
-        main_layout = QHBoxLayout(central_widget)
-        main_layout.setContentsMargins(0, 0, 0, 0)
-        main_layout.setSpacing(0)
-        
-        # Create splitter for resizable panels
-        splitter = QSplitter(Qt.Orientation.Horizontal)
-        splitter.setStyleSheet(SPLITTER_STYLE)
-        main_layout.addWidget(splitter)
-        
-        # Launch panel
-        self.launch_panel = LaunchPanel(is_sim)
-        splitter.addWidget(self.launch_panel)
-        
-        # Tabbed workspace (browser-like tabs)
-        self.tabs = QTabWidget()
-        self.tabs.setDocumentMode(True)
-        self.tabs.setMovable(True)
-        self.tabs.setStyleSheet(TAB_WIDGET_STYLE)
-
-        # Map panel
-        self.map_panel = MapPanel(signals)
-        self.tabs.addTab(self.map_panel, 'Map')
-
-        # Cameras panel
-        self.camera_panel = CameraPanel()
-        self.tabs.addTab(self.camera_panel, 'Cameras')
-
-        splitter.addWidget(self.tabs)
-        
-        # Set relative sizes (launch panel smaller: 1/4, tabs 3/4)
-        splitter.setSizes([int(1920 * (1/4)), int(1920 * (3/4))])
+        # Create UI components
+        self.setup_ui()
         
         # Connect signals for updates
         self.connect_signals()
     
+    def setup_ui(self):
+        # 1. Toolbar with Hamburger
+        self.toolbar = QToolBar()
+        self.toolbar.setMovable(False)
+        self.toolbar.setStyleSheet(TOOLBAR_STYLE)
+        self.addToolBar(Qt.TopToolBarArea, self.toolbar)
+        
+        self.hamburger_btn = QPushButton("☰")
+        self.hamburger_btn.setStyleSheet(HAMBURGER_BUTTON_STYLE)
+        self.hamburger_btn.clicked.connect(self.toggle_nav_drawer)
+        self.toolbar.addWidget(self.hamburger_btn)
+        
+        title_lbl = QLabel("FlyChams Operator Interface")
+        title_lbl.setObjectName("ToolbarTitle")
+        self.toolbar.addWidget(title_lbl)
+        
+        # 2. Nav Drawer (DockWidget)
+        self.nav_drawer = QDockWidget("Navigation", self)
+        self.nav_drawer.setFeatures(QDockWidget.NoDockWidgetFeatures)
+        self.nav_drawer.setTitleBarWidget(QWidget()) # Hide title bar
+        
+        self.nav_list = QListWidget()
+        self.nav_list.setStyleSheet(NAV_DRAWER_STYLE)
+        self.nav_list.setMinimumWidth(0)
+        self.nav_list.setMaximumWidth(300)
+        
+        # Setup animation
+        self.animation = QPropertyAnimation(self.nav_drawer, b"maximumWidth")
+        self.animation.setDuration(150)
+        self.animation.setEasingCurve(QEasingCurve.InOutQuart)
+        
+        self.min_animation = QPropertyAnimation(self.nav_drawer, b"minimumWidth")
+        self.min_animation.setDuration(150)
+        self.min_animation.setEasingCurve(QEasingCurve.InOutQuart)
+
+        self.anim_group = QParallelAnimationGroup()
+        self.anim_group.addAnimation(self.animation)
+        self.anim_group.addAnimation(self.min_animation)
+        
+        # Add nav items
+        self.control_panel = ControlPanel(self.process_manager, self.is_sim)
+        self.logs_panel = LogsPanel(self.process_manager)
+        self.map_panel = MapPanel(self.signals)
+        self.camera_panel = CameraPanel()
+
+        self.pages = [
+            ("Mission Control", self.control_panel),
+            ("System Logs", self.logs_panel),
+            ("Real-Time Map", self.map_panel),
+            ("Monitoring Feeds", self.camera_panel)
+        ]
+        
+        for name, widget in self.pages:
+            item = QListWidgetItem(name)
+            self.nav_list.addItem(item)
+            
+        self.nav_drawer.setWidget(self.nav_list)
+        self.addDockWidget(Qt.LeftDockWidgetArea, self.nav_drawer)
+        
+        # 3. Central Stacked Widget
+        self.central_stack = QStackedWidget()
+        for name, widget in self.pages:
+            self.central_stack.addWidget(widget)
+            
+        self.setCentralWidget(self.central_stack)
+        
+        # Start at Control page
+        self.nav_list.setCurrentRow(0)
+
+        # Menu initial state
+        self.nav_drawer.setMinimumWidth(0)
+        self.nav_drawer.setMaximumWidth(0)
+        self.nav_list.currentRowChanged.connect(self.switch_page)
+
+    def toggle_nav_drawer(self):
+        is_expanded = self.nav_drawer.maximumWidth() > 0
+        
+        if is_expanded:
+            # Close: animate from 200 to 0
+            self.animation.setStartValue(300)
+            self.animation.setEndValue(0)
+            self.min_animation.setStartValue(300)
+            self.min_animation.setEndValue(0)
+        else:
+            # Open: animate from 0 to 200
+            self.animation.setStartValue(0)
+            self.animation.setEndValue(300)
+            self.min_animation.setStartValue(0)
+            self.min_animation.setEndValue(300)
+            
+        self.anim_group.start()
+
+    def switch_page(self, index):
+        self.central_stack.setCurrentIndex(index)
+
+        # Hide the nav drawer
+        self.toggle_nav_drawer()
+
     def apply_dark_theme(self):
         """Apply a comprehensive dark theme to the application"""
         palette = QPalette()
@@ -171,12 +257,12 @@ class MainWindow(QMainWindow):
     
     # ================================ Signal callbacks ================================
     def add_agent(self, agent_id: str, stream_urls: list):
-        self.launch_panel.add_agent(agent_id)
+        self.control_panel.add_agent(agent_id)
         self.map_panel.add_agent(agent_id)
         self.camera_panel.add_agent(agent_id, stream_urls)
     
     def remove_agent(self, agent_id: str):
-        self.launch_panel.remove_agent(agent_id)
+        self.control_panel.remove_agent(agent_id)
         self.map_panel.remove_agent(agent_id)
         self.camera_panel.remove_agent(agent_id)
     
