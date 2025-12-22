@@ -13,3 +13,7 @@ ros2_ws/log/
 
 # Ignore python cache
 __pycache__/
+
+# Pixi environments
+.pixi/*
+!.pixi/config.toml
