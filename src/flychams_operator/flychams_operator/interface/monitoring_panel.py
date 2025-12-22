@@ -1,8 +1,12 @@
 """Camera view widget for displaying UDP/RTP video streams"""
 
 import logging
-from PyQt5.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QGridLayout, QLabel, QTabWidget, QStackedWidget, QSizePolicy, QSpacerItem
-from PyQt5.QtCore import Qt, QTimer, QUrl, QSize, QEvent
+from PyQt5.QtWidgets import (
+    QWidget, QVBoxLayout, QHBoxLayout, QGridLayout, 
+    QLabel, QTabWidget, QStackedWidget, QSizePolicy, 
+    QSpacerItem, QPushButton, QToolButton, QMenu, QAction
+)
+from PyQt5.QtCore import Qt, QTimer, QUrl, QSize, QEvent, pyqtSignal
 from PyQt5.QtMultimedia import QMediaPlayer, QMediaContent
 from PyQt5.QtMultimediaWidgets import QVideoWidget
 from typing import Optional
@@ -18,10 +22,13 @@ logger = logging.getLogger(__name__)
 class CameraFeed(QWidget):
     """Widget for a single camera feed using QtMultimedia"""
     
+    makeMainRequested = pyqtSignal(object)  # Signal to request becoming the main feed
+    
     def __init__(self, stream_url: Optional[str] = None, label_text: Optional[str] = None):
         super().__init__()
         
         self.stream_url = stream_url
+        self.label_text = label_text or ""
         self.media_player: Optional[QMediaPlayer] = None
 
         if stream_url:
@@ -34,24 +41,68 @@ class CameraFeed(QWidget):
         layout.setContentsMargins(0, 0, 0, 0)
         layout.setSpacing(0)
         
-        # Add header bar if label text is provided
-        if label_text:
-            header_widget = QWidget()
-            header_widget.setStyleSheet(f"background-color: #2d2d2d; border-top-left-radius: 4px; border-top-right-radius: 4px;")
-            header_layout = QHBoxLayout(header_widget)
-            header_layout.setContentsMargins(8, 4, 8, 4)
-            
-            label = QLabel(label_text.upper())
-            label.setStyleSheet("color: #ffffff; font-size: 12px; font-weight: bold; border: none;")
-            header_layout.addWidget(label)
-            
-            # Add "three dots" icon placeholder
-            dots_label = QLabel("⋮")
-            dots_label.setStyleSheet("color: #ffffff; font-size: 18px; border: none;")
-            header_layout.addStretch()
-            header_layout.addWidget(dots_label)
-            
-            layout.addWidget(header_widget)
+        # Add header bar
+        header_widget = QWidget()
+        header_widget.setStyleSheet(f"background-color: #2d2d2d; border-top-left-radius: 4px; border-top-right-radius: 4px;")
+        header_layout = QHBoxLayout(header_widget)
+        header_layout.setContentsMargins(8, 4, 8, 4)
+        
+        self.title_label = QLabel(self.label_text.upper())
+        self.title_label.setStyleSheet("color: #ffffff; font-size: 16px; font-weight: bold; border: none;")
+        header_layout.addWidget(self.title_label)
+        
+        # Create menu
+        self.menu = QMenu(self)
+        self.menu.setStyleSheet("""
+            QMenu {
+                background-color: #2d2d2d;
+                color: white;
+                border: 1px solid #444;
+            }
+            QMenu::item {
+                padding: 4px 20px;
+            }
+            QMenu::item:selected {
+                background-color: #3d3d3d;
+            }
+        """)
+        
+        make_main_action = QAction("Make main feed", self)
+        make_main_action.triggered.connect(lambda: self.makeMainRequested.emit(self))
+        self.menu.addAction(make_main_action)
+
+        # Add "three dots" menu button
+        self.menu_button = QToolButton()
+        self.menu_button.setText("⋮")
+        self.menu_button.setMenu(self.menu)
+        self.menu_button.setPopupMode(QToolButton.InstantPopup)
+        self.menu_button.setStyleSheet("""
+            QToolButton {
+                color: #ffffff; 
+                font-size: 22px; 
+                border: none; 
+                background: transparent;
+                font-weight: bold;
+                padding: 0px;
+                margin: 0px;
+                min-width: 30px;
+                max-width: 30px;
+                min-height: 30px;
+                max-height: 30px;
+            }
+            QToolButton:hover {
+                background-color: rgba(255, 255, 255, 0.1);
+                border-radius: 4px;
+            }
+            QToolButton::menu-indicator {
+                image: none;
+            }
+        """)
+        
+        header_layout.addStretch()
+        header_layout.addWidget(self.menu_button)
+        
+        layout.addWidget(header_widget)
         
         # Create stacked widget to switch between video and status label
         self.stacked_widget = QStackedWidget()
@@ -151,11 +202,11 @@ class AgentCameraComposition(QWidget):
         
         # Define labels based on the reference image distribution
         labels = [
-            "CAM 1: WIDE-ANGLE (UHD)",
-            "CAM 2: TARGET A (ZOOM)",
-            "CAM 5: TARGET B (ZOOM)",
-            "CAM 4: TARGET C (ZOOM)",
-            "CAM 5: TARGET D (ZOOM)"
+            "CENTRAL CAMERA",
+            "TRACKING 1",
+            "TRACKING 2",
+            "TRACKING 3",
+            "TRACKING 4"
         ]
         
         # Create 5 camera feeds
@@ -163,28 +214,87 @@ class AgentCameraComposition(QWidget):
             url = stream_urls[i] if i < len(stream_urls) else None
             label = labels[i]
             feed = CameraFeed(url, label)
+            feed.makeMainRequested.connect(self.promote_to_main)
             self.camera_feeds.append(feed)
         
         # Create main horizontal layout
-        main_layout = QHBoxLayout(self)
-        main_layout.setContentsMargins(10, 10, 10, 10)
-        main_layout.setSpacing(10)
+        self.main_layout = QHBoxLayout(self)
+        self.main_layout.setContentsMargins(10, 10, 10, 10)
+        self.main_layout.setSpacing(10)
         
+        # Grid for cameras 1-4 (2x2 layout)
+        self.grid_layout = QGridLayout()
+        self.grid_layout.setSpacing(10)
+        
+        self.setup_layout()
+
+    def setup_layout(self):
+        """Initial layout setup or refresh after swapping"""
+        # Clear existing layout items
+        # Note: We don't delete the widgets, just remove them from layouts
+        for i in reversed(range(self.main_layout.count())):
+            item = self.main_layout.itemAt(i)
+            if item.widget():
+                # We don't want to delete the widget, just remove it from the layout
+                # setParent(None) removes it from layout without deleting
+                item.widget().setParent(None)
+            elif item.layout():
+                self.clear_layout(item.layout())
+                self.main_layout.removeItem(item)
+
         # Left side: Camera 0 (Main) - occupies more space
-        main_layout.addWidget(self.camera_feeds[0], stretch=2)
+        self.main_layout.addWidget(self.camera_feeds[0], stretch=3)
+        self.camera_feeds[0].setParent(self) # Re-add to this widget
         
         # Right side: Grid for cameras 1-4 (2x2 layout)
-        grid_layout = QGridLayout()
-        grid_layout.setSpacing(10)
+        self.grid_layout = QGridLayout()
+        self.grid_layout.setSpacing(10)
         
         # Arrange in 2x2 grid
-        grid_layout.addWidget(self.camera_feeds[1], 0, 0)
-        grid_layout.addWidget(self.camera_feeds[2], 0, 1)
-        grid_layout.addWidget(self.camera_feeds[3], 1, 0)
-        grid_layout.addWidget(self.camera_feeds[4], 1, 1)
+        self.grid_layout.addWidget(self.camera_feeds[1], 0, 0)
+        self.grid_layout.addWidget(self.camera_feeds[2], 0, 1)
+        self.grid_layout.addWidget(self.camera_feeds[3], 1, 0)
+        self.grid_layout.addWidget(self.camera_feeds[4], 1, 1)
+        
+        for i in range(1, 5):
+            self.camera_feeds[i].setParent(self) # Re-add to this widget
+
+        # Ensure all feeds in the grid have the same size
+        self.grid_layout.setRowStretch(0, 1)
+        self.grid_layout.setRowStretch(1, 1)
+        self.grid_layout.setColumnStretch(0, 1)
+        self.grid_layout.setColumnStretch(1, 1)
         
         # Add the grid layout to main layout with a smaller stretch
-        main_layout.addLayout(grid_layout, stretch=1)
+        self.main_layout.addLayout(self.grid_layout, stretch=2)
+
+    def clear_layout(self, layout):
+        """Helper to clear a layout without deleting widgets"""
+        if layout is not None:
+            while layout.count():
+                item = layout.takeAt(0)
+                if item.widget():
+                    item.widget().setParent(None)
+                elif item.layout():
+                    self.clear_layout(item.layout())
+
+    def promote_to_main(self, feed_widget):
+        """Swap the selected feed with the current main feed (index 0)"""
+        if feed_widget not in self.camera_feeds:
+            return
+            
+        index = self.camera_feeds.index(feed_widget)
+        if index == 0:
+            logger.debug("Feed is already the main one")
+            return
+            
+        logger.info(f"Promoting feed at index {index} ('{feed_widget.label_text}') to main for agent '{self.agent_id}'")
+        
+        # Swap positions in the list
+        self.camera_feeds[0], self.camera_feeds[index] = self.camera_feeds[index], self.camera_feeds[0]
+        
+        # Re-apply layout
+        self.setup_layout()
     
     def closeEvent(self, event):
         """Clean up when widget is closed"""
@@ -195,7 +305,7 @@ class AgentCameraComposition(QWidget):
         event.accept()
 
 
-class CameraPanel(QWidget):
+class MonitoringPanel(QWidget):
     """Widget for displaying multiple camera feeds"""
     
     def __init__(self):

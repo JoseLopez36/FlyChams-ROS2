@@ -10,7 +10,7 @@ from PyQt5.QtGui import QPalette, QColor, QIcon
 from .control_panel import ControlPanel
 from .logs_panel import LogsPanel
 from .map_panel import MapPanel
-from .camera_panel import CameraPanel
+from .monitoring_panel import MonitoringPanel
 from .process_manager import ProcessManager
 from .styles import (
     COLOR_BACKGROUND_PRIMARY,
@@ -99,13 +99,13 @@ class MainWindow(QMainWindow):
         self.control_panel = ControlPanel(self.process_manager, self.is_sim)
         self.logs_panel = LogsPanel(self.process_manager)
         self.map_panel = MapPanel(self.signals)
-        self.camera_panel = CameraPanel()
+        self.monitoring_panel = MonitoringPanel()
 
         self.pages = [
             ("Mission Control", self.control_panel),
             ("System Logs", self.logs_panel),
             ("Real-Time Map", self.map_panel),
-            ("Monitoring Feeds", self.camera_panel)
+            ("Monitoring Feeds", self.monitoring_panel)
         ]
         
         for name, widget in self.pages:
@@ -259,12 +259,12 @@ class MainWindow(QMainWindow):
     def add_agent(self, agent_id: str, stream_urls: list):
         self.control_panel.add_agent(agent_id)
         self.map_panel.add_agent(agent_id)
-        self.camera_panel.add_agent(agent_id, stream_urls)
+        self.monitoring_panel.add_agent(agent_id, stream_urls)
     
     def remove_agent(self, agent_id: str):
         self.control_panel.remove_agent(agent_id)
         self.map_panel.remove_agent(agent_id)
-        self.camera_panel.remove_agent(agent_id)
+        self.monitoring_panel.remove_agent(agent_id)
     
     def update_agent_position(self, agent_id: str, x: float, y: float, z: float):
         self.map_panel.update_agent_position(agent_id, x, y, z)
