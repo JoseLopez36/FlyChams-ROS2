@@ -3,7 +3,7 @@
 // Base module include
 #include "flychams_core/base/base_module.hpp"
 
-namespace flychams::operator
+namespace flychams::operator_
 {
     /**
      * ════════════════════════════════════════════════════════════════
@@ -145,4 +145,4 @@ namespace flychams::operator
         core::TimerPtr update_timer_;
     };
 
-} // namespace flychams::operator
+} // namespace flychams::operator_

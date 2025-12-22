@@ -2,7 +2,7 @@
 
 using namespace flychams::core;
 
-namespace flychams::operator
+namespace flychams::operator_
 {
     // ════════════════════════════════════════════════════════════════════════════
     // CONSTRUCTOR: Constructor and destructor
@@ -393,4 +393,4 @@ namespace flychams::operator
         curr_metrics.average_speed = curr_metrics.distance_traveled / curr_metrics.time_elapsed;
     }
 
-} // namespace flychams::operator
+} // namespace flychams::operator_

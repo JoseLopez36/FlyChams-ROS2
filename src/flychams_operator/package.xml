@@ -4,7 +4,7 @@
   <name>flychams_operator</name>
   <version>1.0.0</version>
   <description>
-    Dashboard package for FlyingChameleons
+    Operator package for FlyingChameleons
   </description>
   <maintainer email="josloprui6@alum.us.es">Jose Francisco Lopez Ruiz</maintainer>
   <license>Apache-2.0</license>

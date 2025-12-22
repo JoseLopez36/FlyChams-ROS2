@@ -235,7 +235,7 @@ namespace flychams::agent
         const auto& [focal, auxRPYc] = solver->runCamera(P, r, wTaux);
 
         // Convert auxiliary orientation to world frame (same X, inverted Y and Z)
-        const Vector3r wRPYc = Vector3r(auxRPYc(0), auxRPYc(1) - M_PI_2f, auxRPYc(2) - M_PI_2f);
+        const Vector3r wRPYc = Vector3r(auxRPYc(0), auxRPYc(1) - M_PI, auxRPYc(2) - M_PI);
 
         // Return focal length and orientation
         return std::make_tuple(focal, wRPYc);

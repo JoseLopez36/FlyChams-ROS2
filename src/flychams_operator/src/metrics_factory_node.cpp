@@ -7,7 +7,7 @@
 #include "flychams_core/base/base_discoverer_node.hpp"
 
 using namespace flychams::core;
-using namespace flychams::operator;
+using namespace flychams::operator_;
 
 /**
  * ════════════════════════════════════════════════════════════════

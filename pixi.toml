@@ -84,7 +84,7 @@ colcon build \
   -G Ninja \
   -DPython3_EXECUTABLE=$PIXI_PROJECT_ROOT/.pixi/envs/default/bin/python \
   -DPython_EXECUTABLE=$PIXI_PROJECT_ROOT/.pixi/envs/default/bin/python \
-  --packages-up-to flychams_simulation \
+  --packages-up-to flychams_simulation airsim_wrapper \
   --event-handlers console_direct+ 2>&1
 """
 
@@ -98,4 +98,4 @@ agent-shell = "bash tools/agent_setup.sh shell"
 
 
 [activation]
-scripts = ["tools/setup.sh", "install/setup.sh"]
+scripts = ["setup.sh", "install/setup.sh"]

@@ -2,7 +2,7 @@
 
 using namespace flychams::core;
 
-namespace flychams::operator
+namespace flychams::operator_
 {
     // ════════════════════════════════════════════════════════════════════════════
     // CONSTRUCTOR: Constructor and destructor
@@ -363,4 +363,4 @@ namespace flychams::operator
         markers.markers.push_back(boundary_marker);
     }
 
-} // namespace flychams::operator
+} // namespace flychams::operator_
