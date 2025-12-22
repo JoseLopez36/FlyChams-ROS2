@@ -13,7 +13,6 @@
 #include "flychams_core/types/config_types.hpp"
 #include "flychams_core/utils/math_utils.hpp"
 #include "flychams_core/utils/vision_utils.hpp"
-#include "flychams_core/utils/tf_utils.hpp"
 
 namespace flychams::core
 {
@@ -41,7 +40,7 @@ namespace flychams::core
         static void writeVehiclesSection(const core::MissionConfigPtr& config_ptr, nlohmann::ordered_json& vehicles);
         static void writeSensorsSection(const core::ID& agent_id, const core::MissionConfigPtr& config_ptr, nlohmann::ordered_json& sensors);
         static void writeInternalCamerasSection(const core::ID& agent_id, const core::MissionConfigPtr& config_ptr, nlohmann::ordered_json& cameras);
-        static void writeExternalCamerasSection(const core::ID& agent_id, const core::MissionConfigPtr& config_ptr, nlohmann::ordered_json& cameras);
+        static void writeExternalCamerasSection(const core::MissionConfigPtr& config_ptr, nlohmann::ordered_json& cameras);
         static void writeSubWindowsSection(const core::MissionConfigPtr& config_ptr, nlohmann::ordered_json& subwindows);
         static void writeStreamsSection(const core::MissionConfigPtr& config_ptr, nlohmann::ordered_json& streams);
     };

@@ -1,9 +1,8 @@
 cmake_minimum_required(VERSION 3.8)
 project(flychams_core)
 
-# Default to C++17
-if(NOT CMAKE_CXX_STANDARD)
-  set(CMAKE_CXX_STANDARD 17)
+if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+  add_compile_options(-Wall -Wextra -Wpedantic)
 endif()
 
 # Find dependencies
@@ -20,12 +19,10 @@ find_package(tf2 REQUIRED)
 find_package(tf2_ros REQUIRED)
 find_package(tf2_geometry_msgs REQUIRED)
 find_package(OpenCV REQUIRED)
-find_package(mavros REQUIRED)
 find_package(flychams_interfaces REQUIRED)
 
-# Find GeographicLib
-set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH};/usr/share/cmake/geographiclib")
-find_package(GeographicLib REQUIRED)
+# Disable OpenXLSX documentation generation (requires Doxygen)
+set(OPENXLSX_CREATE_DOCS OFF CACHE BOOL "Build library documentation (requires Doxygen and Graphviz/Dot to be installed)" FORCE)
 
 # Add external libraries
 add_subdirectory(external/OpenXLSX ${CMAKE_CURRENT_BINARY_DIR}/OpenXLSX_build)
@@ -50,7 +47,6 @@ add_library(${PROJECT_NAME} SHARED
   src/settings/mission_settings_creator.cpp
   src/settings/settings_tools.cpp
   src/utils/math_utils.cpp
-  src/utils/tf_utils.cpp
   src/utils/vision_utils.cpp
   src/utils/ros_utils.cpp
   external/hungarian-algorithm-cpp/Hungarian.cpp
@@ -62,7 +58,6 @@ target_include_directories(${PROJECT_NAME} PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/external/json/single_include>
   $<INSTALL_INTERFACE:include>
   ${OpenCV_INCLUDE_DIRS}
-  ${GeographicLib_INCLUDE_DIRS}
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/external/hungarian-algorithm-cpp>
   $<INSTALL_INTERFACE:include>
 )
@@ -74,7 +69,6 @@ target_link_libraries(${PROJECT_NAME}
     tf2_geometry_msgs::tf2_geometry_msgs
     ${OpenCV_LIBS}
     OpenXLSX::OpenXLSX
-    ${GeographicLib_LIBRARIES}
     nlopt
 )
 
@@ -91,7 +85,6 @@ ament_target_dependencies(${PROJECT_NAME}
   tf2_ros
   tf2_geometry_msgs
   OpenCV
-  mavros
   flychams_interfaces
 )
 
@@ -168,7 +161,6 @@ ament_export_dependencies(
   tf2_ros
   tf2_geometry_msgs
   OpenCV
-  mavros
   flychams_interfaces
 )
 ament_export_libraries(${PROJECT_NAME})

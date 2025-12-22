@@ -1,4 +1,4 @@
-#include "flychams_agent/communication/mavros_communication.hpp"
+#include "flychams_agent/mavros/mavros_communication.hpp"
 
 using namespace flychams::core;
 

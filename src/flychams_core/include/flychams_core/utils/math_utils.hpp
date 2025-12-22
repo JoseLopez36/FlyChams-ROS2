@@ -44,6 +44,20 @@ namespace flychams::core
          * @brief Compute the direction between two points
          */
         static Vector3r direction(const Vector3r& from, const Vector3r& to);
+
+        // ════════════════════════════════════════════════════════════════════════════
+        // GEOMETRY: Geometric utilities
+        // ════════════════════════════════════════════════════════════════════════════
+
+        /**
+         * @brief Convert a quaternion to a rotation matrix
+         */
+        static Matrix3r quatToMatrix(const Quaternionr& q);
+
+        /**
+         * @brief Convert a rotation matrix to a quaternion
+         */
+        static Quaternionr quatFromMatrix(const Matrix3r& matrix);
     };
 
 }  // namespace flychams::core

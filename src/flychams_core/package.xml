@@ -19,14 +19,12 @@
   <depend>nav_msgs</depend>
   <depend>sensor_msgs</depend>
   <depend>geographic_msgs</depend>
-  <depend>geographiclib</depend>
   <depend>visualization_msgs</depend>
   <depend>Eigen3</depend>
   <depend>tf2</depend>
   <depend>tf2_ros</depend>
   <depend>tf2_geometry_msgs</depend>
   <depend>opencv</depend>
-  <depend>mavros</depend>
   <depend>flychams_interfaces</depend>
   
   <!-- Export -->

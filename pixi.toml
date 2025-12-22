@@ -48,36 +48,44 @@ build = """
 colcon build \
   --symlink-install \
   --cmake-args \
+  -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
   -G Ninja \
   -DPython3_EXECUTABLE=$PIXI_PROJECT_ROOT/.pixi/envs/default/bin/python \
-  -DPython_EXECUTABLE=$PIXI_PROJECT_ROOT/.pixi/envs/default/bin/python
+  -DPython_EXECUTABLE=$PIXI_PROJECT_ROOT/.pixi/envs/default/bin/python \
+  --event-handlers console_direct+ 2>&1
 """
 operator-build = """
 colcon build \
   --symlink-install \
   --cmake-args \
+  -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
   -G Ninja \
   -DPython3_EXECUTABLE=$PIXI_PROJECT_ROOT/.pixi/envs/default/bin/python \
   -DPython_EXECUTABLE=$PIXI_PROJECT_ROOT/.pixi/envs/default/bin/python \
-  --packages-up-to flychams_operator
+  --packages-up-to flychams_operator \
+  --event-handlers console_direct+ 2>&1
 """
 coordinator-build = """
 colcon build \
   --symlink-install \
   --cmake-args \
+  -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
   -G Ninja \
   -DPython3_EXECUTABLE=$PIXI_PROJECT_ROOT/.pixi/envs/default/bin/python \
   -DPython_EXECUTABLE=$PIXI_PROJECT_ROOT/.pixi/envs/default/bin/python \
-  --packages-up-to flychams_coordinator
+  --packages-up-to flychams_coordinator \
+  --event-handlers console_direct+ 2>&1
 """
 simulation-build = """
 colcon build \
   --symlink-install \
   --cmake-args \
+  -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
   -G Ninja \
   -DPython3_EXECUTABLE=$PIXI_PROJECT_ROOT/.pixi/envs/default/bin/python \
   -DPython_EXECUTABLE=$PIXI_PROJECT_ROOT/.pixi/envs/default/bin/python \
-  --packages-up-to flychams_simulation
+  --packages-up-to flychams_simulation \
+  --event-handlers console_direct+ 2>&1
 """
 
 # Agent Docker tasks
@@ -85,6 +93,7 @@ agent-build-image = "bash tools/docker/build.sh"
 agent-build = "bash tools/agent_setup.sh build"
 agent-run = "bash tools/agent_setup.sh run"
 agent-stop = "bash tools/agent_setup.sh stop"
+agent-remove = "bash tools/agent_setup.sh remove"
 agent-shell = "bash tools/agent_setup.sh shell"
 
 

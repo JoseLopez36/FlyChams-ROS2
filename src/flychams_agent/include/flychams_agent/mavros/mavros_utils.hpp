@@ -12,7 +12,7 @@
 // MavROS includes
 #include <mavros/frame_tf.hpp>
 
-namespace flychams::core
+namespace flychams::agent
 {
     /**
      * ════════════════════════════════════════════════════════════════
@@ -22,68 +22,68 @@ namespace flychams::core
      * @date 2025-12-07
      * ════════════════════════════════════════════════════════════════
      */
-    class TfUtils
+    class MavrosUtils
     {
     public:
         /**
          * @brief Transform a point from ENU to NED frame
          */
-        static Vector3r pointToNED(const Vector3r& enu);
+        static core::Vector3r pointToNED(const core::Vector3r& enu);
 
         /**
          * @brief Transform a point from NED to ENU frame
          */
-        static Vector3r pointFromNED(const Vector3r& ned);
+        static core::Vector3r pointFromNED(const core::Vector3r& ned);
 
         /**
          * @brief Transform orientation from NED to ENU frame
          */
-        static Quaternionr quatToNED(const Quaternionr& q);
+        static core::Quaternionr quatToNED(const core::Quaternionr& q);
 
         /**
          * @brief Transform orientation from ENU to NED frame
          */
-        static Quaternionr quatFromNED(const Quaternionr& q);
+        static core::Quaternionr quatFromNED(const core::Quaternionr& q);
 
         /**
          * @brief Transform euler angles from NED to ENU frame
          */
-        static Vector3r eulerToNED(const Vector3r& euler);
+        static core::Vector3r eulerToNED(const core::Vector3r& euler);
 
         /**
          * @brief Transform euler angles from ENU to NED frame
          */
-        static Vector3r eulerFromNED(const Vector3r& euler);
+        static core::Vector3r eulerFromNED(const core::Vector3r& euler);
 
         /**
          * @brief Convert local cartesian coordinates (ENU) to global geographic coordinates (LLA)
          */
-        static GeoPointMsg toGlobal(const double& x, const double& y, const double& z, const GeoPointMsg& origin);
+        static core::GeoPointMsg toGlobal(const double& x, const double& y, const double& z, const core::GeoPointMsg& origin);
 
         /**
          * @brief Convert global geographic coordinates (LLA) to local cartesian coordinates (ENU)
          */
-        static PointMsg fromGlobal(const double& lat, const double& lon, const double& alt, const GeoPointMsg& origin);
+        static core::PointMsg fromGlobal(const double& lat, const double& lon, const double& alt, const core::GeoPointMsg& origin);
 
         /**
          * @brief Transform orientation from quaternion to Euler angles (RPY)
          */
-        static Vector3r quatToEuler(const Quaternionr& q);
+        static core::Vector3r quatToEuler(const core::Quaternionr& q);
 
         /**
          * @brief Transform orientation from Euler angles (RPY) to quaternion
          */
-        static Quaternionr eulerToQuat(const Vector3r& euler);
+        static core::Quaternionr eulerToQuat(const core::Vector3r& euler);
 
         /**
          * @brief Convert a quaternion to a rotation matrix
          */
-        static Matrix3r quatToMatrix(const Quaternionr& q);
+        static core::Matrix3r quatToMatrix(const core::Quaternionr& q);
 
         /**
          * @brief Convert a rotation matrix to a quaternion
          */
-        static Quaternionr quatFromMatrix(const Matrix3r& matrix);
+        static core::Quaternionr quatFromMatrix(const core::Matrix3r& matrix);
     };
-} // namespace flychams::core
+} // namespace flychams::agent
 

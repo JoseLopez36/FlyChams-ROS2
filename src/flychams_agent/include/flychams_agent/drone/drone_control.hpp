@@ -1,7 +1,7 @@
 #pragma once
 
 // Communication include
-#include "flychams_agent/communication/mavros_communication.hpp"
+#include "flychams_agent/mavros/mavros_communication.hpp"
 
 // Base module include
 #include "flychams_core/base/base_module.hpp"

@@ -98,7 +98,6 @@ namespace flychams::core
 
     void AirsimSettingsCreator::writeVehiclesSection(const MissionConfigPtr& config_ptr, nlohmann::ordered_json& vehicles)
     {
-        bool first_time = true;
         int instance = 0;
         for (const auto& [agent_id, agent_ptr] : config_ptr->agent_team)
         {
@@ -153,7 +152,7 @@ namespace flychams::core
             writeInternalCamerasSection(agent_id, config_ptr, vehicles[agent_id]["Cameras"]);
 
             // Add external cameras to the vehicle
-            writeExternalCamerasSection(agent_id, config_ptr, vehicles[agent_id]["Cameras"]);
+            writeExternalCamerasSection(config_ptr, vehicles[agent_id]["Cameras"]);
 
             instance++;
         }
@@ -261,7 +260,7 @@ namespace flychams::core
         }
     }
 
-    void AirsimSettingsCreator::writeExternalCamerasSection(const ID& agent_id, const MissionConfigPtr& config_ptr, nlohmann::ordered_json& cameras)
+    void AirsimSettingsCreator::writeExternalCamerasSection(const MissionConfigPtr& config_ptr, nlohmann::ordered_json& cameras)
     {
         // Get scenario view camera pose from config
         const auto& scenario_view_pos = config_ptr->system.scenario_camera_position;

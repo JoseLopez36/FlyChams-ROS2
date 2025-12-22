@@ -1,4 +1,4 @@
-#include "flychams_agent/communication/camera_communication.hpp"
+#include "flychams_agent/camera/camera_communication.hpp"
 
 using namespace flychams::core;
 

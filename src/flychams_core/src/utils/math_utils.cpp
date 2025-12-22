@@ -8,12 +8,12 @@ namespace flychams::core
 
     float MathUtils::degToRad(float degrees)
     {
-        return degrees * M_PIf / 180.0f;
+        return degrees * M_PI / 180.0f;
     }
 
     float MathUtils::radToDeg(float radians)
     {
-        return radians * 180.0f / M_PIf;
+        return radians * 180.0f / M_PI;
     }
 
     float MathUtils::normalizeAngle(float angle)
@@ -38,6 +38,20 @@ namespace flychams::core
             return Vector3r::Zero();
         }
         return dir.normalized();
+    }
+
+    // ════════════════════════════════════════════════════════════════════════════
+    // GEOMETRY: Geometric utilities
+    // ════════════════════════════════════════════════════════════════════════════
+
+    Matrix3r MathUtils::quatToMatrix(const Quaternionr& q)
+    {
+        return q.toRotationMatrix();
+    }
+
+    Quaternionr MathUtils::quatFromMatrix(const Matrix3r& matrix)
+    {
+        return Quaternionr(matrix);
     }
 
 }  // namespace flychams::core

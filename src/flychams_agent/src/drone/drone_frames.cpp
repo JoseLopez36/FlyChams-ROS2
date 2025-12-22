@@ -99,7 +99,7 @@ namespace flychams::agent
         std::string local_frame = transform_tools_->getAgentLocalFrame(agent_id_);
 
         // Get home position in cartesian coordinates
-        PointMsg home_position = TfUtils::fromGlobal(home_geopoint.latitude, home_geopoint.longitude, home_geopoint.altitude, origin_geopoint);
+        PointMsg home_position = MavrosUtils::fromGlobal(home_geopoint.latitude, home_geopoint.longitude, home_geopoint.altitude, origin_geopoint);
 
         // We assume that the home position is at z=0 m (ground level)
         home_position.z = 0.0;
@@ -111,8 +111,8 @@ namespace flychams::agent
         world_to_local(2, 3) = home_position.z;
 
         // Add -90 degrees to yaw
-        Quaternionr quat = TfUtils::eulerToQuat(Vector3r(0.0, 0.0, -M_PIf / 2.0f));
-        world_to_local.block<3, 3>(0, 0) = TfUtils::quatToMatrix(quat);
+        Quaternionr quat = MavrosUtils::eulerToQuat(Vector3r(0.0, 0.0, -M_PIf / 2.0f));
+        world_to_local.block<3, 3>(0, 0) = MathUtils::quatToMatrix(quat);
 
         // Broadcast world -> local (static)
         transform_tools_->broadcastStaticTransform(world_frame, local_frame, world_to_local);
@@ -138,7 +138,7 @@ namespace flychams::agent
 
         // Set orientation
         Quaternionr orientation_quat = RosUtils::fromMsg(orientation);
-        local_to_body.block<3, 3>(0, 0) = TfUtils::quatToMatrix(orientation_quat);
+        local_to_body.block<3, 3>(0, 0) = MathUtils::quatToMatrix(orientation_quat);
 
         // Broadcast local -> body
         transform_tools_->broadcastTransform(local_frame, body_frame, local_to_body);

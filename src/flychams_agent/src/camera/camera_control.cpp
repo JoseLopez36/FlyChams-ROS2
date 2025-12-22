@@ -94,7 +94,7 @@ namespace flychams::agent
 			// Get camera quaternion
 			const auto& rotation = setpoints.rotations[i];
 			Vector3r rpy_vec = Vector3r(rotation.x, rotation.y, rotation.z);
-			RosUtils::toMsg(TfUtils::eulerToQuat(rpy_vec), camera_quats[j]);
+			RosUtils::toMsg(MavrosUtils::eulerToQuat(rpy_vec), camera_quats[j]);
 
 			// Calculate camera FOV
 			const float& focal = setpoints.zoom_factors[i];

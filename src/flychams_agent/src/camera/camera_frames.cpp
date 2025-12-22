@@ -34,7 +34,7 @@ namespace flychams::agent
 
             // Get camera quaternion from config (static relative to body)
             QuaternionMsg orientation_msg;
-            RosUtils::toMsg(TfUtils::eulerToQuat(camera_config_ptr->orientation), orientation_msg);
+            RosUtils::toMsg(MavrosUtils::eulerToQuat(camera_config_ptr->orientation), orientation_msg);
 
             // Create frames
             updateCameraBodyFrame(camera_id, position_msg, orientation_msg);
@@ -99,7 +99,7 @@ namespace flychams::agent
         TransformMsg optical_tf = TransformMsg();
         auto optical_quat = Quaternionr(optical_tf.rotation.w, optical_tf.rotation.x, optical_tf.rotation.y, optical_tf.rotation.z);
         optical_quat *= Quaternionr(0.5, -0.5, 0.5, -0.5);
-        camera_body_to_camera_optical.block<3, 3>(0, 0) = TfUtils::quatToMatrix(optical_quat);
+        camera_body_to_camera_optical.block<3, 3>(0, 0) = MathUtils::quatToMatrix(optical_quat);
 
         // Broadcast camera body -> camera optical (static)
         transform_tools_->broadcastStaticTransform(camera_body_frame, camera_optical_frame, camera_body_to_camera_optical);
@@ -131,7 +131,7 @@ namespace flychams::agent
             wTb.pose.position.y,
             wTb.pose.position.z);
         const Quaternionr wQb = RosUtils::fromMsg(wTb.pose.orientation);
-        const Matrix3r wRb = TfUtils::quatToMatrix(wQb);
+        const Matrix3r wRb = MathUtils::quatToMatrix(wQb);
 
         // Camera mounting offset in body frame
         const Vector3r bPc(position.x, position.y, position.z);
@@ -145,7 +145,7 @@ namespace flychams::agent
         wTc(0, 3) = wPc.x();
         wTc(1, 3) = wPc.y();
         wTc(2, 3) = wPc.z();
-        wTc.block<3, 3>(0, 0) = TfUtils::quatToMatrix(wQc);
+        wTc.block<3, 3>(0, 0) = MathUtils::quatToMatrix(wQc);
 
         // Broadcast world -> camera body (dynamic)
         transform_tools_->broadcastTransform(world_frame, camera_body_frame, wTc);

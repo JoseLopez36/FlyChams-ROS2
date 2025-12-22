@@ -1,17 +1,21 @@
 cmake_minimum_required(VERSION 3.8)
 project(flychams_agent)
 
-# Default to C++17
-if(NOT CMAKE_CXX_STANDARD)
-  set(CMAKE_CXX_STANDARD 17)
+if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+  add_compile_options(-Wall -Wextra -Wpedantic)
 endif()
 
 # Find dependencies
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
+find_package(mavros REQUIRED)
 find_package(mavros_msgs REQUIRED)
 find_package(airsim_interfaces REQUIRED)
 find_package(flychams_core REQUIRED)
+
+# Find GeographicLib
+set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH};/usr/share/cmake/geographiclib")
+find_package(GeographicLib REQUIRED)
 
 # Create control library
 set(CONTROL_SRC
@@ -21,8 +25,9 @@ set(CONTROL_SRC
   src/drone/drone_control.cpp
   src/camera/camera_frames.cpp
   src/camera/camera_control.cpp
-  src/communication/mavros_communication.cpp
-  src/communication/camera_communication.cpp
+  src/mavros/mavros_communication.cpp
+  src/mavros/mavros_utils.cpp
+  src/camera/camera_communication.cpp
   src/analysis/agent_analysis.cpp
   src/positioning/agent_positioning.cpp
   src/tracking/agent_tracking.cpp
@@ -31,16 +36,18 @@ add_library(${PROJECT_NAME} SHARED ${CONTROL_SRC})
 target_include_directories(${PROJECT_NAME} PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   $<INSTALL_INTERFACE:include>
+  ${GeographicLib_INCLUDE_DIRS}
 )
 
 # Export dependencies
 ament_target_dependencies(${PROJECT_NAME}
-  rclcpp mavros_msgs airsim_interfaces flychams_core
+  rclcpp mavros mavros_msgs airsim_interfaces flychams_core
 )
 
 # Link to required libraries
 target_link_libraries(${PROJECT_NAME}
   rclcpp::rclcpp
+  ${GeographicLib_LIBRARIES}
 )
 
 # Create executable for mavros manager node
@@ -109,6 +116,7 @@ install(DIRECTORY include/
 ament_export_targets(${PROJECT_NAME} HAS_LIBRARY_TARGET)
 ament_export_dependencies(
   rclcpp
+  mavros
   mavros_msgs
   airsim_interfaces
   flychams_core
