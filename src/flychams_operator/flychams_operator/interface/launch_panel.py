@@ -63,7 +63,7 @@ class Terminal(QWidget):
 class LaunchPanel(QWidget):
     """Panel with buttons to launch coordinator, agents, simulation, etc"""
     
-    def __init__(self):
+    def __init__(self, is_sim: bool):
         super().__init__()
         
         # Set dark background for the panel
@@ -92,15 +92,15 @@ class LaunchPanel(QWidget):
         self.agent_buttons: Dict[str, Dict[str, QPushButton]] = {}  # agent_id -> {'agent': button, 'px4': button}
         self.next_agent_index = 0
         
+        # Simulation mode flag (default to True for simulation)
+        self.is_sim = is_sim
+        
         self.setup_ui()
 
         # Get FlyChams path environment variable
         flychams_path = os.getenv('FLYCHAMS_ROS2_PATH')
         if not flychams_path:
             raise ValueError('FLYCHAMS_ROS2_PATH environment variable is not set')
-        
-        # Set tools directory
-        self.tools_dir = Path(flychams_path) / 'tools'
     
     def setup_ui(self):
         """Set up the UI components"""
@@ -128,11 +128,6 @@ class LaunchPanel(QWidget):
         self.launch_coordinator_btn.setStyleSheet(BUTTON_STYLE_STANDARD)
         self.launch_coordinator_btn.clicked.connect(self.launch_coordinator)
         row1_layout.addWidget(self.launch_coordinator_btn)
-
-        self.launch_dashboard_btn = QPushButton('LAUNCH DASHBOARD')
-        self.launch_dashboard_btn.setStyleSheet(BUTTON_STYLE_STANDARD)
-        self.launch_dashboard_btn.clicked.connect(self.launch_dashboard)
-        row1_layout.addWidget(self.launch_dashboard_btn)
         
         layout.addWidget(row1)
 
@@ -241,28 +236,21 @@ class LaunchPanel(QWidget):
     
     # ================================ Launch methods ================================
     def launch_coordinator(self):
-        """Launch the coordinator"""
+        """Launch the coordinator using pixi task"""
         component_name = "Coordinator"
-        script_path = self.tools_dir / 'launch_coordinator.py'
-        if not script_path.exists():
-            self.log(f'ERROR: Script not found: {script_path}', component_name)
-            return
         
-        cmd = [
-            "python3",
-            "-u",
-            str(self.tools_dir / "launch_coordinator.py"),
-            "--sim"
-        ]
+        # Choose task based on is_sim parameter
+        task_name = "coordinator-sim-run" if self.is_sim else "coordinator-hardware-run"
+        cmd = ["pixi", "run", task_name]
 
-        self.log(f'Launching coordinator...', component_name)
+        mode_str = "simulation" if self.is_sim else "hardware"
+        self.log(f'Launching coordinator ({mode_str} mode)...', component_name)
         try:
             # Launch in background
             process = subprocess.Popen(
                 cmd,
                 stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-                cwd=str(self.tools_dir.parent)
+                stderr=subprocess.PIPE
             )
             self.log(f'Coordinator launched (PID: {process.pid})', component_name)
             # Start reading output
@@ -271,73 +259,34 @@ class LaunchPanel(QWidget):
             self.log(f'ERROR launching coordinator: {e}', component_name)
 
     def launch_agent(self, agent_id: str):
-        """Launch a specific agent by ID"""
+        """Launch a specific agent by ID using pixi task"""
         component_name = agent_id
-        script_path = self.tools_dir / 'launch_agent.py'
-        if not script_path.exists():
-            self.log(f'ERROR: Script not found: {script_path}', component_name)
-            return
         
         self.log(f'Launching agent {agent_id}...', component_name)
         try:
-            # Launch in background
+            # Launch in background using pixi task with agent ID as argument
             process = subprocess.Popen(
-                [
-                    'python3',
-                    '-u',
-                    str(script_path),
-                    '--agent-id', agent_id,
-                    '--sim'
-                ],
+                ['pixi', 'run', 'agent-sim-run', agent_id],
                 stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-                cwd=str(self.tools_dir.parent)
+                stderr=subprocess.PIPE
             )
             self.log(f'Agent {agent_id} launched (PID: {process.pid})', component_name)
             # Start reading output
             self.read_process_output(process, component_name)
         except Exception as e:
             self.log(f'ERROR launching agent {agent_id}: {e}', component_name)
-
-    def launch_dashboard(self):
-        """Launch the operator"""
-        component_name = "Dashboard"
-        script_path = self.tools_dir / 'launch_dashboard.py'
-        if not script_path.exists():
-            self.log(f'ERROR: Script not found: {script_path}', component_name)
-            return
-        
-        self.log(f'Launching operator...', component_name)
-        try:
-            # Launch in background
-            process = subprocess.Popen(
-                ['python3', str(script_path)],
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-                cwd=str(self.tools_dir.parent)
-            )
-            self.log(f'Dashboard launched (PID: {process.pid})', component_name)
-            # Start reading output
-            self.read_process_output(process, component_name)
-        except Exception as e:
-            self.log(f'ERROR launching operator: {e}', component_name)
     
     def launch_simulation(self):
-        """Launch the simulation"""
+        """Launch the simulation using pixi task"""
         component_name = "Simulation"
-        script_path = self.tools_dir / 'launch_simulation.py'
-        if not script_path.exists():
-            self.log(f'ERROR: Script not found: {script_path}', component_name)
-            return
         
         self.log(f'Launching simulation...', component_name)
         try:
-            # Launch in background
+            # Launch in background using pixi task
             process = subprocess.Popen(
-                ['python3', str(script_path)],
+                ['pixi', 'run', 'simulation-run'],
                 stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-                cwd=str(self.tools_dir.parent)
+                stderr=subprocess.PIPE
             )
             self.log(f'Simulation launched (PID: {process.pid})', component_name)
             # Start reading output
@@ -346,26 +295,16 @@ class LaunchPanel(QWidget):
             self.log(f'ERROR launching simulation: {e}', component_name)
 
     def launch_px4(self, agent_id: str, agent_index: int):
-        """Launch PX4 for a specific agent"""
+        """Launch PX4 for a specific agent using pixi task"""
         component_name = f"PX4-{agent_index}"
-        script_path = self.tools_dir / 'launch_px4.py'
-        if not script_path.exists():
-            self.log(f'ERROR: Script not found: {script_path}', component_name)
-            return
         
         self.log(f'Launching PX4 for agent {agent_id} (index: {agent_index})...', component_name)
         try:
-            # Launch in background
+            # Launch in background using pixi task with agent index as argument
             process = subprocess.Popen(
-                [
-                    'python3',
-                    '-u',
-                    str(script_path),
-                    '--agent-index', str(agent_index)
-                ],
+                ['pixi', 'run', 'simulation-px4-run', str(agent_index)],
                 stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-                cwd=str(self.tools_dir.parent)
+                stderr=subprocess.PIPE
             )
             self.log(f'PX4 for agent {agent_id} launched (PID: {process.pid})', component_name)
             # Start reading output
@@ -376,23 +315,26 @@ class LaunchPanel(QWidget):
     def stop(self):
         """Stop all FlyChams components"""
         component_name = "STOP"
-        script_path = self.tools_dir / 'stop.py'
-        if not script_path.exists():
-            self.log(f'ERROR: Script not found: {script_path}', component_name)
-            return
         
-        self.log(f'Stopping FlyChams...', component_name)
+        self.log(f'Stopping FlyChams components...', component_name)
         try:
-            # Stop in background
-            process = subprocess.Popen(
-                ['python3', str(script_path), '--sim'],
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-                cwd=str(self.tools_dir.parent)
-            )
-            self.log(f'Stop command launched (PID: {process.pid})', component_name)
-            # Start reading output
-            self.read_process_output(process, component_name)
+            # Stop agents using pixi task (requires agent ID, but we'll try to stop all known agents)
+            # Note: This is a simplified stop - it only stops agents that were launched
+            # For a complete stop, you may need to manually stop each component
+            for agent_id in list(self.agents.keys()):
+                try:
+                    stop_process = subprocess.Popen(
+                        ['pixi', 'run', 'agent-sim-stop', agent_id],
+                        stdout=subprocess.PIPE,
+                        stderr=subprocess.PIPE
+                    )
+                    self.log(f'Stop command for agent {agent_id} launched (PID: {stop_process.pid})', component_name)
+                    self.read_process_output(stop_process, component_name)
+                except Exception as e:
+                    self.log(f'ERROR stopping agent {agent_id}: {e}', component_name)
+            
+            self.log(f'Stop commands launched for {len(self.agents)} agents', component_name)
+            self.log(f'Note: Coordinator, Simulation, and PX4 processes may need to be stopped manually (Ctrl+C)', component_name)
         except Exception as e:
             self.log(f'ERROR stopping FlyChams: {e}', component_name)
 

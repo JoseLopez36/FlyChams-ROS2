@@ -44,7 +44,7 @@ ament_target_dependencies(marker_factory_node rclcpp flychams_core)
 
 # Install operator interface node script
 install(PROGRAMS
-  flychams_operator/nodes/operator_interface_node.py
+  flychams_operator/operator_interface_node.py
   DESTINATION lib/${PROJECT_NAME}
   RENAME operator_interface_node
 )

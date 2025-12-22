@@ -160,7 +160,10 @@ pixi run simulation-ue5-run
 Launch the operator interface GUI:
 
 ```bash
-pixi run operator-run
+pixi run operator-sim-run
+
+# Or
+pixi run operator-hardware-run
 ```
 
 The operator interface provides:
@@ -206,8 +209,11 @@ pixi run coordinator-hardware-run
 # Launch simulation nodes
 pixi run simulation-run
 
-# Launch operator nodes
-pixi run operator-run
+# Launch operator nodes (simulation mode)
+pixi run operator-sim-run
+
+# Launch operator nodes (hardware mode)
+pixi run operator-hardware-run
 
 # Launch PX4 SITL (requires agent index)
 pixi run simulation-px4-run 0

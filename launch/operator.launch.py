@@ -96,7 +96,8 @@ def launch_setup(context, *args, **kwargs):
                 topics_path, 
                 frames_path, 
                 operator_path,
-                mission_path
+                mission_path,
+                {'is_sim': is_sim}
             ]
         )
     )

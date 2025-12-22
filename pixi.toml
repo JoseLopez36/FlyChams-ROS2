@@ -75,8 +75,11 @@ colcon build \
 # Setup tasks
 generate-settings = "ros2 launch launch/generate_settings.launch.py"
 
-# Operator tasks
-operator-run = "ros2 launch launch/operator.launch.py"
+# Operator simulation tasks
+operator-sim-run = "ros2 launch launch/operator.launch.py is_sim:=True"
+
+# Operator hardware tasks
+operator-hardware-run = "ros2 launch launch/operator.launch.py is_sim:=False"
 
 # Coordinator simulation tasks
 coordinator-sim-run = "ros2 launch launch/coordinator.launch.py is_sim:=True"

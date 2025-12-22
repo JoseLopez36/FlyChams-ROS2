@@ -346,12 +346,15 @@ def main(args=None):
     
     # Create operator interface node
     node = OperatorInterface(signals)
+
+    # Get is_sim parameter
+    is_sim = node.get_parameter('is_sim').value
     
     # Import GUI components here to avoid circular imports
     from flychams_operator.interface.main_window import MainWindow
     
     # Create main window
-    main_window = MainWindow(signals)
+    main_window = MainWindow(signals, is_sim=is_sim)
     main_window.show()
     
     # Create ROS2 executor for separate thread

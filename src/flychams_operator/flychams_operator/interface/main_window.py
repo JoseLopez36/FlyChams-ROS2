@@ -16,7 +16,7 @@ from .styles import (
 class MainWindow(QMainWindow):
     """Main window containing all operator components"""
     
-    def __init__(self, signals):
+    def __init__(self, signals, is_sim: bool):
         super().__init__()
         
         self.signals = signals
@@ -43,7 +43,7 @@ class MainWindow(QMainWindow):
         main_layout.addWidget(splitter)
         
         # Launch panel
-        self.launch_panel = LaunchPanel()
+        self.launch_panel = LaunchPanel(is_sim)
         splitter.addWidget(self.launch_panel)
         
         # Tabbed workspace (browser-like tabs)
