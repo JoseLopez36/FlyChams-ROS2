@@ -1,8 +1,8 @@
-#include "flychams_dashboard/marker/marker_factory.hpp"
+#include "flychams_operator/marker/marker_factory.hpp"
 
 using namespace flychams::core;
 
-namespace flychams::dashboard
+namespace flychams::operator
 {
     // ════════════════════════════════════════════════════════════════════════════
     // CONSTRUCTOR: Constructor and destructor
@@ -363,4 +363,4 @@ namespace flychams::dashboard
         markers.markers.push_back(boundary_marker);
     }
 
-} // namespace flychams::dashboard
+} // namespace flychams::operator

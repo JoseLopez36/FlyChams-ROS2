@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.8)
-project(flychams_dashboard)
+project(flychams_operator)
 
 # Default to C++17
 if(NOT CMAKE_CXX_STANDARD)
@@ -12,7 +12,7 @@ find_package(ament_cmake_python REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(flychams_core REQUIRED)
 
-# Create dashboard library
+# Create operator library
 set(DASHBOARD_SRC
   src/metrics/metrics_factory.cpp
   src/marker/marker_factory.cpp
@@ -45,7 +45,7 @@ ament_target_dependencies(marker_factory_node rclcpp flychams_core)
 
 # Install operator interface node script
 install(PROGRAMS
-  flychams_dashboard/nodes/operator_interface_node.py
+  flychams_operator/nodes/operator_interface_node.py
   DESTINATION lib/${PROJECT_NAME}
 )
 

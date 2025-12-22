@@ -1,4 +1,4 @@
-"""Main window for the operator interface dashboard"""
+"""Main window for the operator interface operator"""
 
 from PyQt6.QtWidgets import QMainWindow, QWidget, QHBoxLayout, QSplitter, QTabWidget
 from PyQt6.QtCore import Qt
@@ -14,7 +14,7 @@ from .styles import (
 )
 
 class MainWindow(QMainWindow):
-    """Main window containing all dashboard components"""
+    """Main window containing all operator components"""
     
     def __init__(self, signals):
         super().__init__()

@@ -101,7 +101,7 @@ Visualization Manager:
         Durability Policy: Volatile
         History Policy: Keep Last
         Reliability Policy: Reliable
-        Value: /flychams/dashboard/AGENT02/markers
+        Value: /flychams/operator/AGENT02/markers
       Value: true
     - Class: rviz_default_plugins/MarkerArray
       Enabled: true
@@ -113,7 +113,7 @@ Visualization Manager:
         Durability Policy: Volatile
         History Policy: Keep Last
         Reliability Policy: Reliable
-        Value: /flychams/dashboard/TARGET02COUNT00/markers
+        Value: /flychams/operator/TARGET02COUNT00/markers
       Value: true
     - Class: rviz_default_plugins/MarkerArray
       Enabled: true
@@ -125,7 +125,7 @@ Visualization Manager:
         Durability Policy: Volatile
         History Policy: Keep Last
         Reliability Policy: Reliable
-        Value: /flychams/dashboard/TARGET02COUNT01/markers
+        Value: /flychams/operator/TARGET02COUNT01/markers
       Value: true
     - Class: rviz_default_plugins/MarkerArray
       Enabled: true
@@ -137,7 +137,7 @@ Visualization Manager:
         Durability Policy: Volatile
         History Policy: Keep Last
         Reliability Policy: Reliable
-        Value: /flychams/dashboard/TARGET02COUNT02/markers
+        Value: /flychams/operator/TARGET02COUNT02/markers
       Value: true
     - Class: rviz_default_plugins/MarkerArray
       Enabled: true
@@ -149,7 +149,7 @@ Visualization Manager:
         Durability Policy: Volatile
         History Policy: Keep Last
         Reliability Policy: Reliable
-        Value: /flychams/dashboard/TARGET02COUNT03/markers
+        Value: /flychams/operator/TARGET02COUNT03/markers
       Value: true
     - Class: rviz_default_plugins/MarkerArray
       Enabled: true
@@ -161,7 +161,7 @@ Visualization Manager:
         Durability Policy: Volatile
         History Policy: Keep Last
         Reliability Policy: Reliable
-        Value: /flychams/dashboard/TARGET02COUNT04/markers
+        Value: /flychams/operator/TARGET02COUNT04/markers
       Value: true
     - Class: rviz_default_plugins/MarkerArray
       Enabled: true
@@ -173,7 +173,7 @@ Visualization Manager:
         Durability Policy: Volatile
         History Policy: Keep Last
         Reliability Policy: Reliable
-        Value: /flychams/dashboard/TARGET02COUNT05/markers
+        Value: /flychams/operator/TARGET02COUNT05/markers
       Value: true
     - Class: rviz_default_plugins/MarkerArray
       Enabled: true
@@ -185,7 +185,7 @@ Visualization Manager:
         Durability Policy: Volatile
         History Policy: Keep Last
         Reliability Policy: Reliable
-        Value: /flychams/dashboard/TARGET02COUNT06/markers
+        Value: /flychams/operator/TARGET02COUNT06/markers
       Value: true
     - Class: rviz_default_plugins/MarkerArray
       Enabled: true
@@ -197,7 +197,7 @@ Visualization Manager:
         Durability Policy: Volatile
         History Policy: Keep Last
         Reliability Policy: Reliable
-        Value: /flychams/dashboard/TARGET02COUNT07/markers
+        Value: /flychams/operator/TARGET02COUNT07/markers
       Value: true
     - Class: rviz_default_plugins/MarkerArray
       Enabled: true
@@ -209,7 +209,7 @@ Visualization Manager:
         Durability Policy: Volatile
         History Policy: Keep Last
         Reliability Policy: Reliable
-        Value: /flychams/dashboard/TARGET02COUNT08/markers
+        Value: /flychams/operator/TARGET02COUNT08/markers
       Value: true
     - Class: rviz_default_plugins/MarkerArray
       Enabled: true
@@ -221,7 +221,7 @@ Visualization Manager:
         Durability Policy: Volatile
         History Policy: Keep Last
         Reliability Policy: Reliable
-        Value: /flychams/dashboard/CLUSTER00/markers
+        Value: /flychams/operator/CLUSTER00/markers
       Value: true
     - Class: rviz_default_plugins/MarkerArray
       Enabled: true
@@ -233,7 +233,7 @@ Visualization Manager:
         Durability Policy: Volatile
         History Policy: Keep Last
         Reliability Policy: Reliable
-        Value: /flychams/dashboard/CLUSTER01/markers
+        Value: /flychams/operator/CLUSTER01/markers
       Value: true
     - Class: rviz_default_plugins/MarkerArray
       Enabled: true
@@ -245,7 +245,7 @@ Visualization Manager:
         Durability Policy: Volatile
         History Policy: Keep Last
         Reliability Policy: Reliable
-        Value: /flychams/dashboard/CLUSTER02/markers
+        Value: /flychams/operator/CLUSTER02/markers
       Value: true
     - Class: rviz_default_plugins/MarkerArray
       Enabled: true
@@ -257,7 +257,7 @@ Visualization Manager:
         Durability Policy: Volatile
         History Policy: Keep Last
         Reliability Policy: Reliable
-        Value: /flychams/dashboard/CLUSTER03/markers
+        Value: /flychams/operator/CLUSTER03/markers
       Value: true
     - Alpha: 1
       Class: rviz_default_plugins/PointStamped

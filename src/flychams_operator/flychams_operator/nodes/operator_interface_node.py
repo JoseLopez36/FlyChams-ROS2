@@ -14,7 +14,7 @@ import logging
 import os
 from typing import Dict
 
-from flychams_dashboard.core import AgentData, TargetData, ClusterData, replace_id_in_topic, spin_ros_node
+from flychams_operator.core import AgentData, TargetData, ClusterData, replace_id_in_topic, spin_ros_node
 
 class OperatorInterfaceSignals(QObject):
     """Qt signals for thread-safe GUI updates"""
@@ -317,7 +317,7 @@ class OperatorInterface(Node):
 
 def main(args=None):
     """Main entry point for the operator interface node"""
-    # Configure Python logging for camera panel and other dashboard modules
+    # Configure Python logging for camera panel and other operator modules
     log_level_str = os.environ.get('PYTHON_LOG_LEVEL', 'INFO').upper()
     log_level = getattr(logging, log_level_str, logging.INFO)
     
@@ -329,7 +329,7 @@ def main(args=None):
     )
     
     # Get modules to log (default to camera_panel if not specified)
-    log_modules = os.environ.get('PYTHON_LOG_MODULES', 'flychams_dashboard.interface.camera_panel').split(',')
+    log_modules = os.environ.get('PYTHON_LOG_MODULES', 'flychams_operator.interface.camera_panel').split(',')
     for module_name in log_modules:
         module_name = module_name.strip()
         if module_name:
@@ -348,7 +348,7 @@ def main(args=None):
     node = OperatorInterface(signals)
     
     # Import GUI components here to avoid circular imports
-    from flychams_dashboard.interface.main_window import MainWindow
+    from flychams_operator.interface.main_window import MainWindow
     
     # Create main window
     main_window = MainWindow(signals)

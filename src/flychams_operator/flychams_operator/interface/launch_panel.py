@@ -95,9 +95,9 @@ class LaunchPanel(QWidget):
         self.setup_ui()
 
         # Get FlyChams path environment variable
-        flychams_path = os.getenv('FLYCHAMS_PATH')
+        flychams_path = os.getenv('FLYCHAMS_ROS2_PATH')
         if not flychams_path:
-            raise ValueError('FLYCHAMS_PATH environment variable is not set')
+            raise ValueError('FLYCHAMS_ROS2_PATH environment variable is not set')
         
         # Set tools directory
         self.tools_dir = Path(flychams_path) / 'tools'
@@ -300,14 +300,14 @@ class LaunchPanel(QWidget):
             self.log(f'ERROR launching agent {agent_id}: {e}', component_name)
 
     def launch_dashboard(self):
-        """Launch the dashboard"""
+        """Launch the operator"""
         component_name = "Dashboard"
         script_path = self.tools_dir / 'launch_dashboard.py'
         if not script_path.exists():
             self.log(f'ERROR: Script not found: {script_path}', component_name)
             return
         
-        self.log(f'Launching dashboard...', component_name)
+        self.log(f'Launching operator...', component_name)
         try:
             # Launch in background
             process = subprocess.Popen(
@@ -320,7 +320,7 @@ class LaunchPanel(QWidget):
             # Start reading output
             self.read_process_output(process, component_name)
         except Exception as e:
-            self.log(f'ERROR launching dashboard: {e}', component_name)
+            self.log(f'ERROR launching operator: {e}', component_name)
     
     def launch_simulation(self):
         """Launch the simulation"""

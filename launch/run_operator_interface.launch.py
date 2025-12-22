@@ -39,7 +39,7 @@ def launch_setup(context, *args, **kwargs):
         FindPackageShare('flychams_bringup'),
         'config',
         'package',
-        'dashboard.yaml'
+        'operator.yaml'
     ])
 
     # Set environment variable to control ROS logger output
@@ -50,18 +50,18 @@ def launch_setup(context, *args, **kwargs):
     # Log level: DEBUG, INFO, WARNING, ERROR, CRITICAL
     os.environ.setdefault('PYTHON_LOG_LEVEL', 'INFO')
     # Enable logging for camera panel module
-    os.environ.setdefault('PYTHON_LOG_MODULES', 'flychams_dashboard.interface.camera_panel')
+    os.environ.setdefault('PYTHON_LOG_MODULES', 'flychams_operator.interface.camera_panel')
 
     # Generate launch description
     ld = []
 
     ld.append(
         Node(
-            package='flychams_dashboard',
+            package='flychams_operator',
             executable='operator_interface_node.py',
             name='operator_interface_node',
             output='screen',
-            namespace='flychams/dashboard',
+            namespace='flychams/operator',
             parameters=[
                 system_path, 
                 topics_path, 

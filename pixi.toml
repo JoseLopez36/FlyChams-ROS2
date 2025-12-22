@@ -2,14 +2,27 @@
 name = "flychams-ros2"
 authors = ["Jose Francisco Lopez Ruiz <josloprui6@alum.us.es>"]
 channels = ["robostack-humble", "conda-forge"]
-platforms = ["linux-64"]
+platforms = ["linux-64", "linux-aarch64"]
 version = "0.1.0"
 
 
-[feature.core.dependencies]
-ros-humble-desktop = ">=0.10.0,<0.11"
+[dependencies]
+ros-humble-ros-base = ">=0.10.0,<0.11"
+ros-humble-ament-cmake-auto = ">=1.3.12,<2"
+compilers = ">=1.11.0,<2"
+pkg-config = ">=0.29.2,<0.30"
+cmake = "3.26.*"
+ninja = ">=1.13.2,<2"
 colcon-common-extensions = ">=0.3.0,<0.4"
+setuptools = "<=58.2.0"
+git = ">=2.52.0,<3"
+lark-parser = ">=0.12.0,<0.13"
+vcstool = ">=0.3.0,<0.4"
 pip = ">=25.3,<26"
+glfw = ">=3.4,<4"
+make = ">=4.4.1,<5"
+numpy = ">=1.26.4,<2"
+python = ">=3.11.14,<3.12"
 
 
 [feature.operator.dependencies]
@@ -21,9 +34,26 @@ ros-humble-rqt-gui = ">=1.1.7,<2"
 
 
 [environments]
-full = ["core", "operator", "simulation"]
-reduced = ["core"]
+default = ["operator", "simulation"]
+full = ["operator", "simulation"]
+reduced = []
 
 
 [tasks]
-build = "colcon build --symlink-install"
+clean = "rm -rf build install log"
+build = """
+colcon build \
+  --symlink-install \
+  --cmake-args \
+  -G Ninja \
+  -DPython3_EXECUTABLE=$PIXI_PROJECT_ROOT/.pixi/envs/default/bin/python \
+  -DPython_EXECUTABLE=$PIXI_PROJECT_ROOT/.pixi/envs/default/bin/python
+"""
+build-operator = "build --cmake-args -G Ninja --packages-up-to flychams_core flychams_operator airsim_interfaces flychams_interfaces"
+build-coordinator = "build --cmake-args -G Ninja --packages-up-to flychams_core flychams_coordinator airsim_interfaces flychams_interfaces"
+build-agent = "build --cmake-args -G Ninja --packages-up-to flychams_core flychams_agent airsim_interfaces flychams_interfaces"
+build-simulation = "build --cmake-args -G Ninja --packages-select flychams_core flychams_simulation airsim_wrapper airsim_interfaces flychams_interfaces"
+
+
+[activation]
+scripts = ["tools/setup.sh", "install/setup.sh"]

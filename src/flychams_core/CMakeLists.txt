@@ -95,6 +95,16 @@ ament_target_dependencies(${PROJECT_NAME}
   flychams_interfaces
 )
 
+# Create executable for settings creator node
+add_executable(settings_creator_node src/settings_creator_node.cpp)
+target_link_libraries(settings_creator_node ${PROJECT_NAME})
+ament_target_dependencies(settings_creator_node rclcpp)
+
+# Install executable
+install(TARGETS settings_creator_node
+  RUNTIME DESTINATION lib/${PROJECT_NAME}
+)
+
 # Install include directory
 install(DIRECTORY include/
   DESTINATION include

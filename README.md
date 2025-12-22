@@ -90,7 +90,7 @@ Configure the environment variables in the `.env` file. Edit these variables to 
 FLYCHAMS_ROS2_PATH=${HOME}/Documents/FlyChams-ROS2
 FLYCHAMS_AIRSIM_PATH=${HOME}/Documents/FlyChams-Cosys-AirSim
 FLYCHAMS_PX4_PATH=${HOME}/Documents/PX4-Autopilot
-FLYCHAMS_SIM_UE5_PATH=${HOME}/Documents/FlyChams-Sim-Coastal
+FLYCHAMS_UE5_PATH=${HOME}/Documents/FlyChams-Sim-Coastal
 ```
 
 ### 5. Build the docker image

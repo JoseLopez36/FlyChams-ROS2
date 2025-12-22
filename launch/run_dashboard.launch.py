@@ -51,7 +51,7 @@ def launch_setup(context, *args, **kwargs):
         FindPackageShare('flychams_bringup'),
         'config',
         'package',
-        'dashboard.yaml'
+        'operator.yaml'
     ])
 
     # Rviz parameters
@@ -88,11 +88,11 @@ def launch_setup(context, *args, **kwargs):
     if is_enabled('metrics_factory'):
         ld.append(
             Node(
-                package='flychams_dashboard',
+                package='flychams_operator',
                 executable='metrics_factory_node',
                 name='metrics_factory_node',
                 output='screen',
-                namespace='flychams/dashboard',
+                namespace='flychams/operator',
                 arguments=['--ros-args', '--log-level', log_level('metrics_factory')],
                 parameters=[
                     system_path, 
@@ -109,11 +109,11 @@ def launch_setup(context, *args, **kwargs):
     if is_enabled('marker_factory'):
         ld.append(
             Node(
-                package='flychams_dashboard',
+                package='flychams_operator',
                 executable='marker_factory_node',
                 name='marker_factory_node',
                 output='screen',
-                namespace='flychams/dashboard',
+                namespace='flychams/operator',
                 arguments=['--ros-args', '--log-level', log_level('marker_factory')],
                 parameters=[
                     system_path, 

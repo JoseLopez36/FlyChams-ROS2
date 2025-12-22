@@ -1,11 +1,11 @@
 # Ignore config files
-ros2_ws/src/flychams_bringup/config/airsim.json
-ros2_ws/src/flychams_bringup/config/mission.yaml
+config/airsim.json
+config/mission.yaml
 
 # Ignore ROS2 files
-ros2_ws/build/
-ros2_ws/install/
-ros2_ws/log/
+build/
+install/
+log/
 
 # Ignore IDE files
 .vscode/
