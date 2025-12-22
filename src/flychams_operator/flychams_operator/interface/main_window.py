@@ -36,7 +36,7 @@ class MainWindow(QMainWindow):
         self.apply_dark_theme()
         
         # Configure window
-        self.setWindowTitle('FlyChams Operator Interface')
+        self.setWindowTitle('FLYCHAMS OPERATOR INTERFACE')
         
         # Get screen geometry and set 16:9 aspect ratio based on full height
         screen = QApplication.primaryScreen()
@@ -68,7 +68,7 @@ class MainWindow(QMainWindow):
         self.hamburger_btn.clicked.connect(self.toggle_nav_drawer)
         self.toolbar.addWidget(self.hamburger_btn)
         
-        title_lbl = QLabel("FlyChams Operator Interface")
+        title_lbl = QLabel("FLYCHAMS OPERATOR INTERFACE")
         title_lbl.setObjectName("ToolbarTitle")
         self.toolbar.addWidget(title_lbl)
         
@@ -179,7 +179,7 @@ class MainWindow(QMainWindow):
         palette.setColor(QPalette.ColorRole.ButtonText, QColor(255, 255, 255))
         
         # Highlight colors
-        palette.setColor(QPalette.ColorRole.Highlight, QColor(74, 158, 255))
+        palette.setColor(QPalette.ColorRole.Highlight, QColor(0, 122, 122))  # Lighter Prussian Green
         palette.setColor(QPalette.ColorRole.HighlightedText, QColor(255, 255, 255))
         
         # Disabled colors

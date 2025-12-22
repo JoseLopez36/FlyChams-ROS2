@@ -15,34 +15,32 @@ COLOR_TEXT_TERTIARY = "#cccccc"
 COLOR_TEXT_PLACEHOLDER = "#888888"
 COLOR_TEXT_DISABLED = "#808080"
 
-COLOR_ACCENT_PRIMARY = "#4a9eff"
+COLOR_ACCENT_PRIMARY = "#007a7a"  # Lighter Prussian Green
+COLOR_ACCENT_PRIMARY_HOVER = "#008a8a"
+COLOR_ACCENT_PRIMARY_PRESSED = "#006a6a"
 COLOR_ACCENT_DANGER = "#ff4444"
 COLOR_BORDER_PRIMARY = "#2d2d2d"
 COLOR_BORDER_SECONDARY = "#3d3d3d"
-COLOR_BORDER_ACCENT = "#4a9eff"
+COLOR_BORDER_ACCENT = "#007a7a"
 
 # Button Styles
 BUTTON_STYLE_STANDARD = """
     QPushButton {{
-        background-color: {bg_secondary};
-        color: {text_secondary};
-        border: 1px solid {border_secondary};
-        border-radius: 4px;
-        padding: 8px 12px;
-        font-size: 14px;
+        background-color: {accent_primary};
+        color: {text_primary};
+        border: none;
+        border-radius: 6px;
+        padding: 12px 20px;
+        font-size: 24px;
         font-weight: bold;
-        text-align: center;
-        min-height: 32px;
-        max-width: 250px;
+        text-align: left;
+        min-height: 48px;
     }}
     QPushButton:hover {{
-        background-color: {bg_tertiary};
-        border: 1px solid {accent_primary};
-        color: {text_primary};
+        background-color: {accent_hover};
     }}
     QPushButton:pressed {{
-        background-color: {bg_primary};
-        border: 1px solid {accent_primary};
+        background-color: {accent_pressed};
     }}
 """.format(
     bg_secondary=COLOR_BACKGROUND_SECONDARY,
@@ -50,6 +48,8 @@ BUTTON_STYLE_STANDARD = """
     border_secondary=COLOR_BORDER_SECONDARY,
     bg_tertiary=COLOR_BACKGROUND_TERTIARY,
     accent_primary=COLOR_ACCENT_PRIMARY,
+    accent_hover=COLOR_ACCENT_PRIMARY_HOVER,
+    accent_pressed=COLOR_ACCENT_PRIMARY_PRESSED,
     text_primary=COLOR_TEXT_PRIMARY,
     bg_primary=COLOR_BACKGROUND_PRIMARY
 )
@@ -59,13 +59,12 @@ BUTTON_STYLE_DANGER = """
         background-color: {bg_danger};
         color: {text_primary};
         border: 1px solid {border_danger};
-        border-radius: 4px;
-        padding: 8px 12px;
-        font-size: 14px;
+        border-radius: 6px;
+        padding: 12px 20px;
+        font-size: 32px;
         font-weight: bold;
         text-align: center;
-        min-height: 32px;
-        max-width: 250px;
+        min-height: 56px;
     }}
     QPushButton:hover {{
         background-color: {bg_danger_hover};
@@ -294,22 +293,14 @@ NAV_DRAWER_STYLE = """
 
 # Toolbar Style
 TOOLBAR_STYLE = """
-    QToolBar {{
-        background-color: {bg_dark};
-        border-bottom: 1px solid {border_primary};
-        spacing: 15px;
-        padding: 8px;
-    }}
     QLabel#ToolbarTitle {{
-        font-size: 20px;
+        font-size: 24px;
         font-weight: bold;
-        color: {accent_primary};
-        margin-left: 15px;
+        color: {text_primary};
+        margin-left: 10px;
     }}
 """.format(
-    bg_dark=COLOR_BACKGROUND_DARK,
-    border_primary=COLOR_BORDER_PRIMARY,
-    accent_primary=COLOR_ACCENT_PRIMARY
+    text_primary=COLOR_TEXT_PRIMARY
 )
 
 HAMBURGER_BUTTON_STYLE = """

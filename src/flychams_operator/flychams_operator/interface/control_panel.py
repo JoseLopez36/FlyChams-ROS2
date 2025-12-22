@@ -1,15 +1,18 @@
 """Control panel with buttons to launch system components"""
 
-from PyQt5.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QLabel, QScrollArea
-from PyQt5.QtCore import Qt
+from PyQt5.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QLabel, QScrollArea, QStyle
+from PyQt5.QtCore import Qt, QSize
+from PyQt5.QtGui import QIcon, QPainter, QPixmap, QColor
 import os
 from typing import Dict
 from .styles import (
     PANEL_BACKGROUND_STYLE,
+    COLOR_BACKGROUND_SECONDARY,
     LABEL_STYLE_TITLE,
     LABEL_STYLE_SEPARATOR,
     BUTTON_STYLE_STANDARD,
-    BUTTON_STYLE_DANGER
+    BUTTON_STYLE_DANGER,
+    COLOR_TEXT_PRIMARY
 )
 
 class ControlPanel(QWidget):
@@ -27,67 +30,144 @@ class ControlPanel(QWidget):
 
     def setup_ui(self):
         main_layout = QVBoxLayout(self)
-        main_layout.setContentsMargins(16, 16, 16, 16)
-        main_layout.setSpacing(20)
+        main_layout.setContentsMargins(24, 24, 24, 24)
+        main_layout.setSpacing(30)
 
-        # Title
-        title = QLabel('Mission Control')
+        # 1. Header Section
+        header_layout = QHBoxLayout()
+        title = QLabel('Mission Control Dashboard')
         title.setStyleSheet(LABEL_STYLE_TITLE)
-        main_layout.addWidget(title)
+        header_layout.addWidget(title)
+        main_layout.addLayout(header_layout)
 
-        # Scroll Area for controls
+        # 2. Categories Section (Horizontal)
+        categories_layout = QHBoxLayout()
+        categories_layout.setSpacing(20)
+
+        # --- Coordinator Column ---
+        coord_col, coord_layout = self.create_category_column("Coordinator")
+        self.btn_coord = self.create_button(
+            "Launch Coordinator", 
+            self.launch_coordinator,
+            self.get_white_icon(QStyle.SP_MediaPlay)
+        )
+        coord_layout.addWidget(self.btn_coord)
+        categories_layout.addWidget(coord_col, 1)
+
+        # --- Agents Column ---
+        agents_col, self.agent_layout = self.create_category_column("Agents")
+        categories_layout.addWidget(agents_col, 2)
+
+        # --- Simulation Column ---
+        if self.is_sim:
+            sim_col, sim_layout = self.create_category_column("Simulation")
+            self.btn_sim = self.create_button(
+                "Launch Simulation Controller", 
+                self.launch_simulation,
+                self.get_white_icon(QStyle.SP_MediaPlay)
+            )
+            self.btn_ue5 = self.create_button(
+                "Launch Unreal Engine 5", 
+                self.launch_ue5,
+                self.get_white_icon(QStyle.SP_MediaPlay)
+            )
+            sim_layout.addWidget(self.btn_sim)
+            sim_layout.addWidget(self.btn_ue5)
+            categories_layout.addWidget(sim_col, 1)
+
+        # --- Operator Column ---
+        op_col, op_layout = self.create_category_column("Operator")
+        self.btn_rviz = self.create_button(
+            "Launch RViZ", 
+            self.launch_rviz,
+            self.get_white_icon(QStyle.SP_MediaPlay)
+        )
+        op_layout.addWidget(self.btn_rviz)
+        categories_layout.addWidget(op_col, 1)
+        
+        main_layout.addLayout(categories_layout)
+
+        # 3. Footer Section
+        footer_layout = QHBoxLayout()
+
+        # Stop All Processes button
+        self.btn_stop = QPushButton("Stop All Processes")
+        self.btn_stop.setIcon(self.get_white_icon(QStyle.SP_MediaStop, size=QSize(64, 64)))
+        self.btn_stop.setIconSize(QSize(64, 64))
+        self.btn_stop.setStyleSheet(BUTTON_STYLE_DANGER)
+        self.btn_stop.setMinimumWidth(400)
+        self.btn_stop.setMinimumHeight(70)
+        self.btn_stop.clicked.connect(self.stop_all)
+        footer_layout.addWidget(self.btn_stop)
+        main_layout.addLayout(footer_layout)
+
+    def get_white_icon(self, standard_icon, size=QSize(32, 32)):
+        """Helper to get a tinted white version of a standard system icon"""
+        icon = self.style().standardIcon(standard_icon)
+        pixmap = icon.pixmap(size)
+        
+        painter = QPainter(pixmap)
+        painter.setCompositionMode(QPainter.CompositionMode_SourceIn)
+        painter.fillRect(pixmap.rect(), QColor(COLOR_TEXT_PRIMARY))
+        painter.end()
+        
+        return QIcon(pixmap)
+
+    def create_category_column(self, title_text):
+        """Helper to create a styled column with a scrollable container for widgets"""
+        container = QWidget()
+        container.setStyleSheet(f"""
+            QWidget {{
+                background-color: {COLOR_BACKGROUND_SECONDARY};
+                border: 1px solid #3d3d3d;
+                border-radius: 8px;
+            }}
+            QLabel {{
+                border: none;
+                background-color: transparent;
+            }}
+            QPushButton {{
+                border: 1px solid #3d3d3d;
+            }}
+        """)
+        
+        main_layout = QVBoxLayout(container)
+        main_layout.setContentsMargins(15, 15, 15, 15)
+        main_layout.setSpacing(15)
+        
+        header = QLabel(title_text)
+        header.setStyleSheet(LABEL_STYLE_SEPARATOR)
+        header.setAlignment(Qt.AlignCenter)
+        main_layout.addWidget(header)
+
+        # Scroll Area for internal content
         scroll = QScrollArea()
         scroll.setWidgetResizable(True)
         scroll.setFrameShape(QScrollArea.NoFrame)
         scroll.setStyleSheet("background: transparent;")
         
-        content = QWidget()
-        content.setStyleSheet("background: transparent;")
-        self.layout = QVBoxLayout(content)
-        self.layout.setSpacing(15)
-        self.layout.setAlignment(Qt.AlignTop)
+        content_widget = QWidget()
+        content_widget.setStyleSheet("background: transparent;")
+        content_layout = QVBoxLayout(content_widget)
+        content_layout.setContentsMargins(0, 0, 0, 0)
+        content_layout.setSpacing(10)
+        content_layout.setAlignment(Qt.AlignTop)
         
-        # --- Global Controls ---
-        self.layout.addWidget(self._create_separator("Global Controls"))
-        
-        global_row1 = QHBoxLayout()
-        self.btn_coord = self._create_button("COORDINATOR", self.launch_coordinator)
-        self.btn_rviz = self._create_button("RVIZ", self.launch_rviz)
-        global_row1.addWidget(self.btn_coord)
-        global_row1.addWidget(self.btn_rviz)
-        self.layout.addLayout(global_row1)
-
-        global_row2 = QHBoxLayout()
-        if self.is_sim:
-            self.btn_sim = self._create_button("SIMULATION", self.launch_simulation)
-            global_row2.addWidget(self.btn_sim)
-        
-        self.btn_stop = QPushButton("STOP ALL")
-        self.btn_stop.setStyleSheet(BUTTON_STYLE_DANGER)
-        self.btn_stop.clicked.connect(self.stop_all)
-        global_row2.addWidget(self.btn_stop)
-        self.layout.addLayout(global_row2)
-
-        # --- Agent Controls ---
-        self.layout.addWidget(self._create_separator("Agent Controls"))
-        
-        # Container for dynamic agent rows
-        self.agent_container = QWidget()
-        self.agent_layout = QVBoxLayout(self.agent_container)
-        self.agent_layout.setContentsMargins(0, 0, 0, 0)
-        self.agent_layout.setSpacing(10)
-        self.layout.addWidget(self.agent_container)
-
-        scroll.setWidget(content)
+        scroll.setWidget(content_widget)
         main_layout.addWidget(scroll)
+        
+        return container, content_layout
 
-    def _create_separator(self, text):
+    def create_separator(self, text):
         lbl = QLabel(text)
         lbl.setStyleSheet(LABEL_STYLE_SEPARATOR)
         return lbl
 
-    def _create_button(self, text, callback):
-        btn = QPushButton(text)
+    def create_button(self, text, callback, icon=None):
+        btn = QPushButton(f"  {text}")
+        if icon:
+            btn.setIcon(icon)
+            btn.setIconSize(QSize(24, 24))
         btn.setStyleSheet(BUTTON_STYLE_STANDARD)
         btn.clicked.connect(callback)
         return btn
@@ -104,6 +184,10 @@ class ControlPanel(QWidget):
     def launch_simulation(self):
         if self.is_sim:
             self.pm.start_process("Simulation", ["pixi", "run", "simulation-run"])
+
+    def launch_ue5(self):
+        if self.is_sim:
+            self.pm.start_process("UE5", ["pixi", "run", "simulation-ue5-run"])
 
     def launch_agent(self, agent_id):
         if self.is_sim:
@@ -132,11 +216,19 @@ class ControlPanel(QWidget):
         row_layout = QHBoxLayout(row)
         row_layout.setContentsMargins(0, 0, 0, 0)
         
-        btn_agent = self._create_button(f"LAUNCH {agent_id}", lambda: self.launch_agent(agent_id))
+        btn_agent = self.create_button(
+            f"Launch {agent_id}", 
+            lambda: self.launch_agent(agent_id),
+            self.get_white_icon(QStyle.SP_MediaPlay)
+        )
         row_layout.addWidget(btn_agent)
         
         if self.is_sim:
-            btn_px4 = self._create_button(f"PX4-{idx}", lambda: self.launch_px4(agent_id, idx))
+            btn_px4 = self.create_button(
+                f"Launch PX4-{idx}", 
+                lambda: self.launch_px4(agent_id, idx),
+                self.get_white_icon(QStyle.SP_MediaPlay)
+            )
             row_layout.addWidget(btn_px4)
             
         self.agent_widgets[agent_id] = row
