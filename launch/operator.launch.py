@@ -144,26 +144,6 @@ def launch_setup(context, *args, **kwargs):
             )
         )
 
-    # Conditionally add Rviz
-    if is_enabled('rviz'):
-        rviz_config_path = rviz_path.perform(context).strip()
-        ld.append(
-            Node(
-                package='rviz2',
-                executable='rviz2',
-                name='rviz2',
-                output='screen',
-                arguments=[
-                    '-d', rviz_config_path,
-                    '--ros-args',
-                    '--log-level', log_level('rviz')
-                ],
-                parameters=[
-                    {'use_sim_time': is_sim}
-                ]
-            )
-        )
-
     return ld
 
 def generate_launch_description():

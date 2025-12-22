@@ -3,7 +3,7 @@
 import logging
 from PyQt5.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QGridLayout, QLabel, QTabWidget, QStackedWidget, QSizePolicy, QSpacerItem
 from PyQt5.QtCore import Qt, QTimer, QUrl, QSize, QEvent
-from PyQt5.QtMultimedia import QMediaPlayer
+from PyQt5.QtMultimedia import QMediaPlayer, QMediaContent
 from PyQt5.QtMultimediaWidgets import QVideoWidget
 from typing import Optional
 from .styles import (
@@ -34,7 +34,7 @@ class CameraFeed(QWidget):
         
         # Status label for connection state
         self.status_label = QLabel('No feed' if stream_url is None else 'Connecting...')
-        self.status_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.status_label.setAlignment(Qt.AlignCenter)
         self.status_label.setStyleSheet(LABEL_STYLE_CONNECTING)
         
         # Video widget for QtMultimedia
@@ -63,14 +63,14 @@ class CameraFeed(QWidget):
             self.media_player.setVideoOutput(self.video_widget)
             
             # Connect to error signal to handle connection issues
-            self.media_player.errorOccurred.connect(self.handle_error)
+            self.media_player.error.connect(self.handle_error)
             self.media_player.mediaStatusChanged.connect(self.handle_media_status_changed)
             
             # Set up RTP stream URL
             stream_url = QUrl(self.stream_url)
             
             # Set media source
-            self.media_player.setSource(stream_url)
+            self.media_player.setMedia(QMediaContent(stream_url))
             
             # Start playback
             self.media_player.play()
@@ -84,8 +84,9 @@ class CameraFeed(QWidget):
             self.stacked_widget.setCurrentIndex(0)
     
     # ================================ Callback handling ================================
-    def handle_error(self, error, error_string):
+    def handle_error(self, error):
         """Handle media player errors"""
+        error_string = self.media_player.errorString()
         error_msg = error_string if error_string else f"Media player error: {error}"
         logger.error(f"Media player error for stream {self.stream_url}: {error_msg}")
         self.status_label.setText(f'Error connecting to stream {self.stream_url}:\n{error_msg}')
@@ -93,11 +94,11 @@ class CameraFeed(QWidget):
     
     def handle_media_status_changed(self, status):
         """Handle media status changes"""
-        if status == QMediaPlayer.MediaStatus.LoadedMedia:
+        if status == QMediaPlayer.LoadedMedia:
             # Media loaded successfully, switch to video widget
             logger.info(f"Media loaded successfully for stream: {self.stream_url}")
             self.stacked_widget.setCurrentIndex(1)
-        elif status == QMediaPlayer.MediaStatus.InvalidMedia:
+        elif status == QMediaPlayer.InvalidMedia:
             # Invalid media, show error
             logger.warning(f"Invalid media for stream: {self.stream_url}")
             self.status_label.setText(f'Invalid media on stream {self.stream_url}')
@@ -110,7 +111,7 @@ class CameraFeed(QWidget):
         # Stop and cleanup media player
         if self.media_player:
             self.media_player.stop()
-            self.media_player.setSource(QUrl())
+            self.media_player.setMedia(QMediaContent())
             self.media_player = None
         
         event.accept()
@@ -148,7 +149,7 @@ class AgentCameraComposition(QWidget):
         main_layout.setSpacing(10)
         
         # Add left spacer to center content horizontally
-        left_spacer = QSpacerItem(0, 0, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
+        left_spacer = QSpacerItem(0, 0, QSizePolicy.Expanding, QSizePolicy.Minimum)
         main_layout.addItem(left_spacer)
         
         # Add camera 0 feed to main layout
@@ -166,7 +167,7 @@ class AgentCameraComposition(QWidget):
         main_layout.addLayout(camera_1_to_4_feeds_layout)
         
         # Add right spacer to center content horizontally
-        right_spacer = QSpacerItem(0, 0, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
+        right_spacer = QSpacerItem(0, 0, QSizePolicy.Expanding, QSizePolicy.Minimum)
         main_layout.addItem(right_spacer)
     
     def closeEvent(self, event):
@@ -201,7 +202,7 @@ class CameraPanel(QWidget):
         # Placeholder message with improved styling
         placeholder = QLabel('No camera feeds configured\n\n'
                           'To add a feed, configure a stream')
-        placeholder.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        placeholder.setAlignment(Qt.AlignCenter)
         placeholder.setStyleSheet(LABEL_STYLE_PLACEHOLDER)
         self.tab_widget.addTab(placeholder, 'No Feeds')
 
@@ -247,6 +248,6 @@ class CameraPanel(QWidget):
             logger.debug("No agents remaining, adding placeholder")
             placeholder = QLabel('No camera feeds configured\n\n'
                               'To add a feed, configure UDP/RTP stream')
-            placeholder.setAlignment(Qt.AlignmentFlag.AlignCenter)
+            placeholder.setAlignment(Qt.AlignCenter)
             placeholder.setStyleSheet(LABEL_STYLE_PLACEHOLDER)
             self.tab_widget.addTab(placeholder, 'No Feeds')

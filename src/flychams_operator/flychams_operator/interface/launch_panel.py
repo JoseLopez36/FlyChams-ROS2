@@ -129,6 +129,11 @@ class LaunchPanel(QWidget):
         self.launch_coordinator_btn.clicked.connect(self.launch_coordinator)
         row1_layout.addWidget(self.launch_coordinator_btn)
         
+        self.launch_rviz_btn = QPushButton('LAUNCH RViZ')
+        self.launch_rviz_btn.setStyleSheet(BUTTON_STYLE_STANDARD)
+        self.launch_rviz_btn.clicked.connect(self.launch_rviz)
+        row1_layout.addWidget(self.launch_rviz_btn)
+        
         layout.addWidget(row1)
 
         # Second row: Simulation and Stop (2 buttons)
@@ -311,6 +316,27 @@ class LaunchPanel(QWidget):
             self.read_process_output(process, component_name)
         except Exception as e:
             self.log(f'ERROR launching PX4 for agent {agent_id}: {e}', component_name)
+
+    def launch_rviz(self):
+        """Launch Rviz using pixi task"""
+        component_name = "Rviz"
+        
+        task_name = "operator-rviz"
+        cmd = ["pixi", "run", task_name]
+
+        self.log(f'Launching Rviz...', component_name)
+        try:
+            # Launch in background
+            process = subprocess.Popen(
+                cmd,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE
+            )
+            self.log(f'Rviz launched (PID: {process.pid})', component_name)
+            # Start reading output
+            self.read_process_output(process, component_name)
+        except Exception as e:
+            self.log(f'ERROR launching Rviz: {e}', component_name)
 
     def stop(self):
         """Stop all FlyChams components"""

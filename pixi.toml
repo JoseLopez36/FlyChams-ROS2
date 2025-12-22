@@ -2,7 +2,7 @@
 name = "flychams-ros2"
 authors = ["Jose Francisco Lopez Ruiz <josloprui6@alum.us.es>"]
 channels = ["robostack-humble", "conda-forge"]
-platforms = ["linux-64", "linux-aarch64"]
+platforms = ["linux-64"]
 version = "0.1.0"
 
 [dependencies]
@@ -27,6 +27,12 @@ ros-humble-vision-opencv = ">=3.2.1,<4"
 ros-humble-rviz2 = ">=11.2.18,<12"
 ros-humble-rqt-gui = ">=1.1.7,<2"
 pyqt = ">=5.15.11,<6"
+gstreamer = ">=1.24.11,<2"
+gst-plugins-base = ">=1.24.11,<2"
+gst-plugins-good = ">=1.24.11,<2"
+gst-plugins-bad = ">=1.24.11,<2"
+gst-plugins-ugly = ">=1.24.11,<2"
+gst-libav = ">=1.24.11,<2"
 
 
 [feature.coordinator.dependencies]
@@ -75,16 +81,13 @@ colcon build \
 # Setup tasks
 generate-settings = "ros2 launch launch/generate_settings.launch.py"
 
-# Operator simulation tasks
+# Operator tasks
 operator-sim-run = "ros2 launch launch/operator.launch.py is_sim:=True"
-
-# Operator hardware tasks
 operator-hardware-run = "ros2 launch launch/operator.launch.py is_sim:=False"
+operator-rviz = "ros2 run rviz2 rviz2 -d config/rviz/default.rviz"
 
-# Coordinator simulation tasks
+# Coordinator tasks
 coordinator-sim-run = "ros2 launch launch/coordinator.launch.py is_sim:=True"
-
-# Coordinator hardware tasks
 coordinator-hardware-run = "ros2 launch launch/coordinator.launch.py is_sim:=False"
 
 # Agent simulation tasks (docker)
