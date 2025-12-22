@@ -7,7 +7,10 @@ version = "0.1.0"
 
 
 [dependencies]
+# ROS2 base
 ros-humble-ros-base = ">=0.10.0,<0.11"
+
+# Compilation tools
 ros-humble-ament-cmake-auto = ">=1.3.12,<2"
 compilers = ">=1.11.0,<2"
 pkg-config = ">=0.29.2,<0.30"
@@ -15,14 +18,10 @@ cmake = "3.26.*"
 ninja = ">=1.13.2,<2"
 colcon-common-extensions = ">=0.3.0,<0.4"
 setuptools = "<=58.2.0"
-git = ">=2.52.0,<3"
-lark-parser = ">=0.12.0,<0.13"
-vcstool = ">=0.3.0,<0.4"
-pip = ">=25.3,<26"
-glfw = ">=3.4,<4"
-make = ">=4.4.1,<5"
-numpy = ">=1.26.4,<2"
-python = ">=3.11.14,<3.12"
+
+# ROS dependencies
+ros-humble-geographic-msgs = ">=1.0.6,<2"
+ros-humble-vision-opencv = ">=3.2.1,<4"
 
 
 [feature.operator.dependencies]
@@ -30,17 +29,21 @@ ros-humble-rviz2 = ">=11.2.18,<12"
 ros-humble-rqt-gui = ">=1.1.7,<2"
 
 
+[feature.coordinator.dependencies]
+
+
 [feature.simulation.dependencies]
 
 
 [environments]
-default = ["operator", "simulation"]
-full = ["operator", "simulation"]
-reduced = []
-
+default = ["operator", "coordinator", "simulation"]
+operator = ["operator"]
+coordinator = ["coordinator"]
+simulation = ["simulation"]
 
 [tasks]
-clean = "rm -rf build install log"
+# Build tasks
+clean = "rm -rf build/ install/ log/"
 build = """
 colcon build \
   --symlink-install \
@@ -49,10 +52,40 @@ colcon build \
   -DPython3_EXECUTABLE=$PIXI_PROJECT_ROOT/.pixi/envs/default/bin/python \
   -DPython_EXECUTABLE=$PIXI_PROJECT_ROOT/.pixi/envs/default/bin/python
 """
-build-operator = "build --cmake-args -G Ninja --packages-up-to flychams_core flychams_operator airsim_interfaces flychams_interfaces"
-build-coordinator = "build --cmake-args -G Ninja --packages-up-to flychams_core flychams_coordinator airsim_interfaces flychams_interfaces"
-build-agent = "build --cmake-args -G Ninja --packages-up-to flychams_core flychams_agent airsim_interfaces flychams_interfaces"
-build-simulation = "build --cmake-args -G Ninja --packages-select flychams_core flychams_simulation airsim_wrapper airsim_interfaces flychams_interfaces"
+operator-build = """
+colcon build \
+  --symlink-install \
+  --cmake-args \
+  -G Ninja \
+  -DPython3_EXECUTABLE=$PIXI_PROJECT_ROOT/.pixi/envs/default/bin/python \
+  -DPython_EXECUTABLE=$PIXI_PROJECT_ROOT/.pixi/envs/default/bin/python \
+  --packages-up-to flychams_operator
+"""
+coordinator-build = """
+colcon build \
+  --symlink-install \
+  --cmake-args \
+  -G Ninja \
+  -DPython3_EXECUTABLE=$PIXI_PROJECT_ROOT/.pixi/envs/default/bin/python \
+  -DPython_EXECUTABLE=$PIXI_PROJECT_ROOT/.pixi/envs/default/bin/python \
+  --packages-up-to flychams_coordinator
+"""
+simulation-build = """
+colcon build \
+  --symlink-install \
+  --cmake-args \
+  -G Ninja \
+  -DPython3_EXECUTABLE=$PIXI_PROJECT_ROOT/.pixi/envs/default/bin/python \
+  -DPython_EXECUTABLE=$PIXI_PROJECT_ROOT/.pixi/envs/default/bin/python \
+  --packages-up-to flychams_simulation
+"""
+
+# Agent Docker tasks
+agent-build-image = "bash tools/docker/build.sh"
+agent-build = "bash tools/agent_setup.sh build"
+agent-run = "bash tools/agent_setup.sh run"
+agent-stop = "bash tools/agent_setup.sh stop"
+agent-shell = "bash tools/agent_setup.sh shell"
 
 
 [activation]

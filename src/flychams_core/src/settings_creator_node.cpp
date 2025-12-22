@@ -13,6 +13,8 @@
 #include "flychams_core/utils/ros_utils.hpp"
 #include "flychams_core/settings/mission_settings_parser.hpp"
 
+using namespace flychams::core;
+
 /**
  * ════════════════════════════════════════════════════════════════
  * @brief Settings node for creating settings files for external

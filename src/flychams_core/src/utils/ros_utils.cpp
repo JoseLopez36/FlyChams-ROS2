@@ -13,14 +13,10 @@ namespace flychams::core
 
     TimerPtr RosUtils::createTimer(NodePtr node, float rate, const std::function<void()>& callback, CallbackGroupPtr callback_group)
     {
-        if (callback_group == nullptr)
-        {
-            return node->create_timer(std::chrono::duration<float>(1.0f / rate), callback);
-        }
-        else
-        {
-            return node->create_timer(std::chrono::duration<float>(1.0f / rate), callback, callback_group);
-        }
+        auto steady_clock = std::make_shared<rclcpp::Clock>(RCL_STEADY_TIME);
+        auto period = std::chrono::duration_cast<std::chrono::nanoseconds>(
+            std::chrono::duration<float>(1.0f / rate));
+        return rclcpp::create_timer(node.get(), steady_clock, period, callback, callback_group);
     }
 
     TimerPtr RosUtils::createWallTimer(NodePtr node, float rate, const std::function<void()>& callback, CallbackGroupPtr callback_group)
