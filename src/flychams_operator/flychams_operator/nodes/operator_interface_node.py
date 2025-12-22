@@ -7,8 +7,8 @@ import rclpy
 from rclpy.node import Node
 from geometry_msgs.msg import PointStamped
 from flychams_interfaces.msg import Registration, ClusterGeometry
-from PyQt6.QtCore import QObject, pyqtSignal
-from PyQt6.QtWidgets import QApplication
+from PyQt5.QtCore import QObject, pyqtSignal
+from PyQt5.QtWidgets import QApplication
 import threading
 import logging
 import os

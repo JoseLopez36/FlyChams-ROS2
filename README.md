@@ -103,13 +103,13 @@ Run the following command to build the docker image:
 ```
 *Note: This will build the docker image. It may take a while to build the image.*
 
-### 6. Install Python dependencies
+### 6. Install system dependencies
 
-Run the following command to install the required Python packages:
+Run the following command to install the required system packages:
 
 **Host Machine**
 ```bash
-sudo apt install python3-libtmux
+sudo apt install python3-libtmux python3-pyqt6
 ```
 
 ### 7. Setup and build the system

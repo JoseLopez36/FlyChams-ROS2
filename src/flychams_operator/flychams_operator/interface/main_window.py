@@ -1,8 +1,8 @@
 """Main window for the operator interface operator"""
 
-from PyQt6.QtWidgets import QMainWindow, QWidget, QHBoxLayout, QSplitter, QTabWidget
-from PyQt6.QtCore import Qt
-from PyQt6.QtGui import QPalette, QColor
+from PyQt5.QtWidgets import QMainWindow, QWidget, QHBoxLayout, QSplitter, QTabWidget
+from PyQt5.QtCore import Qt
+from PyQt5.QtGui import QPalette, QColor
 from .launch_panel import LaunchPanel
 from .map_panel import MapPanel
 from .camera_panel import CameraPanel

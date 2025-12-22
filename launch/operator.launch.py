@@ -87,7 +87,7 @@ def launch_setup(context, *args, **kwargs):
     ld.append(
         Node(
             package='flychams_operator',
-            executable='operator_interface_node.py',
+            executable='operator_interface_node',
             name='operator_interface_node',
             output='screen',
             namespace='flychams/operator',

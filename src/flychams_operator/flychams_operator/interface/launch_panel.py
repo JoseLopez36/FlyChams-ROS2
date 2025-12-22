@@ -1,8 +1,8 @@
 """Mission launch panel with buttons to launch system components"""
 
-from PyQt6.QtGui import QFont
-from PyQt6.QtWidgets import QWidget, QVBoxLayout, QPlainTextEdit, QPushButton, QLabel, QTabWidget, QHBoxLayout
-from PyQt6.QtCore import QTimer
+from PyQt5.QtGui import QFont
+from PyQt5.QtWidgets import QWidget, QVBoxLayout, QPlainTextEdit, QPushButton, QLabel, QTabWidget, QHBoxLayout
+from PyQt5.QtCore import QTimer
 import subprocess
 from pathlib import Path
 import os

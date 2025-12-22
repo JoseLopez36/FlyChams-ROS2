@@ -5,7 +5,6 @@ channels = ["robostack-humble", "conda-forge"]
 platforms = ["linux-64", "linux-aarch64"]
 version = "0.1.0"
 
-
 [dependencies]
 # ROS2 base
 ros-humble-ros-base = ">=0.10.0,<0.11"
@@ -27,6 +26,7 @@ ros-humble-vision-opencv = ">=3.2.1,<4"
 [feature.operator.dependencies]
 ros-humble-rviz2 = ">=11.2.18,<12"
 ros-humble-rqt-gui = ">=1.1.7,<2"
+pyqt = ">=5.15.11,<6"
 
 
 [feature.coordinator.dependencies]

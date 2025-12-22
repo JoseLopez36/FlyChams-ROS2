@@ -46,6 +46,7 @@ ament_target_dependencies(marker_factory_node rclcpp flychams_core)
 install(PROGRAMS
   flychams_operator/nodes/operator_interface_node.py
   DESTINATION lib/${PROJECT_NAME}
+  RENAME operator_interface_node
 )
 
 # Install targets and headers

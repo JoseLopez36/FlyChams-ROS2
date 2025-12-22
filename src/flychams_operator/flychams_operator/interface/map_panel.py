@@ -1,8 +1,8 @@
 """Top-down map view for visualizing agents, targets and clusters"""
 
-from PyQt6.QtWidgets import QWidget
-from PyQt6.QtCore import Qt, QPointF
-from PyQt6.QtGui import QPainter, QPen, QBrush, QColor, QFont, QWheelEvent, QMouseEvent
+from PyQt5.QtWidgets import QWidget
+from PyQt5.QtCore import Qt, QPointF
+from PyQt5.QtGui import QPainter, QPen, QBrush, QColor, QFont, QWheelEvent, QMouseEvent
 from typing import Dict, Optional
 from geometry_msgs.msg import Point
 from .styles import COLOR_BACKGROUND_PRIMARY
@@ -77,7 +77,7 @@ class MapPanel(QWidget):
     def wheelEvent(self, event: QWheelEvent):
         """Handle mouse wheel zoom"""
         # Get mouse position in widget coordinates
-        mouse_pos = event.position()
+        mouse_pos = event.pos()
         mouse_x = mouse_pos.x()
         mouse_y = mouse_pos.y()
         
@@ -118,21 +118,21 @@ class MapPanel(QWidget):
         """Handle mouse press for panning"""
         if event.button() == Qt.MouseButton.LeftButton:
             self.panning = True
-            self.last_pan_point = event.position()
+            self.last_pan_point = event.pos()
             self.setCursor(Qt.CursorShape.ClosedHandCursor)
     
     def mouseMoveEvent(self, event: QMouseEvent):
         """Handle mouse move for panning"""
         if self.panning and self.last_pan_point is not None:
             # Calculate delta movement
-            delta_x = event.position().x() - self.last_pan_point.x()
-            delta_y = event.position().y() - self.last_pan_point.y()
+            delta_x = event.pos().x() - self.last_pan_point.x()
+            delta_y = event.pos().y() - self.last_pan_point.y()
             
             # Update offset
             self.offset_x += delta_x
             self.offset_y += delta_y
             
-            self.last_pan_point = event.position()
+            self.last_pan_point = event.pos()
             self.update()
     
     def mouseReleaseEvent(self, event: QMouseEvent):

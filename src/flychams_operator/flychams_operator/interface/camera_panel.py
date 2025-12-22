@@ -1,10 +1,10 @@
 """Camera view widget for displaying UDP/RTP video streams"""
 
 import logging
-from PyQt6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QGridLayout, QLabel, QTabWidget, QStackedWidget, QSizePolicy, QSpacerItem
-from PyQt6.QtCore import Qt, QTimer, QUrl, QSize, QEvent
-from PyQt6.QtMultimedia import QMediaPlayer
-from PyQt6.QtMultimediaWidgets import QVideoWidget
+from PyQt5.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QGridLayout, QLabel, QTabWidget, QStackedWidget, QSizePolicy, QSpacerItem
+from PyQt5.QtCore import Qt, QTimer, QUrl, QSize, QEvent
+from PyQt5.QtMultimedia import QMediaPlayer
+from PyQt5.QtMultimediaWidgets import QVideoWidget
 from typing import Optional
 from .styles import (
     LABEL_STYLE_CONNECTING,
