@@ -82,7 +82,7 @@ remove_container()
 shell_container() 
 {
     print_info "Opening shell in agent container"
-    "$SCRIPT_DIR/docker/launch_agent.sh" "$AGENT_ID" "bash"
+    "$SCRIPT_DIR/docker/launch_agent.sh" "$AGENT_ID"
 }
 
 # Function to print usage

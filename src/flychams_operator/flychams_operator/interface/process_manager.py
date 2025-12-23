@@ -91,7 +91,7 @@ class ProcessManager(QObject):
         threads = []
         # Create a list of names to avoid dictionary size change during iteration
         for name in list(self.processes.keys()):
-            if not name.startswith("Operator"):
+            if not name.startswith("Operator") and not name.startswith("UE5"):
                 t = threading.Thread(target=self.stop_process, args=(name,), daemon=True)
                 t.start()
                 threads.append(t)
