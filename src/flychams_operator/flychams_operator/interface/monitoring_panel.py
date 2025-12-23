@@ -1,15 +1,16 @@
-"""Camera view widget for displaying UDP/RTP video streams"""
+"""Monitoring panel: central camera stream + tracking views rendered as crops (windows) of the main image."""
 
 import logging
 from PyQt5.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QGridLayout, 
-    QLabel, QTabWidget, QStackedWidget, 
+    QLabel, QTabWidget, QStackedWidget,
     QToolButton, QMenu, QAction
 )
-from PyQt5.QtCore import Qt, QTimer, QUrl, pyqtSignal
-from PyQt5.QtMultimedia import QMediaPlayer, QMediaContent
+from PyQt5.QtCore import Qt, QTimer, QUrl, QObject, pyqtSignal, pyqtSlot
+from PyQt5.QtGui import QImage, QPixmap
+from PyQt5.QtMultimedia import QMediaPlayer, QMediaContent, QVideoProbe, QVideoFrame, QAbstractVideoBuffer
 from PyQt5.QtMultimediaWidgets import QVideoWidget
-from typing import Optional
+from typing import Optional, Dict, List, Tuple
 from .styles import (
     LABEL_STYLE_CONNECTING,
     LABEL_STYLE_TITLE_MEDIUM,
@@ -19,8 +20,237 @@ from .styles import (
 
 logger = logging.getLogger(__name__)
 
+def _qvideoframe_to_qimage(frame: QVideoFrame) -> Optional[QImage]:
+    """
+    Convert a QVideoFrame to a detached QImage (safe after unmap()).
+
+    Returns None if the pixel format cannot be represented as a QImage directly.
+    """
+    if not frame or not frame.isValid():
+        return None
+
+    image_format = QVideoFrame.imageFormatFromPixelFormat(frame.pixelFormat())
+    if image_format == QImage.Format_Invalid:
+        return None
+
+    if not frame.map(QAbstractVideoBuffer.ReadOnly):
+        return None
+
+    try:
+        w = frame.width()
+        h = frame.height()
+        bytes_per_line = frame.bytesPerLine()
+        # In PyQt5, QVideoFrame.bits() returns a sip.voidptr.
+        img = QImage(frame.bits(), w, h, bytes_per_line, image_format)
+        return img.copy()  # detach from the underlying buffer before unmap()
+    finally:
+        frame.unmap()
+
+
+class CropView(QWidget):
+    """A lightweight view that displays a crop (window) of the latest main-frame QImage."""
+
+    makeMainRequested = pyqtSignal(object)  # kept for UI consistency (can be used to promote crop later)
+
+    def __init__(self, label_text: str, *, is_main: bool = False, allow_promote: bool = False):
+        super().__init__()
+        self.label_text = label_text or ""
+        self.is_main = is_main
+        self.allow_promote = allow_promote
+
+        self._latest_frame: Optional[QImage] = None
+        self._crop: Optional[Tuple[int, int, int, int]] = None  # x, y, w, h
+        self._out_of_bounds: bool = False
+
+        layout = QVBoxLayout(self)
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.setSpacing(0)
+
+        header_widget = QWidget()
+        header_widget.setStyleSheet(
+            "background-color: #2d2d2d; border-top-left-radius: 4px; border-top-right-radius: 4px;"
+        )
+        header_layout = QHBoxLayout(header_widget)
+        header_layout.setContentsMargins(8, 4, 8, 4)
+
+        self.title_label = QLabel(self.label_text.upper())
+        self.title_label.setStyleSheet("color: #ffffff; font-size: 16px; font-weight: bold; border: none;")
+        header_layout.addWidget(self.title_label)
+
+        # Menu (optional future use; kept to avoid breaking layout expectations)
+        self.menu = QMenu(self)
+        self.menu.setStyleSheet("""
+            QMenu {
+                background-color: #2d2d2d;
+                color: white;
+                border: 1px solid #444;
+            }
+            QMenu::item {
+                padding: 4px 20px;
+            }
+            QMenu::item:selected {
+                background-color: #3d3d3d;
+            }
+        """)
+
+        make_main_action = QAction("Make main feed", self)
+        make_main_action.triggered.connect(lambda: self.makeMainRequested.emit(self))
+        make_main_action.setEnabled(self.allow_promote)
+        self.menu.addAction(make_main_action)
+
+        self.menu_button = QToolButton()
+        self.menu_button.setText("⋮")
+        self.menu_button.setMenu(self.menu)
+        self.menu_button.setPopupMode(QToolButton.InstantPopup)
+        self.menu_button.setStyleSheet("""
+            QToolButton {
+                color: #ffffff;
+                font-size: 22px;
+                border: none;
+                background: transparent;
+                font-weight: bold;
+                padding: 0px;
+                margin: 0px;
+                min-width: 30px;
+                max-width: 30px;
+                min-height: 30px;
+                max-height: 30px;
+            }
+            QToolButton:hover {
+                background-color: rgba(255, 255, 255, 0.1);
+                border-radius: 4px;
+            }
+            QToolButton::menu-indicator {
+                image: none;
+            }
+        """)
+
+        header_layout.addStretch()
+        header_layout.addWidget(self.menu_button)
+        layout.addWidget(header_widget)
+
+        self.stacked_widget = QStackedWidget()
+
+        self.status_label = QLabel('Waiting for video...' if self.is_main else 'Waiting for main feed...')
+        self.status_label.setAlignment(Qt.AlignCenter)
+        self.status_label.setStyleSheet(LABEL_STYLE_CONNECTING)
+
+        self.image_label = QLabel()
+        self.image_label.setAlignment(Qt.AlignCenter)
+        self.image_label.setStyleSheet("background-color: black;")
+        self.image_label.setMinimumSize(10, 10)
+
+        self.stacked_widget.addWidget(self.status_label)  # Index 0
+        self.stacked_widget.addWidget(self.image_label)   # Index 1
+        self.stacked_widget.setCurrentIndex(0)
+
+        layout.addWidget(self.stacked_widget)
+
+    def set_crop(self, x: int, y: int, w: int, h: int, *, is_out_of_bounds: bool = False):
+        self._crop = (int(x), int(y), int(w), int(h))
+        self._out_of_bounds = bool(is_out_of_bounds)
+        if self._out_of_bounds:
+            self.status_label.setText('Crop outside image bounds')
+            self.stacked_widget.setCurrentIndex(0)
+            return
+        self._render()
+
+    def clear_crop(self):
+        self._crop = None
+        self._out_of_bounds = False
+        self._render()
+
+    def set_frame(self, frame_img: Optional[QImage]):
+        self._latest_frame = frame_img
+        self._render()
+
+    def resizeEvent(self, event):
+        super().resizeEvent(event)
+        self._render()
+
+    def _render(self):
+        if self._latest_frame is None or self._latest_frame.isNull():
+            self.status_label.setText('Waiting for video...' if self.is_main else 'Waiting for main feed...')
+            self.stacked_widget.setCurrentIndex(0)
+            return
+
+        src = self._latest_frame
+
+        # Main view shows the full frame.
+        if self.is_main or self._crop is None:
+            img = src
+        else:
+            x, y, w, h = self._crop
+            img = src.copy(x, y, w, h)
+
+        pixmap = QPixmap.fromImage(img)
+        target_size = self.image_label.size()
+        if target_size.width() > 0 and target_size.height() > 0:
+            pixmap = pixmap.scaled(target_size, Qt.KeepAspectRatio, Qt.SmoothTransformation)
+
+        self.image_label.setPixmap(pixmap)
+        self.stacked_widget.setCurrentIndex(1)
+
+        # Visual hint when the requested crop is out of bounds.
+        if (not self.is_main) and self._out_of_bounds:
+            self.image_label.setStyleSheet("background-color: black; border: 2px solid #d64a4a;")
+        else:
+            self.image_label.setStyleSheet("background-color: black; border: none;")
+
+
+class MainVideoStream(QObject):
+    """Owns a QMediaPlayer and probes frames to feed CropViews."""
+
+    frameUpdated = pyqtSignal(object)  # QImage
+
+    def __init__(self, stream_url: Optional[str], video_output: QVideoWidget):
+        super().__init__()
+        self.stream_url = stream_url
+        self.video_output = video_output
+
+        self.media_player: Optional[QMediaPlayer] = None
+        self.video_probe: Optional[QVideoProbe] = None
+
+        if self.stream_url:
+            QTimer.singleShot(100, self.connect_stream)
+
+    def connect_stream(self):
+        if not self.stream_url:
+            return
+        logger.info(f"Connecting main stream: {self.stream_url}")
+        try:
+            self.media_player = QMediaPlayer(self.video_output)
+            self.media_player.setVideoOutput(self.video_output)
+
+            self.video_probe = QVideoProbe(self.video_output)
+            self.video_probe.videoFrameProbed.connect(self._on_frame_probed)
+            if not self.video_probe.setSource(self.media_player):
+                logger.warning("Could not attach QVideoProbe to QMediaPlayer; crop views will not update.")
+
+            stream_url = QUrl(self.stream_url)
+            self.media_player.setMedia(QMediaContent(stream_url))
+            self.media_player.play()
+        except Exception as e:
+            logger.error(f"Error connecting main stream {self.stream_url}: {e}")
+
+    @pyqtSlot(QVideoFrame)
+    def _on_frame_probed(self, frame: QVideoFrame):
+        img = _qvideoframe_to_qimage(frame)
+        if img is not None and not img.isNull():
+            self.frameUpdated.emit(img)
+
+    def close(self):
+        try:
+            if self.media_player:
+                self.media_player.stop()
+                self.media_player.setMedia(QMediaContent())
+        finally:
+            self.media_player = None
+            self.video_probe = None
+
+
 class CameraFeed(QWidget):
-    """Widget for a single camera feed using QtMultimedia"""
+    """(Deprecated) Widget for a single camera feed using QtMultimedia (kept for backwards compatibility)."""
     
     makeMainRequested = pyqtSignal(object)  # Signal to request becoming the main feed
     
@@ -190,13 +420,19 @@ class CameraFeed(QWidget):
         event.accept()
 
 class AgentCameraComposition(QWidget):
-    """Widget displaying camera feeds for a single agent: 1 large main feed + 2x2 grid of smaller feeds"""
+    """
+    Widget displaying camera feeds for a single agent:
+    - 1 large main feed (central camera stream)
+    - 2x2 grid of tracking feeds rendered as crops of the main image
+    """
     
     def __init__(self, agent_id: str, stream_urls: list):
         super().__init__()
         
         self.agent_id = agent_id
-        self.camera_feeds = []
+        self.camera_feeds: List[QWidget] = []
+        self._crop_views: List[CropView] = []
+        self._main_stream: Optional[MainVideoStream] = None
         
         logger.info(f"Creating camera composition for agent '{agent_id}' with {len(stream_urls)} stream(s)")
         
@@ -209,13 +445,35 @@ class AgentCameraComposition(QWidget):
             "TRACKING 4"
         ]
         
-        # Create 5 camera feeds
-        for i in range(5):
-            url = stream_urls[i] if i < len(stream_urls) else None
-            label = labels[i]
-            feed = CameraFeed(url, label)
-            feed.makeMainRequested.connect(self.promote_to_main)
-            self.camera_feeds.append(feed)
+        # Main stream URL: use the first configured stream URL (historically CENTRAL CAMERA)
+        main_url = stream_urls[0] if len(stream_urls) > 0 else None
+
+        # Create main view (full frame) + 4 crop views
+        self.main_view = CropView(labels[0], is_main=True, allow_promote=False)
+
+        self.crop_views = [CropView(labels[i], allow_promote=False) for i in range(1, 5)]
+
+        self.camera_feeds = [self.main_view] + self.crop_views
+        self._crop_views = self.crop_views
+
+        # Under the hood, still render the video with QVideoWidget, and probe frames for cropping.
+        # We embed the QVideoWidget inside the main_view by overlaying it in the image_label area.
+        # Instead of restructuring layouts heavily, we use the probed frames to drive main_view rendering.
+        self._video_widget = QVideoWidget()
+        self._video_widget.setStyleSheet("background-color: black;")
+        self._video_widget.setSizePolicy(self.main_view.sizePolicy())
+
+        # Replace the main_view's image_label content with the QVideoWidget visual output.
+        # The main_view will still render from frames; the QVideoWidget gives "native" playback.
+        self.main_view.image_label.hide()
+        self.main_view.stacked_widget.insertWidget(1, self._video_widget)
+        self.main_view.stacked_widget.setCurrentIndex(0)
+
+        self._main_stream = MainVideoStream(main_url, self._video_widget)
+        self._main_stream.frameUpdated.connect(self._on_main_frame)
+        if main_url:
+            # Show the video widget immediately (even if probing fails); it will render once frames arrive.
+            self.main_view.stacked_widget.setCurrentIndex(1)
         
         # Create main horizontal layout
         self.main_layout = QHBoxLayout(self)
@@ -227,6 +485,43 @@ class AgentCameraComposition(QWidget):
         self.grid_layout.setSpacing(10)
         
         self.setup_layout()
+
+    @pyqtSlot(object)
+    def _on_main_frame(self, img: QImage):
+        # Main view: show the full frame if the QVideoWidget isn't visible yet.
+        # Crop views: render their crops from the same frame.
+        if self.main_view.stacked_widget.currentIndex() == 0:
+            # Show video widget once we start receiving frames
+            self.main_view.stacked_widget.setCurrentIndex(1)
+        for v in self._crop_views:
+            v.set_frame(img)
+
+    def update_gui_setpoints(self, camera_ids: List[str], crops: List[object]):
+        """
+        Update the tracking crop windows.
+
+        `camera_ids` and `crops` are parallel arrays from flychams_interfaces/GuiSetpoints.
+        """
+        # Default: clear all crops, then apply up to 4 setpoints.
+        for v in self._crop_views:
+            v.clear_crop()
+
+        n = min(len(camera_ids), len(crops), 4)
+        for i in range(n):
+            crop = crops[i]
+            cam_id = camera_ids[i] if i < len(camera_ids) else ""
+
+            # Best effort: show camera_id in the header so the operator knows what window it is.
+            if cam_id:
+                self._crop_views[i].title_label.setText(cam_id.upper())
+
+            try:
+                self._crop_views[i].set_crop(
+                    crop.x, crop.y, crop.w, crop.h,
+                    is_out_of_bounds=getattr(crop, "is_out_of_bounds", False),
+                )
+            except Exception as e:
+                logger.warning(f"Failed to apply crop for agent '{self.agent_id}' index {i}: {e}")
 
     def setup_layout(self):
         """Initial layout setup or refresh after swapping"""
@@ -279,7 +574,13 @@ class AgentCameraComposition(QWidget):
                     self.clear_layout(item.layout())
 
     def promote_to_main(self, feed_widget):
-        """Swap the selected feed with the current main feed (index 0)"""
+        """
+        Swap the selected feed with the current main feed (index 0).
+
+        Note: with crop-based tracking views, promoting a crop to main would require swapping
+        rendering roles; for now we keep the behavior (swap widgets in layout) for UI parity,
+        but only the original central stream has the live QMediaPlayer.
+        """
         if feed_widget not in self.camera_feeds:
             return
             
@@ -302,6 +603,9 @@ class AgentCameraComposition(QWidget):
         # Close all camera feeds
         for feed in self.camera_feeds:
             feed.close()
+        if self._main_stream:
+            self._main_stream.close()
+            self._main_stream = None
         event.accept()
 
 
@@ -310,6 +614,8 @@ class MonitoringPanel(QWidget):
     
     def __init__(self):
         super().__init__()
+
+        self._agent_widgets: Dict[str, AgentCameraComposition] = {}
         
         layout = QVBoxLayout(self)
         layout.setContentsMargins(16, 16, 16, 16)
@@ -355,6 +661,7 @@ class MonitoringPanel(QWidget):
         
         # Create composition widget for this agent (1 large + 4 small feeds)
         composition_widget = AgentCameraComposition(agent_id, stream_urls)
+        self._agent_widgets[agent_id] = composition_widget
         self.tab_widget.addTab(composition_widget, agent_id)
 
     def remove_agent(self, agent_id: str):
@@ -368,6 +675,7 @@ class MonitoringPanel(QWidget):
                 if widget:
                     widget.close()
                 break
+        self._agent_widgets.pop(agent_id, None)
         
         # Add placeholder if no feeds remain
         if self.tab_widget.count() == 0:
@@ -377,3 +685,15 @@ class MonitoringPanel(QWidget):
             placeholder.setAlignment(Qt.AlignCenter)
             placeholder.setStyleSheet(LABEL_STYLE_PLACEHOLDER)
             self.tab_widget.addTab(placeholder, 'No Feeds')
+
+    def update_agent_gui_setpoints(self, agent_id: str, msg):
+        """Update crop windows for an agent based on GuiSetpoints."""
+        widget = self._agent_widgets.get(agent_id)
+        if not widget:
+            return
+        try:
+            camera_ids = list(getattr(msg, "camera_ids", []))
+            crops = list(getattr(msg, "crops", []))
+            widget.update_gui_setpoints(camera_ids, crops)
+        except Exception as e:
+            logger.warning(f"Failed to update GUI setpoints for agent '{agent_id}': {e}")
