@@ -6,7 +6,7 @@ Operator interface node for the FlyingChameleons system
 import rclpy
 from rclpy.node import Node
 from geometry_msgs.msg import PointStamped
-from flychams_interfaces.msg import Registration, ClusterGeometry
+from flychams_interfaces.msg import Registration, ClusterGeometry, GuiSetpoints
 from PyQt5.QtCore import QObject, pyqtSignal
 from PyQt5.QtWidgets import QApplication
 import threading
@@ -28,6 +28,7 @@ class OperatorInterfaceSignals(QObject):
     cluster_added = pyqtSignal(str)
     cluster_removed = pyqtSignal(str)
     cluster_geometry_updated = pyqtSignal(str, float, float, float, float)
+    agent_gui_setpoints_updated = pyqtSignal(str, object)  # agent_id, GuiSetpoints msg
 
 class OperatorInterface(Node):
     """Operator interface that discovers and tracks agents, targets and clusters"""
@@ -79,6 +80,12 @@ class OperatorInterface(Node):
             self.cluster_geometry_pattern = param.get_parameter_value().string_value
         except Exception:
             self.cluster_geometry_pattern = '/flychams/perception/CLUSTERID/geometry'
+        
+        try:
+            param = self.get_parameter('gui_topics.setpoints')
+            self.gui_setpoints_pattern = param.get_parameter_value().string_value
+        except Exception:
+            self.gui_setpoints_pattern = '/flychams/simulation/AGENTID/setpoint/gui'
         
         # Data structures
         self.agents: Dict[str, AgentData] = {}
@@ -160,6 +167,16 @@ class OperatorInterface(Node):
             PointStamped,
             setpoint_topic,
             lambda msg, aid=agent_id: self.agent_position_setpoint_callback(aid, msg),
+            10
+        )
+
+        # Create GUI setpoints subscriber
+        gui_setpoints_topic = replace_id_in_topic(self.gui_setpoints_pattern, 'AGENTID', agent_id)
+        
+        self.agents[agent_id].gui_setpoints_sub = self.create_subscription(
+            GuiSetpoints,
+            gui_setpoints_topic,
+            lambda msg, aid=agent_id: self.agent_gui_setpoints_callback(aid, msg),
             10
         )
 
@@ -284,6 +301,12 @@ class OperatorInterface(Node):
                 msg.point.y,
                 msg.point.z
             )
+
+    def agent_gui_setpoints_callback(self, agent_id: str, msg: GuiSetpoints):
+        """Callback for GUI setpoints updates"""
+        if agent_id in self.agents:
+            # Emit signal for GUI update
+            self.signals.agent_gui_setpoints_updated.emit(agent_id, msg)
 
     def target_position_callback(self, target_id: str, msg: PointStamped):
         """Callback for target position updates"""

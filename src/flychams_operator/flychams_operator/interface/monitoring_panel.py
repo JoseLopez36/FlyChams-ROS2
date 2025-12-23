@@ -3,10 +3,10 @@
 import logging
 from PyQt5.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QGridLayout, 
-    QLabel, QTabWidget, QStackedWidget, QSizePolicy, 
-    QSpacerItem, QPushButton, QToolButton, QMenu, QAction
+    QLabel, QTabWidget, QStackedWidget, 
+    QToolButton, QMenu, QAction
 )
-from PyQt5.QtCore import Qt, QTimer, QUrl, QSize, QEvent, pyqtSignal
+from PyQt5.QtCore import Qt, QTimer, QUrl, pyqtSignal
 from PyQt5.QtMultimedia import QMediaPlayer, QMediaContent
 from PyQt5.QtMultimediaWidgets import QVideoWidget
 from typing import Optional

@@ -77,6 +77,15 @@ colcon build \
   --packages-up-to flychams_simulation airsim_wrapper \
   --event-handlers console_direct+ 2>&1
 """
+all-build = """
+colcon build \
+  --symlink-install \
+  --cmake-args -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -G Ninja \
+  -DPython3_EXECUTABLE=$PIXI_PROJECT_ROOT/.pixi/envs/default/bin/python \
+  -DPython_EXECUTABLE=$PIXI_PROJECT_ROOT/.pixi/envs/default/bin/python \
+  --packages-up-to flychams_operator flychams_coordinator flychams_simulation airsim_wrapper \
+  --event-handlers console_direct+ 2>&1
+"""
 
 # Setup tasks
 generate-settings = "ros2 launch launch/generate_settings.launch.py"
