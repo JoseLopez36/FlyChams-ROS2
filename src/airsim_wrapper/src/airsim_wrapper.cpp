@@ -1519,7 +1519,7 @@ namespace airsim_wrapper
 
         // Rotate the transform by 90 degrees around the y-axis
         tf2::Quaternion quat, quat_gimbal, quat_final;
-        quat.setRPY(0.0, M_PI, 0.0);
+        quat.setRPY(0.0, M_PI_2, 0.0);
         tf2::fromMsg(transform.rotation, quat_gimbal);
         quat_final = quat_gimbal * quat;
         transform.rotation.x = quat_final.x();
@@ -1534,7 +1534,7 @@ namespace airsim_wrapper
     {
         // Rotate the quaternion by -90 degrees around the y-axis
         tf2::Quaternion quat, quat_gimbal, quat_final;
-        quat.setRPY(0.0, -M_PI, 0.0);
+        quat.setRPY(0.0, -M_PI_2, 0.0);
         tf2::fromMsg(geometry_msgs_quat, quat_gimbal);
         quat_final = quat_gimbal * quat;
 
