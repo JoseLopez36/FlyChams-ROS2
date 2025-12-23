@@ -30,16 +30,6 @@ namespace flychams::core
          */
         static Time now(NodePtr node);
 
-        /**
-         * @brief Create a timer
-         */
-        static TimerPtr createTimer(NodePtr node, float rate, std::function<void()> callback, CallbackGroupPtr callback_group = nullptr);
-
-        /**
-         * @brief Create a wall timer (independent of the node clock)
-         */
-        static TimerPtr createWallTimer(NodePtr node, float rate, std::function<void()> callback, CallbackGroupPtr callback_group = nullptr);
-
         // ════════════════════════════════════════════════════════════════════════════
         // PARAMETERS: Parameter utilities
         // ════════════════════════════════════════════════════════════════════════════

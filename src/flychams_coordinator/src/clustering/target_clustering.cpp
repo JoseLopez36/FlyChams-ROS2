@@ -43,8 +43,11 @@ namespace flychams::coordinator
 
 		// Set update timer
 		last_update_time_ = RosUtils::now(node_);
-		update_timer_ = RosUtils::createTimer(node_, update_rate_,
-			std::bind(&TargetClustering::update, this), module_cb_group_);
+        update_timer_ = rclcpp::create_timer(node_, 
+            node_->get_clock(), 
+            std::chrono::duration<float>(1.0f / update_rate_), 
+            std::bind(&TargetClustering::update, this), 
+            module_cb_group_);
 	}
 
 	void TargetClustering::onShutdown()

@@ -11,32 +11,6 @@ namespace flychams::core
         return node->get_clock()->now();
     }
 
-    TimerPtr RosUtils::createTimer(NodePtr node, float rate, std::function<void()> callback, CallbackGroupPtr callback_group)
-    {
-        auto period = std::chrono::duration<float>(1.0f / rate);
-        if (callback_group == nullptr)
-        {
-            return rclcpp::create_timer(node, node->get_clock(), period, std::move(callback));
-        }
-        else
-        {
-            return rclcpp::create_timer(node, node->get_clock(), period, std::move(callback), callback_group);
-        }
-    }
-
-    TimerPtr RosUtils::createWallTimer(NodePtr node, float rate, std::function<void()> callback, CallbackGroupPtr callback_group)
-    {
-        auto period = std::chrono::duration<float>(1.0f / rate);
-        if (callback_group == nullptr)
-        {
-            return node->create_wall_timer(period, std::move(callback));
-        }
-        else
-        {
-            return node->create_wall_timer(period, std::move(callback), callback_group);
-        }
-    }
-
     // ════════════════════════════════════════════════════════════════════════════
     // MESSAGES: Message utilities
     // ════════════════════════════════════════════════════════════════════════════

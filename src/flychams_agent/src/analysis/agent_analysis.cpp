@@ -19,8 +19,11 @@ namespace flychams::agent
         clusters_.clear();
 
         // Set update timer
-        update_timer_ = RosUtils::createTimer(node_, update_rate_,
-            std::bind(&AgentAnalysis::update, this), module_cb_group_);
+        update_timer_ = rclcpp::create_timer(node_, 
+            node_->get_clock(), 
+            std::chrono::duration<float>(1.0f / update_rate_), 
+            std::bind(&AgentAnalysis::update, this), 
+            module_cb_group_);
     }
 
     void AgentAnalysis::onShutdown()

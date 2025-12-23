@@ -59,8 +59,11 @@ namespace flychams::coordinator
         solver_->init(assignment_solver_mode, solver_params);
 
         // Set update timer
-        update_timer_ = RosUtils::createTimer(node_, update_rate_,
-            std::bind(&AgentAssignment::update, this), module_cb_group_);
+        update_timer_ = rclcpp::create_timer(node_, 
+            node_->get_clock(), 
+            std::chrono::duration<float>(1.0f / update_rate_), 
+            std::bind(&AgentAssignment::update, this), 
+            module_cb_group_);
     }
 
     void AgentAssignment::onShutdown()

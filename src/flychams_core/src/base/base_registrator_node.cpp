@@ -28,7 +28,9 @@ namespace flychams::core
         registration_pub_ = topic_tools_->createRegistrationPublisher();
 
         // Initialize update timer (1 Hz)
-        update_timer_ = RosUtils::createWallTimer(node_, 1.0f, [this]() { publishRegistration(); }, registration_cb_group_);
+        update_timer_ = node_->create_wall_timer(std::chrono::duration<float>(1.0f), 
+            std::bind(&BaseRegistratorNode::publishRegistration, this), 
+            registration_cb_group_);
 
         // Call on init overridable method
         onInit();

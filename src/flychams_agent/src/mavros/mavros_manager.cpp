@@ -34,11 +34,9 @@ namespace flychams::agent
 
 		// Schedule stream rate configuration after a delay to allow mavros to start
 		RCLCPP_INFO(node_->get_logger(), "Creating stream rate configuration timer for agent %s", agent_id_.c_str());
-		configure_stream_rate_timer_ = RosUtils::createWallTimer(node_, 0.5f,
-			[this]() {
-				RCLCPP_INFO(node_->get_logger(), "Timer callback triggered for agent %s", agent_id_.c_str());
-				this->configureStreamRates();
-			}, module_cb_group_);
+		configure_stream_rate_timer_ = node_->create_wall_timer(std::chrono::duration<float>(0.5f),
+			std::bind(&MavrosManager::configureStreamRates, this), 
+			module_cb_group_);
 	}
 
 	void MavrosManager::onShutdown()
