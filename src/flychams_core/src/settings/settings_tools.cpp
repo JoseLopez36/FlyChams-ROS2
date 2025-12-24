@@ -404,9 +404,10 @@ namespace flychams::core
                     multi_camera->orientation.x(), multi_camera->orientation.y(), multi_camera->orientation.z());
                 RCLCPP_INFO(node_->get_logger(), "        Focal Length: min=%.6f, max=%.6f, ref=%.6f",
                     multi_camera->min_focal, multi_camera->max_focal, multi_camera->ref_focal);
-                RCLCPP_INFO(node_->get_logger(), "        Stream URL: %s", multi_camera->stream_url.c_str());
+                RCLCPP_INFO(node_->get_logger(), "        Src Stream URL: %s", multi_camera->src_stream_url.c_str());
+                RCLCPP_INFO(node_->get_logger(), "        Dst Stream URL: %s", multi_camera->dst_stream_url.c_str());
 
-        // Camera Parameters
+                // Camera Parameters
                 RCLCPP_INFO(node_->get_logger(), "        [CAMERA]");
                 RCLCPP_INFO(node_->get_logger(), "          ID: %s", multi_camera->camera.id.c_str());
                 RCLCPP_INFO(node_->get_logger(), "          Name: %s", multi_camera->camera.name.c_str());
@@ -434,7 +435,7 @@ namespace flychams::core
                 RCLCPP_INFO(node_->get_logger(), "          Power: idle=%.3f, active=%.3f",
                     multi_camera->camera.idle_power, multi_camera->camera.active_power);
 
-        // Gimbal Parameters
+                // Gimbal Parameters
                 RCLCPP_INFO(node_->get_logger(), "        [GIMBAL]");
                 RCLCPP_INFO(node_->get_logger(), "          ID: %s", multi_camera->gimbal.id.c_str());
                 RCLCPP_INFO(node_->get_logger(), "          Name: %s", multi_camera->gimbal.name.c_str());
@@ -468,6 +469,7 @@ namespace flychams::core
                     multi_window->resolution(0), multi_window->resolution(1));
                 RCLCPP_INFO(node_->get_logger(), "        Lambda: min=%.3f, max=%.3f, ref=%.3f",
                     multi_window->min_lambda, multi_window->max_lambda, multi_window->ref_lambda);
+                RCLCPP_INFO(node_->get_logger(), "        Dst Stream URL: %s", multi_window->dst_stream_url.c_str());
             }
 
             // Drone Parameters

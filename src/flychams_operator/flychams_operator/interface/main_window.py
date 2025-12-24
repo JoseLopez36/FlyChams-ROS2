@@ -244,7 +244,6 @@ class MainWindow(QMainWindow):
         self.signals.agent_removed.connect(self.remove_agent)
         self.signals.agent_position_updated.connect(self.update_agent_position)
         self.signals.agent_setpoint_updated.connect(self.update_agent_setpoint)
-        self.signals.agent_gui_setpoints_updated.connect(self.update_agent_gui_setpoints)
         
         # Target signals
         self.signals.target_added.connect(self.add_target)
@@ -272,9 +271,6 @@ class MainWindow(QMainWindow):
     
     def update_agent_setpoint(self, agent_id: str, x: float, y: float, z: float):
         self.map_panel.update_agent_setpoint(agent_id, x, y, z)
-
-    def update_agent_gui_setpoints(self, agent_id: str, msg):
-        self.monitoring_panel.update_agent_gui_setpoints(agent_id, msg)
 
     def add_target(self, target_id: str):
         self.map_panel.add_target(target_id)

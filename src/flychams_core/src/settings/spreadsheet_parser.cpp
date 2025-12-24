@@ -466,7 +466,9 @@ namespace flychams::core
 
 					multi_camera->ref_focal = getCellValue<float>(row.findCell(11)) / 1000.0f;
 
-					multi_camera->stream_url = getCellValue<std::string>(row.findCell(12));
+					multi_camera->src_stream_url = getCellValue<std::string>(row.findCell(12));
+					
+					multi_camera->dst_stream_url = getCellValue<std::string>(row.findCell(13));
 
 					// Parse camera model
 					parseCameraModel(book, multi_camera);
@@ -531,6 +533,8 @@ namespace flychams::core
 					multi_window->max_lambda = getCellValue<float>(row.findCell(6));
 
 					multi_window->ref_lambda = getCellValue<float>(row.findCell(7));
+
+					multi_window->dst_stream_url = getCellValue<std::string>(row.findCell(8));
 
 					// Store setting
 					agent_ptr->tracking.multi_window_set.insert({ multi_window->id, multi_window });

@@ -160,7 +160,8 @@ namespace flychams::core
 		multi_camera->min_focal = RosUtils::getParameter<float>(node, prefix + "min_focal");
 		multi_camera->max_focal = RosUtils::getParameter<float>(node, prefix + "max_focal");
 		multi_camera->ref_focal = RosUtils::getParameter<float>(node, prefix + "ref_focal");
-		multi_camera->stream_url = RosUtils::getParameter<std::string>(node, prefix + "stream_url");
+		multi_camera->src_stream_url = RosUtils::getParameter<std::string>(node, prefix + "src_stream_url");
+		multi_camera->dst_stream_url = RosUtils::getParameter<std::string>(node, prefix + "dst_stream_url");
 		
 		parseCameraParameters(node, multi_camera, prefix + "camera.");
 		parseGimbalParameters(node, multi_camera, prefix + "gimbal.");
@@ -178,6 +179,7 @@ namespace flychams::core
 		multi_window->min_lambda = RosUtils::getParameter<float>(node, prefix + "min_lambda");
 		multi_window->max_lambda = RosUtils::getParameter<float>(node, prefix + "max_lambda");
 		multi_window->ref_lambda = RosUtils::getParameter<float>(node, prefix + "ref_lambda");
+		multi_window->dst_stream_url = RosUtils::getParameter<std::string>(node, prefix + "dst_stream_url");
 	}
 
 	void MissionSettingsParser::parseCameraParameters(const NodePtr& node, MultiCameraConfigPtr& multi_camera, const std::string& prefix)

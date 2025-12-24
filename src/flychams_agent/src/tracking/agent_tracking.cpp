@@ -1,5 +1,8 @@
 #include "flychams_agent/tracking/agent_tracking.hpp"
 
+// JSON include
+#include <nlohmann/json.hpp>
+
 using namespace flychams::core;
 
 namespace flychams::agent
@@ -14,12 +17,29 @@ namespace flychams::agent
         // Get update rate
         update_rate_ = RosUtils::getParameterOr<float>(node_, "tracking_rate", 20.0f);
 
+        // Get streaming parameters
+        stream_host_ = RosUtils::getParameterOr<std::string>(node_, "stream_host", "127.0.0.1");
+        stream_control_port_ = RosUtils::getParameterOr<int>(node_, "stream_control_port", 7000);
+
         // Initialize data
         agent_ = Agent();
         solvers_.clear();
 
         // Get tracking parameters
         tracking_params_ = settings_tools_->getTrackingParameters(agent_id_);
+
+        // Initialize UDP socket
+        if ((sockfd_ = socket(AF_INET, SOCK_DGRAM, 0)) < 0)
+        {
+            RCLCPP_ERROR(node_->get_logger(), "Agent tracking: Failed to create UDP socket");
+        }
+        else
+        {
+            memset(&servaddr_, 0, sizeof(servaddr_));
+            servaddr_.sin_family = AF_INET;
+            servaddr_.sin_port = htons(stream_control_port_);
+            inet_pton(AF_INET, stream_host_.c_str(), &servaddr_.sin_addr);
+        }
 
         // Get relevant transform frames
         world_frame_ = transform_tools_->getGlobalFrame();
@@ -112,6 +132,12 @@ namespace flychams::agent
         agent_.gui_setpoints_pub.reset();
         // Destroy update timer
         update_timer_.reset();
+        // Close UDP socket
+        if (sockfd_ >= 0)
+        {
+            close(sockfd_);
+            sockfd_ = -1;
+        }
     }
 
     // ════════════════════════════════════════════════════════════════════════════
@@ -173,6 +199,7 @@ namespace flychams::agent
 
         // Solve tracking for each observation unit
         int i = 0;
+        int window_index = 1;
         for (const auto& unit : tracking_params_.observation_units_params)
         {
             // Initialize variables
@@ -195,6 +222,31 @@ namespace flychams::agent
             else if (unit.type == ObservationType::Window)
             {
                 std::tie(zoom_factor, crop) = updateWindow(tab_P.col(i), tab_r(i), tab_T[0], solvers_[i]);
+
+                    // Send UDP control for window crops 
+                    if (sockfd_ >= 0 && !crop.is_out_of_bounds)
+                    {
+                        // Calculate margins for videocrop element
+                        // videocrop properties: left, right, top, bottom are number of pixels to crop from each edge
+                        // We clamp to 0 to avoid negative values if the crop is partially out of bounds
+                        int left = std::max(0, crop.x);
+                        int top = std::max(0, crop.y);
+                        int right = std::max(0, unit.window_params.full_width - (crop.x + crop.w));
+                        int bottom = std::max(0, unit.window_params.full_height - (crop.y + crop.h));
+
+                        // Create JSON message
+                        nlohmann::json json_msg;
+                        json_msg["id"] = window_index;
+                        json_msg["left"] = left;
+                        json_msg["top"] = top;
+                        json_msg["right"] = right;
+                        json_msg["bottom"] = bottom;
+
+                        std::string msg_str = json_msg.dump();
+                        sendto(sockfd_, msg_str.c_str(), msg_str.length(), 0,
+                               (const struct sockaddr *)&servaddr_, sizeof(servaddr_));
+                    }
+                window_index++;
             }
 
             // Update observation and GUI setpoints

@@ -42,6 +42,7 @@ if [ -z "$CMD" ]; then
         docker run -it --rm --name "${CONTAINER_NAME}" \
             --network host \
             -e ROS_DOMAIN_ID="${ROS_DOMAIN_ID}" \
+            -e FASTDDS_BUILTIN_TRANSPORTS="${FASTDDS_BUILTIN_TRANSPORTS}" \
             -e AGENT_ID="${AGENT_ID}" \
             -v "${PROJECT_ROOT}:/home/testuser/FlyChams-ROS2" \
             "${AGENT_IMAGE}" \

@@ -109,10 +109,11 @@ agent-sim-run = "bash tools/agent_setup.sh run"
 agent-sim-shell = "bash tools/agent_setup.sh shell"
 agent-sim-stop = "bash tools/docker/stop_agent.sh"
 agent-sim-remove = "bash tools/agent_setup.sh remove"
-
-# Agent hardware tasks
+# Agent hardware tasks (onboard computer)
 agent-hardware-run = "ros2 launch launch/agent.launch.py is_sim:=False"
 agent-hardware-stop = "pkill -f 'ros2 launch launch/agent.launch.py'"
+# Other agent tasks
+agent-stream = "/usr/bin/python3 tools/stream_agent.py"
 
 # Simulation tasks
 simulation-run = "ros2 launch launch/simulation.launch.py"

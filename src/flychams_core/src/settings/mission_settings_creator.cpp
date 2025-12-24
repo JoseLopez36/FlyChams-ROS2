@@ -256,7 +256,8 @@ namespace flychams::core
 		yaml << prefix << "min_focal: " << std::fixed << std::setprecision(6) << multi_camera->min_focal << "\n";
 		yaml << prefix << "max_focal: " << std::fixed << std::setprecision(6) << multi_camera->max_focal << "\n";
 		yaml << prefix << "ref_focal: " << std::fixed << std::setprecision(6) << multi_camera->ref_focal << "\n";
-		yaml << prefix << "stream_url: \"" << multi_camera->stream_url << "\"\n";
+		yaml << prefix << "src_stream_url: \"" << multi_camera->src_stream_url << "\"\n";
+		yaml << prefix << "dst_stream_url: \"" << multi_camera->dst_stream_url << "\"\n";
 		
 		yaml << prefix << "camera:\n";
 		writeCameraSection(yaml, multi_camera->camera, prefix + "  ");
@@ -275,6 +276,7 @@ namespace flychams::core
 		yaml << prefix << "min_lambda: " << std::fixed << std::setprecision(3) << multi_window->min_lambda << "\n";
 		yaml << prefix << "max_lambda: " << std::fixed << std::setprecision(3) << multi_window->max_lambda << "\n";
 		yaml << prefix << "ref_lambda: " << std::fixed << std::setprecision(3) << multi_window->ref_lambda << "\n";
+		yaml << prefix << "dst_stream_url: \"" << multi_window->dst_stream_url << "\"\n";
 	}
 
 	void MissionSettingsCreator::writeCameraSection(std::ostringstream& yaml, const CameraConfig& camera, const std::string& prefix)

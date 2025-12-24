@@ -28,7 +28,6 @@ class OperatorInterfaceSignals(QObject):
     cluster_added = pyqtSignal(str)
     cluster_removed = pyqtSignal(str)
     cluster_geometry_updated = pyqtSignal(str, float, float, float, float)
-    agent_gui_setpoints_updated = pyqtSignal(str, object)  # agent_id, GuiSetpoints msg
 
 class OperatorInterface(Node):
     """Operator interface that discovers and tracks agents, targets and clusters"""
@@ -80,12 +79,6 @@ class OperatorInterface(Node):
             self.cluster_geometry_pattern = param.get_parameter_value().string_value
         except Exception:
             self.cluster_geometry_pattern = '/flychams/perception/CLUSTERID/geometry'
-        
-        try:
-            param = self.get_parameter('gui_topics.setpoints')
-            self.gui_setpoints_pattern = param.get_parameter_value().string_value
-        except Exception:
-            self.gui_setpoints_pattern = '/flychams/simulation/AGENTID/setpoint/gui'
         
         # Data structures
         self.agents: Dict[str, AgentData] = {}
@@ -170,31 +163,32 @@ class OperatorInterface(Node):
             10
         )
 
-        # Create GUI setpoints subscriber
-        gui_setpoints_topic = replace_id_in_topic(self.gui_setpoints_pattern, 'AGENTID', agent_id)
-        
-        self.agents[agent_id].gui_setpoints_sub = self.create_subscription(
-            GuiSetpoints,
-            gui_setpoints_topic,
-            lambda msg, aid=agent_id: self.agent_gui_setpoints_callback(aid, msg),
-            10
-        )
-
         # Get stream URLs from agent configuration
         stream_urls = []
         # Get list of multi_camera IDs for this agent
         multi_cameras_ids_param = f'agents.{agent_id}.tracking.multi_cameras.ids'
         multi_camera_ids = self.get_parameter(multi_cameras_ids_param).get_parameter_value().string_array_value
+        multi_windows_ids_param = f'agents.{agent_id}.tracking.multi_windows.ids'
+        multi_window_ids = self.get_parameter(multi_windows_ids_param).get_parameter_value().string_array_value
         
         # Get stream_url for each multi_camera
         for multi_camera_id in multi_camera_ids:
-            stream_url_param = f'agents.{agent_id}.tracking.multi_cameras.{multi_camera_id}.stream_url'
+            stream_url_param = f'agents.{agent_id}.tracking.multi_cameras.{multi_camera_id}.dst_stream_url'
             try:
                 stream_url = self.get_parameter(stream_url_param).get_parameter_value().string_value
                 stream_urls.append(stream_url)
             except Exception as e:
                 self.get_logger().warn(f'Could not get stream_url for {agent_id}/{multi_camera_id}: {e}')
-        
+
+        # Get stream_url for each multi_window
+        for multi_window_id in multi_window_ids:
+            stream_url_param = f'agents.{agent_id}.tracking.multi_windows.{multi_window_id}.dst_stream_url'
+            try:
+                stream_url = self.get_parameter(stream_url_param).get_parameter_value().string_value
+                stream_urls.append(stream_url)
+            except Exception as e:
+                self.get_logger().warn(f'Could not get stream_url for {agent_id}/{multi_window_id}: {e}')
+                    
         # Emit signal for GUI
         self.signals.agent_added.emit(agent_id, stream_urls)
 
@@ -302,12 +296,6 @@ class OperatorInterface(Node):
                 msg.point.z
             )
 
-    def agent_gui_setpoints_callback(self, agent_id: str, msg: GuiSetpoints):
-        """Callback for GUI setpoints updates"""
-        if agent_id in self.agents:
-            # Emit signal for GUI update
-            self.signals.agent_gui_setpoints_updated.emit(agent_id, msg)
-
     def target_position_callback(self, target_id: str, msg: PointStamped):
         """Callback for target position updates"""
         if target_id in self.targets:
@@ -351,8 +339,8 @@ def main(args=None):
         datefmt='%Y-%m-%d %H:%M:%S'
     )
     
-    # Get modules to log (default to camera_panel if not specified)
-    log_modules = os.environ.get('PYTHON_LOG_MODULES', 'flychams_operator.interface.camera_panel').split(',')
+    # Get modules to log (default to monitoring_panel if not specified)
+    log_modules = os.environ.get('PYTHON_LOG_MODULES', 'flychams_operator.interface.monitoring_panel').split(',')
     for module_name in log_modules:
         module_name = module_name.strip()
         if module_name:

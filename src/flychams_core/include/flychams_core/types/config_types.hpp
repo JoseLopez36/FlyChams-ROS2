@@ -190,6 +190,7 @@ namespace flychams::core
         float min_lambda;
         float max_lambda;
         float ref_lambda;
+        std::string dst_stream_url;
     };
     using MultiWindowConfigPtr = std::shared_ptr<MultiWindowConfig>;
     using MultiWindowSetConfig = std::map<ID, MultiWindowConfigPtr>;
@@ -210,7 +211,8 @@ namespace flychams::core
         float min_focal;
         float max_focal;
         float ref_focal;
-        std::string stream_url;
+        std::string src_stream_url;
+        std::string dst_stream_url;
 
         // External config
         CameraConfig camera;
