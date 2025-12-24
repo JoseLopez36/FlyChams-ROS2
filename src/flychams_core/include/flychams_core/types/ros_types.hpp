@@ -55,6 +55,7 @@
 #include "flychams_interfaces/msg/agent_assignment.hpp"
 #include "flychams_interfaces/msg/agent_clusters.hpp"
 #include "flychams_interfaces/msg/agent_observation_setpoints.hpp"
+#include "flychams_interfaces/msg/agent_gui_setpoints.hpp"
 #include "flychams_interfaces/msg/agent_metrics.hpp"
 // Target messages
 #include "flychams_interfaces/msg/target_metrics.hpp"
@@ -62,8 +63,6 @@
 #include "flychams_interfaces/msg/cluster_assignment.hpp"
 #include "flychams_interfaces/msg/cluster_geometry.hpp"
 #include "flychams_interfaces/msg/cluster_metrics.hpp"
-// GUI messages
-#include "flychams_interfaces/msg/gui_setpoints.hpp"
 
 namespace flychams::core
 {
@@ -168,6 +167,7 @@ namespace flychams::core
     using AgentAssignmentMsg = flychams_interfaces::msg::AgentAssignment;
     using AgentClustersMsg = flychams_interfaces::msg::AgentClusters;
     using AgentObservationSetpointsMsg = flychams_interfaces::msg::AgentObservationSetpoints;
+    using AgentGuiSetpointsMsg = flychams_interfaces::msg::AgentGuiSetpoints;
     using AgentMetricsMsg = flychams_interfaces::msg::AgentMetrics;
     // Target messages
     using TargetMetricsMsg = flychams_interfaces::msg::TargetMetrics;
@@ -175,7 +175,5 @@ namespace flychams::core
     using ClusterAssignmentMsg = flychams_interfaces::msg::ClusterAssignment;
     using ClusterGeometryMsg = flychams_interfaces::msg::ClusterGeometry;
     using ClusterMetricsMsg = flychams_interfaces::msg::ClusterMetrics;
-    // GUI messages
-    using GuiSetpointsMsg = flychams_interfaces::msg::GuiSetpoints;
 
 } // namespace flychams::core

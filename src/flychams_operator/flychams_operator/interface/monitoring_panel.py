@@ -307,3 +307,13 @@ class MonitoringPanel(QWidget):
             placeholder.setAlignment(Qt.AlignCenter)
             placeholder.setStyleSheet(LABEL_STYLE_PLACEHOLDER)
             self.tab_widget.addTab(placeholder, 'No Feeds')
+
+    def update_agent_gui_setpoints(self, agent_id: str, msg):
+        """Update crop windows for an agent based on AgentGuiSetpoints"""
+        widget = self.agent_widgets.get(agent_id)
+        if not widget:
+            return
+        try:
+            crops = list(getattr(msg, "crops", []))
+        except Exception as e:
+            logger.warning(f"Failed to update GUI setpoints for agent '{agent_id}': {e}")

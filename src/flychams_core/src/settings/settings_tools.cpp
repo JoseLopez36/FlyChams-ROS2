@@ -552,6 +552,7 @@ namespace flychams::core
         RCLCPP_INFO(node_->get_logger(), "    Position Setpoint: %s", config_ptr_->topics.agent_position_setpoint.c_str());
         RCLCPP_INFO(node_->get_logger(), "    Optimization Duration: %s", config_ptr_->topics.agent_optimization_duration.c_str());
         RCLCPP_INFO(node_->get_logger(), "    Observation Setpoints: %s", config_ptr_->topics.agent_observation_setpoints.c_str());
+        RCLCPP_INFO(node_->get_logger(), "    GUI Setpoints: %s", config_ptr_->topics.agent_gui_setpoints.c_str());
         RCLCPP_INFO(node_->get_logger(), "    Metrics: %s", config_ptr_->topics.agent_metrics.c_str());
         RCLCPP_INFO(node_->get_logger(), "    Markers: %s", config_ptr_->topics.agent_markers.c_str());
         RCLCPP_INFO(node_->get_logger(), "  Target Topics:");
@@ -564,8 +565,6 @@ namespace flychams::core
         RCLCPP_INFO(node_->get_logger(), "    Geometry: %s", config_ptr_->topics.cluster_geometry.c_str());
         RCLCPP_INFO(node_->get_logger(), "    Metrics: %s", config_ptr_->topics.cluster_metrics.c_str());
         RCLCPP_INFO(node_->get_logger(), "    Markers: %s", config_ptr_->topics.cluster_markers.c_str());
-        RCLCPP_INFO(node_->get_logger(), "  GUI Topics:");
-        RCLCPP_INFO(node_->get_logger(), "    Setpoints: %s", config_ptr_->topics.gui_setpoints.c_str());
 
         // Frame Parameters
         RCLCPP_INFO(node_->get_logger(), "\n[FRAMES]");

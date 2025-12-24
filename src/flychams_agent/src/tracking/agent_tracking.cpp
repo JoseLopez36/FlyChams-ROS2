@@ -113,7 +113,7 @@ namespace flychams::agent
 
         // Create publisher for tracking and GUI setpoints
         agent_.observation_setpoints_pub = topic_tools_->createAgentObservationSetpointsPublisher(agent_id_);
-        agent_.gui_setpoints_pub = topic_tools_->createGuiSetpointsPublisher(agent_id_);
+        agent_.gui_setpoints_pub = topic_tools_->createAgentGuiSetpointsPublisher(agent_id_);
 
         // Set update timer
         update_timer_ = rclcpp::create_timer(node_, 

@@ -78,6 +78,7 @@ namespace flychams::core
         std::string agent_position_setpoint;
         std::string agent_optimization_duration;
         std::string agent_observation_setpoints;
+        std::string agent_gui_setpoints;
         std::string agent_metrics;
         std::string agent_markers;
 
@@ -92,9 +93,6 @@ namespace flychams::core
         std::string cluster_geometry;
         std::string cluster_metrics;
         std::string cluster_markers;
-
-        // GUI topics
-        std::string gui_setpoints;
     };
 
     struct FrameParameters

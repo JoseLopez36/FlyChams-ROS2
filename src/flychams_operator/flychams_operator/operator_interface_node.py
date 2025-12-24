@@ -6,7 +6,7 @@ Operator interface node for the FlyingChameleons system
 import rclpy
 from rclpy.node import Node
 from geometry_msgs.msg import PointStamped
-from flychams_interfaces.msg import Registration, ClusterGeometry, GuiSetpoints
+from flychams_interfaces.msg import Registration, ClusterGeometry, AgentGuiSetpoints
 from PyQt5.QtCore import QObject, pyqtSignal
 from PyQt5.QtWidgets import QApplication
 import threading
@@ -22,6 +22,7 @@ class OperatorInterfaceSignals(QObject):
     agent_removed = pyqtSignal(str)
     agent_position_updated = pyqtSignal(str, float, float, float)
     agent_setpoint_updated = pyqtSignal(str, float, float, float)
+    agent_gui_setpoints_updated = pyqtSignal(str, object)
     target_added = pyqtSignal(str)
     target_removed = pyqtSignal(str)
     target_position_updated = pyqtSignal(str, float, float, float)
@@ -50,35 +51,12 @@ class OperatorInterface(Node):
         self.update_rate = self.get_parameter('update_rate').get_parameter_value().double_value
         
         # Get topic names from parameters
-        try:
-            registration_topic_param = self.get_parameter('global_topics.registration')
-            registration_topic = registration_topic_param.get_parameter_value().string_value
-        except Exception:
-            registration_topic = '/flychams/bringup/registration'
-        
-        try:
-            param = self.get_parameter('agent_topics.global_position')
-            self.agent_global_position_pattern = param.get_parameter_value().string_value
-        except Exception:
-            self.agent_global_position_pattern = '/flychams/control/AGENTID/global/position'
-        
-        try:
-            param = self.get_parameter('agent_topics.position_setpoint')
-            self.agent_setpoint_pattern = param.get_parameter_value().string_value
-        except Exception:
-            self.agent_setpoint_pattern = '/flychams/coordination/AGENTID/setpoint/position'
-        
-        try:
-            param = self.get_parameter('target_topics.true_position')
-            self.target_position_pattern = param.get_parameter_value().string_value
-        except Exception:
-            self.target_position_pattern = '/flychams/targets/TARGETID/true_position'
-        
-        try:
-            param = self.get_parameter('cluster_topics.geometry')
-            self.cluster_geometry_pattern = param.get_parameter_value().string_value
-        except Exception:
-            self.cluster_geometry_pattern = '/flychams/perception/CLUSTERID/geometry'
+        self.registration_topic = self.get_parameter('global_topics.registration').get_parameter_value().string_value
+        self.agent_global_position_pattern = self.get_parameter('agent_topics.global_position').get_parameter_value().string_value
+        self.agent_setpoint_pattern = self.get_parameter('agent_topics.position_setpoint').get_parameter_value().string_value
+        self.agent_gui_setpoints_pattern = self.get_parameter('agent_topics.gui_setpoints').get_parameter_value().string_value
+        self.target_position_pattern = self.get_parameter('target_topics.true_position').get_parameter_value().string_value
+        self.cluster_geometry_pattern = self.get_parameter('cluster_topics.geometry').get_parameter_value().string_value
         
         # Data structures
         self.agents: Dict[str, AgentData] = {}
@@ -89,7 +67,7 @@ class OperatorInterface(Node):
         # Create discovery subscriber
         self.registration_sub = self.create_subscription(
             Registration,
-            registration_topic,
+            self.registration_topic,
             self.on_discovery,
             10
         )
@@ -160,6 +138,16 @@ class OperatorInterface(Node):
             PointStamped,
             setpoint_topic,
             lambda msg, aid=agent_id: self.agent_position_setpoint_callback(aid, msg),
+            10
+        )
+
+        # Create agent GUI setpoints subscriber
+        gui_setpoints_topic = replace_id_in_topic(self.agent_gui_setpoints_pattern, 'AGENTID', agent_id)
+        
+        self.agents[agent_id].gui_setpoints_sub = self.create_subscription(
+            AgentGuiSetpoints,
+            gui_setpoints_topic,
+            lambda msg, aid=agent_id: self.agent_gui_setpoints_callback(aid, msg),
             10
         )
 
@@ -271,9 +259,6 @@ class OperatorInterface(Node):
     def agent_position_callback(self, agent_id: str, msg: PointStamped):
         """Callback for agent position updates"""
         if agent_id in self.agents:
-            self.agents[agent_id].position = msg.point
-            self.agents[agent_id].has_position = True
-            
             # Emit signal for GUI update
             self.signals.agent_position_updated.emit(
                 agent_id,
@@ -285,9 +270,6 @@ class OperatorInterface(Node):
     def agent_position_setpoint_callback(self, agent_id: str, msg: PointStamped):
         """Callback for agent position setpoint updates"""
         if agent_id in self.agents:
-            self.agents[agent_id].setpoint = msg.point
-            self.agents[agent_id].has_setpoint = True
-            
             # Emit signal for GUI update
             self.signals.agent_setpoint_updated.emit(
                 agent_id,
@@ -296,12 +278,19 @@ class OperatorInterface(Node):
                 msg.point.z
             )
 
+    def agent_gui_setpoints_callback(self, agent_id: str, msg: AgentGuiSetpoints):
+        """Callback for agent GUI setpoints updates"""
+        if agent_id in self.agents:
+            # Emit signal for GUI update
+            self.signals.agent_gui_setpoints_updated.emit(
+                agent_id, 
+                msg
+            )
+
+
     def target_position_callback(self, target_id: str, msg: PointStamped):
         """Callback for target position updates"""
         if target_id in self.targets:
-            self.targets[target_id].position = msg.point
-            self.targets[target_id].has_position = True
-            
             # Emit signal for GUI update
             self.signals.target_position_updated.emit(
                 target_id,
@@ -313,10 +302,6 @@ class OperatorInterface(Node):
     def cluster_geometry_callback(self, cluster_id: str, msg: ClusterGeometry):
         """Callback for cluster geometry updates"""
         if cluster_id in self.clusters:
-            self.clusters[cluster_id].center = msg.center
-            self.clusters[cluster_id].radius = msg.radius
-            self.clusters[cluster_id].has_geometry = True
-            
             # Emit signal for GUI update
             self.signals.cluster_geometry_updated.emit(
                 cluster_id,

@@ -16,6 +16,7 @@
       position_setpoint: "/flychams/coordination/AGENTID/setpoint/position"   # PointStamped.msg
       optimization_duration: "/flychams/coordination/AGENTID/optimization_duration" # Float32.msg
       observation_setpoints: "/flychams/coordination/AGENTID/setpoint/observation"  # AgentObservationSetpoints.msg (custom)
+      gui_setpoints: "/flychams/simulation/AGENTID/setpoint/gui"                  # GuiSetpoints.msg (custom)
       metrics: "/flychams/operator/AGENTID/metrics"                          # AgentMetrics.msg (custom)
       markers: "/flychams/operator/AGENTID/markers"                          # MarkerArray.msg
 
@@ -32,7 +33,3 @@
       geometry: "/flychams/perception/CLUSTERID/geometry"                     # ClusterGeometry.msg (custom)
       metrics: "/flychams/operator/CLUSTERID/metrics"                        # ClusterMetrics.msg (custom)
       markers: "/flychams/operator/CLUSTERID/markers"                        # MarkerArray.msg
-      
-    # GUI topics
-    gui_topics:
-      setpoints: "/flychams/simulation/AGENTID/setpoint/gui"                  # GuiSetpoints.msg (custom)

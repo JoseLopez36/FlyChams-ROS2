@@ -48,13 +48,13 @@ namespace flychams::agent
             bool has_clusters;
             // Tracking setpoint messages
             core::AgentObservationSetpointsMsg observation_setpoints;
-            core::GuiSetpointsMsg gui_setpoints;
+            core::AgentGuiSetpointsMsg gui_setpoints;
             // Subscribers
             core::SubscriberPtr<core::AgentStatusMsg> status_sub;
             core::SubscriberPtr<core::AgentClustersMsg> clusters_sub;
             // Publisher
             core::PublisherPtr<core::AgentObservationSetpointsMsg> observation_setpoints_pub;
-            core::PublisherPtr<core::GuiSetpointsMsg> gui_setpoints_pub;
+            core::PublisherPtr<core::AgentGuiSetpointsMsg> gui_setpoints_pub;
             // Constructor
             Agent()
                 : status(), has_status(false), clusters(), has_clusters(false), observation_setpoints(),

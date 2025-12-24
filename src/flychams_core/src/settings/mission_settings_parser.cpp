@@ -387,6 +387,7 @@ namespace flychams::core
 		config_ptr->topics.agent_position_setpoint = RosUtils::getParameter<std::string>(node, "agent_topics.position_setpoint");
 		config_ptr->topics.agent_optimization_duration = RosUtils::getParameter<std::string>(node, "agent_topics.optimization_duration");
 		config_ptr->topics.agent_observation_setpoints = RosUtils::getParameter<std::string>(node, "agent_topics.observation_setpoints");
+		config_ptr->topics.agent_gui_setpoints = RosUtils::getParameter<std::string>(node, "agent_topics.gui_setpoints");
 		config_ptr->topics.agent_metrics = RosUtils::getParameter<std::string>(node, "agent_topics.metrics");
 		config_ptr->topics.agent_markers = RosUtils::getParameter<std::string>(node, "agent_topics.markers");
 
@@ -401,9 +402,6 @@ namespace flychams::core
 		config_ptr->topics.cluster_geometry = RosUtils::getParameter<std::string>(node, "cluster_topics.geometry");
 		config_ptr->topics.cluster_metrics = RosUtils::getParameter<std::string>(node, "cluster_topics.metrics");
 		config_ptr->topics.cluster_markers = RosUtils::getParameter<std::string>(node, "cluster_topics.markers");
-
-		// GUI topics
-		config_ptr->topics.gui_setpoints = RosUtils::getParameter<std::string>(node, "gui_topics.setpoints");
 	}
 
 	void MissionSettingsParser::parseFrameParameters(const NodePtr& node, MissionConfigPtr& config_ptr)
