@@ -9,10 +9,10 @@
 The Flying Chameleons (FlyChams) project implements a complete system for controlling and coordinating multiple UAVs equipped with modifiable tracking systems. The primary goal is to optimize target tracking through collaborative agent positioning and camera control.
 
 The project leverages:
+- **ROS2 Humble** for the distributed robotics framework
 - **Unreal Engine 5** for photorealistic simulation
 - **AirSim** for high-fidelity physics simulation
 - **PX4** for commercial flight control
-- **ROS2 Humble** for the distributed robotics framework
 - **Pixi** for dependency and environment management
 
 ## Key Features
@@ -23,6 +23,38 @@ The project leverages:
 - **Configurable missions** via Excel configuration files
 - **Realistic simulation** in photorealistic Unreal Engine environments
 - **Interactive operator interface** with map visualization and camera streams
+
+## Visual Showcase
+
+### Operator Interface Views
+
+<div align="center">
+  <img src="media/images/MultiWindowAgent.png" alt="Multi-Window Agent View" width="45%"/>
+  <img src="media/images/MultiWindowSimulation.png" alt="Multi-Window Simulation View" width="45%"/>
+  <img src="media/images/MultiWindowViews.png" alt="Multi-Window Views" width="45%"/>
+</div>
+
+## Research
+
+This project is part of a broader research initiative by the Department of System Engineering and Automation at the University of Seville. It is associated with the following scientific publications:
+
+1. **Flying Chameleons: A New Concept for Minimum-Deployment, Multiple-Target Tracking Drones**
+   
+   *Sensors, 2022* | [DOI](https://doi.org/10.3390/s22062359)
+   
+   > This article introduces the innovative concept of "Flying Chameleons", autonomous aerial vehicles equipped with multiple independently steerable cameras for simultaneous tracking of multiple mobile targets. The proposal seeks to maximize efficiency in surveillance and tracking applications while minimizing resource deployment, offering an alternative to traditional approaches that require multiple vehicles or shared attention strategies.
+
+2. **Optimal Positioning Strategy for Multi-camera, Zooming Drones**
+   
+   *IEEE/CAA Journal of Automatica Sinica, 2024* | [DOI](https://doi.org/10.1109/JAS.2024.124455)
+   
+   > This research extends the "Flying Chameleons" concept by incorporating zoom capabilities in the onboard cameras. It addresses the resulting non-convex optimization problem through convex relaxation techniques, allowing the aerial agent to dynamically adjust the focal lengths of the cameras to balance the real distance to targets with the required level of visual detail.
+
+3. **Monitoring through Multi-camera Aerial Vehicles: A Case Study Using Unreal Engine**
+   
+   *Jornadas de Automática (JJAA) 2024, Málaga* | [DOI](https://doi.org/10.17979/ja-cea.2024.45.10800)
+   
+   > This work generalizes the multi-camera agent concept to enable collaboration among multiple agents in a single monitoring mission. Additionally, it explores the potential of Unreal Engine 5 as a photorealistic graphical simulation tool for implementing and validating the proposal. Note: This work was selected for presentation among the 6 works chosen at the Jornadas de Automática 2024 in Málaga.
 
 ## System Architecture
 
@@ -142,6 +174,21 @@ The fastest way to get the system running in simulation mode:
 
 3.  **Stop System**:
     - Click **Stop All Processes** in the GUI.
+
+## Demo Videos
+
+### Experiment Demonstration
+<video src="media/videos/Demo.mp4" width="800" controls>
+  [Watch Experiment Demo](media/videos/Demo.mp4)
+</video>
+
+### Gimbal Movement
+![Gimbal Movement Demo](media/videos/GimbalMovement.gif)
+
+### MATLAB Test
+<video src="media/videos/MatlabTest.mp4" width="800" controls>
+  [Watch MATLAB Test](media/videos/MatlabTest.mp4)
+</video>
 
 ## Detailed Usage
 
