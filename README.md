@@ -1,6 +1,6 @@
 # Flying Chameleons ROS2: Multi-UAV System for Autonomous Target Tracking
 
-A ROS2-based system for coordinated multi-UAV target tracking using various advanced simulation frameworks (e.g. AirSim, Unreal Engine 5, etc.).
+A ROS2-based system for coordinated multi-UAV target tracking using various advanced simulation frameworks (e.g. AirSim with Unreal Engine 5).
 
 ## Overview
 
@@ -41,343 +41,183 @@ The project leverages:
 ### Software Requirements
 
 - **Ubuntu 20.04, 22.04, or 24.04** (or compatible Linux distribution)
-- **Pixi** (for dependency management) - Install from [pixi.sh](https://pixi.sh)
-- **Docker** (optional, for agent containers and PX4 SITL)
-- **Unreal Engine 5.2.1** (optional, for developing new environments)
+- **Pixi** - The project uses Pixi to manage the internal ROS2 environment and dependencies. Install from [pixi.sh](https://pixi.sh).
+- **Docker** - Required for running agents in isolated containers and for PX4 SITL.
+- **Unreal Engine 5.2.1** - Required for running the photorealistic simulation environment.
 
 ### Hardware Requirements
 
-- **Recommended CPU**: Medium to high-end CPU (e.g. Intel i7-12700K or AMD Ryzen 7 5800X)
-- **Recommended GPU**: Medium to high-end GPU with latest drivers (e.g. NVIDIA RTX 3070 or AMD RX 6800 XT)
-- **Minimum RAM**: 16 GB
+- **CPU**: Intel i7-12700K / AMD Ryzen 7 5800X or better
+- **GPU**: NVIDIA RTX 3070 / AMD RX 6800 XT or better (for UE5)
+- **RAM**: 16 GB minimum (32 GB recommended)
+
+#### Hardware Mode (Onboard Computer)
+- **Device**: NVIDIA Jetson Orin Nano Super
+- **OS**: Ubuntu 22.04 (JetPack 6.0+)
 
 ## Installation
 
 ### 1. Install Pixi
 
-Install Pixi using the official installer:
-
 ```bash
 curl -fsSL https://pixi.sh/install.sh | sh
 ```
 
-Or follow the installation instructions at [pixi.sh](https://pixi.sh).
-
-### 2. Clone the FlyChams repositories
+### 2. Clone Repositories
 
 ```bash
-# Clone FlyChams-ROS2
+# Main ROS2 repository
 git clone https://github.com/JoseLopez36/FlyChams-ROS2.git
+cd FlyChams-ROS2
 
-# Clone FlyChams-Cosys-AirSim
+# AirSim Plugin (for UE5)
 git clone https://github.com/JoseLopez36/FlyChams-Cosys-AirSim.git
 git checkout 5.2.1
-```
 
-### 3. Setup the PX4-Autopilot repository (for simulation)
-
-```bash
+# PX4 Autopilot (for Simulation)
 git clone --recursive https://github.com/PX4/PX4-Autopilot.git
 cd PX4-Autopilot
-# We recommend using the 1.12.0 stable release
 git checkout v1.12.0
-# Build SITL in docker container
-./Tools/docker_run.sh 'make px4_sitl_default none_iris'
+./Tools/docker_run.sh 'make px4_sitl_default none_iris' # Build SITL
 ```
 
-### 4. Setup the UE5 project
+### 3. Setup Environment
 
-You need to have an Unreal Engine 5 project with the FlyChams-Cosys-AirSim plugin installed. You can find exported projects in the [FlyChams-Sim-UE5](https://github.com/JoseLopez36/FlyChams-Sim-UE5) repository releases.
-
-### 5. Setup environment variables
-
-Edit the `setup.sh` file in the repository root to configure environment variables:
+Edit `setup.sh` to configure your paths:
 
 ```bash
-# Paths (example)
 export FLYCHAMS_ROS2_PATH=${HOME}/Documents/FlyChams-ROS2
 export FLYCHAMS_PX4_PATH=${HOME}/Documents/PX4-Autopilot
 export FLYCHAMS_AIRSIM_PATH=${HOME}/Documents/FlyChams-Cosys-AirSim
 export FLYCHAMS_UE5_PATH=${HOME}/Documents/FlyChams-Sim-UE5/Linux
-
-# ROS2 config
-export ROS_DOMAIN_ID=0
 ```
 
-### 6. Install Pixi environment and build the system
+### 4. Install & Build
 
-The project uses Pixi for managing ROS2 dependencies and build environments. Install the environment:
+Install dependencies and build all packages using Pixi:
 
 ```bash
 pixi install
+pixi run all-build
 ```
 
-This will automatically install all required dependencies including ROS2 Humble, build tools and Python packages.
+### 5. Agent Setup (Simulation Only)
 
-### 7. Build the ROS2 workspace
-
-Build the ROS2 packages using Pixi:
+If running in simulation, you need to build the agent's Docker environment:
 
 ```bash
-# Build operator package (includes GUI dependencies)
-pixi run operator-build
+# Build the base Docker image
+pixi run agent-sim-build-image
 
-# Build coordinator package
-pixi run coordinator-build
-
-# Build simulation package (includes AirSim wrapper)
-pixi run simulation-build
+# Build the agent workspace (replace AGENT00 with your agent ID)
+pixi run agent-sim-build AGENT00
 ```
 
-### 8. Generate AirSim settings
+### 6. Generate Settings
 
-Generate AirSim settings from the configuration:
+Generate the initial AirSim settings based on the configuration:
 
 ```bash
 pixi run generate-settings
 ```
 
-This will create settings files based on your mission configuration.
+## Quick Start
 
-## Usage
+The fastest way to get the system running in simulation mode:
 
-The system can be launched in two ways:
+1.  **Launch Operator Interface**:
+    ```bash
+    pixi run operator-sim-run
+    ```
 
-### Method 1: Operator Interface (Recommended)
+2.  **Start System via GUI. Example workflow**:
+    - Press **Launch Unreal Engine 5**
+    - Press **Launch Simulation Control**
+    - Press **Launch Coordinator**
+    - Press **Launch RViZ**
+    - Press **PX4-0** (Starts flight controller for Agent 0)
+    - Press **LAUNCH AGENT00** (Starts Agent 0 logic)
 
-The operator interface provides a graphical user interface for launching and monitoring the system. This is the recommended method for most users.
+3.  **Stop System**:
+    - Click **Stop All Processes** in the GUI.
 
-#### 1. Launch the Unreal Engine Simulation
+## Detailed Usage
 
-First, launch the Unreal Engine simulation:
+### Method 1: Operator Interface (GUI)
+
+The Operator Interface is the central control hub.
 
 ```bash
-pixi run simulation-ue5-run
+pixi run operator-sim-run      # Simulation Mode
+# OR
+pixi run operator-hardware-run # Hardware Mode
 ```
 
-#### 2. Launch the Operator Interface
+**Features:**
+- **Mission Control**: Start/Stop Coordinator, Simulation, Agents, etc.
+- **System Logs**: Logs for each process.
+- **Real-Time Map**: Real-time 2D map of agents, targets and clusters.
+- **Monitoring Feeds**: Live video feeds from agent cameras.
 
-Launch the operator interface GUI:
+### Method 2: Command Line (Pixi Tasks)
 
+You can run individual components using Pixi tasks defined in `pixi.toml`.
+
+#### Simulation & Core
 ```bash
-pixi run operator-sim-run
-
-# Or
-pixi run operator-hardware-run
+pixi run simulation-ue5-run    # Launch UE5
+pixi run simulation-run        # Launch Simulation Control
+pixi run coordinator-sim-run   # Launch Coordinator
 ```
 
-The operator interface provides:
-
-- **Launch Panel**: Buttons to launch system components. It has an integrated terminal output for each launched component
-- **Map Panel**: Real-time visualization of agents, targets and clusters on a 2D map
-- **Camera Panel**: Live camera streams from all agent cameras
-
-#### 3. Launch System Components via GUI
-
-Using the operator interface:
-
-1. **Launch Coordinator**: Click "LAUNCH COORDINATOR" to start the global coordination system
-2. **Launch Simulation**: Click "LAUNCH SIMULATION" to start the simulation nodes (AirSim, target control, etc.)
-3. **Launch Agents**: Click "LAUNCH {AGENT_ID}" buttons for each agent you want to run
-4. **Launch PX4**: Click "PX4-{INDEX}" buttons to launch PX4 SITL instances for simulation (one per agent)
-
-The operator interface automatically discovers agents, targets and clusters as they register with the system.
-
-#### 4. Stop the System
-
-Click the "STOP" button in the operator interface to stop every process.
-
-### Method 2: Pixi Run Commands
-
-For command-line users or automated scripts, you can launch components directly using Pixi tasks:
-
-#### 1. Launch the Unreal Engine Simulation
+#### Agents (Docker)
+Agents in simulation run inside Docker containers.
 
 ```bash
-pixi run simulation-ue5-run
+pixi run agent-sim-build-image       # Build base Docker image
+pixi run agent-sim-build AGENT00     # Build workspace for AGENT00
+pixi run agent-sim-run AGENT00       # Run AGENT00
+pixi run agent-stream                # Stream agent feeds
 ```
 
-#### 2. Launch System Components
-
+#### PX4 (SITL)
 ```bash
-# Launch coordinator (simulation mode)
-pixi run coordinator-sim-run
-
-# Launch coordinator (hardware mode)
-pixi run coordinator-hardware-run
-
-# Launch simulation nodes
-pixi run simulation-run
-
-# Launch operator nodes (simulation mode)
-pixi run operator-sim-run
-
-# Launch operator nodes (hardware mode)
-pixi run operator-hardware-run
-
-# Launch PX4 SITL (requires agent index)
-pixi run simulation-px4-run 0
-```
-
-#### 3. Launch Agents
-
-For simulation mode, agents can be launched using Docker containers:
-
-```bash
-# Build agent Docker image
-pixi run agent-sim-build-image
-
-# Build agent workspace
-pixi run agent-sim-build
-
-# Run agent (requires agent ID)
-pixi run agent-sim-run AGENT00
-
-# Stop agent (requires agent ID)
-pixi run agent-sim-stop AGENT00
+pixi run simulation-px4-run 0  # Launch PX4 for Agent 0
 ```
 
 ## Configuration
 
-The system is configured using YAML files in the `config/` directory:
+The system uses a workflow where Excel spreadsheets drive the configuration.
 
-- **`config/core/`**: Core system configuration (system.yaml, topics.yaml, frames.yaml, launch.yaml)
-- **`config/package/`**: Package-specific configuration (operator.yaml, coordinator.yaml, agent.yaml, simulation.yaml)
-- **`config/generated/`**: Generated mission configuration (mission.yaml) - created from Excel configuration
-- **`config/rviz/`**: RViz visualization configuration
-
-### Mission Configuration
-
-Missions are configured using Excel spreadsheets in `config/`. The system supports:
-
-- **Mission** - General mission characteristics and selection
-- **Environment** - Environment definitions
-- **Target** - Target definitions and trajectories (CSV files in `config/trajectories/`)
-- **Agent** - Agent configurations
-- **Tracking** - Tracking system settings
-- **Head** - Head (Gimbal/Camera) specifications
-- **Drone** - UAV model specifications
-- **Gimbal** - Gimbal model specifications
-- **Camera** - Camera model specifications
-
-After editing the Excel configuration, regenerate the mission YAML:
-
-```bash
-pixi run generate-settings
-```
+1.  **Edit Configuration**: Modify Excel files in `config/` (e.g., `Configuration-TFG.xlsx`).
+    - Define mission parameters.
+2.  **Generate YAML**: Run the generator to create ROS2 and AirSim config files based on user configuration.
+    ```bash
+    pixi run generate-settings
+    ```
+    Files are generated in `config/generated/`.
 
 ## Directory Structure
 
 ```
 FlyChams-ROS2/
-├── config/                         # Configuration files
-│   ├── core/                      # Core system configuration
-│   ├── package/                   # Package-specific configuration
-│   ├── generated/                 # Generated mission configuration
-│   ├── rviz/                      # RViz configuration
-│   ├── trajectories/              # Trajectory CSV files for targets
-│   └── Configuration-*.xlsx       # Excel configuration files
-├── launch/                        # ROS2 launch files
-│   ├── operator.launch.py         # Operator interface launcher
-│   ├── coordinator.launch.py      # Coordinator launcher
-│   ├── agent.launch.py            # Agent launcher
-│   ├── simulation.launch.py       # Simulation launcher
-│   └── generate_settings.launch.py # Settings generator
-├── src/                           # Source packages
-│   ├── flychams_core/             # Core domain models, utilities and interfaces
-│   ├── flychams_coordinator/      # Target perception and clustering
-│   ├── flychams_agent/            # Agent control and tracking
-│   ├── flychams_simulation/       # Simulation manager
-│   ├── flychams_operator/         # Operator interface GUI
-│   ├── flychams_interfaces/       # Custom messages and services
-│   ├── airsim_interfaces/         # AirSim messages and services
-│   └── airsim_wrapper/            # ROS2 AirSim wrapper
-├── tools/                         # Utility scripts
-│   ├── agent_setup.sh             # Agent Docker setup script
-│   ├── launch_ue5.sh              # UE5 launcher
-│   └── docker/                    # Docker-related scripts
-├── build/                         # Build artifacts
-├── install/                       # Installed packages
-├── log/                           # Build and runtime logs
-├── pixi.toml                      # Pixi configuration
-├── setup.sh                       # Environment setup script
-└── README.md                      # This file
+├── config/             # Excel sources & generated YAMLs
+├── launch/             # Python launch files
+├── src/                # Source code (ROS2 packages)
+│   ├── flychams_core/
+│   ├── flychams_operator/
+│   ├── flychams_coordinator/
+│   ├── flychams_agent/
+│   └── ...
+├── tools/              # Helper scripts (Docker, UE5)
+├── pixi.toml           # Pixi environment & task definitions
+└── README.md
 ```
-
-## Pixi Tasks Reference
-
-The `pixi.toml` file defines various tasks for building and running the system:
-
-### Build Tasks
-
-- `operator-build`: Build the operator package
-- `coordinator-build`: Build the coordinator package
-- `simulation-build`: Build the simulation package and AirSim wrapper
-- `clean`: Clean build artifacts
-
-### Launch Tasks
-
-- `operator-run`: Launch the operator interface GUI
-- `coordinator-sim-run`: Launch coordinator in simulation mode
-- `coordinator-hardware-run`: Launch coordinator in hardware mode
-- `simulation-run`: Launch simulation nodes
-- `simulation-ue5-run`: Launch Unreal Engine 5
-- `simulation-px4-run`: Launch PX4 SITL
-
-### Agent Tasks (Docker-based)
-
-- `agent-sim-build-image`: Build agent Docker image
-- `agent-sim-build`: Build agent workspace in Docker
-- `agent-sim-run`: Run agent in Docker container
-- `agent-sim-stop`: Stop agent container
-- `agent-sim-remove`: Remove agent container
-- `agent-sim-shell`: Open shell in agent container
-
-### Utility Tasks
-
-- `generate-settings`: Generate AirSim settings from configuration
-
-## Known Limitations
-
-1. **Performance Limitations**
-   - The system has been tested with a single UAV agent, with up to 4 cameras.
-   - Performance may degrade significantly with more elements.
-
-2. **AirSim Integration**
-   - Currently requires a specific fork of AirSim with custom modifications.
-   - Limited support for AirSim's newer features.
-
-3. **Real Hardware Integration**
-   - Current implementation focuses on simulation; real hardware integration is available but may require additional configuration.
-
-4. **Operator Interface**
-   - Requires X11 forwarding or a display server for GUI components.
-   - Camera streams require proper network configuration for video streaming.
-
-## Troubleshooting
-
-### Operator Interface Not Launching
-
-- Ensure X11 forwarding is enabled if running remotely
-- Check that PyQt5 dependencies are installed: `pixi install`
-- Verify ROS2 environment is sourced: `source install/setup.bash`
-
-### Build Errors
-
-- Clean and rebuild: `pixi run clean && pixi run operator-build`
-- Check that all dependencies are installed: `pixi install`
-- Verify Python executable paths in CMake configuration
-
-### Agent Launch Issues
-
-- Ensure Docker is running: `docker ps`
-- Check agent container logs: `docker logs <container_name>`
-- Verify PX4 is running before launching agents in simulation mode
 
 ## License
 
-This project is licensed under the [Creative Commons Attribution-NonCommercial 4.0 International (CC BY-NC 4.0)](https://creativecommons.org/licenses/by-nc/4.0/). See [`LICENSE`](LICENSE).
+Licensed under [CC BY-NC 4.0](https://creativecommons.org/licenses/by-nc/4.0/). See [`LICENSE`](LICENSE).
 
 ## Contact
 
-For more information, please contact [josloprui6@alum.us.es](mailto:josloprui6@alum.us.es).
+Jose Francisco Lopez Ruiz - [josloprui6@alum.us.es](mailto:josloprui6@alum.us.es)
