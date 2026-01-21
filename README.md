@@ -15,6 +15,18 @@ The project leverages:
 - **PX4** for commercial flight control
 - **Pixi** for dependency and environment management
 
+---
+
+<div align="center">
+  <img src="media/images/MultiWindowSimulation.png" alt="Full Simulation Environment" width="100%"/>
+  <p><em>Complete simulation view showing the UE5 environment, operator GUI, and real-time RViZ data.</em></p>
+</div>
+
+|  |  |
+| :---: | :---: |
+| <img src="media/images/MultiWindowViews.png" alt="Target Tracking" width="70%"/> | <img src="media/images/MultiWindowAgent.png" alt="Drone Close-up" width="100%"/> |
+| *Real-time multi-target tracking windows* | *High-fidelity hexacopter model in UE5* |
+
 ## Key Features
 
 - **Multi-agent coordination** for optimal target coverage
@@ -23,16 +35,6 @@ The project leverages:
 - **Configurable missions** via Excel configuration files
 - **Realistic simulation** in photorealistic Unreal Engine environments
 - **Interactive operator interface** with map visualization and camera streams
-
-## Visual Showcase
-
-### Operator Interface Views
-
-<div align="center">
-  <img src="media/images/MultiWindowAgent.png" alt="Multi-Window Agent View" width="45%"/>
-  <img src="media/images/MultiWindowSimulation.png" alt="Multi-Window Simulation View" width="45%"/>
-  <img src="media/images/MultiWindowViews.png" alt="Multi-Window Views" width="45%"/>
-</div>
 
 ## Research
 
@@ -175,20 +177,19 @@ The fastest way to get the system running in simulation mode:
 3.  **Stop System**:
     - Click **Stop All Processes** in the GUI.
 
-## Demo Videos
+## 🎥 Demos & Validation
 
-### Experiment Demonstration
-<video src="media/videos/Demo.mp4" width="800" controls>
-  [Watch Experiment Demo](media/videos/Demo.mp4)
-</video>
+### System in Action
+<div align="center">
+  <video src="media/videos/Demo.mp4" width="100%" controls></video>
+  <p><em>Flight demonstration: Target acquisition and tracking.</em></p>
+</div>
 
-### Gimbal Movement
-![Gimbal Movement Demo](media/videos/GimbalMovement.gif)
-
-### MATLAB Test
-<video src="media/videos/MatlabTest.mp4" width="800" controls>
-  [Watch MATLAB Test](media/videos/MatlabTest.mp4)
-</video>
+### Technical Validation
+| Camera Gimbal Mechanics | MATLAB Optimization |
+| :---: | :---: |
+| <img src="media/videos/GimbalMovement.gif" width="100%"/> | <video src="media/videos/MatlabTest.mp4" width="100%" controls></video> |
+| *Independent gimbal control test* | *Convex optimization algorithm validation* |
 
 ## Detailed Usage
 
