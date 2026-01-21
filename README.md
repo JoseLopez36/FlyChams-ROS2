@@ -1,8 +1,10 @@
 # Flying Chameleons ROS2: Multi-UAV System for Autonomous Target Tracking
 
-A ROS2-based system for coordinated multi-UAV target tracking using various advanced simulation frameworks (e.g. AirSim with Unreal Engine 5).
-
-## Overview
+[![ROS2 Humble](https://img.shields.io/badge/ROS2-Humble-blue.svg)](https://docs.ros.org/en/humble/)
+[![Unreal Engine 5](https://img.shields.io/badge/Unreal_Engine-5-313131?logo=unrealengine&logoColor=white)](https://www.unrealengine.com/)
+[![AirSim](https://img.shields.io/badge/AirSim-Enabled-blue)](https://microsoft.github.io/AirSim/)
+[![PX4](https://img.shields.io/badge/PX4-Autopilot-black)](https://px4.io/)
+[![License: CC BY-NC 4.0](https://img.shields.io/badge/License-CC%20BY--NC%204.0-lightgrey.svg)](https://creativecommons.org/licenses/by-nc/4.0/)
 
 The Flying Chameleons (FlyChams) project implements a complete system for controlling and coordinating multiple UAVs equipped with modifiable tracking systems. The primary goal is to optimize target tracking through collaborative agent positioning and camera control.
 
@@ -15,13 +17,12 @@ The project leverages:
 
 ## Key Features
 
-- Multi-agent coordination for optimal target coverage
-- Independent control of multiple cameras per agent
-- Clustering algorithms for grouping and tracking targets
-- Real-time visualization and monitoring tools via operator interface GUI
-- Configurable missions via Excel configuration files
-- Realistic simulation in photorealistic Unreal Engine environments
-- Interactive operator interface with map visualization and camera streams
+- **Multi-agent coordination** for optimal target coverage
+- **Independent control** of multiple cameras per agent
+- **Clustering algorithms** for grouping and tracking targets
+- **Configurable missions** via Excel configuration files
+- **Realistic simulation** in photorealistic Unreal Engine environments
+- **Interactive operator interface** with map visualization and camera streams
 
 ## System Architecture
 
@@ -47,6 +48,7 @@ The project leverages:
 
 ### Hardware Requirements
 
+#### Simulation Mode (PC)
 - **CPU**: Intel i7-12700K / AMD Ryzen 7 5800X or better
 - **GPU**: NVIDIA RTX 3070 / AMD RX 6800 XT or better (for UE5)
 - **RAM**: 16 GB minimum (32 GB recommended)
@@ -55,7 +57,7 @@ The project leverages:
 - **Device**: NVIDIA Jetson Orin Nano Super
 - **OS**: Ubuntu 22.04 (JetPack 6.0+)
 
-## Installation
+## 📦 Installation
 
 ### 1. Install Pixi
 
@@ -121,7 +123,7 @@ Generate the initial AirSim settings based on the configuration:
 pixi run generate-settings
 ```
 
-## Quick Start
+## 🚀 Quick Start
 
 The fastest way to get the system running in simulation mode:
 
@@ -185,7 +187,7 @@ pixi run agent-stream                # Stream agent feeds
 pixi run simulation-px4-run 0  # Launch PX4 for Agent 0
 ```
 
-## Configuration
+## ⚙️ Configuration
 
 The system uses a workflow where Excel spreadsheets drive the configuration.
 
@@ -197,7 +199,7 @@ The system uses a workflow where Excel spreadsheets drive the configuration.
     ```
     Files are generated in `config/generated/`.
 
-## Directory Structure
+## 📂 Directory Structure
 
 ```
 FlyChams-ROS2/
