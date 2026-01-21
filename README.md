@@ -179,17 +179,14 @@ The fastest way to get the system running in simulation mode:
 
 ## 🎥 Demos & Validation
 
-### System in Action
-<div align="center">
-  <video src="media/videos/Demo.mp4" width="100%" controls></video>
-  <p><em>Flight demonstration: Target acquisition and tracking.</em></p>
-</div>
+**Flight Demonstration** - [📹 View Video](media/videos/Demo.mp4)  
+*Target acquisition and tracking in the Unreal Engine 5 simulation environment.*
 
-### Technical Validation
-| Camera Gimbal Mechanics | MATLAB Optimization |
-| :---: | :---: |
-| <img src="media/videos/GimbalMovement.gif" width="100%"/> | <video src="media/videos/MatlabTest.mp4" width="100%" controls></video> |
-| *Independent gimbal control test* | *Convex optimization algorithm validation* |
+**MATLAB Test** - [📹 View Video](media/videos/MatlabTest.mp4)  
+*Target acquisition and tracking in Matlab*
+
+**Camera Gimbal Mechanics** - [📹 Gimbal Movement](media/videos/GimbalMovement.gif)  
+*Independent gimbal control test*
 
 ## Detailed Usage
 
