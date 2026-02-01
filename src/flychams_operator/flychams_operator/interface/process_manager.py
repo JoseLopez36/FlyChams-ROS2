@@ -92,11 +92,6 @@ class ProcessManager(QObject):
                 # Execute stop command asynchronously
                 stop_proc = QProcess(self)
                 stop_proc.start(stop_cmd[0], stop_cmd[1:])
-                # We let the stop command run. If it succeeds, the main process should exit,
-                # triggering _handle_finished which cleans up.
-                # If the stop command fails or doesn't kill the process, the process remains running.
-                # This differs slightly from original which force-terminated on exception,
-                # but is more robust for async operations.
             else:
                 self.line_received.emit(component_name, f"Stopping {component_name}...")
                 proc.terminate()

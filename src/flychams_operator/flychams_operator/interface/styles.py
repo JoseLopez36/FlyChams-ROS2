@@ -31,10 +31,10 @@ BUTTON_STYLE_STANDARD = """
         border: none;
         border-radius: 6px;
         padding: 12px 20px;
-        font-size: 24px;
+        font-size: 22px;
         font-weight: bold;
         text-align: left;
-        min-height: 48px;
+        min-height: 44px;
     }}
     QPushButton:hover {{
         background-color: {accent_hover};
@@ -52,6 +52,28 @@ BUTTON_STYLE_STANDARD = """
     accent_pressed=COLOR_ACCENT_PRIMARY_PRESSED,
     text_primary=COLOR_TEXT_PRIMARY,
     bg_primary=COLOR_BACKGROUND_PRIMARY
+)
+
+BUTTON_STYLE_SECONDARY = """
+    QPushButton {{
+        background-color: {bg_primary};
+        color: {text_secondary};
+        border: 1px solid {border_primary};
+        border-radius: 6px;
+        padding: 12px 20px;
+        font-size: 22px;
+        font-weight: bold;
+        text-align: left;
+        min-height: 44px;
+    }}
+    QPushButton:hover {{
+        background-color: {bg_secondary};
+    }}
+""".format(
+    bg_primary=COLOR_BACKGROUND_PRIMARY,
+    text_secondary=COLOR_TEXT_SECONDARY,
+    border_primary=COLOR_BORDER_PRIMARY,
+    bg_secondary=COLOR_BACKGROUND_SECONDARY
 )
 
 BUTTON_STYLE_DANGER = """
