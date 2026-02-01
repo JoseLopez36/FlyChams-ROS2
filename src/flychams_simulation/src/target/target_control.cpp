@@ -169,7 +169,7 @@ namespace flychams::simulation
         highlight_color.a = 0.005f;
 
         // Add target to simulation
-        simulation_tools_->addTargetGroup({ target_id }, { target_type }, { initial_position }, true, { highlight_color });
+        simulation_tools_->addTargetGroup({ target_id }, { target_type }, { initial_position }, false, { highlight_color });
     }
 
     void TargetControl::spawnCluster(const ID& cluster_id, const PointMsg& initial_center, const float& initial_radius)
@@ -189,7 +189,7 @@ namespace flychams::simulation
         highlight_color.a = 0.15f;
 
         // Add cluster to simulation
-        simulation_tools_->addClusterGroup({ cluster_id }, { initial_center }, { initial_radius }, true, { highlight_color });
+        simulation_tools_->addClusterGroup({ cluster_id }, { initial_center }, { initial_radius }, false, { highlight_color });
     }
 
     void TargetControl::updateTargets()
