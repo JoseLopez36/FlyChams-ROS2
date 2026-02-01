@@ -38,18 +38,18 @@ class AgentStream:
         Checks for NVIDIA elements first, then falls back to AMD/VAAPI.
         """
         registry = Gst.Registry.get()
-
-        # Check for VAAPI elements (AMD/Intel)
-        va_enc = registry.find_plugin('vaapi')
-        if va_enc:
-            return "amd"
         
-        # Check for NVIDIA elements
-        nv_enc = registry.find_plugin('nvcodec')
+        # Check for NVIDIA encoder element specifically
+        nv_enc = registry.find_feature('nvh265enc', Gst.ElementFactory)
         if nv_enc:
             return "nvidia"
             
-        print("Warning: No hardware acceleration found. Defaulting to AMD (VAAPI) pipeline which might fail")
+        # Check for VAAPI encoder element specifically
+        va_enc = registry.find_feature('vah265enc', Gst.ElementFactory)
+        if va_enc:
+            return "amd"
+            
+        print("Warning: No hardware acceleration found. Defaulting to AMD (VAAPI) pipeline which might fail.")
         return "amd"
 
     def create_pipeline_str(self):

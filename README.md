@@ -63,18 +63,23 @@ curl -fsSL https://pixi.sh/install.sh | sh
 
 Or follow the installation instructions at [pixi.sh](https://pixi.sh).
 
-### 2. Clone the FlyChams repositories
+### 2. Clone this repository
 
 ```bash
-# Clone FlyChams-ROS2
 git clone https://github.com/JoseLopez36/FlyChams-ROS2.git
+```
 
-# Clone FlyChams-Cosys-AirSim
+### 3. Setup the FlyChams-Cosys-AirSim repository
+
+```bash
 git clone https://github.com/JoseLopez36/FlyChams-Cosys-AirSim.git
+cd FlyChams-Cosys-AirSim
+# Checkout to Unreal Engine 5.2.1
 git checkout 5.2.1
 ```
 
-### 3. Setup the PX4-Autopilot repository (for simulation)
+
+### 4. Setup the PX4-Autopilot repository (for simulation)
 
 ```bash
 git clone --recursive https://github.com/PX4/PX4-Autopilot.git
@@ -85,11 +90,11 @@ git checkout v1.12.0
 ./Tools/docker_run.sh 'make px4_sitl_default none_iris'
 ```
 
-### 4. Setup the UE5 project
+### 5. Setup the UE5 project
 
 You need to have an Unreal Engine 5 project with the FlyChams-Cosys-AirSim plugin installed. You can find exported projects in the [FlyChams-Sim-UE5](https://github.com/JoseLopez36/FlyChams-Sim-UE5) repository releases.
 
-### 5. Setup environment variables
+### 6. Setup environment variables
 
 Edit the `setup.sh` file in the repository root to configure environment variables:
 
@@ -104,7 +109,7 @@ export FLYCHAMS_UE5_PATH=${HOME}/Documents/FlyChams-Sim-UE5/Linux
 export ROS_DOMAIN_ID=0
 ```
 
-### 6. Install Pixi environment and build the system
+### 7. Install Pixi environment and build the system
 
 The project uses Pixi for managing ROS2 dependencies and build environments. Install the environment:
 
@@ -114,7 +119,7 @@ pixi install
 
 This will automatically install all required dependencies including ROS2 Humble, build tools and Python packages.
 
-### 7. Build the ROS2 workspace
+### 8. Build the ROS2 workspace
 
 Build the ROS2 packages using Pixi:
 
@@ -129,7 +134,7 @@ pixi run coordinator-build
 pixi run simulation-build
 ```
 
-### 8. Generate AirSim settings
+### 9. Generate AirSim settings
 
 Generate AirSim settings from the configuration:
 
