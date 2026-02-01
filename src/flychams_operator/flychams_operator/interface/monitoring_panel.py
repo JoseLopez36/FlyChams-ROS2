@@ -10,6 +10,12 @@ from PyQt5.QtWidgets import (
 from PyQt5.QtCore import Qt, QUrl, QTimer
 from PyQt5.QtMultimedia import QMediaPlayer, QMediaContent
 from PyQt5.QtMultimediaWidgets import QVideoWidget
+from .styles import (
+    LABEL_STYLE_TITLE_MEDIUM,
+    LABEL_STYLE_PLACEHOLDER,
+    TAB_WIDGET_STYLE,
+    LABEL_STYLE_CONNECTING
+)
 
 # Configure logger
 logger = logging.getLogger(__name__)
@@ -34,28 +40,6 @@ STYLE_STATUS_ERROR = "color: #ff6b6b; font-size: 12px;"
 STYLE_STATUS_CONNECTING = "color: #f1c40f; font-size: 12px;"
 STYLE_STATUS_NO_FEED = "color: #7f8c8d; font-size: 12px;"
 STYLE_VIDEO_BG = "background-color: #000000; border-bottom-left-radius: 4px; border-bottom-right-radius: 4px;"
-STYLE_TAB_WIDGET = """
-    QTabWidget::pane {
-        border: 1px solid #3d3d3d;
-        background: #1e1e1e;
-    }
-    QTabBar::tab {
-        background: #2d2d2d;
-        color: #aaaaaa;
-        padding: 8px 20px;
-        border-top-left-radius: 4px;
-        border-top-right-radius: 4px;
-        margin-right: 2px;
-    }
-    QTabBar::tab:selected {
-        background: #3d3d3d;
-        color: #ffffff;
-        font-weight: bold;
-    }
-    QTabBar::tab:hover {
-        background: #353535;
-    }
-"""
 STYLE_MENU_BUTTON = """
     QToolButton {
         color: #bbbbbb; 
@@ -151,7 +135,7 @@ class FeedWidget(QFrame):
         status_layout.setAlignment(Qt.AlignCenter)
         self.status_message = QLabel("No Feed Configured")
         self.status_message.setAlignment(Qt.AlignCenter)
-        self.status_message.setStyleSheet(STYLE_STATUS_NO_FEED)
+        self.status_message.setStyleSheet(LABEL_STYLE_CONNECTING)
         status_layout.addWidget(self.status_message)
         
         # Video Page
@@ -355,18 +339,14 @@ class MonitoringPanel(QWidget):
         layout.setContentsMargins(12, 12, 12, 12)
         layout.setSpacing(10)
         
-        # Header
-        header_layout = QHBoxLayout()
-        title = QLabel("MISSION MONITORING")
-        title.setStyleSheet("color: #ffffff; font-size: 14px; font-weight: bold;")
-        header_layout.addWidget(title)
-        header_layout.addStretch()
-        layout.addLayout(header_layout)
+        # Title
+        title = QLabel('Monitoring Feeds')
+        title.setStyleSheet(LABEL_STYLE_TITLE_MEDIUM)
+        layout.addWidget(title)
 
-        # Tabs
+        # Tab
         self.tab_widget = QTabWidget()
-        self.tab_widget.setStyleSheet(STYLE_TAB_WIDGET)
-        self.tab_widget.setDocumentMode(True)
+        self.tab_widget.setStyleSheet(TAB_WIDGET_STYLE)
         layout.addWidget(self.tab_widget)
         
         self._add_placeholder()
@@ -375,7 +355,7 @@ class MonitoringPanel(QWidget):
         """Add a placeholder tab when no agents are connected"""
         placeholder = QLabel("Waiting for agent connections...\n\nConfigure video streams to begin")
         placeholder.setAlignment(Qt.AlignCenter)
-        placeholder.setStyleSheet("color: #666666; font-size: 14px;")
+        placeholder.setStyleSheet(LABEL_STYLE_PLACEHOLDER)
         self.tab_widget.addTab(placeholder, "No Active Feeds")
 
     def add_agent(self, agent_id: str, stream_urls: List[str]):
