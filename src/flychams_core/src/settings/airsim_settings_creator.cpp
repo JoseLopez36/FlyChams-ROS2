@@ -119,7 +119,7 @@ namespace flychams::core
             if (config_ptr->autopilot == Autopilot::PX4)
             {
                 vehicles[agent_id]["VehicleType"] = "PX4Multirotor";
-                vehicles[agent_id]["Model"] = drone.type == DroneType::Quadcopter ? "Quadcopter" : "FlyChamsHexacopter";
+                vehicles[agent_id]["Model"] = drone.type == DroneType::Quadcopter ? "FlyChamsQuadcopter" : "FlyChamsHexacopter";
                 vehicles[agent_id]["UseSerial"] = false;
                 vehicles[agent_id]["LockStep"] = true;
                 vehicles[agent_id]["UseTcp"] = true;
