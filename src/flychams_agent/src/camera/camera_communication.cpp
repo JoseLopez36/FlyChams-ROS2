@@ -9,7 +9,7 @@ namespace flychams::agent
     // ════════════════════════════════════════════════════════════════════════════
 
     CameraCommunication::CameraCommunication(const core::ID& agent_id, NodePtr node, SettingsTools::SharedPtr settings_tools)
-        : node_(node), agent_id_(agent_id), settings_tools_(settings_tools)
+        : agent_id_(agent_id), settings_tools_(settings_tools), node_(node)
     {
         // Initialize ROS components
         gimbal_angle_cmd_pub_ = node_->create_publisher<airsim_interfaces::msg::GimbalAngleCmd>("/airsim/" + agent_id + "/gimbals/cmd/orientation", 10);
@@ -96,9 +96,8 @@ namespace flychams::agent
             if (hardware_drivers_.find(id) != hardware_drivers_.end())
             {
                 // Convert quaternion to Euler (RPY)
-                Quaternionr q;
-                RosUtils::fromMsg(quaternions[i], q);
-                Vector3r euler = MavrosUtils::quatToEuler(q);
+                const Quaternionr q = RosUtils::fromMsg(quaternions[i]);
+                const Vector3r euler = MavrosUtils::quatToEuler(q);
                 
                 // Convert to degrees
                 float pitch = MathUtils::radToDeg(euler.y());

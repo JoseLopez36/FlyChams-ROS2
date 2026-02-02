@@ -18,7 +18,7 @@ namespace flychams::agent
         agent_ = Agent();
 
         // Initialize communication
-        camera_communication_ = std::make_shared<CameraCommunication>(agent_id_, node_);
+        camera_communication_ = std::make_shared<CameraCommunication>(agent_id_, node_, settings_tools_);
 
         // Get multi camera set
         auto multi_camera_set = settings_tools_->getMultiCameraSet(agent_id_);

@@ -8,6 +8,9 @@
 // Hardware includes
 #include "flychams_agent/camera/siyi_a8_mini.hpp"
 
+// Mavros includes
+#include "flychams_agent/mavros/mavros_utils.hpp"
+
 // Core includes
 #include "flychams_core/types/core_types.hpp"
 #include "flychams_core/types/ros_types.hpp"
