@@ -25,6 +25,7 @@ set(CONTROL_SRC
   src/drone/drone_control.cpp
   src/camera/camera_frames.cpp
   src/camera/camera_control.cpp
+  src/camera/siyi_a8_mini.cpp
   src/mavros/mavros_communication.cpp
   src/mavros/mavros_utils.cpp
   src/camera/camera_communication.cpp
