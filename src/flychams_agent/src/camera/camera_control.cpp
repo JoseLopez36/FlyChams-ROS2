@@ -14,7 +14,7 @@ namespace flychams::agent
 		agent_ = Agent();
 
 		// Create camera communication
-		camera_comm_ = std::make_shared<CameraCommunication>(agent_id_, node_);
+		camera_comm_ = std::make_shared<CameraCommunication>(agent_id_, node_, settings_tools_);
 
 		// Subscribe to status and head setpoints topics
 		agent_.status_sub = topic_tools_->createAgentStatusSubscriber(agent_id_,

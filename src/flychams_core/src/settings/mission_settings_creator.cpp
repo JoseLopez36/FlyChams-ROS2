@@ -259,6 +259,8 @@ namespace flychams::core
 		yaml << prefix << "src_stream_url: \"" << multi_camera->src_stream_url << "\"\n";
 		yaml << prefix << "dst_stream_url: \"" << multi_camera->dst_stream_url << "\"\n";
 		yaml << prefix << "hardware: \"" << multi_camera->hardware << "\"\n";
+		yaml << prefix << "ip: \"" << multi_camera->ip << "\"\n";
+		yaml << prefix << "port: " << multi_camera->port << "\n";
 		
 		yaml << prefix << "camera:\n";
 		writeCameraSection(yaml, multi_camera->camera, prefix + "  ");

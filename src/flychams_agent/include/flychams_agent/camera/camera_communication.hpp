@@ -5,10 +5,14 @@
 #include <airsim_interfaces/msg/camera_fov_cmd.hpp>
 #include <airsim_interfaces/msg/camera_orientation.hpp>
 
+// Hardware includes
+#include "flychams_agent/camera/siyi_a8_mini.hpp"
+
 // Core includes
 #include "flychams_core/types/core_types.hpp"
 #include "flychams_core/types/ros_types.hpp"
 #include "flychams_core/utils/ros_utils.hpp"
+#include "flychams_core/settings/settings_tools.hpp"
 
 namespace flychams::agent
 {
@@ -28,7 +32,7 @@ namespace flychams::agent
     class CameraCommunication
     {
     public: // Constructors/Destructors
-        CameraCommunication(const core::ID& agent_id, core::NodePtr node);
+        CameraCommunication(const core::ID& agent_id, core::NodePtr node, core::SettingsTools::SharedPtr settings_tools);
         virtual ~CameraCommunication();
         void shutdown();
 
@@ -44,6 +48,7 @@ namespace flychams::agent
 
     private: // Parameters
         core::ID agent_id_;
+        core::SettingsTools::SharedPtr settings_tools_;
 
     private: // Data
         // ROS components
@@ -52,6 +57,9 @@ namespace flychams::agent
         // Publishers
         core::PublisherPtr<airsim_interfaces::msg::GimbalAngleCmd> gimbal_angle_cmd_pub_;
         core::PublisherPtr<airsim_interfaces::msg::CameraFovCmd> camera_fov_cmd_pub_;
+
+        // Hardware drivers
+        std::map<core::ID, std::shared_ptr<SiyiA8Mini>> hardware_drivers_;
     };
 
 } // namespace flychams::agent

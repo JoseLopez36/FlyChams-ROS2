@@ -407,6 +407,8 @@ namespace flychams::core
                 RCLCPP_INFO(node_->get_logger(), "        Src Stream URL: %s", multi_camera->src_stream_url.c_str());
                 RCLCPP_INFO(node_->get_logger(), "        Dst Stream URL: %s", multi_camera->dst_stream_url.c_str());
                 RCLCPP_INFO(node_->get_logger(), "        Hardware: %s", multi_camera->hardware.c_str());
+                RCLCPP_INFO(node_->get_logger(), "        IP: %s", multi_camera->ip.c_str());
+                RCLCPP_INFO(node_->get_logger(), "        Port: %d", multi_camera->port);
 
                 // Camera Parameters
                 RCLCPP_INFO(node_->get_logger(), "        [CAMERA]");

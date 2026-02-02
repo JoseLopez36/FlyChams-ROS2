@@ -212,6 +212,8 @@ namespace flychams::core
         std::string src_stream_url;
         std::string dst_stream_url;
         std::string hardware;
+        std::string ip;
+        int port;
 
         // External config
         CameraConfig camera;

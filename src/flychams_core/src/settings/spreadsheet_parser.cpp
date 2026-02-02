@@ -472,6 +472,10 @@ namespace flychams::core
 
 					multi_camera->hardware = getCellValue<std::string>(row.findCell(14));
 
+					multi_camera->ip = getCellValue<std::string>(row.findCell(15));
+
+					multi_camera->port = getCellValue<int>(row.findCell(16));
+
 					// Parse camera model
 					parseCameraModel(book, multi_camera);
 
