@@ -38,9 +38,11 @@ namespace flychams::agent
         {
             // Subscribers
             core::SubscriberPtr<airsim_interfaces::msg::CameraOrientation> camera_orientation_sub;
+            // Data
+            airsim_interfaces::msg::CameraOrientation::SharedPtr last_camera_orientation;
             // Constructor
             Agent()
-                : camera_orientation_sub()
+                : camera_orientation_sub(), last_camera_orientation()
             {
             }
         };
@@ -61,8 +63,15 @@ namespace flychams::agent
     private: // Frames creation
         void createCameraOpticalFrame(const core::ID camera_id);
 
-    private: // Frames update
+    private: // Frames management
+        void update();
+
+    private: // Frames update methods
         void updateCameraBodyFrame(const core::ID camera_id, const core::PointMsg& position, const core::QuaternionMsg& orientation);
+
+    private: // ROS components
+        // Timer
+        core::TimerPtr update_timer_;
     };
 
 } // namespace flychams::agent

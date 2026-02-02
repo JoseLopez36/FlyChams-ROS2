@@ -21,6 +21,11 @@
     # Mavros stream rate (Hz)
     local_position_odom_rate: 800.0
 
+/**/camera_frames_node:
+  ros__parameters:
+    # Update rate (Hz)
+    update_rate: 30.0
+
 /**/agent_analysis_node:
   ros__parameters:
     # Update rate (Hz)

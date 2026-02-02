@@ -12,7 +12,7 @@ namespace flychams::agent
     {
         // Get parameters from parameter server
         // Get update rate
-        update_rate_ = RosUtils::getParameterOr<float>(node_, "camera_frames.update_rate", 5.0f);
+        update_rate_ = RosUtils::getParameterOr<float>(node_, "update_rate", 30.0f);
 
         // Initialize data
         agent_ = Agent();
@@ -44,6 +44,13 @@ namespace flychams::agent
         // Subscribe to topics
         agent_.camera_orientation_sub = camera_communication_->subscribeCameraOrientation(
             std::bind(&CameraFrames::cameraOrientationCallback, this, std::placeholders::_1), sub_options_with_module_cb_group_);
+
+        // Set update timer
+        update_timer_ = rclcpp::create_timer(node_, 
+            node_->get_clock(), 
+            std::chrono::duration<float>(1.0f / update_rate_), 
+            std::bind(&CameraFrames::update, this), 
+            module_cb_group_);
     }
 
     void CameraFrames::onShutdown()
@@ -52,6 +59,8 @@ namespace flychams::agent
         agent_.camera_orientation_sub.reset();
         // Shutdown communication
         camera_communication_.reset();
+        // Destroy update timer
+        update_timer_.reset();
     }
 
     // ════════════════════════════════════════════════════════════════════════════
@@ -60,25 +69,8 @@ namespace flychams::agent
 
     void CameraFrames::cameraOrientationCallback(const airsim_interfaces::msg::CameraOrientation::SharedPtr msg)
     {
-        // Iterate through all cameras in the message
-        for (size_t i = 0; i < msg->camera_names.size(); i++)
-        {
-            // Get camera ID and orientation
-            ID camera_id = msg->camera_names[i];
-            const auto& orientation_msg = msg->orientations[i];
-
-            // Get camera configuration
-            const auto& camera_config_ptr = settings_tools_->getMultiCamera(agent_id_, camera_id);
-
-            // Get camera position from config (static relative to body)
-            PointMsg position_msg;
-            position_msg.x = camera_config_ptr->position.x();
-            position_msg.y = camera_config_ptr->position.y();
-            position_msg.z = camera_config_ptr->position.z();
-
-            // Update frame
-            updateCameraBodyFrame(camera_id, position_msg, orientation_msg);
-        }
+        // Store last camera orientation
+        agent_.last_camera_orientation = msg;
     }
 
     // ════════════════════════════════════════════════════════════════════════════
@@ -104,6 +96,39 @@ namespace flychams::agent
         // Broadcast camera body -> camera optical (static)
         transform_tools_->broadcastStaticTransform(camera_body_frame, camera_optical_frame, camera_body_to_camera_optical);
         RCLCPP_INFO(node_->get_logger(), "Published static transform: %s -> %s", camera_body_frame.c_str(), camera_optical_frame.c_str());
+    }
+
+    // ════════════════════════════════════════════════════════════════════════════
+    // UPDATE: Update frames
+    // ════════════════════════════════════════════════════════════════════════════
+
+    void CameraFrames::update()
+    {
+        // Check if we have received any camera orientation
+        if (!agent_.last_camera_orientation)
+        {
+            return;
+        }
+
+        // Iterate through all cameras in the message
+        for (size_t i = 0; i < agent_.last_camera_orientation->camera_names.size(); i++)
+        {
+            // Get camera ID and orientation
+            ID camera_id = agent_.last_camera_orientation->camera_names[i];
+            const auto& orientation_msg = agent_.last_camera_orientation->orientations[i];
+
+            // Get camera configuration
+            const auto& camera_config_ptr = settings_tools_->getMultiCamera(agent_id_, camera_id);
+
+            // Get camera position from config (static relative to body)
+            PointMsg position_msg;
+            position_msg.x = camera_config_ptr->position.x();
+            position_msg.y = camera_config_ptr->position.y();
+            position_msg.z = camera_config_ptr->position.z();
+
+            // Update frame
+            updateCameraBodyFrame(camera_id, position_msg, orientation_msg);
+        }
     }
 
     // ════════════════════════════════════════════════════════════════════════════
