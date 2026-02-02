@@ -4,7 +4,7 @@
 #include "flychams_agent/analysis/agent_analysis.hpp"
 
 // Core includes
-#include "flychams_core/base/base_discoverer_node.hpp"
+#include "flychams_core/base/base_node_with_tools.hpp"
 
 using namespace flychams::core;
 using namespace flychams::agent;
@@ -17,22 +17,24 @@ using namespace flychams::agent;
  * @date 2025-03-28
  * ════════════════════════════════════════════════════════════════
  */
-class AgentAnalysisNode : public BaseDiscovererNode
+class AgentAnalysisNode : public BaseNodeWithTools
 {
 public: // Constructor/Destructor
     AgentAnalysisNode(const std::string& node_name, const rclcpp::NodeOptions& options)
-        : BaseDiscovererNode(node_name, options)
+        : BaseNodeWithTools(node_name, options)
     {
         // Nothing to do
     }
 
     void onInit() override
     {
-        // Use callback group from discovery node (to avoid race conditions)
-        // Initialize agent analysis system
-        agent_analysis_ = std::make_shared<AgentAnalysis>(node_, settings_tools_, topic_tools_, transform_tools_, discovery_cb_group_);
+        // Get agent ID
+        agent_id_ = RosUtils::getParameter<std::string>(node_, "agent_id");
 
-        RCLCPP_INFO(node_->get_logger(), "Agent analysis created");
+        // Initialize agent analysis system
+        agent_analysis_ = std::make_shared<AgentAnalysis>(agent_id_, node_, settings_tools_, topic_tools_, transform_tools_, node_cb_group_);
+
+        RCLCPP_INFO(node_->get_logger(), "Agent analysis created for agent: %s", agent_id_.c_str());
     }
 
     void onShutdown() override
@@ -41,42 +43,9 @@ public: // Constructor/Destructor
         agent_analysis_.reset();
     }
 
-private: // Element management
-    void onAddAgent(const ID& agent_id) override
-    {
-        // Add agent to analysis manager
-        agent_analysis_->addAgent(agent_id);
-    }
-
-    void onRemoveAgent(const ID& agent_id) override
-    {
-        // Remove agent from analysis manager
-        agent_analysis_->removeAgent(agent_id);
-    }
-
-    void onAddTarget(const ID& target_id) override
-    {
-        // Targets are not handled by this node
-    }
-
-    void onRemoveTarget(const ID& target_id) override
-    {
-        // Targets are not handled by this node
-    }
-
-    void onAddCluster(const ID& cluster_id) override
-    {
-        // Add cluster to analysis manager
-        agent_analysis_->addCluster(cluster_id);
-    }
-
-    void onRemoveCluster(const ID& cluster_id) override
-    {
-        // Remove cluster from analysis manager
-        agent_analysis_->removeCluster(cluster_id);
-    }
-
 private: // Components
+    // Agent ID
+    ID agent_id_;
     // Agent analysis system
     AgentAnalysis::SharedPtr agent_analysis_;
 };

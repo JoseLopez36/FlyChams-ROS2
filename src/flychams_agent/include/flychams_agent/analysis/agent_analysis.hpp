@@ -16,8 +16,8 @@ namespace flychams::agent
     class AgentAnalysis : public core::BaseModule
     {
     public: // Constructor/Destructor
-        AgentAnalysis(core::NodePtr node, core::SettingsTools::SharedPtr settings_tools, core::TopicTools::SharedPtr topic_tools, core::TransformTools::SharedPtr transform_tools, core::CallbackGroupPtr module_cb_group)
-            : BaseModule(node, settings_tools, topic_tools, transform_tools, module_cb_group)
+        AgentAnalysis(const core::ID& agent_id, core::NodePtr node, core::SettingsTools::SharedPtr settings_tools, core::TopicTools::SharedPtr topic_tools, core::TransformTools::SharedPtr transform_tools, core::CallbackGroupPtr module_cb_group)
+            : BaseModule(node, settings_tools, topic_tools, transform_tools, module_cb_group), agent_id_(agent_id)
         {
             init();
         }
@@ -38,7 +38,7 @@ namespace flychams::agent
             std::vector<core::ID> cluster_ids;
             core::ID central_unit_id;
             bool has_assignment;
-            // Subscriber
+            // Subscribers
             core::SubscriberPtr<core::AgentStatusMsg> status_sub;
             core::SubscriberPtr<core::AgentAssignmentMsg> assignment_sub;
             // Publisher
@@ -65,27 +65,23 @@ namespace flychams::agent
         };
 
     private: // Parameters
+        core::ID agent_id_;
         float update_rate_;
 
     private: // Data
-        // Agents
-        std::unordered_map<core::ID, Agent> agents_;
+        // Agent
+        Agent agent_;
         // Clusters
         std::unordered_map<core::ID, Cluster> clusters_;
 
-    public: // Public methods
-        void addAgent(const core::ID& agent_id);
-        void addCluster(const core::ID& cluster_id);
-        void removeAgent(const core::ID& agent_id);
-        void removeCluster(const core::ID& cluster_id);
-
     private: // Callbacks
-        void agentStatusCallback(const core::ID& agent_id, const core::AgentStatusMsg::SharedPtr msg);
-        void agentAssignmentCallback(const core::ID& agent_id, const core::AgentAssignmentMsg::SharedPtr msg);
+        void statusCallback(const core::AgentStatusMsg::SharedPtr msg);
+        void assignmentCallback(const core::AgentAssignmentMsg::SharedPtr msg);
         void clusterGeometryCallback(const core::ID& cluster_id, const core::ClusterGeometryMsg::SharedPtr msg);
 
     private: // Analysis management
         void update();
+        void updateClusterSubscriptions(const std::vector<core::ID>& new_cluster_ids);
 
     private: // Analysis methods
         std::pair<core::PointMsg, float> computeCentralCluster(const std::vector<core::PointMsg>& centers, const std::vector<float>& radii);
