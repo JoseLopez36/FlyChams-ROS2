@@ -3,12 +3,13 @@ import time
 import socket
 import json
 import threading
+import argparse
 import gi
 gi.require_version('Gst', '1.0')
 from gi.repository import Gst, GLib
 
 class AgentStream:
-    def __init__(self, host="127.0.0.1", source_port=5000, destination_port=6000, control_port=7000):
+    def __init__(self, host="127.0.0.1", source_port=5000, destination_port=6000, control_port=7000, gpu_type="auto"):
         """
         Initialize the AgentStream class
         """
@@ -16,17 +17,50 @@ class AgentStream:
         self.source_port = source_port
         self.destination_port = destination_port
         self.control_port = control_port
+        
+        Gst.init(None)
+        
+        if gpu_type == "auto":
+            self.gpu_type = self.detect_gpu_type()
+            print(f"Auto-detected GPU type: {self.gpu_type}")
+        else:
+            self.gpu_type = gpu_type.lower()
+            
         self.pipeline = None
         self.loop = None
         self.crops = []
         self.tracking_thread = None
         self.running = False
+
+    def detect_gpu_type(self):
+        """
+        Detects available GPU hardware encoding/decoding support.
+        Checks for NVIDIA elements first, then falls back to AMD/VAAPI.
+        """
+        registry = Gst.Registry.get()
         
-        Gst.init(None)
+        # Check for NVIDIA encoder element specifically
+        nv_enc = registry.find_feature('nvh265enc', Gst.ElementFactory)
+        if nv_enc:
+            return "nvidia"
+            
+        # Check for VAAPI encoder element specifically
+        va_enc = registry.find_feature('vah265enc', Gst.ElementFactory)
+        if va_enc:
+            return "amd"
+            
+        print("Warning: No hardware acceleration found. Defaulting to AMD (VAAPI) pipeline which might fail.")
+        return "amd"
 
     def create_pipeline_str(self):
+        if self.gpu_type == "nvidia":
+            return self.create_nvidia_pipeline_str()
+        else:
+            return self.create_amd_pipeline_str()
+
+    def create_amd_pipeline_str(self):
         """
-        Constructs the GStreamer pipeline string with 1 full res (scaled) and 4 crops
+        Constructs the GStreamer pipeline string with 1 full res (scaled) and 4 crops for AMD
         """
         # 0. Base source: Listening on source_port
         pipeline_str = (
@@ -56,6 +90,46 @@ class AgentStream:
                 "vapostproc ! "
                 "video/x-raw,width=1280,height=720 ! "
                 "vah265enc bitrate=3000 rate-control=cbr ! "
+                "h265parse ! "
+                "mpegtsmux ! "
+                f"udpsink host={self.host} port={port} sync=false buffer-size=52428800 "
+            )
+            pipeline_str += crop_branch
+            
+        return pipeline_str
+
+    def create_nvidia_pipeline_str(self):
+        """
+        Constructs the GStreamer pipeline string with 1 full res (scaled) and 4 crops for Nvidia
+        """
+        # 0. Base source: Listening on source_port
+        pipeline_str = (
+            f"udpsrc port={self.source_port} buffer-size=5242880 caps=\"application/x-rtp, media=(string)video, clock-rate=(int)90000, encoding-name=(string)H265, payload=(int)96\" ! "
+            "rtph265depay ! h265parse ! nvh265dec ! queue max-size-buffers=1 ! tee name=t "
+        )
+        
+        # 1. Full image branch: Rescale to 1080p, output to destination_port
+        full_res_branch = (
+            "t. ! queue leaky=downstream max-size-buffers=10 ! "
+            "videoscale ! "
+            "video/x-raw,width=1920,height=1080 ! "
+            "nvh265enc bitrate=8000 rc-mode=cbr ! "
+            "h265parse ! "
+            "mpegtsmux ! "
+            f"udpsink host={self.host} port={self.destination_port} sync=false buffer-size=52428800 "
+        )
+        pipeline_str += full_res_branch
+        
+        # 2. Crop branches: Output to destination_port + i
+        for i in range(1, 5):
+            port = self.destination_port + i
+            name = f"crop_{i}"
+            crop_branch = (
+                "t. ! queue leaky=downstream max-size-buffers=10 ! "
+                f"videocrop name={name} ! "
+                "videoscale ! "
+                "video/x-raw,width=1280,height=720 ! "
+                "nvh265enc bitrate=3000 rc-mode=cbr ! "
                 "h265parse ! "
                 "mpegtsmux ! "
                 f"udpsink host={self.host} port={port} sync=false buffer-size=52428800 "
@@ -152,7 +226,22 @@ class AgentStream:
         print("Pipeline stopped")
 
 def main():
-    agent = AgentStream(host="127.0.0.1", source_port=5000, destination_port=6000, control_port=7000)
+    parser = argparse.ArgumentParser(description="Agent Stream")
+    parser.add_argument("--host", default="127.0.0.1", help="Destination host")
+    parser.add_argument("--source-port", type=int, default=5000, help="Source port")
+    parser.add_argument("--destination-port", type=int, default=6000, help="Destination port start")
+    parser.add_argument("--control-port", type=int, default=7000, help="Control port")
+    parser.add_argument("--gpu-type", default="auto", choices=["auto", "amd", "nvidia"], help="GPU type (auto, amd or nvidia)")
+    
+    args = parser.parse_args()
+    
+    agent = AgentStream(
+        host=args.host, 
+        source_port=args.source_port, 
+        destination_port=args.destination_port, 
+        control_port=args.control_port,
+        gpu_type=args.gpu_type
+    )
     agent.start()
 
 if __name__ == '__main__':

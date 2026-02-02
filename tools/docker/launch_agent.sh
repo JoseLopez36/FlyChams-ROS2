@@ -45,6 +45,7 @@ if [ -z "$CMD" ]; then
             -e FASTDDS_BUILTIN_TRANSPORTS="${FASTDDS_BUILTIN_TRANSPORTS}" \
             -e AGENT_ID="${AGENT_ID}" \
             -v "${PROJECT_ROOT}:/home/testuser/FlyChams-ROS2" \
+            -v "${FLYCHAMS_AIRSIM_PATH}:/home/testuser/FlyChams-Cosys-AirSim" \
             "${AGENT_IMAGE}" \
             bash
     fi
@@ -64,6 +65,7 @@ else
             -e FASTDDS_BUILTIN_TRANSPORTS="${FASTDDS_BUILTIN_TRANSPORTS}" \
             -e AGENT_ID="${AGENT_ID}" \
             -v "${PROJECT_ROOT}:/home/testuser/FlyChams-ROS2" \
+            -v "${FLYCHAMS_AIRSIM_PATH}:/home/testuser/FlyChams-Cosys-AirSim" \
             "${AGENT_IMAGE}" \
             bash -c "${CMD}"
     fi

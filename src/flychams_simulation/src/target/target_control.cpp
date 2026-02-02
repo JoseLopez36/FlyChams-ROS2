@@ -13,6 +13,9 @@ namespace flychams::simulation
         // Get parameters from parameter server
         // Get update rate
         update_rate_ = RosUtils::getParameterOr<float>(node_, "update_rate", 20.0f);
+        // Get highlight parameters
+        highlight_targets_ = RosUtils::getParameterOr<bool>(node_, "highlight_targets", true);
+        highlight_clusters_ = RosUtils::getParameterOr<bool>(node_, "highlight_clusters", true);
 
         // Initialize data
         targets_.clear();
@@ -89,13 +92,16 @@ namespace flychams::simulation
                 this->clusterGeometryCallback(cluster_id, msg);
             }, sub_options_with_module_cb_group_);
 
-        // Spawn cluster in simulation
-        PointMsg initial_position;
-        initial_position.x = -500.0f + spawn_index_ * 2.0f;
-        initial_position.y = -500.0f + spawn_index_ * 2.0f;
-        initial_position.z = 0.0f;
-        float initial_radius = 1.0f;
-        spawnCluster(cluster_id, initial_position, initial_radius);
+        // Spawn cluster in simulation (if highlight is enabled)
+        if (highlight_clusters_)
+        {
+            PointMsg initial_position;
+            initial_position.x = -500.0f + spawn_index_ * 2.0f;
+            initial_position.y = -500.0f + spawn_index_ * 2.0f;
+            initial_position.z = 0.0f;
+            float initial_radius = 1.0f;
+            spawnCluster(cluster_id, initial_position, initial_radius);
+        }
 
         // Increment spawn index
         spawn_index_++;
@@ -169,7 +175,7 @@ namespace flychams::simulation
         highlight_color.a = 0.005f;
 
         // Add target to simulation
-        simulation_tools_->addTargetGroup({ target_id }, { target_type }, { initial_position }, true, { highlight_color });
+        simulation_tools_->addTargetGroup({ target_id }, { target_type }, { initial_position }, highlight_targets_, { highlight_color });
     }
 
     void TargetControl::spawnCluster(const ID& cluster_id, const PointMsg& initial_center, const float& initial_radius)
@@ -189,7 +195,7 @@ namespace flychams::simulation
         highlight_color.a = 0.15f;
 
         // Add cluster to simulation
-        simulation_tools_->addClusterGroup({ cluster_id }, { initial_center }, { initial_radius }, true, { highlight_color });
+        simulation_tools_->addClusterGroup({ cluster_id }, { initial_center }, { initial_radius }, highlight_clusters_, { highlight_color });
     }
 
     void TargetControl::updateTargets()
@@ -217,6 +223,12 @@ namespace flychams::simulation
 
     void TargetControl::updateClusters()
     {
+        // Check if clusters are highlighted (if not, they are not spawned)
+        if (!highlight_clusters_)
+        {
+            return;
+        }
+
         // Iterate over all clusters
         std::vector<ID> cluster_ids;
         std::vector<PointMsg> cluster_positions;

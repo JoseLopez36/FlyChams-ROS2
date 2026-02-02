@@ -99,7 +99,7 @@ This project is part of a broader research initiative by the Department of Syste
 curl -fsSL https://pixi.sh/install.sh | sh
 ```
 
-### 2. Clone Repositories
+### 2. Clone and Setup Repositories
 
 ```bash
 # Main ROS2 repository
@@ -108,6 +108,7 @@ cd FlyChams-ROS2
 
 # AirSim Plugin (for UE5)
 git clone https://github.com/JoseLopez36/FlyChams-Cosys-AirSim.git
+cd FlyChams-Cosys-AirSim
 git checkout 5.2.1
 
 # PX4 Autopilot (for Simulation)

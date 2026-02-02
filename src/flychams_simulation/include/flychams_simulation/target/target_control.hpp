@@ -67,6 +67,8 @@ namespace flychams::simulation
 
     private: // Parameters
         float update_rate_;
+        bool highlight_targets_;
+        bool highlight_clusters_;
 
     private: // Data
         // Targets
