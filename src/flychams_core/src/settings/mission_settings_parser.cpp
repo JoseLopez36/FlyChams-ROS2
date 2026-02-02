@@ -162,6 +162,7 @@ namespace flychams::core
 		multi_camera->ref_focal = RosUtils::getParameter<float>(node, prefix + "ref_focal");
 		multi_camera->src_stream_url = RosUtils::getParameter<std::string>(node, prefix + "src_stream_url");
 		multi_camera->dst_stream_url = RosUtils::getParameter<std::string>(node, prefix + "dst_stream_url");
+		multi_camera->hardware = RosUtils::getParameter<std::string>(node, prefix + "hardware");
 		
 		parseCameraParameters(node, multi_camera, prefix + "camera.");
 		parseGimbalParameters(node, multi_camera, prefix + "gimbal.");

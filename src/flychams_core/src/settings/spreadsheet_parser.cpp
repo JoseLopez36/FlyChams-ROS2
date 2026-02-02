@@ -470,6 +470,8 @@ namespace flychams::core
 					
 					multi_camera->dst_stream_url = getCellValue<std::string>(row.findCell(13));
 
+					multi_camera->hardware = getCellValue<std::string>(row.findCell(14));
+
 					// Parse camera model
 					parseCameraModel(book, multi_camera);
 
