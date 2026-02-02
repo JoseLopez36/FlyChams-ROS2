@@ -148,6 +148,12 @@ pixi run agent-sim-build-image
 
 # Build the agent workspace (replace AGENT00 with your agent ID)
 pixi run agent-sim-build AGENT00
+
+# Setup and build FlyChams-Cosys-AirSim
+pixi run agent-sim-shell AGENT00
+cd FlyChams-Cosys-AirSim
+./setup.sh
+./build.sh
 ```
 
 ### 6. Generate Settings
