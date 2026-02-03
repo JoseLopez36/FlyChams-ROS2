@@ -50,6 +50,11 @@ add_executable(target_control_node src/target_control_node.cpp)
 target_link_libraries(target_control_node ${PROJECT_NAME})
 ament_target_dependencies(target_control_node rclcpp airsim_interfaces flychams_core)
 
+# Create executable for dataset generator node
+add_executable(dataset_generator_node src/dataset_generator_node.cpp)
+target_link_libraries(dataset_generator_node ${PROJECT_NAME})
+ament_target_dependencies(dataset_generator_node rclcpp flychams_core)
+
 # Install targets and headers
 install(TARGETS ${PROJECT_NAME}
   EXPORT ${PROJECT_NAME}
@@ -59,7 +64,7 @@ install(TARGETS ${PROJECT_NAME}
   INCLUDES DESTINATION include
 )
 
-install(TARGETS simulation_gui_node target_state_node target_control_node
+install(TARGETS simulation_gui_node target_state_node target_control_node dataset_generator_node
   RUNTIME DESTINATION lib/${PROJECT_NAME}
 )
 

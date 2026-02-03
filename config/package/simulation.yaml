@@ -16,3 +16,15 @@
     highlight_targets: false
     # Highlight clusters
     highlight_clusters: false
+
+/**/dataset_generator_node:
+  ros__parameters:
+    # Sampling interval (s)
+    sampling_interval: 0.1
+    # Output directory
+    output_directory: "dataset"
+    # UDP Port for video stream
+    udp_port: 5010
+    # IDs to track
+    agent_id: "AGENT12"
+    camera_id: "MULTICAMERA30"

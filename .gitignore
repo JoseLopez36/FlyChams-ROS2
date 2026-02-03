@@ -8,6 +8,9 @@ build-docker/
 install-docker/
 log/
 
+# Ignore dataset files
+dataset/
+
 # Ignore IDE files
 .vscode/
 .cursor/
