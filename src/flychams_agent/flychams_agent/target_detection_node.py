@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 """
 Target detection node for the FlyingChameleons system
 Author: Jose Francisco Lopez Ruiz

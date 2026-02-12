@@ -1,5 +1,9 @@
+#!/usr/bin/env python3
+
 """
 Operator interface node for the FlyingChameleons system
+Author: Jose Francisco Lopez Ruiz
+Date: 2026-02-12
 """
 
 import rclpy
