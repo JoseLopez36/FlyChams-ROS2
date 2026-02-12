@@ -7,6 +7,7 @@ endif()
 
 # Find dependencies
 find_package(ament_cmake REQUIRED)
+find_package(ament_cmake_python REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(mavros REQUIRED)
 find_package(mavros_msgs REQUIRED)
@@ -96,6 +97,9 @@ add_executable(agent_tracking_node src/agent_tracking_node.cpp)
 target_link_libraries(agent_tracking_node ${PROJECT_NAME})
 ament_target_dependencies(agent_tracking_node rclcpp flychams_core)
 
+# Install Python package
+ament_python_install_package(${PROJECT_NAME})
+
 # Install targets and headers
 install(TARGETS ${PROJECT_NAME}
   EXPORT ${PROJECT_NAME}
@@ -107,6 +111,12 @@ install(TARGETS ${PROJECT_NAME}
 
 install(TARGETS drone_frames_node drone_state_node drone_control_node camera_frames_node camera_control_node mavros_manager_node agent_analysis_node agent_positioning_node agent_tracking_node
   RUNTIME DESTINATION lib/${PROJECT_NAME}
+)
+
+install(PROGRAMS
+  flychams_agent/target_detection_node.py
+  DESTINATION lib/${PROJECT_NAME}
+  RENAME target_detection_node
 )
 
 install(DIRECTORY include/
@@ -125,6 +135,7 @@ install(DIRECTORY launch/
 ament_export_targets(${PROJECT_NAME} HAS_LIBRARY_TARGET)
 ament_export_dependencies(
   rclcpp
+  rclpy
   mavros
   mavros_msgs
   airsim_interfaces

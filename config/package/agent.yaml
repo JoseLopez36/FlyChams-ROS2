@@ -63,3 +63,9 @@
   ros__parameters:
     # Update rate (Hz)
     tracking_rate: 20.0
+
+/**/target_detection_node:
+  ros__parameters:
+    # Detector parameters
+    detector_type: yolo
+    detector_model: yolov11n.pt

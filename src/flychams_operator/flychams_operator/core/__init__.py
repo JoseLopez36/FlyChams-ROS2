@@ -1,4 +1,4 @@
-"""Core FlyChams Dashboard functionality"""
+"""Core FlyChams Operator functionality"""
 
 from .dataclasses import AgentData, TargetData, ClusterData
 from .utils import replace_id_in_topic, spin_ros_node
@@ -10,4 +10,3 @@ __all__ = [
     'replace_id_in_topic',
     'spin_ros_node',
 ]
-

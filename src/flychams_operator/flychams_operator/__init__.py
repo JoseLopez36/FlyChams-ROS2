@@ -1,2 +1,1 @@
-"""FlyChams Dashboard Python package"""
-
+"""FlyChams Operator Python package"""
