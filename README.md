@@ -164,7 +164,7 @@ pixi run generate-settings
 
 **NVIDIA Container Toolkit**
 Agents run in Docker containers and require GPU access. You **must** install the NVIDIA Container Toolkit to enable GPU support in Docker.
-Follow the official guide here: [Installing NVIDIA Container Toolkit](https://docs.ultralytics.com/guides/docker-quickstart/#installing-nvidia-container-toolkit)
+Follow the official guide here: [Installing NVIDIA Container Toolkit](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html)
 
 **Clone Dependencies (if on a dedicated machine like a Jetson)**
 ```bash
@@ -178,18 +178,18 @@ cd ..
 **Install & Build Agents**
 ```bash
 # Build the base Docker image
-./tools/docker/build_image.sh
+bash tools/docker/build_image.sh
 # Or, if using a Jetson:
-# ./tools/docker/build_image.sh --jetson
+# bash tools/docker/build_image.sh --jetson
 
 # Build the agent workspace
-./tools/build_agent.sh
+bash tools/build_agent.sh
 
 # Setup and build FlyChams-Cosys-AirSim inside the container (replace AGENT00 with your agent ID)
-./tools/agent_setup.sh shell AGENT00
+bash tools/agent_setup.sh shell AGENT00
 cd FlyChams-Cosys-AirSim
-./setup.sh
-./build.sh
+bash setup.sh
+bash build.sh
 ```
 
 ## 🚀 Quick Start
@@ -256,10 +256,10 @@ pixi run coordinator-sim-run   # Launch Coordinator
 Agents in simulation run inside Docker containers.
 
 ```bash
-./tools/docker/build_image.sh      # Build base Docker image
-./tools/build_agent.sh             # Build workspace for agents
-./tools/agent_setup.sh run AGENT00 # Run AGENT00
-python3 tools/stream_agent.py      # Stream agent feeds
+bash tools/docker/build_image.sh        # Build base Docker image
+bash tools/build_agent.sh               # Build workspace for agents
+bash tools/agent_setup.sh run AGENT00   # Run AGENT00
+python3 tools/stream_agent.py           # Stream agent feeds
 ```
 
 #### PX4 (SITL)

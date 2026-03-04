@@ -87,10 +87,6 @@ colcon build \
   --packages-up-to flychams_operator flychams_coordinator flychams_simulation airsim_wrapper \
   --event-handlers console_direct+ 2>&1
 """
-# Agent build tasks
-agent-build-image = "bash tools/docker/build_image.sh"
-agent-build = "bash tools/build_agent.sh"
-
 # ----------------- Setup tasks -----------------
 generate-settings = "ros2 launch launch/generate_settings.launch.py"
 
@@ -105,13 +101,6 @@ operator-rviz-stop = "pkill -f rviz2"
 coordinator-sim-run = "ros2 launch launch/coordinator.launch.py is_sim:=True"
 coordinator-hardware-run = "ros2 launch launch/coordinator.launch.py is_sim:=False"
 coordinator-stop = "pkill -f coordinator"
-
-# ----------------- Agent simulation tasks (docker) -----------------
-agent-run = "bash tools/agent_setup.sh run"
-agent-shell = "bash tools/agent_setup.sh shell"
-agent-stop = "bash tools/docker/stop_agent.sh"
-agent-remove = "bash tools/agent_setup.sh remove"
-agent-stream = "/usr/bin/python3 tools/stream_agent.py"
 
 # ----------------- Simulation tasks -----------------
 simulation-run = "ros2 launch launch/simulation.launch.py"
