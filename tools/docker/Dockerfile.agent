@@ -21,7 +21,9 @@ RUN wget https://raw.githubusercontent.com/mavlink/mavros/ros2/mavros/scripts/in
     rm install_geographiclib_datasets.sh
 
 # --- Setup Ultralytics ---
-RUN pip3 install --no-cache-dir ultralytics lapx
+RUN apt-get update && apt-get install -y python3-pip && \
+    pip3 install ultralytics lapx && \
+    rm -rf /var/lib/apt/lists/*
 
 # Create a non-root user with sudo access
 ARG USER_NAME=testuser

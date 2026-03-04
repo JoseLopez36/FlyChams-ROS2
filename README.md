@@ -184,12 +184,6 @@ bash tools/docker/build_image.sh
 
 # Build the agent workspace
 bash tools/build_agent.sh
-
-# Setup and build FlyChams-Cosys-AirSim inside the container (replace AGENT00 with your agent ID)
-bash tools/agent_setup.sh shell AGENT00
-cd FlyChams-Cosys-AirSim
-bash setup.sh
-bash build.sh
 ```
 
 ## 🚀 Quick Start
