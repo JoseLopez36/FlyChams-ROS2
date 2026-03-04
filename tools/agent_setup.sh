@@ -46,13 +46,6 @@ print_info "Running agent container: $AGENT_CONTAINER_NAME"
 print_info "Agent ID: $AGENT_ID"
 print_info "ROS Domain ID: $ROS_DOMAIN_ID"
 
-# Function to build the agent ROS2 workspace
-build_workspace() 
-{
-    CMD="source /opt/ros/$ROS_DISTRO/setup.bash && cd /home/testuser/FlyChams-ROS2 && colcon build --symlink-install --build-base build/docker --install-base install/docker --packages-up-to flychams_agent"
-    "$SCRIPT_DIR/docker/launch_agent.sh" "$AGENT_ID" "$CMD"
-}
-
 # Function to run the agent container
 run_container() 
 {
@@ -87,8 +80,7 @@ shell_container()
 
 # Function to print usage
 usage() {
-    echo "Usage: $0 {build|run|stop|remove|shell} <agent_id>"
-    echo "  build   - Build the agent workspace inside the container"
+    echo "Usage: $0 {run|stop|remove|shell} <agent_id>"
     echo "  run     - Run the agent launch file inside the container"
     echo "  stop    - Stop the agent container"
     echo "  remove  - Remove the agent container"
@@ -96,9 +88,6 @@ usage() {
 }
 
 case "${1:-help}" in
-    build)
-        build_workspace
-        ;;
     run)
         run_container
         ;;

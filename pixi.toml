@@ -48,8 +48,9 @@ coordinator = ["coordinator"]
 simulation = ["simulation"]
 
 [tasks]
-# Build tasks
+# ----------------- Build tasks -----------------
 clean = "rm -rf build/ install/ log/"
+# GCS build tasks
 operator-build = """
 colcon build \
   --symlink-install \
@@ -77,7 +78,7 @@ colcon build \
   --packages-up-to flychams_simulation airsim_wrapper \
   --event-handlers console_direct+ 2>&1
 """
-all-build = """
+gcs-build = """
 colcon build \
   --symlink-install \
   --cmake-args -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -G Ninja \
@@ -86,36 +87,33 @@ colcon build \
   --packages-up-to flychams_operator flychams_coordinator flychams_simulation airsim_wrapper \
   --event-handlers console_direct+ 2>&1
 """
+# Agent build tasks
+agent-build-image = "bash tools/docker/build_image.sh"
+agent-build = "bash tools/build_agent.sh"
 
-# Setup tasks
+# ----------------- Setup tasks -----------------
 generate-settings = "ros2 launch launch/generate_settings.launch.py"
 
-# Operator tasks
+# ----------------- Operator tasks -----------------
 operator-sim-run = "ros2 launch launch/operator.launch.py is_sim:=True"
 operator-hardware-run = "ros2 launch launch/operator.launch.py is_sim:=False"
 operator-stop = "pkill -f operator"
 operator-rviz = "ros2 run rviz2 rviz2 -d config/rviz/default.rviz"
 operator-rviz-stop = "pkill -f rviz2"
 
-# Coordinator tasks
+# ----------------- Coordinator tasks -----------------
 coordinator-sim-run = "ros2 launch launch/coordinator.launch.py is_sim:=True"
 coordinator-hardware-run = "ros2 launch launch/coordinator.launch.py is_sim:=False"
 coordinator-stop = "pkill -f coordinator"
 
-# Agent simulation tasks (docker)
-agent-sim-build-image = "bash tools/docker/build.sh"
-agent-sim-build = "bash tools/agent_setup.sh build"
-agent-sim-run = "bash tools/agent_setup.sh run"
-agent-sim-shell = "bash tools/agent_setup.sh shell"
-agent-sim-stop = "bash tools/docker/stop_agent.sh"
-agent-sim-remove = "bash tools/agent_setup.sh remove"
-# Agent hardware tasks (onboard computer)
-agent-hardware-run = "ros2 launch launch/agent.launch.py is_sim:=False"
-agent-hardware-stop = "pkill -f 'ros2 launch launch/agent.launch.py'"
-# Other agent tasks
+# ----------------- Agent simulation tasks (docker) -----------------
+agent-run = "bash tools/agent_setup.sh run"
+agent-shell = "bash tools/agent_setup.sh shell"
+agent-stop = "bash tools/docker/stop_agent.sh"
+agent-remove = "bash tools/agent_setup.sh remove"
 agent-stream = "/usr/bin/python3 tools/stream_agent.py"
 
-# Simulation tasks
+# ----------------- Simulation tasks -----------------
 simulation-run = "ros2 launch launch/simulation.launch.py"
 simulation-stop = "pkill -f simulation"
 simulation-ue5-run = "bash tools/launch_ue5.sh"

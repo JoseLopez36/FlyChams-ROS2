@@ -131,26 +131,26 @@ export FLYCHAMS_UE5_PATH=${HOME}/Documents/FlyChams-Sim-UE5/Linux
 
 ### 4. Install & Build
 
-Install dependencies and build all packages using Pixi:
+Install dependencies and build Ground Control Station (GCS) packages using Pixi:
 
 ```bash
 pixi install
-pixi run all-build
+pixi run gcs-build
 ```
 
-### 5. Agent Setup (Simulation Only)
-
-If running in simulation, you need to build the agent's Docker environment:
+Install dependencies and build agent packages using the Docker container:
 
 ```bash
 # Build the base Docker image
-pixi run agent-sim-build-image
+pixi run agent-build-image
+# Or, if using a Jetson:
+# pixi run agent-build-image --jetson
 
 # Build the agent workspace (replace AGENT00 with your agent ID)
-pixi run agent-sim-build AGENT00
+pixi run agent-build
 
 # Setup and build FlyChams-Cosys-AirSim
-pixi run agent-sim-shell AGENT00
+pixi run agent-shell AGENT00
 cd FlyChams-Cosys-AirSim
 ./setup.sh
 ./build.sh
@@ -228,10 +228,10 @@ pixi run coordinator-sim-run   # Launch Coordinator
 Agents in simulation run inside Docker containers.
 
 ```bash
-pixi run agent-sim-build-image       # Build base Docker image
-pixi run agent-sim-build AGENT00     # Build workspace for AGENT00
-pixi run agent-sim-run AGENT00       # Run AGENT00
-pixi run agent-stream                # Stream agent feeds
+pixi run agent-build-image       # Build base Docker image
+pixi run agent-build AGENT00     # Build workspace for AGENT00
+pixi run agent-run AGENT00       # Run AGENT00
+pixi run agent-stream            # Stream agent feeds
 ```
 
 #### PX4 (SITL)
