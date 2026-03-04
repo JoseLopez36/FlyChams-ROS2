@@ -13,7 +13,7 @@ The project leverages:
 - **Unreal Engine 5** for photorealistic simulation
 - **AirSim** for high-fidelity physics simulation
 - **PX4** for commercial flight control
-- **Pixi** for dependency and environment management
+- **Pixi** for GCS dependency and environment management
 
 ---
 
@@ -76,7 +76,7 @@ This project is part of a broader research initiative by the Department of Syste
 ### Software Requirements
 
 - **Ubuntu 20.04, 22.04, or 24.04** (or compatible Linux distribution)
-- **Pixi** - The project uses Pixi to manage the internal ROS2 environment and dependencies. Install from [pixi.sh](https://pixi.sh).
+- **Pixi** - Required for the Ground Control Station (GCS) to manage the internal ROS2 environment and dependencies. Install from [pixi.sh](https://pixi.sh).
 - **Docker** - Required for running agents in isolated containers and for PX4 SITL.
 - **Unreal Engine 5.2.1** - Required for running the photorealistic simulation environment.
 
@@ -93,33 +93,47 @@ This project is part of a broader research initiative by the Department of Syste
 
 ## 📦 Installation
 
-### 1. Install Pixi
+The installation instructions are divided depending on the role of the machine:
+1. **Ground Control Station (GCS)**: Typically runs on a standard PC and handles the simulation environment, operator interface, and coordination.
+2. **Agents**: Typically runs on a PC for simulation or an NVIDIA Jetson for real deployment.
 
+### 1. Common Prerequisites
+
+**Clone Main Repository**
+```bash
+git clone https://github.com/JoseLopez36/FlyChams-ROS2.git
+cd FlyChams-ROS2
+```
+
+---
+
+### 2. Ground Control Station (GCS) Installation
+
+*Follow this section if you are setting up the main simulation and operator machine.*
+
+**Pixi Environment Manager**
+The project uses Pixi to manage the internal ROS2 environment and dependencies for the GCS.
 ```bash
 curl -fsSL https://pixi.sh/install.sh | sh
 ```
 
-### 2. Clone and Setup Repositories
-
+**Clone Dependencies**
 ```bash
-# Main ROS2 repository
-git clone https://github.com/JoseLopez36/FlyChams-ROS2.git
-cd FlyChams-ROS2
-
-# AirSim Plugin (for UE5)
+# AirSim Plugin (for simulation)
 git clone https://github.com/JoseLopez36/FlyChams-Cosys-AirSim.git
 cd FlyChams-Cosys-AirSim
 git checkout 5.2.1
+cd ..
 
 # PX4 Autopilot (for Simulation)
 git clone --recursive https://github.com/PX4/PX4-Autopilot.git
 cd PX4-Autopilot
 git checkout v1.12.0
 ./Tools/docker_run.sh 'make px4_sitl_default none_iris' # Build SITL
+cd ..
 ```
 
-### 3. Setup Environment
-
+**Setup Environment**
 Edit `setup.sh` to configure your paths:
 
 ```bash
@@ -129,39 +143,53 @@ export FLYCHAMS_AIRSIM_PATH=${HOME}/Documents/FlyChams-Cosys-AirSim
 export FLYCHAMS_UE5_PATH=${HOME}/Documents/FlyChams-Sim-UE5/Linux
 ```
 
-### 4. Install & Build
-
-Install dependencies and build Ground Control Station (GCS) packages using Pixi:
-
+**Install & Build GCS**
 ```bash
 pixi install
 pixi run gcs-build
 ```
 
-Install dependencies and build agent packages using the Docker container:
-
-```bash
-# Build the base Docker image
-pixi run agent-build-image
-# Or, if using a Jetson:
-# pixi run agent-build-image --jetson
-
-# Build the agent workspace (replace AGENT00 with your agent ID)
-pixi run agent-build
-
-# Setup and build FlyChams-Cosys-AirSim
-pixi run agent-shell AGENT00
-cd FlyChams-Cosys-AirSim
-./setup.sh
-./build.sh
-```
-
-### 6. Generate Settings
-
+**Generate Settings**
 Generate the initial AirSim settings based on the configuration:
 
 ```bash
 pixi run generate-settings
+```
+
+---
+
+### 3. Agent Installation
+
+*Follow this section if you are setting up an Agent. If you are running the simulation Agent on the same machine as the GCS, you have already cloned the required repositories and can skip the clone step.*
+
+**NVIDIA Container Toolkit**
+Agents run in Docker containers and require GPU access. You **must** install the NVIDIA Container Toolkit to enable GPU support in Docker.
+Follow the official guide here: [Installing NVIDIA Container Toolkit](https://docs.ultralytics.com/guides/docker-quickstart/#installing-nvidia-container-toolkit)
+
+**Clone Dependencies (if on a dedicated machine like a Jetson)**
+```bash
+# AirSim Plugin
+git clone https://github.com/JoseLopez36/FlyChams-Cosys-AirSim.git
+cd FlyChams-Cosys-AirSim
+git checkout 5.2.1
+cd ..
+```
+
+**Install & Build Agents**
+```bash
+# Build the base Docker image
+./tools/docker/build_image.sh
+# Or, if using a Jetson:
+# ./tools/docker/build_image.sh --jetson
+
+# Build the agent workspace
+./tools/build_agent.sh
+
+# Setup and build FlyChams-Cosys-AirSim inside the container (replace AGENT00 with your agent ID)
+./tools/agent_setup.sh shell AGENT00
+cd FlyChams-Cosys-AirSim
+./setup.sh
+./build.sh
 ```
 
 ## 🚀 Quick Start
@@ -228,10 +256,10 @@ pixi run coordinator-sim-run   # Launch Coordinator
 Agents in simulation run inside Docker containers.
 
 ```bash
-pixi run agent-build-image       # Build base Docker image
-pixi run agent-build AGENT00     # Build workspace for AGENT00
-pixi run agent-run AGENT00       # Run AGENT00
-pixi run agent-stream            # Stream agent feeds
+./tools/docker/build_image.sh      # Build base Docker image
+./tools/build_agent.sh             # Build workspace for agents
+./tools/agent_setup.sh run AGENT00 # Run AGENT00
+python3 tools/stream_agent.py      # Stream agent feeds
 ```
 
 #### PX4 (SITL)
