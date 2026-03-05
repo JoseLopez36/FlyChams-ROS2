@@ -40,6 +40,8 @@ if [ -z "$CMD" ]; then
     else
         echo "Starting new container ${CONTAINER_NAME}..."
         docker run -it --rm --name "${CONTAINER_NAME}" \
+            --ipc=host \
+            --runtime=nvidia \
             --gpus all \
             --network host \
             -e ROS_DOMAIN_ID="${ROS_DOMAIN_ID}" \
@@ -61,6 +63,8 @@ else
     else
         echo "Starting new container ${CONTAINER_NAME}..."
         docker run --rm --name "${CONTAINER_NAME}" \
+            --ipc=host \
+            --runtime=nvidia \
             --gpus all \
             --network host \
             -e ROS_DOMAIN_ID="${ROS_DOMAIN_ID}" \

@@ -9,13 +9,11 @@ gi.require_version('Gst', '1.0')
 from gi.repository import Gst, GLib
 
 class AgentStream:
-    def __init__(self, host="127.0.0.1", source_port=5000, destination_port=6000, control_port=7000, gpu_type="auto"):
-        """
-        Initialize the AgentStream class
-        """
+    def __init__(self, host="127.0.0.1", source_port=5000, yolo_port=6000, interface_port=7000, control_port=8000, gpu_type="auto"):
         self.host = host
         self.source_port = source_port
-        self.destination_port = destination_port
+        self.yolo_port = yolo_port
+        self.interface_port = interface_port
         self.control_port = control_port
         
         Gst.init(None)
@@ -33,10 +31,7 @@ class AgentStream:
         self.running = False
 
     def detect_gpu_type(self):
-        """
-        Detects available GPU hardware encoding/decoding support.
-        Checks for NVIDIA elements first, then falls back to AMD/VAAPI.
-        """
+        """Detects available GPU hardware encoding/decoding support"""
         registry = Gst.Registry.get()
         
         # Check for NVIDIA encoder element specifically
@@ -49,7 +44,7 @@ class AgentStream:
         if va_enc:
             return "amd"
             
-        print("Warning: No hardware acceleration found. Defaulting to AMD (VAAPI) pipeline which might fail.")
+        print("Warning: No hardware acceleration found. Defaulting to AMD (VAAPI) pipeline which might fail")
         return "amd"
 
     def create_pipeline_str(self):
@@ -58,17 +53,79 @@ class AgentStream:
         else:
             return self.create_amd_pipeline_str()
 
+    def create_nvidia_pipeline_str(self):
+        """Constructs the GStreamer pipeline string for Nvidia"""
+        # 0. Base source: Listening on source_port
+        pipeline_str = (
+            f"udpsrc port={self.source_port} buffer-size=5242880 caps=\"application/x-rtp, media=(string)video, clock-rate=(int)90000, encoding-name=(string)H265, payload=(int)96\" ! "
+            "rtph265depay ! h265parse ! nvh265dec ! queue max-size-buffers=1 ! tee name=t "
+        )
+
+        # ----- YOLO branch -----
+        # Output raw video over TCP to yolo_port
+        yolo_port = self.yolo_port
+        yolo_branch = (
+            "t. ! queue leaky=downstream max-size-buffers=10 ! "
+            "videoscale ! "
+            "video/x-raw,width=1280,height=720,format=RGB ! "
+            f"tcpserversink host={self.host} port={yolo_port} recover-policy=keyframe sync=false "
+        )
+        pipeline_str += yolo_branch
+
+        # ----- GCS branches -----
+        # Full image branch: Rescale to 720p, output to interface_port
+        full_res_port = self.interface_port
+        full_res_branch = (
+            "t. ! queue leaky=downstream max-size-buffers=10 ! "
+            "videoscale ! "
+            "video/x-raw,width=1280,height=720 ! "
+            "nvh265enc bitrate=8000 rc-mode=cbr ! "
+            "h265parse ! "
+            "mpegtsmux ! "
+            f"udpsink host={self.host} port={full_res_port} sync=false buffer-size=52428800 "
+        )
+        pipeline_str += full_res_branch
+        
+        # Crop branches: Output to interface_port + i
+        for i in range(1, 5):
+            crop_port = self.interface_port + i
+            crop_name = f"crop_{i}"
+            crop_branch = (
+                "t. ! queue leaky=downstream max-size-buffers=10 ! "
+                f"videocrop name={crop_name} ! "
+                "videoscale ! "
+                "video/x-raw,width=1280,height=720 ! "
+                "nvh265enc bitrate=3000 rc-mode=cbr ! "
+                "h265parse ! "
+                "mpegtsmux ! "
+                f"udpsink host={self.host} port={crop_port} sync=false buffer-size=52428800 "
+            )
+            pipeline_str += crop_branch
+
+        return pipeline_str
+
     def create_amd_pipeline_str(self):
-        """
-        Constructs the GStreamer pipeline string with 1 full res (scaled) and 4 crops for AMD
-        """
+        """Constructs the GStreamer pipeline string for AMD"""
         # 0. Base source: Listening on source_port
         pipeline_str = (
             f"udpsrc port={self.source_port} buffer-size=5242880 caps=\"application/x-rtp, media=(string)video, clock-rate=(int)90000, encoding-name=(string)H265, payload=(int)96\" ! "
             "rtph265depay ! h265parse ! vah265dec ! queue max-size-buffers=1 ! tee name=t "
         )
+
+        # ----- YOLO branch -----
+        # Output raw video over TCP to yolo_port
+        yolo_port = self.yolo_port
+        yolo_branch = (
+            "t. ! queue leaky=downstream max-size-buffers=10 ! "
+            "videoscale ! "
+            "video/x-raw,width=1280,height=720,format=RGB ! "
+            f"tcpserversink host={self.host} port={yolo_port} recover-policy=keyframe sync=false "
+        )
+        pipeline_str += yolo_branch
         
-        # 1. Full image branch: Rescale to 1080p, output to destination_port
+        # ----- GCS branches -----
+        # Full image branch: Rescale to 720p, output to interface_port
+        full_res_port = self.interface_port
         full_res_branch = (
             "t. ! queue leaky=downstream max-size-buffers=10 ! "
             "vapostproc ! "
@@ -76,66 +133,26 @@ class AgentStream:
             "vah265enc bitrate=8000 rate-control=cbr ! "
             "h265parse ! "
             "mpegtsmux ! "
-            f"udpsink host={self.host} port={self.destination_port} sync=false buffer-size=52428800 "
+            f"udpsink host={self.host} port={full_res_port} sync=false buffer-size=52428800 "
         )
         pipeline_str += full_res_branch
         
-        # 2. Crop branches: Output to destination_port + i
+        # Crop branches: Output to interface_port + i
         for i in range(1, 5):
-            port = self.destination_port + i
-            name = f"crop_{i}"
+            crop_port = self.interface_port + i
+            crop_name = f"crop_{i}"
             crop_branch = (
                 "t. ! queue leaky=downstream max-size-buffers=10 ! "
-                f"videocrop name={name} ! "
+                f"videocrop name={crop_name} ! "
                 "vapostproc ! "
                 "video/x-raw,width=1280,height=720 ! "
                 "vah265enc bitrate=3000 rate-control=cbr ! "
                 "h265parse ! "
                 "mpegtsmux ! "
-                f"udpsink host={self.host} port={port} sync=false buffer-size=52428800 "
+                f"udpsink host={self.host} port={crop_port} sync=false buffer-size=52428800 "
             )
             pipeline_str += crop_branch
-            
-        return pipeline_str
 
-    def create_nvidia_pipeline_str(self):
-        """
-        Constructs the GStreamer pipeline string with 1 full res (scaled) and 4 crops for Nvidia
-        """
-        # 0. Base source: Listening on source_port
-        pipeline_str = (
-            f"udpsrc port={self.source_port} buffer-size=5242880 caps=\"application/x-rtp, media=(string)video, clock-rate=(int)90000, encoding-name=(string)H265, payload=(int)96\" ! "
-            "rtph265depay ! h265parse ! nvh265dec ! queue max-size-buffers=1 ! tee name=t "
-        )
-        
-        # 1. Full image branch: Rescale to 1080p, output to destination_port
-        full_res_branch = (
-            "t. ! queue leaky=downstream max-size-buffers=10 ! "
-            "videoscale ! "
-            "video/x-raw,width=1920,height=1080 ! "
-            "nvh265enc bitrate=8000 rc-mode=cbr ! "
-            "h265parse ! "
-            "mpegtsmux ! "
-            f"udpsink host={self.host} port={self.destination_port} sync=false buffer-size=52428800 "
-        )
-        pipeline_str += full_res_branch
-        
-        # 2. Crop branches: Output to destination_port + i
-        for i in range(1, 5):
-            port = self.destination_port + i
-            name = f"crop_{i}"
-            crop_branch = (
-                "t. ! queue leaky=downstream max-size-buffers=10 ! "
-                f"videocrop name={name} ! "
-                "videoscale ! "
-                "video/x-raw,width=1280,height=720 ! "
-                "nvh265enc bitrate=3000 rc-mode=cbr ! "
-                "h265parse ! "
-                "mpegtsmux ! "
-                f"udpsink host={self.host} port={port} sync=false buffer-size=52428800 "
-            )
-            pipeline_str += crop_branch
-            
         return pipeline_str
 
     def tracking_loop(self):
@@ -229,8 +246,9 @@ def main():
     parser = argparse.ArgumentParser(description="Agent Stream")
     parser.add_argument("--host", default="127.0.0.1", help="Destination host")
     parser.add_argument("--source-port", type=int, default=5000, help="Source port")
-    parser.add_argument("--destination-port", type=int, default=6000, help="Destination port start")
-    parser.add_argument("--control-port", type=int, default=7000, help="Control port")
+    parser.add_argument("--yolo-port", type=int, default=6000, help="YOLO port")
+    parser.add_argument("--interface-port", type=int, default=7000, help="GCS port start")
+    parser.add_argument("--control-port", type=int, default=8000, help="Control port")
     parser.add_argument("--gpu-type", default="auto", choices=["auto", "amd", "nvidia"], help="GPU type (auto, amd or nvidia)")
     
     args = parser.parse_args()
@@ -238,7 +256,8 @@ def main():
     agent = AgentStream(
         host=args.host, 
         source_port=args.source_port, 
-        destination_port=args.destination_port, 
+        yolo_port=args.yolo_port, 
+        interface_port=args.interface_port, 
         control_port=args.control_port,
         gpu_type=args.gpu_type
     )
