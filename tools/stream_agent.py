@@ -62,31 +62,33 @@ class AgentStream:
         )
 
         # ----- YOLO branch -----
-        # Output raw video over TCP to yolo_port
+        # Output video over TCP to yolo_port for YOLO inference (H264 encoded)
         yolo_port = self.yolo_port
         yolo_branch = (
             "t. ! queue leaky=downstream max-size-buffers=10 ! "
             "videoscale ! "
-            "video/x-raw,width=1280,height=720,format=RGB ! "
-            f"tcpserversink host={self.host} port={yolo_port} recover-policy=keyframe sync=false "
+            "video/x-raw,width=640,height=640 ! "
+            "nvh264enc bitrate=1000 ! "
+            "h264parse ! "
+            f"tcpserversink host={self.host} port={yolo_port} sync=false "
         )
         pipeline_str += yolo_branch
 
         # ----- GCS branches -----
-        # Full image branch: Rescale to 720p, output to interface_port
+        # Full image branch: Rescale to 720p, output to interface_port (H264 encoded)
         full_res_port = self.interface_port
         full_res_branch = (
             "t. ! queue leaky=downstream max-size-buffers=10 ! "
             "videoscale ! "
             "video/x-raw,width=1280,height=720 ! "
-            "nvh265enc bitrate=8000 rc-mode=cbr ! "
-            "h265parse ! "
+            "nvh264enc bitrate=3000 ! "
+            "h264parse ! "
             "mpegtsmux ! "
-            f"udpsink host={self.host} port={full_res_port} sync=false buffer-size=52428800 "
+            f"udpsink host={self.host} port={full_res_port} sync=false "
         )
         pipeline_str += full_res_branch
         
-        # Crop branches: Output to interface_port + i
+        # Crop branches: Output to interface_port + i (H264 encoded)
         for i in range(1, 5):
             crop_port = self.interface_port + i
             crop_name = f"crop_{i}"
@@ -95,10 +97,10 @@ class AgentStream:
                 f"videocrop name={crop_name} ! "
                 "videoscale ! "
                 "video/x-raw,width=1280,height=720 ! "
-                "nvh265enc bitrate=3000 rc-mode=cbr ! "
-                "h265parse ! "
+                "nvh264enc bitrate=3000 ! "
+                "h264parse ! "
                 "mpegtsmux ! "
-                f"udpsink host={self.host} port={crop_port} sync=false buffer-size=52428800 "
+                f"udpsink host={self.host} port={crop_port} sync=false "
             )
             pipeline_str += crop_branch
 
@@ -113,31 +115,33 @@ class AgentStream:
         )
 
         # ----- YOLO branch -----
-        # Output raw video over TCP to yolo_port
+        # Output video over TCP to yolo_port for YOLO inference (H264 encoded)
         yolo_port = self.yolo_port
         yolo_branch = (
             "t. ! queue leaky=downstream max-size-buffers=10 ! "
             "videoscale ! "
-            "video/x-raw,width=1280,height=720,format=RGB ! "
-            f"tcpserversink host={self.host} port={yolo_port} recover-policy=keyframe sync=false "
+            "video/x-raw,width=640,height=640 ! "
+            "vah264enc bitrate=1000 ! "
+            "h264parse ! "
+            f"tcpserversink host={self.host} port={yolo_port} sync=false "
         )
         pipeline_str += yolo_branch
         
         # ----- GCS branches -----
-        # Full image branch: Rescale to 720p, output to interface_port
+        # Full image branch: Rescale to 720p, output to interface_port (H264 encoded)
         full_res_port = self.interface_port
         full_res_branch = (
             "t. ! queue leaky=downstream max-size-buffers=10 ! "
             "vapostproc ! "
-            "video/x-raw,width=1920,height=1080 ! "
-            "vah265enc bitrate=8000 rate-control=cbr ! "
-            "h265parse ! "
+            "video/x-raw,width=1280,height=720 ! "
+            "vah264enc bitrate=3000 ! "
+            "h264parse ! "
             "mpegtsmux ! "
-            f"udpsink host={self.host} port={full_res_port} sync=false buffer-size=52428800 "
+            f"udpsink host={self.host} port={full_res_port} sync=false "
         )
         pipeline_str += full_res_branch
         
-        # Crop branches: Output to interface_port + i
+        # Crop branches: Output to interface_port + i (H264 encoded)
         for i in range(1, 5):
             crop_port = self.interface_port + i
             crop_name = f"crop_{i}"
@@ -146,10 +150,10 @@ class AgentStream:
                 f"videocrop name={crop_name} ! "
                 "vapostproc ! "
                 "video/x-raw,width=1280,height=720 ! "
-                "vah265enc bitrate=3000 rate-control=cbr ! "
-                "h265parse ! "
+                "vah264enc bitrate=3000 ! "
+                "h264parse ! "
                 "mpegtsmux ! "
-                f"udpsink host={self.host} port={crop_port} sync=false buffer-size=52428800 "
+                f"udpsink host={self.host} port={crop_port} sync=false "
             )
             pipeline_str += crop_branch
 
@@ -244,11 +248,11 @@ class AgentStream:
 
 def main():
     parser = argparse.ArgumentParser(description="Agent Stream")
-    parser.add_argument("--host", default="127.0.0.1", help="Destination host")
+    parser.add_argument("--host", default="0.0.0.0", help="Destination host")
     parser.add_argument("--source-port", type=int, default=5000, help="Source port")
-    parser.add_argument("--yolo-port", type=int, default=6000, help="YOLO port")
-    parser.add_argument("--interface-port", type=int, default=7000, help="GCS port start")
-    parser.add_argument("--control-port", type=int, default=8000, help="Control port")
+    parser.add_argument("--yolo-port", type=int, default=5500, help="YOLO port")
+    parser.add_argument("--interface-port", type=int, default=6000, help="GCS port start")
+    parser.add_argument("--control-port", type=int, default=7000, help="Control port")
     parser.add_argument("--gpu-type", default="auto", choices=["auto", "amd", "nvidia"], help="GPU type (auto, amd or nvidia)")
     
     args = parser.parse_args()
