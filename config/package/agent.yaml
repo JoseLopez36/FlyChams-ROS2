@@ -67,5 +67,6 @@
 /**/target_detection_node:
   ros__parameters:
     # Detector parameters
-    detector_type: yolo
+    source: tcp://127.0.0.1:5500
     detector_model: yolov11n.pt
+    target_class: person

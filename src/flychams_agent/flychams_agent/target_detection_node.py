@@ -11,7 +11,7 @@ from rclpy.node import Node
 from rclpy.executors import MultiThreadedExecutor
 
 # Import target detection module
-from .detection.target_detection import TargetDetection
+from flychams_agent.detection.target_detection import TargetDetection
 
 class TargetDetectionNode(Node):
     """Target detection node that detects targets based on camera feeds"""
@@ -21,7 +21,6 @@ class TargetDetectionNode(Node):
                         automatically_declare_parameters_from_overrides=True)
 
         # Get node parameters
-        self.declare_parameter('agent_id', '')
         self.agent_id = self.get_parameter('agent_id').get_parameter_value().string_value
         
         # Create target detection module

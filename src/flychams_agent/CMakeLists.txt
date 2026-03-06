@@ -131,6 +131,10 @@ install(DIRECTORY launch/
   DESTINATION share/${PROJECT_NAME}/launch
 )
 
+install(DIRECTORY flychams_agent/models/
+  DESTINATION share/${PROJECT_NAME}/models
+)
+
 # Export package
 ament_export_targets(${PROJECT_NAME} HAS_LIBRARY_TARGET)
 ament_export_dependencies(

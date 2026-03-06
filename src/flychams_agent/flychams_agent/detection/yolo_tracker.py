@@ -5,23 +5,24 @@ Author: Alfonso Martínez Sánchez
 Date: 2026-03-02
 """
 
+import os
 import time
 from typing import Any, Dict
 
+from ament_index_python.packages import get_package_share_directory
+
 import numpy as np
-import torch
 import cv2
 from ultralytics import YOLO
 from ultralytics.utils import YAML, IterableSimpleNamespace
 from ultralytics.utils.checks import check_yaml
 from ultralytics.trackers.byte_tracker import BYTETracker
 from ultralytics.trackers.bot_sort import BOTSORT
-
-from .tracker import Tracker
+from ultralytics.engine.results import Boxes
 
 # Constants
 DEFAULT_CONF_TH = 0.20
-DEFAULT_IMGSZ = 1280
+DEFAULT_IMGSZ = 640
 DEFAULT_TRACKER_YAML = "bytetrack.yaml" # or "botsort.yaml"
 DEFAULT_TRACK_BUFFER_CYCLES = 10
 DEFAULT_TARGET_CLASS = "person"
@@ -119,25 +120,27 @@ class KLT_GPU:
         valid_pts_gpu.upload(good_new.reshape(-1, 1, 2))
         return valid_pts_gpu, (float(dx), float(dy)), True
 
-class YOLOTracker():
+class YoloTracker():
     """YOLO-based tracker implementation"""
 
     def __init__(self, 
-                 model_path: str = "yolo11m.engine", 
+                 model_name: str = "yolov11n.pt", 
                  target_class: str = DEFAULT_TARGET_CLASS,
                  conf_th: float = DEFAULT_CONF_TH,
                  imgsz: int = DEFAULT_IMGSZ,
                  tracker_yaml: str = DEFAULT_TRACKER_YAML,
+                 source: str = "udp://127.0.0.1:6000",
                  logger=None):
         """
         Initialize the YOLO tracker
         
         Args:
-            model_path: Path to the YOLO model (e.g., .engine or .pt)
+            model_name: Name of the YOLO model (e.g., yolov11n)
             target_class: Name of the class to track
             conf_th: Confidence threshold for detection
             imgsz: Image size for YOLO inference
             tracker_yaml: YAML configuration for the tracker (ByteTrack/BOT-SORT)
+            source: Video stream source (e.g. UDP port)
             logger: Logger instance
         """
         self.logger = logger
@@ -145,14 +148,28 @@ class YOLOTracker():
         self.target_class = target_class
         self.conf_th = conf_th
         self.imgsz = imgsz
-        self.device = 0 if torch.cuda.is_available() else "cpu"
 
-        if not torch.cuda.is_available():
-            if self.logger:
-                self.logger.warn("CUDA not available in PyTorch. Performance will be limited")
+        # Resolve model path
+        pkg_share = get_package_share_directory('flychams_agent')
+        model_path = os.path.join(pkg_share, "models", model_name)
+
+        if self.logger:
+            self.logger.info(f"Loading YOLO model from: {model_path}")
 
         # Initialize YOLO model
         self.model = YOLO(model_path, task="detect")
+        
+        # Check for CUDA availability
+        import torch
+        if torch.cuda.is_available():
+            self.device = 0
+            if self.logger:
+                self.logger.info("CUDA is available. Using GPU (device 0)")
+        else:
+            self.device = 'cpu'
+            if self.logger:
+                self.logger.warning("CUDA is NOT available. Falling back to CPU. This will be slow!")
+
         self.target_cls_id = self._get_target_cls_id(self.model.names, self.target_class)
         
         if self.target_cls_id is None:
@@ -184,25 +201,47 @@ class YOLOTracker():
         self.prev_gpu_gray = cv2.cuda_GpuMat()
         self.has_prev_gray = False
         
-        # Warmup
-        dummy = np.zeros((imgsz, imgsz, 3), dtype=np.uint8)
-        _ = self.model.predict(dummy, imgsz=self.imgsz, conf=self.conf_th, 
-                               device=self.device, half=True, verbose=False)[0]
+        # Initialize Stream Generator
+        self.stream_generator = self.model(source, stream=True, imgsz=self.imgsz, conf=self.conf_th, 
+                                           device=self.device, half=(self.device == 0), verbose=False)
 
         if self.logger:
-            self.logger.info(f"YOLOTracker initialized for class: {self.target_class}")
+            self.logger.info(f"YoloTracker initialized for class: {self.target_class} from source {source}")
 
-    def update(self, image):
+    def update(self):
         """
-        Update the tracker with a new frame
+        Update the tracker with a new frame from the stream
         Uses KLT for inter-frame tracking and YOLO for periodic detection/correction
-        
-        Args:
-            image: OpenCV image (numpy array)
-            
+
         Returns:
             A list of tracked objects: [[id, x1, y1, x2, y2, conf, cls], ...]
         """
+        try:
+            results = next(self.stream_generator)
+        except StopIteration:
+            if self.logger:
+                self.logger.warning("Stream generator stopped")
+            return []
+        except Exception as e:
+            if self.logger:
+                self.logger.error(f"Error getting next frame from stream: {e}")
+            return []
+            
+        # image = stream_results.orig_img
+        # boxes = stream_results.boxes
+
+        # Return number of detections
+        return len(results)
+
+        if boxes is None:
+            h, w = image.shape[:2]
+            empty = np.zeros((0, 6), dtype=np.float32)
+            boxes = Boxes(empty, orig_shape=(h, w))
+
+        if self.target_cls_id is not None and len(boxes) > 0:
+            mask = (boxes.cls.int() == int(self.target_cls_id))
+            boxes = boxes[mask]
+
         h, w = image.shape[:2]
         now = time.monotonic()
         
@@ -226,8 +265,7 @@ class YOLOTracker():
                     # Flow failed, re-init points
                     tr["pts_gpu"] = self.klt_gpu.init_points(self.gpu_gray, tr["bbox"])
 
-        # 2. Perform YOLO detection and ByteTrack/BOT-SORT update
-        boxes = self._detect(image)
+        # 2. Perform ByteTrack/BOT-SORT update using stream detection
         det_np = boxes.cpu().numpy()
         
         # Update the high-level tracker (ByteTrack/BOT-SORT)
@@ -274,32 +312,6 @@ class YOLOTracker():
         
         return results
 
-    def _detect(self, image):
-        """
-        Perform YOLO detection on the given image
-        
-        Args:
-            image: OpenCV image (numpy array)
-            
-        Returns:
-            A list of detections (Ultralytics Boxes filtered by target class)
-        """
-        h, w = image.shape[:2]
-        results = self.model.predict(image, imgsz=self.imgsz, conf=self.conf_th, 
-                                    device=self.device, half=True, verbose=False)[0]
-        boxes = results.boxes
-
-        if boxes is None:
-            from ultralytics.engine.results import Boxes
-            empty = torch.zeros((0, 6), dtype=torch.float32)
-            return Boxes(empty, orig_shape=(h, w))
-
-        if self.target_cls_id is not None and len(boxes) > 0:
-            mask = (boxes.cls.int() == int(self.target_cls_id))
-            boxes = boxes[mask]
-            
-        return boxes
-
     def _get_target_cls_id(self, names, target_name):
         """Find the class ID for a given class name"""
         if isinstance(names, dict):
@@ -311,7 +323,6 @@ class YOLOTracker():
                 if v == target_name:
                     return int(i)
         return None
-
     def _clamp_xyxy(self, bb, w, h):
         """Clamp bounding box to image dimensions."""
         x1, y1, x2, y2 = bb

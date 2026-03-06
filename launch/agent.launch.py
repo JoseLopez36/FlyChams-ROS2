@@ -278,6 +278,28 @@ def launch_setup(context, *args, **kwargs):
             )
         )
 
+    # Conditionally add Target Detection node
+    if is_enabled('target_detection'):
+        ld.append(
+            Node(
+                package='flychams_agent',
+                executable='target_detection_node',
+                name='target_detection_node',
+                output='screen' if is_sim else 'log',
+                namespace='flychams/' + agent_id,
+                arguments=['--ros-args', '--log-level', log_level('target_detection')],
+                parameters=[
+                    system_path, 
+                    topics_path, 
+                    frames_path, 
+                    agent_path,
+                    mission_path,
+                    {'agent_id': agent_id},
+                    {'use_sim_time': is_sim}
+                ]
+            )
+        )
+
     return ld
 
 def generate_launch_description():

@@ -68,8 +68,8 @@ class AgentStream:
             "t. ! queue leaky=downstream max-size-buffers=10 ! "
             "videoscale ! "
             "video/x-raw,width=640,height=640 ! "
-            "nvh264enc bitrate=1000 ! "
-            "h264parse ! "
+            "nvh264enc bitrate=1000 rc-mode=cbr ! "
+            "h264parse config-interval=-1 ! "
             f"tcpserversink host={self.host} port={yolo_port} sync=false "
         )
         pipeline_str += yolo_branch
@@ -81,8 +81,8 @@ class AgentStream:
             "t. ! queue leaky=downstream max-size-buffers=10 ! "
             "videoscale ! "
             "video/x-raw,width=1280,height=720 ! "
-            "nvh264enc bitrate=3000 ! "
-            "h264parse ! "
+            "nvh264enc bitrate=3000 rc-mode=cbr ! "
+            "h264parse config-interval=-1 ! "
             "mpegtsmux ! "
             f"udpsink host={self.host} port={full_res_port} sync=false "
         )
@@ -97,8 +97,8 @@ class AgentStream:
                 f"videocrop name={crop_name} ! "
                 "videoscale ! "
                 "video/x-raw,width=1280,height=720 ! "
-                "nvh264enc bitrate=3000 ! "
-                "h264parse ! "
+                "nvh264enc bitrate=3000 rc-mode=cbr ! "
+                "h264parse config-interval=-1 ! "
                 "mpegtsmux ! "
                 f"udpsink host={self.host} port={crop_port} sync=false "
             )
@@ -119,10 +119,10 @@ class AgentStream:
         yolo_port = self.yolo_port
         yolo_branch = (
             "t. ! queue leaky=downstream max-size-buffers=10 ! "
-            "videoscale ! "
+            "vapostproc ! "
             "video/x-raw,width=640,height=640 ! "
             "vah264enc bitrate=1000 ! "
-            "h264parse ! "
+            "h264parse config-interval=-1 ! "
             f"tcpserversink host={self.host} port={yolo_port} sync=false "
         )
         pipeline_str += yolo_branch
@@ -134,8 +134,8 @@ class AgentStream:
             "t. ! queue leaky=downstream max-size-buffers=10 ! "
             "vapostproc ! "
             "video/x-raw,width=1280,height=720 ! "
-            "vah264enc bitrate=3000 ! "
-            "h264parse ! "
+            "vah264enc bitrate=3000 rc-mode=cbr ! "
+            "h264parse config-interval=-1 ! "
             "mpegtsmux ! "
             f"udpsink host={self.host} port={full_res_port} sync=false "
         )
@@ -150,8 +150,8 @@ class AgentStream:
                 f"videocrop name={crop_name} ! "
                 "vapostproc ! "
                 "video/x-raw,width=1280,height=720 ! "
-                "vah264enc bitrate=3000 ! "
-                "h264parse ! "
+                "vah264enc bitrate=3000 rc-mode=cbr ! "
+                "h264parse config-interval=-1 ! "
                 "mpegtsmux ! "
                 f"udpsink host={self.host} port={crop_port} sync=false "
             )
