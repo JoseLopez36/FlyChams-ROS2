@@ -376,6 +376,7 @@ namespace flychams::core
             RCLCPP_INFO(node_->get_logger(), "    Safety Radius: %.3f", agent->safety_radius);
             RCLCPP_INFO(node_->get_logger(), "    Max Altitude: %.3f", agent->max_altitude);
             RCLCPP_INFO(node_->get_logger(), "    Battery Capacity: %.3f", agent->battery_capacity);
+            RCLCPP_INFO(node_->get_logger(), "    Inference Stream URL: %s", agent->inference_stream_url.c_str());
 
             // Tracking Parameters
             RCLCPP_INFO(node_->get_logger(), "    [TRACKING]");
@@ -404,8 +405,8 @@ namespace flychams::core
                     multi_camera->orientation.x(), multi_camera->orientation.y(), multi_camera->orientation.z());
                 RCLCPP_INFO(node_->get_logger(), "        Focal Length: min=%.6f, max=%.6f, ref=%.6f",
                     multi_camera->min_focal, multi_camera->max_focal, multi_camera->ref_focal);
-                RCLCPP_INFO(node_->get_logger(), "        Src Stream URL: %s", multi_camera->src_stream_url.c_str());
-                RCLCPP_INFO(node_->get_logger(), "        Dst Stream URL: %s", multi_camera->dst_stream_url.c_str());
+                RCLCPP_INFO(node_->get_logger(), "        Source Stream URL: %s", multi_camera->source_stream_url.c_str());
+                RCLCPP_INFO(node_->get_logger(), "        Interface Stream URL: %s", multi_camera->interface_stream_url.c_str());
                 RCLCPP_INFO(node_->get_logger(), "        Hardware: %s", multi_camera->hardware.c_str());
                 RCLCPP_INFO(node_->get_logger(), "        IP: %s", multi_camera->ip.c_str());
                 RCLCPP_INFO(node_->get_logger(), "        Port: %d", multi_camera->port);
@@ -472,7 +473,7 @@ namespace flychams::core
                     multi_window->resolution(0), multi_window->resolution(1));
                 RCLCPP_INFO(node_->get_logger(), "        Lambda: min=%.3f, max=%.3f, ref=%.3f",
                     multi_window->min_lambda, multi_window->max_lambda, multi_window->ref_lambda);
-                RCLCPP_INFO(node_->get_logger(), "        Dst Stream URL: %s", multi_window->dst_stream_url.c_str());
+                RCLCPP_INFO(node_->get_logger(), "        Interface Stream URL: %s", multi_window->interface_stream_url.c_str());
             }
 
             // Drone Parameters

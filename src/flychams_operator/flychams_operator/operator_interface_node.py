@@ -164,7 +164,7 @@ class OperatorInterface(Node):
         
         # Get stream_url for each multi_camera
         for multi_camera_id in multi_camera_ids:
-            stream_url_param = f'agents.{agent_id}.tracking.multi_cameras.{multi_camera_id}.dst_stream_url'
+            stream_url_param = f'agents.{agent_id}.tracking.multi_cameras.{multi_camera_id}.interface_stream_url'
             try:
                 stream_url = self.get_parameter(stream_url_param).get_parameter_value().string_value
                 stream_urls.append(stream_url)
@@ -173,7 +173,7 @@ class OperatorInterface(Node):
 
         # Get stream_url for each multi_window
         for multi_window_id in multi_window_ids:
-            stream_url_param = f'agents.{agent_id}.tracking.multi_windows.{multi_window_id}.dst_stream_url'
+            stream_url_param = f'agents.{agent_id}.tracking.multi_windows.{multi_window_id}.interface_stream_url'
             try:
                 stream_url = self.get_parameter(stream_url_param).get_parameter_value().string_value
                 stream_urls.append(stream_url)

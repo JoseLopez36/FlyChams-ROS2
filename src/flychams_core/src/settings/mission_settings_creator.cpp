@@ -158,6 +158,7 @@ namespace flychams::core
 			yaml << "        safety_radius: " << std::fixed << std::setprecision(3) << agent->safety_radius << "\n";
 			yaml << "        max_altitude: " << std::fixed << std::setprecision(3) << agent->max_altitude << "\n";
 			yaml << "        battery_capacity: " << std::fixed << std::setprecision(3) << agent->battery_capacity << "\n";
+			yaml << "        inference_stream_url: \"" << agent->inference_stream_url << "\"\n";
 
 			// Write tracking configuration
 			yaml << "        tracking:\n";
@@ -256,12 +257,12 @@ namespace flychams::core
 		yaml << prefix << "min_focal: " << std::fixed << std::setprecision(6) << multi_camera->min_focal << "\n";
 		yaml << prefix << "max_focal: " << std::fixed << std::setprecision(6) << multi_camera->max_focal << "\n";
 		yaml << prefix << "ref_focal: " << std::fixed << std::setprecision(6) << multi_camera->ref_focal << "\n";
-		yaml << prefix << "src_stream_url: \"" << multi_camera->src_stream_url << "\"\n";
-		yaml << prefix << "dst_stream_url: \"" << multi_camera->dst_stream_url << "\"\n";
+		yaml << prefix << "source_stream_url: \"" << multi_camera->source_stream_url << "\"\n";
+		yaml << prefix << "interface_stream_url: \"" << multi_camera->interface_stream_url << "\"\n";
 		yaml << prefix << "hardware: \"" << multi_camera->hardware << "\"\n";
 		yaml << prefix << "ip: \"" << multi_camera->ip << "\"\n";
 		yaml << prefix << "port: " << multi_camera->port << "\n";
-		
+
 		yaml << prefix << "camera:\n";
 		writeCameraSection(yaml, multi_camera->camera, prefix + "  ");
 
@@ -279,7 +280,7 @@ namespace flychams::core
 		yaml << prefix << "min_lambda: " << std::fixed << std::setprecision(3) << multi_window->min_lambda << "\n";
 		yaml << prefix << "max_lambda: " << std::fixed << std::setprecision(3) << multi_window->max_lambda << "\n";
 		yaml << prefix << "ref_lambda: " << std::fixed << std::setprecision(3) << multi_window->ref_lambda << "\n";
-		yaml << prefix << "dst_stream_url: \"" << multi_window->dst_stream_url << "\"\n";
+		yaml << prefix << "interface_stream_url: \"" << multi_window->interface_stream_url << "\"\n";
 	}
 
 	void MissionSettingsCreator::writeCameraSection(std::ostringstream& yaml, const CameraConfig& camera, const std::string& prefix)
