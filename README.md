@@ -253,7 +253,6 @@ Agents in simulation run inside Docker containers.
 bash tools/docker/build_image.sh        # Build base Docker image
 bash tools/build_agent.sh               # Build workspace for agents
 bash tools/agent_setup.sh run AGENT00   # Run AGENT00
-python3 tools/stream_agent.py           # Stream agent feeds
 ```
 
 #### PX4 (SITL)

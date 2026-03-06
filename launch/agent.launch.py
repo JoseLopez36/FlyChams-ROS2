@@ -300,6 +300,27 @@ def launch_setup(context, *args, **kwargs):
             )
         )
 
+    # Conditionally add Agent Stream node
+    if is_enabled('agent_stream'):
+        ld.append(
+            Node(
+                package='flychams_agent',
+                executable='agent_stream_node',
+                name='agent_stream_node',
+                output='screen' if is_sim else 'log',
+                namespace='flychams/' + agent_id,
+                arguments=['--ros-args', '--log-level', log_level('agent_stream')],
+                parameters=[
+                    system_path, 
+                    topics_path, 
+                    frames_path, 
+                    agent_path,
+                    mission_path,
+                    {'agent_id': agent_id}
+                ]
+            )
+        )
+
     return ld
 
 def generate_launch_description():

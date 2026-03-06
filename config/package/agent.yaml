@@ -70,3 +70,13 @@
     source: tcp://127.0.0.1:5500
     detector_model: yolov11n.pt
     target_class: person
+
+/**/agent_stream_node:
+  ros__parameters:
+    # Stream parameters
+    stream_host: "127.0.0.1"
+    stream_source_port: 5000
+    stream_yolo_port: 5500
+    stream_interface_port: 6000
+    # GPU type (auto, amd, nvidia)
+    gpu_type: "auto"

@@ -14,6 +14,10 @@ find_package(mavros_msgs REQUIRED)
 find_package(airsim_interfaces REQUIRED)
 find_package(flychams_core REQUIRED)
 
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(GST REQUIRED gstreamer-1.0 gstreamer-base-1.0 gstreamer-app-1.0 gstreamer-video-1.0)
+pkg_check_modules(GLIB REQUIRED glib-2.0 gobject-2.0)
+
 # Find GeographicLib
 set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH};/usr/share/cmake/geographiclib")
 find_package(GeographicLib REQUIRED)
@@ -33,12 +37,15 @@ set(CONTROL_SRC
   src/analysis/agent_analysis.cpp
   src/positioning/agent_positioning.cpp
   src/tracking/agent_tracking.cpp
+  src/stream/agent_stream.cpp
 )
 add_library(${PROJECT_NAME} SHARED ${CONTROL_SRC})
 target_include_directories(${PROJECT_NAME} PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   $<INSTALL_INTERFACE:include>
   ${GeographicLib_INCLUDE_DIRS}
+  ${GST_INCLUDE_DIRS}
+  ${GLIB_INCLUDE_DIRS}
 )
 
 # Export dependencies
@@ -50,6 +57,8 @@ ament_target_dependencies(${PROJECT_NAME}
 target_link_libraries(${PROJECT_NAME}
   rclcpp::rclcpp
   ${GeographicLib_LIBRARIES}
+  ${GST_LIBRARIES}
+  ${GLIB_LIBRARIES}
 )
 
 # Create executable for mavros manager node
@@ -97,6 +106,11 @@ add_executable(agent_tracking_node src/agent_tracking_node.cpp)
 target_link_libraries(agent_tracking_node ${PROJECT_NAME})
 ament_target_dependencies(agent_tracking_node rclcpp flychams_core)
 
+# Create executable for agent stream node
+add_executable(agent_stream_node src/agent_stream_node.cpp)
+target_link_libraries(agent_stream_node ${PROJECT_NAME})
+ament_target_dependencies(agent_stream_node rclcpp flychams_core)
+
 # Install Python package
 ament_python_install_package(${PROJECT_NAME})
 
@@ -109,7 +123,7 @@ install(TARGETS ${PROJECT_NAME}
   INCLUDES DESTINATION include
 )
 
-install(TARGETS drone_frames_node drone_state_node drone_control_node camera_frames_node camera_control_node mavros_manager_node agent_analysis_node agent_positioning_node agent_tracking_node
+install(TARGETS drone_frames_node drone_state_node drone_control_node camera_frames_node camera_control_node mavros_manager_node agent_analysis_node agent_positioning_node agent_tracking_node agent_stream_node
   RUNTIME DESTINATION lib/${PROJECT_NAME}
 )
 

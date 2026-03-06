@@ -20,6 +20,7 @@ node_allowlist:
   - agent_positioning
   - agent_tracking
   - target_detection
+  - agent_stream
   # Operator nodes
   - metrics_factory
   - marker_factory
@@ -48,6 +49,7 @@ node_log_levels:
   agent_positioning: "error"
   agent_tracking: "error"
   target_detection: "info"
+  agent_stream: "info"
   # Operator nodes
   metrics_factory: "error"
   marker_factory: "error"
