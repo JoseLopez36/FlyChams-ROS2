@@ -31,35 +31,67 @@ namespace flychams::agent
 
     public: // Types
         using SharedPtr = std::shared_ptr<AgentStream>;
+        struct StreamInfo
+        {
+            // URL
+            std::string url;
+            // URL info
+            std::string protocol;
+            std::string host;
+            int port;
+            // Parameters
+            int width;
+            int height;
+            int bitrate;
+
+        };
 
     private: // Parameters
         core::ID agent_id_;
-        std::string host_;
-        int source_port_;
-        int yolo_port_;
-        int interface_port_;
+        // YOLO stream parameters
+        int yolo_width_;
+        int yolo_height_;
+        int yolo_bitrate_;
+        // Full stream parameters
+        int full_width_;
+        int full_height_;
+        int full_bitrate_;
+        // Crop streams parameters
+        int crop_width_;
+        int crop_height_;
+        int crop_bitrate_;
+        // Stream info (for pipeline)
+        StreamInfo source_stream_info_;
+        StreamInfo yolo_stream_info_;
+        StreamInfo full_stream_info_;
+        std::vector<StreamInfo> tracking_stream_infos_;
+        // GPU type
         std::string gpu_type_;
 
     private: // Data
         GstElement* pipeline_;
-        std::map<int, GstElement*> crops_;
+        std::vector<GstElement*> crops_;
         bool running_;
 
     private: // Callbacks
         void controlCallback(const core::StringMsg::SharedPtr msg);
 
     private: // Stream configuration
+        StreamInfo getSourceStreamInfo(const core::MultiCameraConfigPtr& camera_config);
+        StreamInfo getYoloStreamInfo(const core::AgentConfigPtr& agent_config);
+        StreamInfo getInterfaceStreamInfo(const core::MultiCameraConfigPtr& camera_config);
+        StreamInfo getInterfaceStreamInfo(const core::MultiWindowConfigPtr& window_config);
+        void parseUrl(const std::string& url, std::string& protocol, std::string& host, int& port);
         std::string detectGpuType();
-        std::string createPipeline();
+        std::string createPipeline(const std::string& gpu_type);
         std::string createNvidiaPipeline();
         std::string createAmdPipeline();
 
     private: // Stream management
-        void startStream();
+        void startStream(const std::string& pipeline_str);
         void stopStream();
 
     private: // ROS components
-        core::SubscriberPtr<core::StringMsg> control_sub_;
     };
 
 } // namespace flychams::agent

@@ -73,10 +73,20 @@
 
 /**/agent_stream_node:
   ros__parameters:
-    # Stream parameters
-    stream_host: "127.0.0.1"
-    stream_source_port: 5000
-    stream_yolo_port: 5500
-    stream_interface_port: 6000
+    # YOLO stream parameters
+    yolo_stream:
+      width: 640
+      height: 640
+      bitrate: 1000
+    # Full stream parameters
+    full_stream:
+      width: 1280
+      height: 720
+      bitrate: 3000
+    # Crop streams parameters
+    crop_streams:
+      width: 1280
+      height: 720
+      bitrate: 3000
     # GPU type (auto, amd, nvidia)
     gpu_type: "auto"
