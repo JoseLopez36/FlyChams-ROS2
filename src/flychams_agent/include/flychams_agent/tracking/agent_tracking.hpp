@@ -6,13 +6,6 @@
 // Base module include
 #include "flychams_core/base/base_module.hpp"
 
-// Networking includes
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
-#include <unistd.h>
-#include <cstring>
-
 namespace flychams::agent
 {
     /**
@@ -27,7 +20,7 @@ namespace flychams::agent
     {
     public: // Constructor/Destructor
         AgentTracking(const core::ID& agent_id, core::NodePtr node, core::SettingsTools::SharedPtr settings_tools, core::TopicTools::SharedPtr topic_tools, core::TransformTools::SharedPtr transform_tools, core::CallbackGroupPtr module_cb_group)
-            : BaseModule(node, settings_tools, topic_tools, transform_tools, module_cb_group), agent_id_(agent_id), sockfd_(-1)
+            : BaseModule(node, settings_tools, topic_tools, transform_tools, module_cb_group), agent_id_(agent_id)
         {
             init();
         }
@@ -72,18 +65,12 @@ namespace flychams::agent
         std::string world_frame_;
         std::vector<std::string> optical_frames_;
         int n_frames_;
-        // Streaming parameters
-        std::string stream_host_;
-        int stream_control_port_;
 
     private: // Data
         // Agent
         Agent agent_;
         // Solvers
         std::vector<core::ObservationSolver::SharedPtr> solvers_;
-        // UDP socket
-        int sockfd_;
-        struct sockaddr_in servaddr_;
 
     private: // Callbacks
         void statusCallback(const core::AgentStatusMsg::SharedPtr msg);

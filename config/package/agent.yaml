@@ -78,13 +78,13 @@
       width: 640
       height: 640
       bitrate: 1000
-    # Full stream parameters
-    full_stream:
+    # Central stream parameters
+    central_stream:
       width: 1280
       height: 720
       bitrate: 3000
-    # Crop streams parameters
-    crop_streams:
+    # Tracking streams parameters
+    tracking_streams:
       width: 1280
       height: 720
       bitrate: 3000

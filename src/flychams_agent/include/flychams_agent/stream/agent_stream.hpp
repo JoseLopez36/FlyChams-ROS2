@@ -43,7 +43,6 @@ namespace flychams::agent
             int width;
             int height;
             int bitrate;
-
         };
 
     private: // Parameters
@@ -52,21 +51,24 @@ namespace flychams::agent
         int yolo_width_;
         int yolo_height_;
         int yolo_bitrate_;
-        // Full stream parameters
-        int full_width_;
-        int full_height_;
-        int full_bitrate_;
-        // Crop streams parameters
-        int crop_width_;
-        int crop_height_;
-        int crop_bitrate_;
+        // Central stream parameters
+        int central_width_;
+        int central_height_;
+        int central_bitrate_;
+        // Tracking streams parameters
+        int tracking_width_;
+        int tracking_height_;
+        int tracking_bitrate_;
         // Stream info (for pipeline)
         StreamInfo source_stream_info_;
         StreamInfo yolo_stream_info_;
-        StreamInfo full_stream_info_;
+        StreamInfo central_stream_info_;
         std::vector<StreamInfo> tracking_stream_infos_;
         // GPU type
         std::string gpu_type_;
+        // Source stream parameters
+        int source_width_;
+        int source_height_;
 
     private: // Data
         GstElement* pipeline_;
@@ -74,7 +76,7 @@ namespace flychams::agent
         bool running_;
 
     private: // Callbacks
-        void controlCallback(const core::StringMsg::SharedPtr msg);
+        void guiSetpointsCallback(const core::AgentGuiSetpointsMsg::SharedPtr msg);
 
     private: // Stream configuration
         StreamInfo getSourceStreamInfo(const core::MultiCameraConfigPtr& camera_config);
@@ -92,6 +94,8 @@ namespace flychams::agent
         void stopStream();
 
     private: // ROS components
+        // Subscriber
+        core::SubscriberPtr<core::AgentGuiSetpointsMsg> gui_setpoints_sub_;
     };
 
 } // namespace flychams::agent

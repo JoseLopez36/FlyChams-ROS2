@@ -15,14 +15,14 @@ namespace flychams::agent
         yolo_width_ = RosUtils::getParameterOr<int>(node_, "yolo_stream.width", 640);
         yolo_height_ = RosUtils::getParameterOr<int>(node_, "yolo_stream.height", 640);
         yolo_bitrate_ = RosUtils::getParameterOr<int>(node_, "yolo_stream.bitrate", 1000);
-        // Full stream parameters
-        full_width_ = RosUtils::getParameterOr<int>(node_, "full_stream.width", 1280);
-        full_height_ = RosUtils::getParameterOr<int>(node_, "full_stream.height", 720);
-        full_bitrate_ = RosUtils::getParameterOr<int>(node_, "full_stream.bitrate", 3000);
-        // Crop streams parameters
-        crop_width_ = RosUtils::getParameterOr<int>(node_, "crop_streams.width", 1280);
-        crop_height_ = RosUtils::getParameterOr<int>(node_, "crop_streams.height", 720);
-        crop_bitrate_ = RosUtils::getParameterOr<int>(node_, "crop_streams.bitrate", 3000);
+        // Central stream parameters
+        central_width_ = RosUtils::getParameterOr<int>(node_, "central_stream.width", 1280);
+        central_height_ = RosUtils::getParameterOr<int>(node_, "central_stream.height", 720);
+        central_bitrate_ = RosUtils::getParameterOr<int>(node_, "central_stream.bitrate", 3000);
+        // Tracking streams parameters
+        tracking_width_ = RosUtils::getParameterOr<int>(node_, "tracking_streams.width", 1280);
+        tracking_height_ = RosUtils::getParameterOr<int>(node_, "tracking_streams.height", 720);
+        tracking_bitrate_ = RosUtils::getParameterOr<int>(node_, "tracking_streams.bitrate", 3000);
         // GPU type
         gpu_type_ = RosUtils::getParameterOr<std::string>(node_, "gpu_type", "auto");
 
@@ -32,11 +32,15 @@ namespace flychams::agent
         MultiCameraConfigPtr central_camera_config;
         std::vector<MultiCameraConfigPtr> tracking_camera_configs;
         std::vector<MultiWindowConfigPtr> tracking_window_configs;
+        source_width_ = 0;
+        source_height_ = 0;
         for (const auto& [multi_camera_id, multi_camera] : tracking_config.multi_camera_set)
         {
             if (multi_camera->role == ObservationRole::Central)
             {
                 central_camera_config = multi_camera;
+                source_width_ = multi_camera->camera.resolution(0);
+                source_height_ = multi_camera->camera.resolution(1);
             }
             else if (multi_camera->role == ObservationRole::Tracking)
             {
@@ -51,7 +55,7 @@ namespace flychams::agent
         // Get stream info
         source_stream_info_ = getSourceStreamInfo(central_camera_config);
         yolo_stream_info_ = getYoloStreamInfo(agent_config);
-        full_stream_info_ = getInterfaceStreamInfo(central_camera_config);
+        central_stream_info_ = getInterfaceStreamInfo(central_camera_config);
         tracking_stream_infos_.clear();
         for (const auto& tracking_camera_config : tracking_camera_configs)
         {
@@ -77,16 +81,50 @@ namespace flychams::agent
 
         // Start pipeline
         startStream(pipeline_str);
+
+        // Subscribe to GUI setpoints topic
+        gui_setpoints_sub_ = topic_tools_->createAgentGuiSetpointsSubscriber(agent_id_,
+            std::bind(&AgentStream::guiSetpointsCallback, this, std::placeholders::_1), sub_options_with_module_cb_group_);
     }
 
     void AgentStream::onShutdown()
     {
         stopStream();
+
+        // Destroy subscribers
+        gui_setpoints_sub_.reset();
     }
 
     // ════════════════════════════════════════════════════════════════════════════
     // CALLBACKS: Callback functions
     // ════════════════════════════════════════════════════════════════════════════
+
+    void AgentStream::guiSetpointsCallback(const core::AgentGuiSetpointsMsg::SharedPtr msg)
+    {
+        // Iterate through the crops in the message
+        for (size_t i = 0; i < msg->crops.size(); ++i)
+        {
+            const auto& crop = msg->crops[i];
+
+            // Only update if it's not out of bounds
+            if (!crop.is_out_of_bounds)
+            {
+                // Calculate margins for videocrop element
+                int left = std::max(0, (int)crop.x);
+                int top = std::max(0, (int)crop.y);
+                int right = std::max(0, source_width_ - ((int)crop.x + (int)crop.w));
+                int bottom = std::max(0, source_height_ - ((int)crop.y + (int)crop.h));
+
+                // Update videocrop properties
+                g_object_set(crops_[i],
+                    "left", left,
+                    "right", right,
+                    "top", top,
+                    "bottom", bottom,
+                    NULL);
+            }
+        }
+    }
 
     // ════════════════════════════════════════════════════════════════════════════
     // STREAM CONFIGURATION
@@ -96,9 +134,9 @@ namespace flychams::agent
     {
         StreamInfo info;
         info.url = camera_config->source_stream_url;
-        info.width = full_width_;
-        info.height = full_height_;
-        info.bitrate = full_bitrate_;
+        info.width = source_width_;
+        info.height = source_height_;
+        info.bitrate = 0;
 
         parseUrl(info.url, info.protocol, info.host, info.port);
 
@@ -122,9 +160,9 @@ namespace flychams::agent
     {
         StreamInfo info;
         info.url = camera_config->interface_stream_url;
-        info.width = full_width_;
-        info.height = full_height_;
-        info.bitrate = full_bitrate_;
+        info.width = central_width_;
+        info.height = central_height_;
+        info.bitrate = central_bitrate_;
 
         parseUrl(info.url, info.protocol, info.host, info.port);
 
@@ -135,9 +173,9 @@ namespace flychams::agent
     {
         StreamInfo info;
         info.url = window_config->interface_stream_url;
-        info.width = crop_width_;
-        info.height = crop_height_;
-        info.bitrate = crop_bitrate_;
+        info.width = tracking_width_;
+        info.height = tracking_height_;
+        info.bitrate = tracking_bitrate_;
 
         parseUrl(info.url, info.protocol, info.host, info.port);
 
@@ -212,16 +250,32 @@ namespace flychams::agent
 
     std::string AgentStream::createNvidiaPipeline()
     {
+        std::string pipeline_str;
+
         // Source branch
-        std::string pipeline_str =
-            "udpsrc port=" + std::to_string(source_stream_info_.port) + " buffer-size=5242880 caps=\"application/x-rtp, media=(string)video, clock-rate=(int)90000, encoding-name=(string)H265, payload=(int)96\" ! "
-            "rtph265depay ! h265parse ! nvh265dec ! queue max-size-buffers=1 ! tee name=t ";
+        if (source_stream_info_.protocol == "udp")
+        {
+            pipeline_str =
+                "udpsrc port=" + std::to_string(source_stream_info_.port) + " buffer-size=5242880 caps=\"application/x-rtp, media=(string)video, clock-rate=(int)90000, encoding-name=(string)H265, payload=(int)96\" ! "
+                "rtph265depay ! h265parse ! nvh265dec ! queue max-size-buffers=1 ! tee name=t ";
+        }
+        else if (source_stream_info_.protocol == "rtsp")
+        {
+            pipeline_str =
+                "rtspsrc location=" + source_stream_info_.url + " latency=100 ! "
+                "rtph265depay ! h265parse ! nvh265dec ! queue max-size-buffers=1 ! tee name=t ";
+        }
+        else
+        {
+            RCLCPP_ERROR(node_->get_logger(), "Agent stream: Unsupported source protocol: %s", source_stream_info_.protocol.c_str());
+            return "";
+        }
 
         // YOLO branch
         pipeline_str += "t. ! queue leaky=downstream max-size-buffers=10 ! videoscale ! video/x-raw,width=" + std::to_string(yolo_stream_info_.width) + ",height=" + std::to_string(yolo_stream_info_.height) + " ! nvh264enc bitrate=" + std::to_string(yolo_stream_info_.bitrate) + " rc-mode=cbr ! h264parse config-interval=-1 ! tcpserversink host=" + yolo_stream_info_.host + " port=" + std::to_string(yolo_stream_info_.port) + " sync=false ";
 
         // Full res branch
-        pipeline_str += "t. ! queue leaky=downstream max-size-buffers=10 ! videoscale ! video/x-raw,width=" + std::to_string(full_stream_info_.width) + ",height=" + std::to_string(full_stream_info_.height) + " ! nvh264enc bitrate=" + std::to_string(full_stream_info_.bitrate) + " rc-mode=cbr ! h264parse config-interval=-1 ! mpegtsmux ! udpsink host=" + full_stream_info_.host + " port=" + std::to_string(full_stream_info_.port) + " sync=false ";
+        pipeline_str += "t. ! queue leaky=downstream max-size-buffers=10 ! videoscale ! video/x-raw,width=" + std::to_string(central_stream_info_.width) + ",height=" + std::to_string(central_stream_info_.height) + " ! nvh264enc bitrate=" + std::to_string(central_stream_info_.bitrate) + " rc-mode=cbr ! h264parse config-interval=-1 ! mpegtsmux ! udpsink host=" + central_stream_info_.host + " port=" + std::to_string(central_stream_info_.port) + " sync=false ";
 
         // Crop branches
         for (size_t i = 0; i < tracking_stream_infos_.size(); ++i)
@@ -236,16 +290,32 @@ namespace flychams::agent
 
     std::string AgentStream::createAmdPipeline()
     {
+        std::string pipeline_str;
+
         // Source branch
-        std::string pipeline_str =
-            "udpsrc port=" + std::to_string(source_stream_info_.port) + " buffer-size=5242880 caps=\"application/x-rtp, media=(string)video, clock-rate=(int)90000, encoding-name=(string)H265, payload=(int)96\" ! "
-            "rtph265depay ! h265parse ! vah265dec ! queue max-size-buffers=1 ! tee name=t ";
+        if (source_stream_info_.protocol == "udp")
+        {
+            pipeline_str =
+                "udpsrc port=" + std::to_string(source_stream_info_.port) + " buffer-size=5242880 caps=\"application/x-rtp, media=(string)video, clock-rate=(int)90000, encoding-name=(string)H265, payload=(int)96\" ! "
+                "rtph265depay ! h265parse ! vah265dec ! queue max-size-buffers=1 ! tee name=t ";
+        }
+        else if (source_stream_info_.protocol == "rtsp")
+        {
+            pipeline_str =
+                "rtspsrc location=" + source_stream_info_.url + " latency=100 ! "
+                "rtph265depay ! h265parse ! vah265dec ! queue max-size-buffers=1 ! tee name=t ";
+        }
+        else
+        {
+            RCLCPP_ERROR(node_->get_logger(), "Agent stream: Unsupported source protocol: %s", source_stream_info_.protocol.c_str());
+            return "";
+        }
 
         // YOLO branch
         pipeline_str += "t. ! queue leaky=downstream max-size-buffers=10 ! vapostproc ! video/x-raw,width=" + std::to_string(yolo_stream_info_.width) + ",height=" + std::to_string(yolo_stream_info_.height) + " ! vah264enc bitrate=" + std::to_string(yolo_stream_info_.bitrate) + " ! h264parse config-interval=-1 ! tcpserversink host=" + yolo_stream_info_.host + " port=" + std::to_string(yolo_stream_info_.port) + " sync=false ";
 
         // Full res branch
-        pipeline_str += "t. ! queue leaky=downstream max-size-buffers=10 ! vapostproc ! video/x-raw,width=" + std::to_string(full_stream_info_.width) + ",height=" + std::to_string(full_stream_info_.height) + " ! vah264enc bitrate=" + std::to_string(full_stream_info_.bitrate) + " rc-mode=cbr ! h264parse config-interval=-1 ! mpegtsmux ! udpsink host=" + full_stream_info_.host + " port=" + std::to_string(full_stream_info_.port) + " sync=false ";
+        pipeline_str += "t. ! queue leaky=downstream max-size-buffers=10 ! vapostproc ! video/x-raw,width=" + std::to_string(central_stream_info_.width) + ",height=" + std::to_string(central_stream_info_.height) + " ! vah264enc bitrate=" + std::to_string(central_stream_info_.bitrate) + " rc-mode=cbr ! h264parse config-interval=-1 ! mpegtsmux ! udpsink host=" + central_stream_info_.host + " port=" + std::to_string(central_stream_info_.port) + " sync=false ";
 
         // Crop branches
         for (size_t i = 0; i < tracking_stream_infos_.size(); ++i)
