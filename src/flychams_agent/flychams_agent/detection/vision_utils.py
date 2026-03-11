@@ -5,6 +5,7 @@ Date: 2026-03-02
 """
 
 import numpy as np
+import math
 
 class VisionUtils:
     """Encapsulates the logic for calculating 3D positions of targets from 2D image coordinates"""
@@ -13,21 +14,22 @@ class VisionUtils:
         pass
 
     @staticmethod
-    def build_k_from_hfov(w, h, fov_h_deg):
+    def build_K(w, h, f, rho_x, rho_y):
         """
-        Build camera intrinsic matrix K from horizontal FOV
+        Build camera intrinsic matrix K
         
         Args:
             w: Image width in pixels
             h: Image height in pixels
-            fov_h_deg: Horizontal Field of View in degrees
+            f: Focal length in meters
+            rho_x: Pixel size in m/pix in x-direction
+            rho_y: Pixel size in m/pix in y-direction
             
         Returns:
             3x3 Camera intrinsic matrix K
         """
-        fov = np.deg2rad(fov_h_deg)
-        fx = (w / 2.0) / np.tan(fov / 2.0)
-        fy = fx
+        fx = f / rho_x
+        fy = f / rho_y
         cx, cy = w / 2.0, h / 2.0
         return np.array([[fx, 0.0, cx],
                          [0.0, fy, cy],
@@ -56,6 +58,37 @@ class VisionUtils:
         Rx = np.array([[1, 0, 0], [0, cr, -sr], [0, sr, cr]], dtype=np.float64)
         
         return Rz @ Ry @ Rx
+
+    @staticmethod
+    def euler_from_quaternion(x, y, z, w):
+        """
+        Convert a quaternion into euler angles (roll, pitch, yaw)
+
+        Args:
+            x: Quaternion x-coordinate
+            y: Quaternion y-coordinate
+            z: Quaternion z-coordinate
+            w: Quaternion w-coordinate
+
+        Returns:
+            roll: Roll in radians
+            pitch: Pitch in radians
+            yaw: Yaw in radians
+        """
+        t0 = +2.0 * (w * x + y * z)
+        t1 = +1.0 - 2.0 * (x * x + y * y)
+        roll_x = math.atan2(t0, t1)
+        
+        t2 = +2.0 * (w * y - z * x)
+        t2 = +1.0 if t2 > +1.0 else t2
+        t2 = -1.0 if t2 < -1.0 else t2
+        pitch_y = math.asin(t2)
+        
+        t3 = +2.0 * (w * z + x * y)
+        t4 = +1.0 - 2.0 * (y * y + z * z)
+        yaw_z = math.atan2(t3, t4)
+        
+        return roll_x, pitch_y, yaw_z
 
     @staticmethod
     def ray_from_pixel(u, v, K):

@@ -6,7 +6,10 @@ Date: 2026-03-02
 
 import rclpy
 from rclpy.node import Node
-from geometry_msgs.msg import PoseArray, Pose
+from geometry_msgs.msg import PointStamped
+from tf2_ros import TransformException
+from tf2_ros.buffer import Buffer
+from tf2_ros.transform_listener import TransformListener
 
 # Import tracker modules
 from flychams_agent.detection.yolo_tracker import YoloTracker
@@ -29,16 +32,34 @@ class TargetDetection:
         # Get agent ID from parameters
         self.agent_id = self.node.get_parameter('agent_id').get_parameter_value().string_value
 
+        # Get camera parameters from parameters
+        self.camera_ids = self.node.get_parameter('agents.' + self.agent_id + '.tracking.multi_cameras.ids').get_parameter_value().string_array_value
+        self.camera_id = self.camera_ids[0]
+        self.focal = self.node.get_parameter('agents.' + self.agent_id + '.tracking.multi_cameras.' + self.camera_id + '.ref_focal').get_parameter_value().double_value
+        self.sensor_width = self.node.get_parameter('agents.' + self.agent_id + '.tracking.multi_cameras.' + self.camera_id + '.camera.sensor_size.width').get_parameter_value().double_value
+        self.sensor_height = self.node.get_parameter('agents.' + self.agent_id + '.tracking.multi_cameras.' + self.camera_id + '.camera.sensor_size.height').get_parameter_value().double_value
+        self.rho_x = self.sensor_width / self.width
+        self.rho_y = self.sensor_height / self.height
+        self.K = self.vision_utils.build_K(self.width, self.height, self.focal, self.rho_x, self.rho_y)
+
         # Get source URL from parameters
         self.source = self.node.get_parameter('agents.' + self.agent_id + '.inference_stream_url').get_parameter_value().string_value
-        
-        # Placeholder for camera intrinsics and drone pose (to be updated via subscribers/TF)
-        self.K = self.vision_utils.build_k_from_hfov(self.width, self.height, 90.0)
-        self.camera_pose = [0.0, 0.0, 10.0, 0.0, 0.0, 0.0] # x, y, z, yaw, pitch, roll
+
+        # Get target estimated position topic from parameters
+        self.target_est_position_topic = self.node.get_parameter('target_topics.est_position').get_parameter_value().string_value
+
+        # Get relevant frames from parameters
+        self.source_frame = self.node.get_parameter('global_frames.world').get_parameter_value().string_value
+        self.target_frame_template = self.node.get_parameter('agent_frames.camera_optical').get_parameter_value().string_value
+        self.target_frame = self.target_frame_template.replace('AGENTID', self.agent_id).replace('HEADID', self.camera_id)
+
+        # TF Listener
+        self.tf_buffer = Buffer()
+        self.tf_listener = TransformListener(self.tf_buffer, self.node)
+        self.camera_pose = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0] # x, y, z, yaw, pitch, roll
         
         # --- Publishers ---
-        # Using a generic topic name for now, should ideally come from topics.yaml
-        self.pose_array_pub = self.node.create_publisher(PoseArray, 'detected_targets', 10)
+        self.target_publishers = {}
         
         # --- Tracker Initialization ---
         self.tracker = YoloTracker(
@@ -65,12 +86,31 @@ class TargetDetection:
 
         if not tracked_objects or len(tracked_objects) == 0:
             return
+
+        # Get camera pose
+        try:
+            t = self.tf_buffer.lookup_transform(
+                self.source_frame,
+                self.target_frame,
+                rclpy.time.Time())
             
-        # Prepare messages
-        pose_array_msg = PoseArray()
-        pose_array_msg.header.stamp = self.node.get_clock().now().to_msg()
-        pose_array_msg.header.frame_id = "world"
-        
+            tx = t.transform.translation.x
+            ty = t.transform.translation.y
+            tz = t.transform.translation.z
+            
+            qx = t.transform.rotation.x
+            qy = t.transform.rotation.y
+            qz = t.transform.rotation.z
+            qw = t.transform.rotation.w
+            
+            roll, pitch, yaw = self.euler_from_quaternion(qx, qy, qz, qw)
+            
+            self.camera_pose = [tx, ty, tz, yaw, pitch, roll]
+            
+        except TransformException as ex:
+            self.logger.warn(f'Could not transform {self.source_frame} to {self.target_frame}: {ex}')
+            return
+            
         # Calculate 3D positions
         for obj in tracked_objects:
             tid, x1, y1, x2, y2, score, cls_id = obj
@@ -81,21 +121,33 @@ class TargetDetection:
             
             # Project to 3D
             calculated_pos = self.vision_utils.calculate_3d_position(
-                u, v, self.K, self.drone_pose, self.z_plane
+                u, v, self.K, self.camera_pose, self.z_plane
             )
             
             if calculated_pos is not None:
                 tx, ty = calculated_pos
                 
-                # Create Pose for PoseArray
-                p = Pose()
-                p.position.x = tx
-                p.position.y = ty
-                p.position.z = self.z_plane
-                pose_array_msg.poses.append(p)
+                # Construct target_id string
+                target_id = f"TARGET{tid}"
+                
+                # Check if publisher exists for this target_id
+                if target_id not in self.target_publishers:
+                    topic_name = self.target_est_position_topic.replace('TARGETID', target_id)
+                    self.target_publishers[target_id] = self.node.create_publisher(
+                        PointStamped, topic_name, 10
+                    )
+                    self.logger.info(f"Created publisher for {target_id} on {topic_name}")
 
-        # Publish results
-        self.pose_array_pub.publish(pose_array_msg)
+                # Create PointStamped message
+                msg = PointStamped()
+                msg.header.stamp = self.node.get_clock().now().to_msg()
+                msg.header.frame_id = self.source_frame
+                msg.point.x = tx
+                msg.point.y = ty
+                msg.point.z = self.z_plane
+                
+                # Publish the message
+                self.target_publishers[target_id].publish(msg)
 
     def shutdown(self) -> None:
         self.logger.info("TargetDetection module shutting down")
