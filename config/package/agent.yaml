@@ -66,10 +66,15 @@
 
 /**/target_detection_node:
   ros__parameters:
+    # Update rate (Hz)
+    inference_rate: 10.0
     # Detector parameters
-    source: tcp://127.0.0.1:5500
     detector_model: yolov11n.pt
     target_class: person
+    width: 640
+    height: 640
+    # Position estimation parameters
+    z_plane: 0.0
 
 /**/agent_stream_node:
   ros__parameters:

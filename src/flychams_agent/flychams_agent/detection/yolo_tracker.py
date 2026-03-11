@@ -227,11 +227,8 @@ class YoloTracker():
                 self.logger.error(f"Error getting next frame from stream: {e}")
             return []
             
-        # image = stream_results.orig_img
-        # boxes = stream_results.boxes
-
-        # Return number of detections
-        return len(results)
+        image = results.orig_img
+        boxes = results.boxes
 
         if boxes is None:
             h, w = image.shape[:2]

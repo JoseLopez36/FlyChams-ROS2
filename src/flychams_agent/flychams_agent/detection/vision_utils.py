@@ -34,19 +34,18 @@ class VisionUtils:
                          [0.0, 0.0, 1.0]], dtype=np.float64)
 
     @staticmethod
-    def rot_from_ypr(yaw_deg, pitch_deg, roll_deg):
+    def get_rotation(yaw, pitch, roll):
         """
-        Create a rotation matrix from Yaw, Pitch, Roll (in degrees)
+        Create a rotation matrix from Yaw, Pitch, Roll
         
         Args:
-            yaw_deg: Yaw in degrees
-            pitch_deg: Pitch in degrees
-            roll_deg: Roll in degrees
+            yaw: Yaw in radians
+            pitch: Pitch in radians
+            roll: Roll in radians
             
         Returns:
             3x3 Rotation matrix
         """
-        yaw, pitch, roll = map(np.deg2rad, [yaw_deg, pitch_deg, roll_deg])
         cy, sy = np.cos(yaw), np.sin(yaw)
         cp, sp = np.cos(pitch), np.sin(pitch)
         cr, sr = np.cos(roll), np.sin(roll)
@@ -110,7 +109,7 @@ class VisionUtils:
             
         return cam_pos_w + t * ray_w
 
-    def calculate_3d_position(self, u, v, K, drone_pose, z_plane = 0.0):
+    def calculate_3d_position(self, u, v, K, pose, z_plane):
         """
         Full pipeline to calculate 2D ground coordinates (x, y) from a pixel
         
@@ -118,17 +117,17 @@ class VisionUtils:
             u: Pixel x-coordinate
             v: Pixel y-coordinate
             K: Camera intrinsics
-            drone_pose: [x, y, z, yaw, pitch, roll] in degrees
+            pose: [x, y, z, yaw, pitch, roll]
             z_plane: Ground altitude
             
         Returns:
             (x, y) ground coordinates or None
         """
-        x, y, z, yaw, pitch, roll = drone_pose
+        x, y, z, yaw, pitch, roll = pose
         cam_pos = np.array([x, y, z], dtype=np.float64)
         
         # 1. Get rotation matrix
-        Rwc = self.rot_from_ypr(yaw, pitch, roll)
+        Rwc = self.get_rotation(yaw, pitch, roll)
         
         # 2. Get ray in camera frame
         ray_c = self.ray_from_pixel(u, v, K)
