@@ -25,7 +25,6 @@ class OperatorInterfaceSignals(QObject):
     agent_removed = pyqtSignal(str)
     agent_position_updated = pyqtSignal(str, float, float, float)
     agent_setpoint_updated = pyqtSignal(str, float, float, float)
-    agent_gui_setpoints_updated = pyqtSignal(str, object)
     target_added = pyqtSignal(str)
     target_removed = pyqtSignal(str)
     target_position_updated = pyqtSignal(str, float, float, float)
@@ -57,7 +56,6 @@ class OperatorInterface(Node):
         self.registration_topic = self.get_parameter('global_topics.registration').get_parameter_value().string_value
         self.agent_global_position_pattern = self.get_parameter('agent_topics.global_position').get_parameter_value().string_value
         self.agent_setpoint_pattern = self.get_parameter('agent_topics.position_setpoint').get_parameter_value().string_value
-        self.agent_gui_setpoints_pattern = self.get_parameter('agent_topics.gui_setpoints').get_parameter_value().string_value
         self.target_position_pattern = self.get_parameter('target_topics.true_position').get_parameter_value().string_value
         self.cluster_geometry_pattern = self.get_parameter('cluster_topics.geometry').get_parameter_value().string_value
         
@@ -141,16 +139,6 @@ class OperatorInterface(Node):
             PointStamped,
             setpoint_topic,
             lambda msg, aid=agent_id: self.agent_position_setpoint_callback(aid, msg),
-            10
-        )
-
-        # Create agent GUI setpoints subscriber
-        gui_setpoints_topic = replace_id_in_topic(self.agent_gui_setpoints_pattern, 'AGENTID', agent_id)
-        
-        self.agents[agent_id].gui_setpoints_sub = self.create_subscription(
-            AgentGuiSetpoints,
-            gui_setpoints_topic,
-            lambda msg, aid=agent_id: self.agent_gui_setpoints_callback(aid, msg),
             10
         )
 
@@ -280,16 +268,6 @@ class OperatorInterface(Node):
                 msg.point.y,
                 msg.point.z
             )
-
-    def agent_gui_setpoints_callback(self, agent_id: str, msg: AgentGuiSetpoints):
-        """Callback for agent GUI setpoints updates"""
-        if agent_id in self.agents:
-            # Emit signal for GUI update
-            self.signals.agent_gui_setpoints_updated.emit(
-                agent_id, 
-                msg
-            )
-
 
     def target_position_callback(self, target_id: str, msg: PointStamped):
         """Callback for target position updates"""

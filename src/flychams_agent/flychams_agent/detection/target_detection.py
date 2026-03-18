@@ -25,8 +25,8 @@ class TargetDetection:
         self.inference_rate = self.node.get_parameter('inference_rate').get_parameter_value().double_value
         self.detector_model = self.node.get_parameter('detector_model').get_parameter_value().string_value
         self.target_class = self.node.get_parameter('target_class').get_parameter_value().string_value
-        self.width = self.node.get_parameter('width').get_parameter_value().int_value
-        self.height = self.node.get_parameter('height').get_parameter_value().int_value
+        self.width = self.node.get_parameter('width').get_parameter_value().integer_value
+        self.height = self.node.get_parameter('height').get_parameter_value().integer_value
         self.z_plane = self.node.get_parameter('z_plane').get_parameter_value().double_value
 
         # Get agent ID from parameters

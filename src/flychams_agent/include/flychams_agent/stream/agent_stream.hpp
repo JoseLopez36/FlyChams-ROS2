@@ -3,6 +3,10 @@
 // GStreamer includes
 #include <gst/gst.h>
 
+// Standard includes
+#include <thread>
+#include <atomic>
+
 // Base module include
 #include "flychams_core/base/base_module.hpp"
 
@@ -71,9 +75,10 @@ namespace flychams::agent
         int source_height_;
 
     private: // Data
-        GstElement* pipeline_;
-        std::vector<GstElement*> crops_;
-        bool running_;
+        GstElement* pipeline_ = nullptr;
+        std::vector<GstElement*> croppers_;
+        std::atomic<bool> running_ = false;
+        std::thread stream_thread_;
 
     private: // Callbacks
         void guiSetpointsCallback(const core::AgentGuiSetpointsMsg::SharedPtr msg);

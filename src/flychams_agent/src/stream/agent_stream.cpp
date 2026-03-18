@@ -101,6 +101,11 @@ namespace flychams::agent
 
     void AgentStream::guiSetpointsCallback(const core::AgentGuiSetpointsMsg::SharedPtr msg)
     {
+        if (!running_)
+        {
+            return;
+        }
+
         // Iterate through the crops in the message
         for (size_t i = 0; i < msg->crops.size(); ++i)
         {
@@ -110,18 +115,28 @@ namespace flychams::agent
             if (!crop.is_out_of_bounds)
             {
                 // Calculate margins for videocrop element
-                int left = std::max(0, (int)crop.x);
-                int top = std::max(0, (int)crop.y);
-                int right = std::max(0, source_width_ - ((int)crop.x + (int)crop.w));
-                int bottom = std::max(0, source_height_ - ((int)crop.y + (int)crop.h));
+                int left = std::min(std::max(0, (int)crop.x), source_width_);
+                int top = std::min(std::max(0, (int)crop.y), source_height_);
+                int right = std::min(std::max(0, source_width_ - ((int)crop.x + (int)crop.w)), source_width_);
+                int bottom = std::min(std::max(0, source_height_ - ((int)crop.y + (int)crop.h)), source_height_);
+
+                // Log
+                RCLCPP_INFO(node_->get_logger(), "Agent stream: Updating crop %zu: left=%d, top=%d, right=%d, bottom=%d", i, left, top, right, bottom);
 
                 // Update videocrop properties
-                g_object_set(crops_[i],
-                    "left", left,
-                    "right", right,
-                    "top", top,
-                    "bottom", bottom,
-                    NULL);
+                if (i < croppers_.size() && croppers_[i] != nullptr)
+                {
+                    g_object_set(croppers_[i],
+                        "left", 0,
+                        "right", 0,
+                        "top", 0,
+                        "bottom", 0,
+                        NULL);
+                }
+                else
+                {
+                    RCLCPP_ERROR(node_->get_logger(), "Agent stream: Crop element %zu is not available", i);
+                }
             }
         }
     }
@@ -330,45 +345,64 @@ namespace flychams::agent
 
     void AgentStream::startStream(const std::string& pipeline_str)
     {
-        RCLCPP_INFO(node_->get_logger(), "Launching pipeline: %s", pipeline_str.c_str());
+        stream_thread_ = std::thread([this, pipeline_str]() {
+            RCLCPP_INFO(node_->get_logger(), "Launching pipeline: %s", pipeline_str.c_str());
 
-        GError* error = nullptr;
-        pipeline_ = gst_parse_launch(pipeline_str.c_str(), &error);
+            GError* error = nullptr;
+            pipeline_ = gst_parse_launch(pipeline_str.c_str(), &error);
 
-        if (error)
-        {
-            RCLCPP_ERROR(node_->get_logger(), "Failed to parse pipeline: %s", error->message);
-            g_error_free(error);
-            return;
-        }
-
-        // Retrieve crop elements
-        crops_.clear();
-        for (size_t i = 0; i < tracking_stream_infos_.size(); ++i)
-        {
-            std::string name = "crop_" + std::to_string(i);
-            GstElement* cropper = gst_bin_get_by_name(GST_BIN(pipeline_), name.c_str());
-            if (cropper)
+            if (error)
             {
-                crops_.push_back(cropper);
+                RCLCPP_ERROR(node_->get_logger(), "Failed to parse pipeline: %s", error->message);
+                g_error_free(error);
+                return;
             }
-            else
-            {
-                crops_.push_back(nullptr);
-                RCLCPP_ERROR(node_->get_logger(), "Could not find element named '%s'", name.c_str());
-            }
-        }
 
-        // Start pipeline
-        gst_element_set_state(pipeline_, GST_STATE_PLAYING);
-        running_ = true;
-        RCLCPP_INFO(node_->get_logger(), "Pipeline started");
+            // Retrieve crop elements
+            croppers_.clear();
+            for (size_t i = 0; i < tracking_stream_infos_.size(); ++i)
+            {
+                std::string name = "crop_" + std::to_string(i);
+                GstElement* cropper = gst_bin_get_by_name(GST_BIN(pipeline_), name.c_str());
+                if (cropper)
+                {
+                    croppers_.push_back(cropper);
+                }
+                else
+                {
+                    croppers_.push_back(nullptr);
+                    RCLCPP_ERROR(node_->get_logger(), "Could not find element named '%s'", name.c_str());
+                }
+            }
+
+            // Start pipeline
+            running_ = true;
+            RCLCPP_INFO(node_->get_logger(), "Pipeline started");
+            gst_element_set_state(pipeline_, GST_STATE_PLAYING);
+            });
     }
 
     void AgentStream::stopStream()
     {
         RCLCPP_INFO(node_->get_logger(), "Stopping pipeline...");
+
+        if (stream_thread_.joinable())
+        {
+            stream_thread_.join();
+        }
+
         running_ = false;
+
+        // Clear crops references
+        for (auto* cropper : croppers_)
+        {
+            if (cropper)
+            {
+                gst_object_unref(cropper);
+            }
+        }
+        croppers_.clear();
+
         if (pipeline_)
         {
             gst_element_set_state(pipeline_, GST_STATE_NULL);

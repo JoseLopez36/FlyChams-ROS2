@@ -397,10 +397,3 @@ class MonitoringPanel(QWidget):
 
         if self.tab_widget.count() == 0:
             self._add_placeholder()
-
-    def update_agent_gui_setpoints(self, agent_id: str, msg):
-        """Handle updates for GUI setpoints (e.g., crop windows).Currently a placeholder for future implementation"""
-        if agent_id not in self.agent_widgets:
-            return
-
-        pass
