@@ -179,8 +179,10 @@ cd ..
 ```bash
 # Build the base Docker image
 bash tools/docker/build_image.sh
-# Or, if using a Jetson:
-# bash tools/docker/build_image.sh --jetson
+# In Jetson, it may be necessary to add the user to the docker group:
+# sudo groupadd docker
+# sudo usermod -aG docker $USER
+# newgrp docker
 
 # Build the agent workspace
 bash tools/build_agent.sh

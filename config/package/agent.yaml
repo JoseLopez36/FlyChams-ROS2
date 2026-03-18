@@ -83,13 +83,8 @@
       width: 640
       height: 640
       bitrate: 1000
-    # Central stream parameters
-    central_stream:
-      width: 1280
-      height: 720
-      bitrate: 3000
-    # Tracking streams parameters
-    tracking_streams:
+    # Interface streams parameters
+    interface_streams:
       width: 1280
       height: 720
       bitrate: 3000

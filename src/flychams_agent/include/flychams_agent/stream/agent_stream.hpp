@@ -55,19 +55,14 @@ namespace flychams::agent
         int yolo_width_;
         int yolo_height_;
         int yolo_bitrate_;
-        // Central stream parameters
-        int central_width_;
-        int central_height_;
-        int central_bitrate_;
-        // Tracking streams parameters
-        int tracking_width_;
-        int tracking_height_;
-        int tracking_bitrate_;
+        // Interface streams parameters
+        int interface_width_;
+        int interface_height_;
+        int interface_bitrate_;
         // Stream info (for pipeline)
         StreamInfo source_stream_info_;
         StreamInfo yolo_stream_info_;
-        StreamInfo central_stream_info_;
-        std::vector<StreamInfo> tracking_stream_infos_;
+        std::vector<StreamInfo> interface_stream_infos_;
         // GPU type
         std::string gpu_type_;
         // Source stream parameters

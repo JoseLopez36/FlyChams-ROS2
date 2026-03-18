@@ -15,14 +15,10 @@ namespace flychams::agent
         yolo_width_ = RosUtils::getParameterOr<int>(node_, "yolo_stream.width", 640);
         yolo_height_ = RosUtils::getParameterOr<int>(node_, "yolo_stream.height", 640);
         yolo_bitrate_ = RosUtils::getParameterOr<int>(node_, "yolo_stream.bitrate", 1000);
-        // Central stream parameters
-        central_width_ = RosUtils::getParameterOr<int>(node_, "central_stream.width", 1280);
-        central_height_ = RosUtils::getParameterOr<int>(node_, "central_stream.height", 720);
-        central_bitrate_ = RosUtils::getParameterOr<int>(node_, "central_stream.bitrate", 3000);
-        // Tracking streams parameters
-        tracking_width_ = RosUtils::getParameterOr<int>(node_, "tracking_streams.width", 1280);
-        tracking_height_ = RosUtils::getParameterOr<int>(node_, "tracking_streams.height", 720);
-        tracking_bitrate_ = RosUtils::getParameterOr<int>(node_, "tracking_streams.bitrate", 3000);
+        // Interface streams parameters
+        interface_width_ = RosUtils::getParameterOr<int>(node_, "interface_streams.width", 1280);
+        interface_height_ = RosUtils::getParameterOr<int>(node_, "interface_streams.height", 720);
+        interface_bitrate_ = RosUtils::getParameterOr<int>(node_, "interface_streams.bitrate", 3000);
         // GPU type
         gpu_type_ = RosUtils::getParameterOr<std::string>(node_, "gpu_type", "auto");
 
@@ -30,8 +26,8 @@ namespace flychams::agent
         const AgentConfigPtr& agent_config = settings_tools_->getAgent(agent_id_);
         const TrackingConfig& tracking_config = settings_tools_->getTracking(agent_id_);
         MultiCameraConfigPtr central_camera_config;
-        std::vector<MultiCameraConfigPtr> tracking_camera_configs;
-        std::vector<MultiWindowConfigPtr> tracking_window_configs;
+        std::vector<MultiCameraConfigPtr> camera_configs;
+        std::vector<MultiWindowConfigPtr> window_configs;
         source_width_ = 0;
         source_height_ = 0;
         for (const auto& [multi_camera_id, multi_camera] : tracking_config.multi_camera_set)
@@ -42,28 +38,24 @@ namespace flychams::agent
                 source_width_ = multi_camera->camera.resolution(0);
                 source_height_ = multi_camera->camera.resolution(1);
             }
-            else if (multi_camera->role == ObservationRole::Tracking)
-            {
-                tracking_camera_configs.push_back(multi_camera);
-            }
+            camera_configs.push_back(multi_camera);
         }
         for (const auto& [multi_window_id, multi_window] : tracking_config.multi_window_set)
         {
-            tracking_window_configs.push_back(multi_window);
+            window_configs.push_back(multi_window);
         }
 
         // Get stream info
         source_stream_info_ = getSourceStreamInfo(central_camera_config);
         yolo_stream_info_ = getYoloStreamInfo(agent_config);
-        central_stream_info_ = getInterfaceStreamInfo(central_camera_config);
-        tracking_stream_infos_.clear();
-        for (const auto& tracking_camera_config : tracking_camera_configs)
+        interface_stream_infos_.clear();
+        for (const auto& camera : camera_configs)
         {
-            tracking_stream_infos_.push_back(getInterfaceStreamInfo(tracking_camera_config));
+            interface_stream_infos_.push_back(getInterfaceStreamInfo(camera));
         }
-        for (const auto& tracking_window_config : tracking_window_configs)
+        for (const auto& window : window_configs)
         {
-            tracking_stream_infos_.push_back(getInterfaceStreamInfo(tracking_window_config));
+            interface_stream_infos_.push_back(getInterfaceStreamInfo(window));
         }
 
         // Detect GPU type if not specified
@@ -120,17 +112,22 @@ namespace flychams::agent
                 int right = std::min(std::max(0, source_width_ - ((int)crop.x + (int)crop.w)), source_width_);
                 int bottom = std::min(std::max(0, source_height_ - ((int)crop.y + (int)crop.h)), source_height_);
 
-                // Log
-                RCLCPP_INFO(node_->get_logger(), "Agent stream: Updating crop %zu: left=%d, top=%d, right=%d, bottom=%d", i, left, top, right, bottom);
+                // Ensure we don't crop more than the image dimensions
+                if (left + right >= source_width_) {
+                    right = 0;
+                }
+                if (top + bottom >= source_height_) {
+                    bottom = 0;
+                }
 
                 // Update videocrop properties
                 if (i < croppers_.size() && croppers_[i] != nullptr)
                 {
                     g_object_set(croppers_[i],
-                        "left", 0,
-                        "right", 0,
-                        "top", 0,
-                        "bottom", 0,
+                        "left", left,
+                        "right", right,
+                        "top", top,
+                        "bottom", bottom,
                         NULL);
                 }
                 else
@@ -175,9 +172,9 @@ namespace flychams::agent
     {
         StreamInfo info;
         info.url = camera_config->interface_stream_url;
-        info.width = central_width_;
-        info.height = central_height_;
-        info.bitrate = central_bitrate_;
+        info.width = interface_width_;
+        info.height = interface_height_;
+        info.bitrate = interface_bitrate_;
 
         parseUrl(info.url, info.protocol, info.host, info.port);
 
@@ -188,9 +185,9 @@ namespace flychams::agent
     {
         StreamInfo info;
         info.url = window_config->interface_stream_url;
-        info.width = tracking_width_;
-        info.height = tracking_height_;
-        info.bitrate = tracking_bitrate_;
+        info.width = interface_width_;
+        info.height = interface_height_;
+        info.bitrate = interface_bitrate_;
 
         parseUrl(info.url, info.protocol, info.host, info.port);
 
@@ -289,13 +286,10 @@ namespace flychams::agent
         // YOLO branch
         pipeline_str += "t. ! queue leaky=downstream max-size-buffers=10 ! videoscale ! video/x-raw,width=" + std::to_string(yolo_stream_info_.width) + ",height=" + std::to_string(yolo_stream_info_.height) + " ! nvh264enc bitrate=" + std::to_string(yolo_stream_info_.bitrate) + " rc-mode=cbr ! h264parse config-interval=-1 ! tcpserversink host=" + yolo_stream_info_.host + " port=" + std::to_string(yolo_stream_info_.port) + " sync=false ";
 
-        // Full res branch
-        pipeline_str += "t. ! queue leaky=downstream max-size-buffers=10 ! videoscale ! video/x-raw,width=" + std::to_string(central_stream_info_.width) + ",height=" + std::to_string(central_stream_info_.height) + " ! nvh264enc bitrate=" + std::to_string(central_stream_info_.bitrate) + " rc-mode=cbr ! h264parse config-interval=-1 ! mpegtsmux ! udpsink host=" + central_stream_info_.host + " port=" + std::to_string(central_stream_info_.port) + " sync=false ";
-
-        // Crop branches
-        for (size_t i = 0; i < tracking_stream_infos_.size(); ++i)
+        // Interface branches
+        for (size_t i = 0; i < interface_stream_infos_.size(); ++i)
         {
-            const auto& info = tracking_stream_infos_[i];
+            const auto& info = interface_stream_infos_[i];
             std::string crop_name = "crop_" + std::to_string(i);
             pipeline_str += "t. ! queue leaky=downstream max-size-buffers=10 ! videocrop name=" + crop_name + " ! videoscale ! video/x-raw,width=" + std::to_string(info.width) + ",height=" + std::to_string(info.height) + " ! nvh264enc bitrate=" + std::to_string(info.bitrate) + " rc-mode=cbr ! h264parse config-interval=-1 ! mpegtsmux ! udpsink host=" + info.host + " port=" + std::to_string(info.port) + " sync=false ";
         }
@@ -329,13 +323,10 @@ namespace flychams::agent
         // YOLO branch
         pipeline_str += "t. ! queue leaky=downstream max-size-buffers=10 ! vapostproc ! video/x-raw,width=" + std::to_string(yolo_stream_info_.width) + ",height=" + std::to_string(yolo_stream_info_.height) + " ! vah264enc bitrate=" + std::to_string(yolo_stream_info_.bitrate) + " ! h264parse config-interval=-1 ! tcpserversink host=" + yolo_stream_info_.host + " port=" + std::to_string(yolo_stream_info_.port) + " sync=false ";
 
-        // Full res branch
-        pipeline_str += "t. ! queue leaky=downstream max-size-buffers=10 ! vapostproc ! video/x-raw,width=" + std::to_string(central_stream_info_.width) + ",height=" + std::to_string(central_stream_info_.height) + " ! vah264enc bitrate=" + std::to_string(central_stream_info_.bitrate) + " rc-mode=cbr ! h264parse config-interval=-1 ! mpegtsmux ! udpsink host=" + central_stream_info_.host + " port=" + std::to_string(central_stream_info_.port) + " sync=false ";
-
-        // Crop branches
-        for (size_t i = 0; i < tracking_stream_infos_.size(); ++i)
+        // Interface branches
+        for (size_t i = 0; i < interface_stream_infos_.size(); ++i)
         {
-            const auto& info = tracking_stream_infos_[i];
+            const auto& info = interface_stream_infos_[i];
             std::string crop_name = "crop_" + std::to_string(i);
             pipeline_str += "t. ! queue leaky=downstream max-size-buffers=10 ! videocrop name=" + crop_name + " ! vapostproc ! video/x-raw,width=" + std::to_string(info.width) + ",height=" + std::to_string(info.height) + " ! vah264enc bitrate=" + std::to_string(info.bitrate) + " rc-mode=cbr ! h264parse config-interval=-1 ! mpegtsmux ! udpsink host=" + info.host + " port=" + std::to_string(info.port) + " sync=false ";
         }
@@ -360,7 +351,7 @@ namespace flychams::agent
 
             // Retrieve crop elements
             croppers_.clear();
-            for (size_t i = 0; i < tracking_stream_infos_.size(); ++i)
+            for (size_t i = 0; i < interface_stream_infos_.size(); ++i)
             {
                 std::string name = "crop_" + std::to_string(i);
                 GstElement* cropper = gst_bin_get_by_name(GST_BIN(pipeline_), name.c_str());
