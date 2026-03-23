@@ -5,7 +5,7 @@ from typing import Dict, Optional, List
 
 from PyQt5.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QGridLayout, QTabWidget, QLabel,
-    QMenu, QAction, QToolButton, QStackedWidget, QFrame, QStyle
+    QMenu, QAction, QToolButton, QStackedWidget, QFrame, QStyle, QSizePolicy
 )
 from PyQt5.QtCore import Qt, QUrl, QTimer
 from PyQt5.QtMultimedia import QMediaPlayer, QMediaContent
@@ -76,6 +76,7 @@ class FeedWidget(QFrame):
     def _setup_ui(self):
         """Initialize the user interface"""
         self.setStyleSheet(STYLE_FEED_CONTAINER)
+        self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         layout = QVBoxLayout(self)
         layout.setContentsMargins(0, 0, 0, 0)
         layout.setSpacing(0)
@@ -307,6 +308,12 @@ class AgentCameraComposition(QWidget):
         grid_layout = QGridLayout(grid_container)
         grid_layout.setContentsMargins(0, 0, 0, 0)
         grid_layout.setSpacing(8)
+        
+        # Ensure equal sizes for all rows and columns in the grid
+        grid_layout.setColumnStretch(0, 1)
+        grid_layout.setColumnStretch(1, 1)
+        grid_layout.setRowStretch(0, 1)
+        grid_layout.setRowStretch(1, 1)
 
         for i in range(1, 5):
             url = stream_urls[i] if i < len(stream_urls) else None

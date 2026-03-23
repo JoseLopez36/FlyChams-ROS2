@@ -1,31 +1,63 @@
-FROM ros:humble-ros-base
+FROM nvidia/cuda:11.8.0-cudnn8-devel-ubuntu22.04
 
-# --- Setup ROS2 Humble Packages ---
+ENV DEBIAN_FRONTEND=noninteractive
+ENV ROS_DISTRO=humble
+
+# --- Setup ROS 2 Humble ---
+RUN apt-get update && apt-get install -y locales software-properties-common curl && \
+    locale-gen en_US en_US.UTF-8 && \
+    update-locale LC_ALL=en_US.UTF-8 LANG=en_US.UTF-8 && \
+    add-apt-repository universe
+ENV LANG=en_US.UTF-8
+
+RUN export ROS_APT_SOURCE_VERSION=$(curl -s https://api.github.com/repos/ros-infrastructure/ros-apt-source/releases/latest | grep -F "tag_name" | awk -F'"' '{print $4}') && \
+    curl -L -o /tmp/ros2-apt-source.deb "https://github.com/ros-infrastructure/ros-apt-source/releases/download/${ROS_APT_SOURCE_VERSION}/ros2-apt-source_${ROS_APT_SOURCE_VERSION}.jammy_all.deb" && \
+    dpkg -i /tmp/ros2-apt-source.deb && \
+    rm /tmp/ros2-apt-source.deb
+    
+RUN apt-get update && apt-get install -y \
+    ros-$ROS_DISTRO-ros-base \
+    && rm -rf /var/lib/apt/lists/*
+
+# --- Install ROS2 Humble Packages ---
 RUN apt-get update && \
     apt-get install -y \
     ros-$ROS_DISTRO-tf2-sensor-msgs \
     ros-$ROS_DISTRO-tf2-geometry-msgs \
     ros-$ROS_DISTRO-mavros* \
-    ros-$ROS_DISTRO-vision-opencv \
     ros-$ROS_DISTRO-image-transport \
-    libyaml-cpp-dev \
     ros-$ROS_DISTRO-pcl-ros \
     ros-$ROS_DISTRO-pcl-conversions \
-    && rm -rf /var/lib/apt/lists/* && \
-    apt-get clean
+    ros-$ROS_DISTRO-cv-bridge \
+    build-essential cmake git pkg-config python3-pip \
+    && rm -rf /var/lib/apt/lists/*
 
-# Install GeographicLib datasets for mavros
+# --- Install GeographicLib datasets for mavros ---
 RUN wget https://raw.githubusercontent.com/mavlink/mavros/ros2/mavros/scripts/install_geographiclib_datasets.sh && \
     chmod +x install_geographiclib_datasets.sh && \
     ./install_geographiclib_datasets.sh && \
     rm install_geographiclib_datasets.sh
 
-# --- Setup Ultralytics ---
+# --- Build OpenCV with CUDA from source ---
+RUN git clone --depth 1 https://github.com/opencv/opencv.git && \
+    git clone --depth 1 https://github.com/opencv/opencv_contrib.git && \
+    cd opencv && mkdir build && cd build && \
+    cmake -D CMAKE_BUILD_TYPE=RELEASE \
+          -D CMAKE_INSTALL_PREFIX=/usr/local \
+          -D WITH_CUDA=ON \
+          -D WITH_CUDNN=ON \
+          -D OPENCV_DNN_CUDA=ON \
+          -D OPENCV_EXTRA_MODULES_PATH=../../opencv_contrib/modules \
+          .. && \
+    make -j$(nproc) && make install && \
+    cd ../.. && rm -rf opencv opencv_contrib
+
+# --- Install Ultralytics ---
 RUN apt-get update && apt-get install -y python3-pip && \
-    pip3 install ultralytics lapx && \
+    pip3 install ultralytics lapx torch torchvision numpy && \
     rm -rf /var/lib/apt/lists/*
 
-# --- Setup GStreamer ---
+# --- Install GStreamer ---
 RUN apt-get update && \ 
     apt-get install -y \
     libgstreamer1.0-dev \
