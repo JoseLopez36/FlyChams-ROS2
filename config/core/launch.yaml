@@ -19,7 +19,7 @@ node_allowlist:
   - agent_analysis
   - agent_positioning
   - agent_tracking
-  - target_detection
+  # - target_detection
   - agent_stream
   # Operator nodes
   - metrics_factory
