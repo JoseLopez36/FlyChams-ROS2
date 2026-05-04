@@ -61,6 +61,7 @@ STRICT_MODE_ON
 #include <airsim_interfaces/srv/hover.hpp>
 #include <airsim_interfaces/srv/arm_disarm.hpp>
 #include <airsim_interfaces/srv/enable_control.hpp>
+#include <airsim_interfaces/srv/camera_capture.hpp>
 #include <airsim_interfaces/msg/vel_cmd.hpp>
 #include <airsim_interfaces/msg/pos_cmd.hpp>
 #include <airsim_interfaces/msg/gimbal_angle_cmd.hpp>
@@ -199,6 +200,7 @@ namespace airsim_wrapper
         bool takeoff_srv_cb(const std::shared_ptr<airsim_interfaces::srv::Takeoff::Request> request, const std::shared_ptr<airsim_interfaces::srv::Takeoff::Response> response);
         bool land_srv_cb(const std::shared_ptr<airsim_interfaces::srv::Land::Request> request, const std::shared_ptr<airsim_interfaces::srv::Land::Response> response);
         bool hover_srv_cb(const std::shared_ptr<airsim_interfaces::srv::Hover::Request> request, const std::shared_ptr<airsim_interfaces::srv::Hover::Response> response);
+        bool camera_capture_srv_cb(const std::shared_ptr<airsim_interfaces::srv::CameraCapture::Request> request, const std::shared_ptr<airsim_interfaces::srv::CameraCapture::Response> response);
         bool add_target_group_cb(const std::shared_ptr<airsim_interfaces::srv::AddTargetGroup::Request> request, const std::shared_ptr<airsim_interfaces::srv::AddTargetGroup::Response> response);
         bool add_cluster_group_cb(const std::shared_ptr<airsim_interfaces::srv::AddClusterGroup::Request> request, const std::shared_ptr<airsim_interfaces::srv::AddClusterGroup::Response> response);
         bool remove_all_targets_cb(const std::shared_ptr<airsim_interfaces::srv::RemoveAllTargets::Request> request, const std::shared_ptr<airsim_interfaces::srv::RemoveAllTargets::Response> response);
@@ -251,6 +253,7 @@ namespace airsim_wrapper
         void client_move_by_position(const float& x, const float& y, const float& z, const float& vel, const float& timeout, const std::string& vehicle_name);
         void client_set_gimbal_attitude(const msr::airlib::Quaternionr& attitude, const std::string& camera_name, const std::string& vehicle_name);
         void client_set_camera_fov(const std::string& camera_name, const float& fov, const std::string& vehicle_name);
+        bool client_set_agent_cameras_active(const std::string& vehicle_name, const bool& active);
 
         // Window methods
         void client_set_window_images(const std::vector<int>& window_indices, const std::vector<std::string>& vehicle_names, const std::vector<std::string>& camera_names, const std::vector<msr::airlib::Vector2r>& corners, const std::vector<msr::airlib::Vector2r>& sizes);
@@ -310,6 +313,7 @@ namespace airsim_wrapper
         rclcpp::Service<airsim_interfaces::srv::Takeoff>::SharedPtr takeoff_srvr_;
         rclcpp::Service<airsim_interfaces::srv::Land>::SharedPtr land_srvr_;
         rclcpp::Service<airsim_interfaces::srv::Hover>::SharedPtr hover_srvr_;
+        rclcpp::Service<airsim_interfaces::srv::CameraCapture>::SharedPtr camera_capture_srvr_;
 
         // Window subscribers
         rclcpp::Subscription<airsim_interfaces::msg::WindowImageCmdGroup>::SharedPtr window_image_cmd_group_sub_;

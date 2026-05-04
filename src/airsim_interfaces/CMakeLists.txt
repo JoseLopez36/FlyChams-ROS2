@@ -23,6 +23,7 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   "srv/Hover.srv"
   "srv/EnableControl.srv"
   "srv/ArmDisarm.srv"
+  "srv/CameraCapture.srv"
   "msg/VelCmd.msg"
   "msg/PosCmd.msg"
   "msg/CameraFovCmd.msg"

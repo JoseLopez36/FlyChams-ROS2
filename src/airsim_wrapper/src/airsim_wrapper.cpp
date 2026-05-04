@@ -256,6 +256,7 @@ namespace airsim_wrapper
         takeoff_srvr_ = nh_->create_service<airsim_interfaces::srv::Takeoff>("vehicles/cmd/takeoff", std::bind(&AirsimWrapper::takeoff_srv_cb, this, _1, _2));
         land_srvr_ = nh_->create_service<airsim_interfaces::srv::Land>("vehicles/cmd/land", std::bind(&AirsimWrapper::land_srv_cb, this, _1, _2));
         hover_srvr_ = nh_->create_service<airsim_interfaces::srv::Hover>("vehicles/cmd/hover", std::bind(&AirsimWrapper::hover_srv_cb, this, _1, _2));
+        camera_capture_srvr_ = nh_->create_service<airsim_interfaces::srv::CameraCapture>("vehicles/cmd/camera_capture", std::bind(&AirsimWrapper::camera_capture_srv_cb, this, _1, _2));
         // Create window subscribers
         window_image_cmd_group_sub_ = nh_->create_subscription<airsim_interfaces::msg::WindowImageCmdGroup>(
             "windows/cmd/image", 10, std::bind(&AirsimWrapper::window_image_cmd_group_cb, this, _1), window_sub_options);
@@ -809,6 +810,33 @@ namespace airsim_wrapper
         return true;
     }
 
+    bool AirsimWrapper::camera_capture_srv_cb(std::shared_ptr<airsim_interfaces::srv::CameraCapture::Request> request, std::shared_ptr<airsim_interfaces::srv::CameraCapture::Response> response)
+    {
+        const auto& vehicle_name = request->vehicle_name;
+        const auto& active = request->active;
+
+        if (active)
+        {
+            RCLCPP_INFO(nh_->get_logger(), "Activating camera capture for vehicle %s", vehicle_name.c_str());
+        }
+        else
+        {
+            RCLCPP_INFO(nh_->get_logger(), "Deactivating camera capture for vehicle %s", vehicle_name.c_str());
+        }
+
+        try
+        {
+            response->success = client_set_agent_cameras_active(vehicle_name, active);
+            return response->success;
+        }
+        catch (rpc::rpc_error& e) {
+            std::string msg = e.get_error().as<std::string>();
+            RCLCPP_ERROR(nh_->get_logger(), "Exception raised by the API:\n%s", msg.c_str());
+            response->success = false;
+            return false;
+        }
+    }
+
     bool AirsimWrapper::add_target_group_cb(const std::shared_ptr<airsim_interfaces::srv::AddTargetGroup::Request> request, const std::shared_ptr<airsim_interfaces::srv::AddTargetGroup::Response> response)
     {
         RCLCPP_INFO(nh_->get_logger(), "Adding group of targets");
@@ -1174,6 +1202,11 @@ namespace airsim_wrapper
     void AirsimWrapper::client_set_camera_fov(const std::string& camera_name, const float& fov, const std::string& vehicle_name)
     {
         airsim_client_control_->simSetCameraFov(camera_name, math_common::rad2deg(fov), vehicle_name);
+    }
+
+    bool AirsimWrapper::client_set_agent_cameras_active(const std::string& vehicle_name, const bool& active)
+    {
+        return airsim_client_control_->simSetAgentCamerasActive(vehicle_name, active);
     }
 
     void AirsimWrapper::client_set_window_images(const std::vector<int>& window_indices, const std::vector<std::string>& vehicle_names, const std::vector<std::string>& camera_names, const std::vector<msr::airlib::Vector2r>& corners, const std::vector<msr::airlib::Vector2r>& sizes)
