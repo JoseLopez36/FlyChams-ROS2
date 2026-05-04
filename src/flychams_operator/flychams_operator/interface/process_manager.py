@@ -77,6 +77,11 @@ class ProcessManager(QObject):
                  self.line_received.emit(component_name, f"Failed to start {component_name}: {process.errorString()}")
                  self._cleanup_process(component_name)
 
+    def is_running(self, component_name: str) -> bool:
+        if component_name not in self.processes:
+            return False
+        return self.processes[component_name]['proc'].state() != QProcess.NotRunning
+
     def stop_process(self, component_name: str):
         """Stop a specific process using its stop command or terminate it"""
         if component_name not in self.processes:
@@ -98,12 +103,14 @@ class ProcessManager(QObject):
         else:
             self._cleanup_process(component_name)
 
-    def stop_all(self):
+    def stop_all(self, cleanup_cmd: Optional[List[str]] = None):
         """Stop all managed processes"""
         # Create a list of names to avoid dictionary size change during iteration
         for name in list(self.processes.keys()):
             if not name.startswith("Operator") and not name.startswith("UE5"):
                 self.stop_process(name)
+        if cleanup_cmd:
+            self.start_process("Cleanup", cleanup_cmd)
 
     def _handle_stdout(self, component_name):
         if component_name not in self.processes:

@@ -176,8 +176,15 @@ class ControlPanel(QWidget):
                 BUTTON_STYLE_STANDARD,
                 QStyle.SP_MediaPlay
             )
+            self.btn_cleanup = self.create_button(
+                "Cleanup",
+                self.cleanup_simulation,
+                BUTTON_STYLE_DANGER,
+                QStyle.SP_BrowserReload
+            )
             self.card_sim.add_widget(self.btn_sim)
             self.card_sim.add_widget(self.btn_ue5)
+            self.card_sim.add_widget(self.btn_cleanup)
             cards_layout.addWidget(self.card_sim, 1)
 
         # --- Operator Card ---
@@ -270,8 +277,13 @@ class ControlPanel(QWidget):
 
     def launch_agent(self, agent_id):
         if self.is_sim:
-            self.pm.start_process(agent_id, ["pixi", "run", "agent-sim-run", agent_id], ["pixi", "run", "agent-sim-stop", agent_id])
-            self.show_feedback(f"Launching Agent {agent_id}...")
+            component_name = f"Agent-{agent_id}"
+            if self.pm.is_running(component_name):
+                self.pm.stop_process(component_name)
+                self.show_feedback(f"Stopping Agent {agent_id}...")
+            else:
+                self.pm.start_process(component_name, ["bash", "tools/agent_setup.sh", "run", agent_id], ["bash", "tools/agent_setup.sh", "stop", agent_id])
+                self.show_feedback(f"Launching Agent {agent_id}...")
         else:
             # For hardware, typically we launch the generic agent-hardware-run
             self.pm.start_process(f"Agent-{agent_id}", ["pixi", "run", "agent-hardware-run"], ["pixi", "run", "agent-hardware-stop"])
@@ -282,8 +294,14 @@ class ControlPanel(QWidget):
             self.pm.start_process(f"PX4-{index}", ["pixi", "run", "simulation-px4-run", str(index)], ["pixi", "run", "simulation-px4-stop", str(index)])
             self.show_feedback(f"Launching PX4 for Agent {agent_id}...")
 
+    def cleanup_simulation(self):
+        if self.is_sim:
+            self.pm.start_process("Cleanup", ["pixi", "run", "simulation-cleanup"])
+            self.show_feedback("Cleaning simulation processes...", 5000)
+
     def stop_all(self):
-        self.pm.stop_all()
+        cleanup_cmd = ["pixi", "run", "simulation-cleanup"] if self.is_sim else None
+        self.pm.stop_all(cleanup_cmd)
         self.show_feedback("Stopping all processes...", 5000)
 
     # --- Discovery Callbacks ---
