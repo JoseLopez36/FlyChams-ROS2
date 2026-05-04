@@ -59,19 +59,25 @@ class FeedWidget(QFrame):
     
     RETRY_INTERVAL_MS = 5000  # Retry connection every 5 seconds on failure
 
-    def __init__(self, stream_url = None, title: str = ""):
+    def __init__(self, stream_url = None, title: str = "", auto_connect: bool = True):
         super().__init__()
         self.stream_url = stream_url
         self.title = title
         self.player = None
+        self.active = False
         self.retry_timer = QTimer(self)
         self.retry_timer.timeout.connect(self.connect_stream)
         
         self._setup_ui()
         
-        if self.stream_url:
+        if self.stream_url and auto_connect:
+            self.active = True
             # Delay initial connection slightly to allow UI to settle
             QTimer.singleShot(100, self.connect_stream)
+        elif self.stream_url:
+            self._update_status_ui("inactive")
+        else:
+            self._update_status_ui("no_url")
 
     def _setup_ui(self):
         """Initialize the user interface"""
@@ -164,6 +170,10 @@ class FeedWidget(QFrame):
             self._update_status_ui("no_url")
             return
 
+        if not self.active:
+            self._update_status_ui("inactive")
+            return
+
         self._cleanup_player()
         
         self._update_status_ui("connecting")
@@ -188,7 +198,24 @@ class FeedWidget(QFrame):
     def restart_stream(self):
         """Manually restart the stream."""
         logger.info(f"Manual restart requested for {self.title}")
+        self.active = True
         self.connect_stream()
+
+    def set_active(self, active: bool):
+        if self.active == active:
+            return
+
+        self.active = active
+
+        if active:
+            QTimer.singleShot(100, self.connect_stream)
+        else:
+            self.retry_timer.stop()
+            self._cleanup_player()
+            if self.stream_url:
+                self._update_status_ui("inactive")
+            else:
+                self._update_status_ui("no_url")
 
     def _cleanup_player(self):
         """Safely stop and delete the player."""
@@ -209,11 +236,14 @@ class FeedWidget(QFrame):
         self._update_status_ui("error", err_msg)
         
         # Schedule retry
-        if not self.retry_timer.isActive():
+        if self.active and not self.retry_timer.isActive():
             self.retry_timer.start(self.RETRY_INTERVAL_MS)
 
     def _handle_media_status(self, status):
         """Handle media status changes."""
+        if not self.active:
+            return
+
         if status == QMediaPlayer.BufferedMedia or status == QMediaPlayer.LoadedMedia:
             self._update_status_ui("active")
         elif status == QMediaPlayer.BufferingMedia or status == QMediaPlayer.StalledMedia:
@@ -258,6 +288,12 @@ class FeedWidget(QFrame):
             self.status_message.setStyleSheet(STYLE_STATUS_NO_FEED)
             set_status_dot("#7f8c8d") # Grey
             self.status_indicator.setToolTip("No Feed")
+        elif state == "inactive":
+            self.stacked_widget.setCurrentIndex(0)
+            self.status_message.setText("Stream inactive")
+            self.status_message.setStyleSheet(STYLE_STATUS_NO_FEED)
+            set_status_dot("#7f8c8d")
+            self.status_indicator.setToolTip("Inactive")
         else: # idle
             set_status_dot("#7f8c8d")
 
@@ -266,6 +302,7 @@ class FeedWidget(QFrame):
 
     def closeEvent(self, event):
         """Ensure resources are released on close."""
+        self.active = False
         self.retry_timer.stop()
         self._cleanup_player()
         super().closeEvent(event)
@@ -282,6 +319,7 @@ class AgentCameraComposition(QWidget):
         super().__init__()
         self.agent_id = agent_id
         self.feeds: List[FeedWidget] = []
+        self.active = False
         
         self._setup_ui(stream_urls)
 
@@ -299,7 +337,7 @@ class AgentCameraComposition(QWidget):
 
         # 1. Central Feed (Large)
         central_url = stream_urls[0] if len(stream_urls) > 0 else None
-        self.central_feed = FeedWidget(central_url, f"{self.agent_id} | {feed_labels[0]}")
+        self.central_feed = FeedWidget(central_url, f"{self.agent_id} | {feed_labels[0]}", auto_connect=False)
         self.feeds.append(self.central_feed)
         layout.addWidget(self.central_feed, stretch=3)
 
@@ -317,7 +355,7 @@ class AgentCameraComposition(QWidget):
 
         for i in range(1, 5):
             url = stream_urls[i] if i < len(stream_urls) else None
-            feed = FeedWidget(url, feed_labels[i])
+            feed = FeedWidget(url, feed_labels[i], auto_connect=False)
             self.feeds.append(feed)
             
             row = (i - 1) // 2
@@ -326,8 +364,18 @@ class AgentCameraComposition(QWidget):
 
         layout.addWidget(grid_container, stretch=2)
 
+    def set_active(self, active: bool):
+        if self.active == active:
+            return
+
+        self.active = active
+
+        for feed in self.feeds:
+            feed.set_active(active)
+
     def closeEvent(self, event):
         """Close event to all feeds"""
+        self.set_active(False)
         for feed in self.feeds:
             feed.close()
         super().closeEvent(event)
@@ -354,6 +402,7 @@ class MonitoringPanel(QWidget):
         # Tab
         self.tab_widget = QTabWidget()
         self.tab_widget.setStyleSheet(TAB_WIDGET_STYLE)
+        self.tab_widget.currentChanged.connect(self._handle_current_tab_changed)
         layout.addWidget(self.tab_widget)
         
         self._add_placeholder()
@@ -368,7 +417,11 @@ class MonitoringPanel(QWidget):
     def add_agent(self, agent_id: str, stream_urls: List[str]):
         """Add or update camera feeds for an agent"""
         logger.info(f"Adding monitoring for agent: {agent_id}")
-        
+
+        # Remove existing agent widget if present
+        if agent_id in self.agent_widgets:
+            self.remove_agent(agent_id)
+
         # Remove placeholder if it's the only tab
         if self.tab_widget.count() == 1:
             widget = self.tab_widget.widget(0)
@@ -376,15 +429,12 @@ class MonitoringPanel(QWidget):
                 self.tab_widget.removeTab(0)
                 widget.deleteLater()
 
-        # Remove existing agent widget if present
-        if agent_id in self.agent_widgets:
-            self.remove_agent(agent_id)
-
         # Create new composition
         composition = AgentCameraComposition(agent_id, stream_urls)
         self.agent_widgets[agent_id] = composition
         self.tab_widget.addTab(composition, agent_id)
         self.tab_widget.setCurrentWidget(composition)
+        self._handle_current_tab_changed(self.tab_widget.currentIndex())
 
     def remove_agent(self, agent_id: str):
         """Remove an agent's feeds."""
@@ -393,6 +443,7 @@ class MonitoringPanel(QWidget):
 
         logger.info(f"Removing monitoring for agent: {agent_id}")
         widget = self.agent_widgets.pop(agent_id)
+        widget.set_active(False)
         
         # Find and remove the tab
         index = self.tab_widget.indexOf(widget)
@@ -404,3 +455,10 @@ class MonitoringPanel(QWidget):
 
         if self.tab_widget.count() == 0:
             self._add_placeholder()
+        self._handle_current_tab_changed(self.tab_widget.currentIndex())
+
+    def _handle_current_tab_changed(self, index: int):
+        active_widget = self.tab_widget.widget(index) if index >= 0 else None
+
+        for composition in self.agent_widgets.values():
+            composition.set_active(composition is active_widget)
