@@ -86,11 +86,11 @@ namespace flychams::core
                     {"SensorWidth", 0.0132f},
                     {"SensorHeight", 0.007425f},
                     {"FOV_Degrees", 90},
-                    {"LumenGIEnable", true},
-                    {"LumenReflectionEnable", true},
-                    {"LumenFinalQuality", 2},
-                    {"LumenSceneDetail", 2},
-                    {"LumenSceneLightningDetail", 2}
+                    {"LumenGIEnable", false},
+                    {"LumenReflectionEnable", false},
+                    {"LumenFinalQuality", 0},
+                    {"LumenSceneDetail", 0},
+                    {"LumenSceneLightningDetail", 0}
                 }
             }}
         };
@@ -221,11 +221,11 @@ namespace flychams::core
                         {"K3", distortion.K3},
                         {"P1", distortion.P1},
                         {"P2", distortion.P2},
-                        {"LumenGIEnable", true},
-                        {"LumenReflectionEnable", true},
-                        {"LumenFinalQuality", 2},
-                        {"LumenSceneDetail", 2},
-                        {"LumenSceneLightningDetail", 2}
+                        {"LumenGIEnable", false},
+                        {"LumenReflectionEnable", false},
+                        {"LumenFinalQuality", 0},
+                        {"LumenSceneDetail", 0},
+                        {"LumenSceneLightningDetail", 0}
                     }
                 }},
                 {"Gimbal", {
@@ -329,7 +329,7 @@ namespace flychams::core
                                 {"CameraName", "MAPVIEW"},
                                 {"ImageType", 0},
                                 {"VehicleName", ""},
-                                {"Visible", true} });
+                                {"Visible", false} });
 
         // Payload view sub-window
         subwindows.push_back({ {"WindowID", idx++},
@@ -345,7 +345,7 @@ namespace flychams::core
                                     {"CameraName", camera_id},
                                     {"ImageType", 0},
                                     {"VehicleName", agent_id},
-                                    {"Visible", true} });
+                                    {"Visible", false} });
         }
     }
 
