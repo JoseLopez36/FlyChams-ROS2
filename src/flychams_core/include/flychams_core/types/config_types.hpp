@@ -31,6 +31,7 @@ namespace flychams::core
         // Simulation settings
         SimulationFramework simulation_framework;
         float clock_speed;
+        int quality_preset;
 
         // Path settings
         std::string config_source_file;

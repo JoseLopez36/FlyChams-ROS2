@@ -14,6 +14,7 @@ namespace flychams::core
         writeVehiclesSection(config_ptr, settings["Vehicles"]);
         writeSubWindowsSection(config_ptr, settings["SubWindows"]);
         writeStreamsSection(config_ptr, settings["Streams"]);
+        writeQualitySettingsSection(config_ptr, settings["QualitySettings"]);
 
         // Write settings to file
         std::ofstream file(path);
@@ -94,6 +95,168 @@ namespace flychams::core
                 }
             }}
         };
+    }
+
+    void AirsimSettingsCreator::writeQualitySettingsSection(const MissionConfigPtr& config_ptr, nlohmann::ordered_json& quality_settings)
+    {
+        int quality_preset = config_ptr->system.quality_preset;
+        if (quality_preset < 0)
+            quality_preset = 0;
+        else if (quality_preset > 3)
+            quality_preset = 3;
+
+        switch (quality_preset)
+        {
+        case 0:
+            quality_settings = {
+                {"FrameRate", {
+                    {"MaxFPS", 20},
+                    {"CameraCaptureFPS", 10}
+                }},
+                {"Scalability", {
+                    {"ResolutionQuality", 50},
+                    {"ViewDistanceQuality", 0},
+                    {"AntiAliasingQuality", 0},
+                    {"ShadowQuality", 0},
+                    {"GlobalIlluminationQuality", 0},
+                    {"ReflectionQuality", 0},
+                    {"PostProcessQuality", 0},
+                    {"TextureQuality", 0},
+                    {"EffectsQuality", 0},
+                    {"FoliageQuality", 0},
+                    {"ShadingQuality", 0}
+                }},
+                {"RenderingFeatures", {
+                    {"MotionBlur", false},
+                    {"Bloom", false},
+                    {"AmbientOcclusion", false},
+                    {"ScreenSpaceReflections", false},
+                    {"VolumetricFog", false},
+                    {"LensFlares", false},
+                    {"DepthOfField", false},
+                    {"ContactShadows", false}
+                }},
+                {"World", {
+                    {"FoliageDensityScale", 0.1},
+                    {"GrassDensityScale", 0.0},
+                    {"ViewDistanceScale", 0.35},
+                    {"ShadowDistanceScale", 0.1}
+                }}
+            };
+            break;
+        case 2:
+            quality_settings = {
+                {"FrameRate", {
+                    {"MaxFPS", 45},
+                    {"CameraCaptureFPS", 20}
+                }},
+                {"Scalability", {
+                    {"ResolutionQuality", 85},
+                    {"ViewDistanceQuality", 2},
+                    {"AntiAliasingQuality", 2},
+                    {"ShadowQuality", 1},
+                    {"GlobalIlluminationQuality", 0},
+                    {"ReflectionQuality", 1},
+                    {"PostProcessQuality", 1},
+                    {"TextureQuality", 2},
+                    {"EffectsQuality", 2},
+                    {"FoliageQuality", 1},
+                    {"ShadingQuality", 2}
+                }},
+                {"RenderingFeatures", {
+                    {"MotionBlur", false},
+                    {"Bloom", false},
+                    {"AmbientOcclusion", false},
+                    {"ScreenSpaceReflections", false},
+                    {"VolumetricFog", false},
+                    {"LensFlares", false},
+                    {"DepthOfField", false},
+                    {"ContactShadows", false}
+                }},
+                {"World", {
+                    {"FoliageDensityScale", 0.5},
+                    {"GrassDensityScale", 0.25},
+                    {"ViewDistanceScale", 0.75},
+                    {"ShadowDistanceScale", 0.5}
+                }}
+            };
+            break;
+        case 3:
+            quality_settings = {
+                {"FrameRate", {
+                    {"MaxFPS", 60},
+                    {"CameraCaptureFPS", 30}
+                }},
+                {"Scalability", {
+                    {"ResolutionQuality", 100},
+                    {"ViewDistanceQuality", 3},
+                    {"AntiAliasingQuality", 3},
+                    {"ShadowQuality", 2},
+                    {"GlobalIlluminationQuality", 1},
+                    {"ReflectionQuality", 2},
+                    {"PostProcessQuality", 2},
+                    {"TextureQuality", 3},
+                    {"EffectsQuality", 3},
+                    {"FoliageQuality", 2},
+                    {"ShadingQuality", 3}
+                }},
+                {"RenderingFeatures", {
+                    {"MotionBlur", false},
+                    {"Bloom", true},
+                    {"AmbientOcclusion", true},
+                    {"ScreenSpaceReflections", true},
+                    {"VolumetricFog", false},
+                    {"LensFlares", true},
+                    {"DepthOfField", false},
+                    {"ContactShadows", true}
+                }},
+                {"World", {
+                    {"FoliageDensityScale", 1.0},
+                    {"GrassDensityScale", 1.0},
+                    {"ViewDistanceScale", 1.0},
+                    {"ShadowDistanceScale", 1.0}
+                }}
+            };
+            break;
+        case 1:
+        default:
+            quality_settings = {
+                {"FrameRate", {
+                    {"MaxFPS", 30},
+                    {"CameraCaptureFPS", 15}
+                }},
+                {"Scalability", {
+                    {"ResolutionQuality", 70},
+                    {"ViewDistanceQuality", 1},
+                    {"AntiAliasingQuality", 1},
+                    {"ShadowQuality", 0},
+                    {"GlobalIlluminationQuality", 0},
+                    {"ReflectionQuality", 0},
+                    {"PostProcessQuality", 0},
+                    {"TextureQuality", 1},
+                    {"EffectsQuality", 1},
+                    {"FoliageQuality", 0},
+                    {"ShadingQuality", 1}
+                }},
+                {"RenderingFeatures", {
+                    {"MotionBlur", false},
+                    {"Bloom", false},
+                    {"AmbientOcclusion", false},
+                    {"ScreenSpaceReflections", false},
+                    {"VolumetricFog", false},
+                    {"LensFlares", false},
+                    {"DepthOfField", false},
+                    {"ContactShadows", false}
+                }},
+                {"World", {
+                    {"FoliageDensityScale", 0.25},
+                    {"GrassDensityScale", 0.0},
+                    {"ViewDistanceScale", 0.5},
+                    {"ShadowDistanceScale", 0.25}
+                }}
+            };
+            break;
+        }
     }
 
     void AirsimSettingsCreator::writeVehiclesSection(const MissionConfigPtr& config_ptr, nlohmann::ordered_json& vehicles)

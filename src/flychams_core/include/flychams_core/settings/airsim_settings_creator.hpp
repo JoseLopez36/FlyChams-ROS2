@@ -37,6 +37,7 @@ namespace flychams::core
 
     private: // Implementation methods
         static void writeGeneralSection(const core::MissionConfigPtr& config_ptr, nlohmann::ordered_json& settings);
+        static void writeQualitySettingsSection(const core::MissionConfigPtr& config_ptr, nlohmann::ordered_json& quality_settings);
         static void writeVehiclesSection(const core::MissionConfigPtr& config_ptr, nlohmann::ordered_json& vehicles);
         static void writeSensorsSection(const core::ID& agent_id, const core::MissionConfigPtr& config_ptr, nlohmann::ordered_json& sensors);
         static void writeInternalCamerasSection(const core::ID& agent_id, const core::MissionConfigPtr& config_ptr, nlohmann::ordered_json& cameras);

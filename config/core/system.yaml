@@ -4,6 +4,7 @@
     simulation:
       framework: AirSim
       clock_speed: 1.0    # Clock speed multiplier (1.0 = real-time)
+      quality_preset: 1
 
     # Path settings
     path:

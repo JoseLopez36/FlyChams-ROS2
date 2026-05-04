@@ -300,6 +300,7 @@ namespace flychams::core
 		const std::string simulation_framework_str = RosUtils::getParameter<std::string>(node, "simulation.framework");
 		config_ptr->system.simulation_framework = simulationFrameworkFromString(simulation_framework_str);
 		config_ptr->system.clock_speed = RosUtils::getParameter<float>(node, "simulation.clock_speed");
+		config_ptr->system.quality_preset = RosUtils::getParameter<int>(node, "simulation.quality_preset");
 
 		// Path settings
 		config_ptr->system.config_source_file = RosUtils::getParameter<std::string>(node, "path.config_spreadsheet_path");
