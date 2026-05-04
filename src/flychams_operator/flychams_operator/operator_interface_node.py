@@ -331,7 +331,7 @@ def main(args=None):
     from flychams_operator.interface.main_window import MainWindow
     
     # Create main window
-    main_window = MainWindow(signals, is_sim=is_sim)
+    main_window = MainWindow(signals, is_sim=is_sim, ros_node=node)
     main_window.show()
     
     # Create ROS2 executor for separate thread

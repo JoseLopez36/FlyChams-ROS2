@@ -10,6 +10,7 @@ find_package(ament_cmake REQUIRED)
 find_package(ament_cmake_python REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(flychams_core REQUIRED)
+find_package(airsim_interfaces REQUIRED)
 
 # Create operator library
 set(DASHBOARD_SRC
@@ -24,7 +25,7 @@ target_include_directories(${PROJECT_NAME} PUBLIC
 
 # Export dependencies
 ament_target_dependencies(${PROJECT_NAME}
-  rclcpp flychams_core
+  rclcpp flychams_core airsim_interfaces
 )
 
 # Link to required libraries
@@ -35,12 +36,12 @@ target_link_libraries(${PROJECT_NAME}
 # Create executable for metrics factory node
 add_executable(metrics_factory_node src/metrics_factory_node.cpp)
 target_link_libraries(metrics_factory_node ${PROJECT_NAME})
-ament_target_dependencies(metrics_factory_node rclcpp flychams_core)
+ament_target_dependencies(metrics_factory_node rclcpp flychams_core airsim_interfaces)
 
 # Create executable for marker factory node
 add_executable(marker_factory_node src/marker_factory_node.cpp)
 target_link_libraries(marker_factory_node ${PROJECT_NAME})
-ament_target_dependencies(marker_factory_node rclcpp flychams_core)
+ament_target_dependencies(marker_factory_node rclcpp flychams_core airsim_interfaces)
 
 # Install operator interface node script
 install(PROGRAMS
@@ -71,6 +72,7 @@ ament_export_targets(${PROJECT_NAME} HAS_LIBRARY_TARGET)
 ament_export_dependencies(
   rclcpp
   flychams_core
+  airsim_interfaces
 )
 ament_export_libraries(${PROJECT_NAME})
 ament_export_include_directories(include)

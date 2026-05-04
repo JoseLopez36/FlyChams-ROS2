@@ -19,6 +19,7 @@
   <depend>std_msgs</depend>
   <depend>geometry_msgs</depend>
   <depend>flychams_core</depend>
+  <depend>airsim_interfaces</depend>
 
   <!-- Build dependencies -->
   <build_depend>python3-setuptools</build_depend>

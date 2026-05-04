@@ -3,6 +3,7 @@
 import logging
 from typing import Dict, Optional, List
 
+from airsim_interfaces.srv import CameraCapture
 from PyQt5.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QGridLayout, QTabWidget, QLabel,
     QMenu, QAction, QToolButton, QStackedWidget, QFrame, QStyle, QSizePolicy
@@ -383,9 +384,14 @@ class AgentCameraComposition(QWidget):
 class MonitoringPanel(QWidget):
     """Main monitoring panel hosting multiple agent compositions in tabs"""
     
-    def __init__(self):
+    def __init__(self, ros_node=None):
         super().__init__()
+        self.ros_node = ros_node
+        self.camera_capture_client = None
         self.agent_widgets: Dict[str, AgentCameraComposition] = {}
+        self.agent_capture_states: Dict[str, bool] = {}
+        if self.ros_node is not None:
+            self.camera_capture_client = self.ros_node.create_client(CameraCapture, "/airsim/vehicles/cmd/camera_capture")
         self._setup_ui()
 
     def _setup_ui(self):
@@ -444,6 +450,8 @@ class MonitoringPanel(QWidget):
         logger.info(f"Removing monitoring for agent: {agent_id}")
         widget = self.agent_widgets.pop(agent_id)
         widget.set_active(False)
+        self._set_agent_camera_capture(agent_id, False)
+        self.agent_capture_states.pop(agent_id, None)
         
         # Find and remove the tab
         index = self.tab_widget.indexOf(widget)
@@ -460,5 +468,50 @@ class MonitoringPanel(QWidget):
     def _handle_current_tab_changed(self, index: int):
         active_widget = self.tab_widget.widget(index) if index >= 0 else None
 
-        for composition in self.agent_widgets.values():
-            composition.set_active(composition is active_widget)
+        for agent_id, composition in self.agent_widgets.items():
+            active = composition is active_widget
+            composition.set_active(active)
+            self._set_agent_camera_capture(agent_id, active)
+
+    def _set_agent_camera_capture(self, agent_id: str, active: bool):
+        if self.agent_capture_states.get(agent_id) == active:
+            return
+
+        self.agent_capture_states[agent_id] = active
+
+        if self.camera_capture_client is None:
+            return
+
+        self._send_agent_camera_capture(agent_id, active)
+
+    def _send_agent_camera_capture(self, agent_id: str, active: bool):
+        if self.agent_capture_states.get(agent_id) != active:
+            return
+
+        if self.camera_capture_client is None:
+            return
+
+        if not self.camera_capture_client.service_is_ready():
+            logger.debug("Camera capture service is not available")
+            QTimer.singleShot(1000, lambda agent_id=agent_id, active=active: self._send_agent_camera_capture(agent_id, active))
+            return
+
+        request = CameraCapture.Request()
+        request.vehicle_name = agent_id
+        request.active = active
+        future = self.camera_capture_client.call_async(request)
+        future.add_done_callback(lambda done_future, agent_id=agent_id, active=active: self._handle_camera_capture_response(done_future, agent_id, active))
+
+    def _handle_camera_capture_response(self, future, agent_id: str, active: bool):
+        try:
+            response = future.result()
+            if response is None or not response.success:
+                logger.warning(f"Camera capture {'activation' if active else 'deactivation'} failed for agent {agent_id}")
+        except Exception as exc:
+            logger.error(f"Camera capture service call failed for agent {agent_id}: {exc}")
+
+    def closeEvent(self, event):
+        for agent_id, composition in self.agent_widgets.items():
+            composition.set_active(False)
+            self._set_agent_camera_capture(agent_id, False)
+        super().closeEvent(event)

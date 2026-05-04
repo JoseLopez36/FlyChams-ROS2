@@ -23,11 +23,12 @@ from .styles import (
 class MainWindow(QMainWindow):
     """Main window containing all operator components with hamburger navigation"""
     
-    def __init__(self, signals, is_sim: bool):
+    def __init__(self, signals, is_sim: bool, ros_node=None):
         super().__init__()
         
         self.signals = signals
         self.is_sim = is_sim
+        self.ros_node = ros_node
         
         # Initialize Process Manager
         self.process_manager = ProcessManager()
@@ -99,7 +100,7 @@ class MainWindow(QMainWindow):
         self.control_panel = ControlPanel(self.process_manager, self.is_sim)
         self.logs_panel = LogsPanel(self.process_manager)
         self.map_panel = MapPanel(self.signals)
-        self.monitoring_panel = MonitoringPanel()
+        self.monitoring_panel = MonitoringPanel(self.ros_node)
 
         self.pages = [
             ("Mission Control", self.control_panel),
