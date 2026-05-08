@@ -105,8 +105,6 @@ coordinator-stop = "pkill -f coordinator"
 # ----------------- Simulation tasks -----------------
 simulation-run = "ros2 launch launch/simulation.launch.py"
 simulation-stop = "pkill -f simulation"
-simulation-ue5-run = "bash tools/launch_ue5.sh"
-simulation-ue5-stop = "pkill -9 -f FlyChamsSim && fuser -k 4560/tcp"
 simulation-px4-run = "bash tools/docker/launch_px4.sh"
 simulation-px4-stop = "bash tools/docker/stop_px4.sh"
 simulation-cleanup = "bash tools/docker/cleanup_simulation.sh"

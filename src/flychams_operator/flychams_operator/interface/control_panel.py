@@ -170,12 +170,6 @@ class ControlPanel(QWidget):
                 BUTTON_STYLE_STANDARD,
                 QStyle.SP_MediaPlay
             )
-            self.btn_ue5 = self.create_button(
-                "Unreal Engine 5", 
-                self.launch_ue5,
-                BUTTON_STYLE_STANDARD,
-                QStyle.SP_MediaPlay
-            )
             self.btn_cleanup = self.create_button(
                 "Cleanup",
                 self.cleanup_simulation,
@@ -183,7 +177,6 @@ class ControlPanel(QWidget):
                 QStyle.SP_BrowserReload
             )
             self.card_sim.add_widget(self.btn_sim)
-            self.card_sim.add_widget(self.btn_ue5)
             self.card_sim.add_widget(self.btn_cleanup)
             cards_layout.addWidget(self.card_sim, 1)
 
@@ -269,11 +262,6 @@ class ControlPanel(QWidget):
         if self.is_sim:
             self.pm.start_process("Simulation", ["pixi", "run", "simulation-run"], ["pixi", "run", "simulation-stop"])
             self.show_feedback("Launching Simulation...")
-
-    def launch_ue5(self):
-        if self.is_sim:
-            self.pm.start_process("UE5", ["pixi", "run", "simulation-ue5-run"], ["pixi", "run", "simulation-ue5-stop"])
-            self.show_feedback("Launching Unreal Engine 5...")
 
     def launch_agent(self, agent_id):
         if self.is_sim:

@@ -107,7 +107,7 @@ class ProcessManager(QObject):
         """Stop all managed processes"""
         # Create a list of names to avoid dictionary size change during iteration
         for name in list(self.processes.keys()):
-            if not name.startswith("Operator") and not name.startswith("UE5"):
+            if not name.startswith("Operator"):
                 self.stop_process(name)
         if cleanup_cmd:
             self.start_process("Cleanup", cleanup_cmd)

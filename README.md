@@ -140,7 +140,6 @@ Edit `setup.sh` to configure your paths:
 export FLYCHAMS_ROS2_PATH=${HOME}/Documents/FlyChams-ROS2
 export FLYCHAMS_PX4_PATH=${HOME}/Documents/PX4-Autopilot
 export FLYCHAMS_AIRSIM_PATH=${HOME}/Documents/FlyChams-Cosys-AirSim
-export FLYCHAMS_UE5_PATH=${HOME}/Documents/FlyChams-Sim-UE5/Linux
 ```
 
 **Install & Build GCS**
@@ -243,7 +242,7 @@ You can run individual components using Pixi tasks defined in `pixi.toml`.
 
 #### Simulation & Core
 ```bash
-pixi run simulation-ue5-run    # Launch UE5
+/path/to/FlyChamsSim.sh -settings="$FLYCHAMS_ROS2_PATH/config/generated/airsim.json"
 pixi run simulation-run        # Launch Simulation Control
 pixi run coordinator-sim-run   # Launch Coordinator
 ```
@@ -286,7 +285,7 @@ FlyChams-ROS2/
 │   ├── flychams_coordinator/
 │   ├── flychams_agent/
 │   └── ...
-├── tools/              # Helper scripts (Docker, UE5)
+├── tools/              # Helper scripts
 ├── pixi.toml           # Pixi environment & task definitions
 └── README.md
 ```
