@@ -62,8 +62,8 @@ namespace flychams::simulation
 
         // Spawn target in simulation
         PointMsg initial_position;
-        initial_position.x = -500.0f + spawn_index_ * 2.0f;
-        initial_position.y = -500.0f + spawn_index_ * 2.0f;
+        initial_position.x = 0.0f;
+        initial_position.y = 0.0f;
         initial_position.z = 0.0f;
         spawnTarget(target_id, initial_position, settings_tools_->getTarget(target_id)->type);
 
@@ -96,8 +96,8 @@ namespace flychams::simulation
         if (highlight_clusters_)
         {
             PointMsg initial_position;
-            initial_position.x = -500.0f + spawn_index_ * 2.0f;
-            initial_position.y = -500.0f + spawn_index_ * 2.0f;
+            initial_position.x = 0.0f;
+            initial_position.y = 0.0f;
             initial_position.z = 0.0f;
             float initial_radius = 1.0f;
             spawnCluster(cluster_id, initial_position, initial_radius);

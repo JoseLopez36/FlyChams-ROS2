@@ -209,15 +209,11 @@ namespace flychams::core
     enum class TargetType
     {
         None,     // No type assigned
-        Cube,     // Cube target
         Human,    // Human target
-        MetaHuman // MetaHuman target (more realistic UE human model)
     };
     inline TargetType targetTypeFromString(const std::string& target_type)
     {
-        if (target_type == "Cube") return TargetType::Cube;
         if (target_type == "Human") return TargetType::Human;
-        if (target_type == "MetaHuman") return TargetType::MetaHuman;
         return TargetType::None;
     }
 

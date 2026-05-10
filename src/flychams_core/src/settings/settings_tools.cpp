@@ -257,9 +257,7 @@ namespace flychams::core
     {
         switch (type)
         {
-        case TargetType::Cube: return "Cube";
         case TargetType::Human: return "Human";
-        case TargetType::MetaHuman: return "MetaHuman";
         default: return "None";
         }
     }

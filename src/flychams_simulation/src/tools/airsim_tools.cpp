@@ -165,14 +165,8 @@ namespace flychams::simulation
             // Set target type based on target type
             switch (target_types[i])
             {
-            case TargetType::Cube:
-                request->target_types.push_back("Cube");
-                break;
             case TargetType::Human:
                 request->target_types.push_back("Human");
-                break;
-            case TargetType::MetaHuman:
-                request->target_types.push_back("MetaHuman");
                 break;
             default:
                 RCLCPP_ERROR(node_->get_logger(), "Unknown target type: %d", static_cast<int>(target_types[i]));
