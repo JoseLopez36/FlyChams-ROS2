@@ -48,21 +48,21 @@
 
 // Custom message types
 // Global messages
-#include "flychams_interfaces/msg/registration.hpp"
-#include "flychams_interfaces/msg/global_metrics.hpp"
+#include "flychams_api/msg/registration.hpp"
+#include "flychams_api/msg/global_metrics.hpp"
 // Agent messages
-#include "flychams_interfaces/msg/agent_status.hpp"
-#include "flychams_interfaces/msg/agent_assignment.hpp"
-#include "flychams_interfaces/msg/agent_clusters.hpp"
-#include "flychams_interfaces/msg/agent_observation_setpoints.hpp"
-#include "flychams_interfaces/msg/agent_gui_setpoints.hpp"
-#include "flychams_interfaces/msg/agent_metrics.hpp"
+#include "flychams_api/msg/agent_status.hpp"
+#include "flychams_api/msg/agent_assignment.hpp"
+#include "flychams_api/msg/agent_clusters.hpp"
+#include "flychams_api/msg/agent_observation_setpoints.hpp"
+#include "flychams_api/msg/agent_gui_setpoints.hpp"
+#include "flychams_api/msg/agent_metrics.hpp"
 // Target messages
-#include "flychams_interfaces/msg/target_metrics.hpp"
+#include "flychams_api/msg/target_metrics.hpp"
 // Cluster messages
-#include "flychams_interfaces/msg/cluster_assignment.hpp"
-#include "flychams_interfaces/msg/cluster_geometry.hpp"
-#include "flychams_interfaces/msg/cluster_metrics.hpp"
+#include "flychams_api/msg/cluster_assignment.hpp"
+#include "flychams_api/msg/cluster_geometry.hpp"
+#include "flychams_api/msg/cluster_metrics.hpp"
 
 namespace flychams::core
 {
@@ -157,23 +157,23 @@ namespace flychams::core
     // ════════════════════════════════════════════════════════════════
 
     // Basic
-    using CropMsg = flychams_interfaces::msg::Crop;
-    using ElementMsg = flychams_interfaces::msg::Element;
+    using CropMsg = flychams_api::msg::Crop;
+    using ElementMsg = flychams_api::msg::Element;
     // Registration messages
-    using RegistrationMsg = flychams_interfaces::msg::Registration;
-    using GlobalMetricsMsg = flychams_interfaces::msg::GlobalMetrics;
+    using RegistrationMsg = flychams_api::msg::Registration;
+    using GlobalMetricsMsg = flychams_api::msg::GlobalMetrics;
     // Agent messages
-    using AgentStatusMsg = flychams_interfaces::msg::AgentStatus;
-    using AgentAssignmentMsg = flychams_interfaces::msg::AgentAssignment;
-    using AgentClustersMsg = flychams_interfaces::msg::AgentClusters;
-    using AgentObservationSetpointsMsg = flychams_interfaces::msg::AgentObservationSetpoints;
-    using AgentGuiSetpointsMsg = flychams_interfaces::msg::AgentGuiSetpoints;
-    using AgentMetricsMsg = flychams_interfaces::msg::AgentMetrics;
+    using AgentStatusMsg = flychams_api::msg::AgentStatus;
+    using AgentAssignmentMsg = flychams_api::msg::AgentAssignment;
+    using AgentClustersMsg = flychams_api::msg::AgentClusters;
+    using AgentObservationSetpointsMsg = flychams_api::msg::AgentObservationSetpoints;
+    using AgentGuiSetpointsMsg = flychams_api::msg::AgentGuiSetpoints;
+    using AgentMetricsMsg = flychams_api::msg::AgentMetrics;
     // Target messages
-    using TargetMetricsMsg = flychams_interfaces::msg::TargetMetrics;
+    using TargetMetricsMsg = flychams_api::msg::TargetMetrics;
     // Cluster messages
-    using ClusterAssignmentMsg = flychams_interfaces::msg::ClusterAssignment;
-    using ClusterGeometryMsg = flychams_interfaces::msg::ClusterGeometry;
-    using ClusterMetricsMsg = flychams_interfaces::msg::ClusterMetrics;
+    using ClusterAssignmentMsg = flychams_api::msg::ClusterAssignment;
+    using ClusterGeometryMsg = flychams_api::msg::ClusterGeometry;
+    using ClusterMetricsMsg = flychams_api::msg::ClusterMetrics;
 
 } // namespace flychams::core

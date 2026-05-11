@@ -14,7 +14,7 @@
 
   <!-- Dependencies -->
   <depend>rclcpp</depend>
-  <depend>flychams_core</depend>
+  <depend>flychams_common</depend>
 
   <!-- Export -->
   <export>

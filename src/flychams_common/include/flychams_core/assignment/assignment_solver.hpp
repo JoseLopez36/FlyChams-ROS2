@@ -1,13 +1,13 @@
 #pragma once
 
 // Position solver
-#include "flychams_core/positioning/position_solver.hpp"
+#include "flychams_common/positioning/position_solver.hpp"
 
 // Solver algorithms
-#include "flychams_core/assignment/suboptimal_combinatorial.hpp"
+#include "flychams_common/assignment/suboptimal_combinatorial.hpp"
 
 // Utilities
-#include "flychams_core/types/core_types.hpp"
+#include "flychams_common/types/core_types.hpp"
 
 namespace flychams::core
 {

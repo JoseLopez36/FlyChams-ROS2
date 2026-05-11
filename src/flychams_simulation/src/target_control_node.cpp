@@ -4,7 +4,7 @@
 #include "flychams_simulation/target/target_control.hpp"
 
 // Core includes
-#include "flychams_core/base/base_discoverer_node.hpp"
+#include "flychams_common/base/base_discoverer_node.hpp"
 
 using namespace flychams::core;
 using namespace flychams::simulation;

@@ -1,4 +1,4 @@
-#include "flychams_core/utils/vision_utils.hpp"
+#include "flychams_common/utils/vision_utils.hpp"
 
 namespace flychams::core
 {

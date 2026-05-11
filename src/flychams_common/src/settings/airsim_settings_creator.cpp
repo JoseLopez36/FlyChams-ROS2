@@ -1,4 +1,4 @@
-#include "flychams_core/settings/airsim_settings_creator.hpp"
+#include "flychams_common/settings/airsim_settings_creator.hpp"
 
 namespace flychams::core
 {

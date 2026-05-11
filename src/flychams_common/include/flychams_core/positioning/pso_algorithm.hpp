@@ -1,10 +1,10 @@
 #pragma once
 
 // Cost functions
-#include "flychams_core/positioning/cost_functions.hpp"
+#include "flychams_common/positioning/cost_functions.hpp"
 
 // Utilities
-#include "flychams_core/types/core_types.hpp"
+#include "flychams_common/types/core_types.hpp"
 
 namespace flychams::core
 {

@@ -4,7 +4,7 @@
 #include "flychams_coordinator/assignment/agent_assignment.hpp"
 
 // Core includes
-#include "flychams_core/base/base_discoverer_node.hpp"
+#include "flychams_common/base/base_discoverer_node.hpp"
 
 using namespace flychams::core;
 using namespace flychams::coordinator;

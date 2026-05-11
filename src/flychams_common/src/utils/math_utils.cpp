@@ -1,4 +1,4 @@
-#include "flychams_core/utils/math_utils.hpp"
+#include "flychams_common/utils/math_utils.hpp"
 
 namespace flychams::core
 {

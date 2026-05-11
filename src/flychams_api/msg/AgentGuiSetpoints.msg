@@ -1,3 +1,3 @@
 std_msgs/Header header
 string[] camera_ids                 # IDs of cameras from which the images are displayed
-flychams_interfaces/Crop[] crops    # Crop parameters
+flychams_api/Crop[] crops    # Crop parameters

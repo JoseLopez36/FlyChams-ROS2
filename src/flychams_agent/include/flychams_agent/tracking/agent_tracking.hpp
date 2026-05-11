@@ -1,10 +1,10 @@
 #pragma once
 
 // Tracking includes
-#include "flychams_core/tracking/observation_solver.hpp"
+#include "flychams_common/tracking/observation_solver.hpp"
 
 // Base module include
-#include "flychams_core/base/base_module.hpp"
+#include "flychams_common/base/base_module.hpp"
 
 namespace flychams::agent
 {

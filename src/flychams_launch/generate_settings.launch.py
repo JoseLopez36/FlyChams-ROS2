@@ -34,7 +34,7 @@ def generate_launch_description():
     # Add Settings Creator node
     ld.append(
         Node(
-            package='flychams_core',
+            package='flychams_common',
             executable='settings_creator_node',
             name='settings_creator_node',
             output='screen',

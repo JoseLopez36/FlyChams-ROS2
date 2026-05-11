@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.8)
-project(flychams_core)
+project(flychams_common)
 
 if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   add_compile_options(-Wall -Wextra -Wpedantic)
@@ -19,7 +19,7 @@ find_package(tf2 REQUIRED)
 find_package(tf2_ros REQUIRED)
 find_package(tf2_geometry_msgs REQUIRED)
 find_package(OpenCV REQUIRED)
-find_package(flychams_interfaces REQUIRED)
+find_package(flychams_api REQUIRED)
 
 # Disable OpenXLSX documentation generation (requires Doxygen)
 set(OPENXLSX_CREATE_DOCS OFF CACHE BOOL "Build library documentation (requires Doxygen and Graphviz/Dot to be installed)" FORCE)
@@ -85,7 +85,7 @@ ament_target_dependencies(${PROJECT_NAME}
   tf2_ros
   tf2_geometry_msgs
   OpenCV
-  flychams_interfaces
+  flychams_api
 )
 
 # Create executable for settings creator node
@@ -161,7 +161,7 @@ ament_export_dependencies(
   tf2_ros
   tf2_geometry_msgs
   OpenCV
-  flychams_interfaces
+  flychams_api
 )
 ament_export_libraries(${PROJECT_NAME})
 ament_export_include_directories(include)

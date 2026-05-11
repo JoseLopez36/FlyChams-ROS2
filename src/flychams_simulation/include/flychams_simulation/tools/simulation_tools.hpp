@@ -1,12 +1,12 @@
 #pragma once
 
 // Tools includes
-#include "flychams_core/settings/settings_tools.hpp"
+#include "flychams_common/settings/settings_tools.hpp"
 
 // Core includes
-#include "flychams_core/types/core_types.hpp"
-#include "flychams_core/types/ros_types.hpp"
-#include "flychams_core/utils/ros_utils.hpp"
+#include "flychams_common/types/core_types.hpp"
+#include "flychams_common/types/ros_types.hpp"
+#include "flychams_common/utils/ros_utils.hpp"
 
 namespace flychams::simulation
 {

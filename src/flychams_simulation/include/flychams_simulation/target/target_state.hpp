@@ -4,7 +4,7 @@
 #include "flychams_simulation/target/trajectory_parser.hpp"
 
 // Base module include
-#include "flychams_core/base/base_module.hpp"
+#include "flychams_common/base/base_module.hpp"
 
 namespace flychams::simulation
 {

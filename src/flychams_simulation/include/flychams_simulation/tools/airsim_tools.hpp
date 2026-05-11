@@ -4,7 +4,7 @@
 #include "flychams_simulation/tools/simulation_tools.hpp"
 
 // Tools includes
-#include "flychams_core/settings/settings_tools.hpp"
+#include "flychams_common/settings/settings_tools.hpp"
 
 // AirSim interfaces includes
 // Global commands

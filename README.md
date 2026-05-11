@@ -62,12 +62,12 @@ This project is part of a broader research initiative by the Department of Syste
 
 | Package                 | Description                                     |
 | ----------------------- | ----------------------------------------------- |
-| `flychams_core`         | Core domain models, utilities, and interfaces   |
+| `flychams_common`         | Core domain models, utilities, and interfaces   |
 | `flychams_operator`     | Operator interface GUI and visualization tools |
 | `flychams_coordinator`  | Perception algorithms for clustering targets and agent assignment |
 | `flychams_agent`        | Agent control, tracking, and positioning       |
 | `flychams_simulation`   | Simulation framework manager and target control |
-| `flychams_interfaces`   | Custom messages and services for FlyChams      |
+| `flychams_api`   | Custom messages and services for FlyChams      |
 | `airsim_wrapper`        | ROS2 interface to the AirSim simulator         |
 | `airsim_interfaces`     | Custom messages and services for AirSim         |
 
@@ -280,7 +280,7 @@ FlyChams-ROS2/
 ├── config/             # Excel sources & generated YAMLs
 ├── launch/             # Python launch files
 ├── src/                # Source code (ROS2 packages)
-│   ├── flychams_core/
+│   ├── flychams_common/
 │   ├── flychams_operator/
 │   ├── flychams_coordinator/
 │   ├── flychams_agent/

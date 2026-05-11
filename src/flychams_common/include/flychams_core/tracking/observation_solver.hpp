@@ -1,12 +1,12 @@
 #pragma once
 
 // Tracking includes
-#include "flychams_core/tracking/camera_solver.hpp"
-#include "flychams_core/tracking/window_solver.hpp"
+#include "flychams_common/tracking/camera_solver.hpp"
+#include "flychams_common/tracking/window_solver.hpp"
 
 // Utilities
-#include "flychams_core/types/core_types.hpp"
-#include "flychams_core/utils/math_utils.hpp"
+#include "flychams_common/types/core_types.hpp"
+#include "flychams_common/utils/math_utils.hpp"
 
 namespace flychams::core
 {

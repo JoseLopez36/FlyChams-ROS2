@@ -1,7 +1,7 @@
 #pragma once
 
 // Base module include
-#include "flychams_core/base/base_module.hpp"
+#include "flychams_common/base/base_module.hpp"
 
 // Mavros includes
 #include <mavros_msgs/srv/message_interval.hpp>

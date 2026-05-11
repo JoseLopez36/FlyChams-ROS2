@@ -1,10 +1,10 @@
 #pragma once
 
 // Assignment solver include
-#include "flychams_core/assignment/assignment_solver.hpp"
+#include "flychams_common/assignment/assignment_solver.hpp"
 
 // Base module include
-#include "flychams_core/base/base_module.hpp"
+#include "flychams_common/base/base_module.hpp"
 
 namespace flychams::coordinator
 {

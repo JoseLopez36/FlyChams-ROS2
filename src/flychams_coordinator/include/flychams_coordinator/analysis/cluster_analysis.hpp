@@ -1,10 +1,10 @@
 #pragma once
 
 // Perception includes
-#include "flychams_core/clustering/welzls_circle.hpp"
+#include "flychams_common/clustering/welzls_circle.hpp"
 
 // Base module include
-#include "flychams_core/base/base_module.hpp"
+#include "flychams_common/base/base_module.hpp"
 
 namespace flychams::coordinator
 {

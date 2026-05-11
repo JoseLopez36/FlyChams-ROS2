@@ -1,10 +1,10 @@
 #pragma once
 
 // Position solver include
-#include "flychams_core/positioning/position_solver.hpp"
+#include "flychams_common/positioning/position_solver.hpp"
 
 // Base module include
-#include "flychams_core/base/base_module.hpp"
+#include "flychams_common/base/base_module.hpp"
 
 namespace flychams::agent
 {

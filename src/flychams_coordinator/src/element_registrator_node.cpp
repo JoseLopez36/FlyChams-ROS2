@@ -6,7 +6,7 @@
 #include "flychams_coordinator/registration/cluster_registration.hpp"
 
 // Core includes
-#include "flychams_core/base/base_registrator_node.hpp"
+#include "flychams_common/base/base_registrator_node.hpp"
 
 using namespace flychams::core;
 using namespace flychams::coordinator;

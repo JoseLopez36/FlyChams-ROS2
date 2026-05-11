@@ -1,19 +1,19 @@
 #pragma once
 
 // Cost functions
-#include "flychams_core/positioning/cost_functions.hpp"
+#include "flychams_common/positioning/cost_functions.hpp"
 
 // Solver algorithms
-#include "flychams_core/positioning/ellipsoid_method.hpp"
-#include "flychams_core/positioning/nelder_mead_nlopt.hpp"
-#include "flychams_core/positioning/nesterov_algorithm.hpp"
-#include "flychams_core/positioning/l_bfgs_nlopt.hpp"
-#include "flychams_core/positioning/pso_algorithm.hpp"
-#include "flychams_core/positioning/alc_pso_algorithm.hpp"
-#include "flychams_core/positioning/cma_es_algorithm.hpp"
+#include "flychams_common/positioning/ellipsoid_method.hpp"
+#include "flychams_common/positioning/nelder_mead_nlopt.hpp"
+#include "flychams_common/positioning/nesterov_algorithm.hpp"
+#include "flychams_common/positioning/l_bfgs_nlopt.hpp"
+#include "flychams_common/positioning/pso_algorithm.hpp"
+#include "flychams_common/positioning/alc_pso_algorithm.hpp"
+#include "flychams_common/positioning/cma_es_algorithm.hpp"
 
 // Utilities
-#include "flychams_core/types/core_types.hpp"
+#include "flychams_common/types/core_types.hpp"
 
 namespace flychams::core
 {

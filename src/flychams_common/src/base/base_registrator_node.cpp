@@ -1,4 +1,4 @@
-#include "flychams_core/base/base_registrator_node.hpp"
+#include "flychams_common/base/base_registrator_node.hpp"
 
 namespace flychams::core
 {

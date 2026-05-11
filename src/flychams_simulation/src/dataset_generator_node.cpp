@@ -7,8 +7,8 @@
 #include <map>
 
 // Core includes
-#include "flychams_core/base/base_discoverer_node.hpp"
-#include "flychams_core/utils/vision_utils.hpp"
+#include "flychams_common/base/base_discoverer_node.hpp"
+#include "flychams_common/utils/vision_utils.hpp"
 
 using namespace flychams::core;
 

@@ -5,7 +5,7 @@
 #include <vector>
 
 // Core includes
-#include "flychams_core/types/core_types.hpp"
+#include "flychams_common/types/core_types.hpp"
 
 namespace flychams::core
 {

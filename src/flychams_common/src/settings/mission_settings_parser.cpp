@@ -1,4 +1,4 @@
-#include "flychams_core/settings/mission_settings_parser.hpp"
+#include "flychams_common/settings/mission_settings_parser.hpp"
 
 namespace flychams::core
 {

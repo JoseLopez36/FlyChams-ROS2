@@ -4,7 +4,7 @@
 #include "flychams_agent/camera/camera_control.hpp"
 
 // Core includes
-#include "flychams_core/base/base_node_with_tools.hpp"
+#include "flychams_common/base/base_node_with_tools.hpp"
 
 using namespace flychams::core;
 using namespace flychams::agent;

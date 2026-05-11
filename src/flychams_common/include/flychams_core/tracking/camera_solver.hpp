@@ -1,8 +1,8 @@
 #pragma once
 
 // Utilities
-#include "flychams_core/types/core_types.hpp"
-#include "flychams_core/utils/math_utils.hpp"
+#include "flychams_common/types/core_types.hpp"
+#include "flychams_common/utils/math_utils.hpp"
 
 namespace flychams::core
 {

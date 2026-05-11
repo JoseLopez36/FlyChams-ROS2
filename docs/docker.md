@@ -52,10 +52,10 @@ All scripts live in `scripts/` and are run from the project root.
 Build images in dependency order (base must be built first).
 
 ```bash
-scripts/build_base.sh         # flychams-base
-scripts/build_coordinator.sh  # flychams-coordinator
-scripts/build_simulation.sh   # flychams-simulation
-scripts/build_agent.sh        # flychams-agent
+scripts/docker/build_base.sh         # flychams-base
+scripts/docker/build_coordinator.sh  # flychams-coordinator
+scripts/docker/build_simulation.sh   # flychams-simulation
+scripts/docker/build_agent.sh        # flychams-agent
 ```
 
 ### Run
@@ -63,9 +63,9 @@ scripts/build_agent.sh        # flychams-agent
 Start containers in interactive mode. Existing containers with the same name are removed first.
 
 ```bash
-scripts/run_coordinator.sh
-scripts/run_simulation.sh
-scripts/run_agent.sh AGENT00
+scripts/docker/run_coordinator.sh
+scripts/docker/run_simulation.sh
+scripts/docker/run_agent.sh AGENT00
 ```
 
 All containers use:
@@ -81,9 +81,9 @@ The agent container additionally receives `AGENT_ID` as an environment variable.
 Open an interactive shell or run a command in a running container.
 
 ```bash
-scripts/exec_coordinator.sh
-scripts/exec_simulation.sh
-scripts/exec_agent.sh AGENT00
+scripts/docker/exec_coordinator.sh
+scripts/docker/exec_simulation.sh
+scripts/docker/exec_agent.sh AGENT00
 ```
 
 ### CMD Override
@@ -92,10 +92,10 @@ All run and exec scripts accept a `CMD` environment variable to override the def
 
 **Run**:
 ```bash
-CMD="ros2 topic list" scripts/run_coordinator.sh
+CMD="ros2 topic list" scripts/docker/run_coordinator.sh
 ```
 
 **Exec**:
 ```bash
-CMD="ros2 topic list" scripts/exec_coordinator.sh
+CMD="ros2 topic list" scripts/docker/exec_coordinator.sh
 ```

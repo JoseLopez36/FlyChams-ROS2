@@ -9,7 +9,7 @@ endif()
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(airsim_interfaces REQUIRED)
-find_package(flychams_core REQUIRED)
+find_package(flychams_common REQUIRED)
 
 # Create simulation library
 set(SIMULATION_SRC
@@ -27,7 +27,7 @@ target_include_directories(${PROJECT_NAME} PUBLIC
 
 # Export dependencies
 ament_target_dependencies(${PROJECT_NAME}
-  rclcpp airsim_interfaces flychams_core
+  rclcpp airsim_interfaces flychams_common
 )
 
 # Link to required libraries
@@ -38,22 +38,22 @@ target_link_libraries(${PROJECT_NAME}
 # Create executable for simulation GUI node
 add_executable(simulation_gui_node src/simulation_gui_node.cpp)
 target_link_libraries(simulation_gui_node ${PROJECT_NAME})
-ament_target_dependencies(simulation_gui_node rclcpp airsim_interfaces flychams_core)
+ament_target_dependencies(simulation_gui_node rclcpp airsim_interfaces flychams_common)
 
 # Create executable for target state node
 add_executable(target_state_node src/target_state_node.cpp)
 target_link_libraries(target_state_node ${PROJECT_NAME})
-ament_target_dependencies(target_state_node rclcpp flychams_core)
+ament_target_dependencies(target_state_node rclcpp flychams_common)
 
 # Create executable for target control node
 add_executable(target_control_node src/target_control_node.cpp)
 target_link_libraries(target_control_node ${PROJECT_NAME})
-ament_target_dependencies(target_control_node rclcpp airsim_interfaces flychams_core)
+ament_target_dependencies(target_control_node rclcpp airsim_interfaces flychams_common)
 
 # Create executable for dataset generator node
 add_executable(dataset_generator_node src/dataset_generator_node.cpp)
 target_link_libraries(dataset_generator_node ${PROJECT_NAME})
-ament_target_dependencies(dataset_generator_node rclcpp flychams_core)
+ament_target_dependencies(dataset_generator_node rclcpp flychams_common)
 
 # Install targets and headers
 install(TARGETS ${PROJECT_NAME}
@@ -77,7 +77,7 @@ ament_export_targets(${PROJECT_NAME} HAS_LIBRARY_TARGET)
 ament_export_dependencies(
   rclcpp
   airsim_interfaces
-  flychams_core
+  flychams_common
 )
 ament_export_libraries(${PROJECT_NAME})
 ament_export_include_directories(include)
