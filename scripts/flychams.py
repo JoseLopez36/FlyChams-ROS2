@@ -25,25 +25,22 @@ def run(cmd, **kwargs):
 # Simulation mode
 # ------------------------------------------------------------------
 
-def launch_px4(agent_index: int):
-    run(f"{SCRIPT_DIR}/launch_px4.sh {agent_index}")
-
 def launch_sim(agent_ids: list):
     print("=== Simulation mode ===")
 
     # One PX4 container per agent
     for i in range(len(agent_ids)):
-        launch_px4(i)
+        run(f"DETACH=true {SCRIPT_DIR}/launch_px4.sh {i}")
 
     # Coordinator
-    run(f"{SCRIPT_DIR}/launch_coordinator.sh")
+    run(f"DETACH=true {SCRIPT_DIR}/launch_coordinator.sh")
 
     # Simulation
-    run(f"{SCRIPT_DIR}/launch_simulation.sh")
+    run(f"DETACH=true {SCRIPT_DIR}/launch_simulation.sh")
 
     # One agent container per agent
     for agent_id in agent_ids:
-        run(f"{SCRIPT_DIR}/launch_agent.sh {agent_id}")
+        run(f"DETACH=true {SCRIPT_DIR}/launch_agent.sh {agent_id}")
 
 # ------------------------------------------------------------------
 # Real mode

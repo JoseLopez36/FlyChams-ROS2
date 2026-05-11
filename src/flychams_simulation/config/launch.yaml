@@ -5,7 +5,6 @@
 # Node allowlist: Only launch these nodes
 node_allowlist:
   # Simulation nodes
-  - airsim
   - simulation_gui
   - target_state
   - target_control
@@ -13,7 +12,6 @@ node_allowlist:
 # Per-node log level overrides
 node_log_levels:
   # Simulation nodes
-  airsim: "error"
   simulation_gui: "error"
   target_state: "error"
   target_control: "error"

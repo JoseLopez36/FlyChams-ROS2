@@ -9,6 +9,9 @@ if [ -z "$AGENT_IDX" ]; then
 fi
 
 CONTAINER_NAME="flychams-px4-${AGENT_IDX}"
+DETACH="${DETACH:-false}"
+
+[ "$DETACH" = "true" ] && RUN_FLAGS="--rm -d" || RUN_FLAGS="--rm -it"
 
 # PX4 Docker repository
 PX4_DOCKER_REPO="px4io/px4-dev-nuttx-focal:2021-04-29"
@@ -20,7 +23,7 @@ mkdir -p "${CCACHE_DIR}"
 # Command to run
 CMD="PX4_SIM_HOSTNAME=172.17.0.1 PX4_SIM_MODEL=iris ${FLYCHAMS_PX4_PATH}/build/px4_sitl_default/bin/px4 -i ${AGENT_INDEX} -d ${FLYCHAMS_PX4_PATH}/ROMFS/px4fmu_common -s etc/init.d-posix/rcS"
 
-docker run --rm -d \
+docker run ${RUN_FLAGS} \
     --name "$CONTAINER_NAME" \
 	--privileged \
 	--network host \

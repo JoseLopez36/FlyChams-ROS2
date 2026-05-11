@@ -13,8 +13,11 @@ CONTAINER_NAME="flychams-agent-${AGENT_ID}"
 
 # Environment variables
 CMD="${CMD:-exec bash}"
+DETACH="${DETACH:-false}"
 ROS_DOMAIN_ID="${ROS_DOMAIN_ID:-0}"
 FASTDDS_BUILTIN_TRANSPORTS="${FASTDDS_BUILTIN_TRANSPORTS:-UDPv4}"
+
+[ "$DETACH" = "true" ] && RUN_FLAGS="--rm -d" || RUN_FLAGS="--rm -it"
 
 if docker ps -a --format '{{.Names}}' | grep -q "^${CONTAINER_NAME}$"; then
     echo "Removing existing container: $CONTAINER_NAME"
@@ -22,7 +25,7 @@ if docker ps -a --format '{{.Names}}' | grep -q "^${CONTAINER_NAME}$"; then
 fi
 
 echo "Starting agent container: $CONTAINER_NAME"
-docker run --rm -d \
+docker run ${RUN_FLAGS} \
     --name "$CONTAINER_NAME" \
     --privileged \
     --network host \

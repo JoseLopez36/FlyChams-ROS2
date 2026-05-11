@@ -40,12 +40,17 @@ def generate_launch_description():
         os.path.join(pkg_config_dir, 'nodes.yaml'),
     ]
 
+    # AirSim node
+    airsim_node = Node(
+        package='airsim_wrapper',
+        executable='airsim_node',
+        name='airsim_node',
+        output='screen',
+        arguments=['--ros-args', '--log-level', 'error']
+    )
+
     # Define node configurations
     node_configs = {
-        'airsim': {
-            'executable': 'airsim_node',
-            'name': 'airsim_node'
-        },
         'simulation_gui': {
             'executable': 'simulation_gui_node',
             'name': 'simulation_gui_node'
@@ -84,5 +89,6 @@ def generate_launch_description():
 
     return LaunchDescription([
         mission_yaml,
+        airsim_node,
         *nodes
     ])
