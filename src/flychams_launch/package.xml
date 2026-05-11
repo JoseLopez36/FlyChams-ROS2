@@ -1,0 +1,28 @@
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
+  <name>flychams_launch</name>
+  <version>1.0.0</version>
+  <description>
+    Launch files package for FlyingChameleons
+  </description>
+  <maintainer email="josloprui6@alum.us.es">Jose Francisco Lopez Ruiz</maintainer>
+  <license>Apache-2.0</license>
+
+  <!-- Build tool -->
+  <buildtool_depend>ament_cmake</buildtool_depend>
+
+  <!-- Dependencies -->
+  <depend>rclcpp</depend>
+
+  <depend>flychams_api</depend>
+  <depend>flychams_common</depend>
+  <depend>flychams_coordinator</depend>
+  <depend>flychams_simulation</depend>
+  <depend>flychams_agent</depend>
+
+  <!-- Export -->
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>

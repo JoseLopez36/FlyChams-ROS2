@@ -1,9 +1,0 @@
-/**/metrics_factory_node:
-  ros__parameters:
-    # Update rate (Hz)
-    update_rate: 10.0
-
-/**/marker_factory_node:
-  ros__parameters:
-    # Update rate (Hz)
-    update_rate: 10.0

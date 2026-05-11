@@ -102,6 +102,14 @@ install(TARGETS settings_creator_node
 install(DIRECTORY include/
   DESTINATION include
 )
+
+install(DIRECTORY config/
+  DESTINATION share/${PROJECT_NAME}/config
+)
+
+install(DIRECTORY launch/
+  DESTINATION share/${PROJECT_NAME}/launch
+)
 install(
   DIRECTORY external/OpenXLSX/OpenXLSX/headers/
   DESTINATION include/OpenXLSX

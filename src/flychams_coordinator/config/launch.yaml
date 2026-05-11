@@ -1,0 +1,19 @@
+# Node launch configuration:
+# - node_allowlist allows only the listed nodes to be launched
+# - node_log_levels overrides per-node log level; default is 'info'
+
+# Node allowlist: Only launch these nodes
+node_allowlist:
+  # Coordinator nodes
+  - element_registrator
+  - target_clustering
+  - cluster_analysis
+  - agent_assignment
+
+# Per-node log level overrides
+node_log_levels:
+  # Coordinator nodes
+  element_registrator: "error"
+  target_clustering: "error"
+  cluster_analysis: "error"
+  agent_assignment: "error"

@@ -1,0 +1,31 @@
+# Node launch configuration:
+# - node_allowlist allows only the listed nodes to be launched
+# - node_log_levels overrides per-node log level; default is 'info'
+
+# Node allowlist: Only launch these nodes
+node_allowlist:
+  - mavros_manager
+  - drone_frames
+  - drone_state
+  - drone_control
+  - camera_frames
+  - camera_control
+  - agent_analysis
+  - agent_positioning
+  - agent_tracking
+  # - agent_stream
+  # - target_detection
+
+# Per-node log level overrides
+node_log_levels:
+  mavros_manager: "error"
+  drone_frames: "error"
+  drone_state: "error"
+  drone_control: "error"
+  camera_frames: "error"
+  camera_control: "error"
+  agent_analysis: "error"
+  agent_positioning: "error"
+  agent_tracking: "error"
+  agent_stream: "error"
+  target_detection: "error"
