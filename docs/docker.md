@@ -60,7 +60,7 @@ scripts/build_agent.sh        # flychams-agent
 
 ### Run
 
-Start containers in detached mode. Existing containers with the same name are removed first.
+Start containers in interactive mode. Existing containers with the same name are removed first.
 
 ```bash
 scripts/run_coordinator.sh
