@@ -12,8 +12,8 @@ namespace flychams::agent
         : agent_id_(agent_id), settings_tools_(settings_tools), node_(node)
     {
         // Initialize ROS components
-        gimbal_angle_cmd_pub_ = node_->create_publisher<airsim_interfaces::msg::GimbalAngleCmd>("/airsim/" + agent_id + "/gimbals/cmd/orientation", 10);
-        camera_fov_cmd_pub_ = node_->create_publisher<airsim_interfaces::msg::CameraFovCmd>("/airsim/" + agent_id + "/cameras/cmd/fov", 10);
+        gimbal_angle_cmd_pub_ = node_->create_publisher<flychams_api::msg::GimbalAngleCmd>("/airsim/" + agent_id + "/gimbals/cmd/orientation", 10);
+        camera_fov_cmd_pub_ = node_->create_publisher<flychams_api::msg::CameraFovCmd>("/airsim/" + agent_id + "/cameras/cmd/fov", 10);
 
         // Initialize hardware drivers
         auto tracking_config = settings_tools_->getTracking(agent_id_);
@@ -70,9 +70,9 @@ namespace flychams::agent
     // CAMERA STATE
     // ════════════════════════════════════════════════════════════════════════════
 
-    core::SubscriberPtr<airsim_interfaces::msg::CameraOrientation> CameraCommunication::subscribeCameraOrientation(const std::function<void(const airsim_interfaces::msg::CameraOrientation::SharedPtr)>& callback, const rclcpp::SubscriptionOptions& options)
+    core::SubscriberPtr<flychams_api::msg::CameraOrientation> CameraCommunication::subscribeCameraOrientation(const std::function<void(const flychams_api::msg::CameraOrientation::SharedPtr)>& callback, const rclcpp::SubscriptionOptions& options)
     {
-        return node_->create_subscription<airsim_interfaces::msg::CameraOrientation>("/airsim/" + agent_id_ + "/cameras/state/orientation", 10, callback, options);
+        return node_->create_subscription<flychams_api::msg::CameraOrientation>("/airsim/" + agent_id_ + "/cameras/state/orientation", 10, callback, options);
     }
 
     // ════════════════════════════════════════════════════════════════════════════
@@ -82,7 +82,7 @@ namespace flychams::agent
     void CameraCommunication::setGimbalOrientations(const IDs& camera_ids, const std::vector<QuaternionMsg>& quaternions)
     {
         // Create message for AirSim
-        airsim_interfaces::msg::GimbalAngleCmd msg;
+        flychams_api::msg::GimbalAngleCmd msg;
         msg.camera_names = camera_ids;
         msg.orientations = quaternions;
 
@@ -112,7 +112,7 @@ namespace flychams::agent
     void CameraCommunication::setCameraFovs(const IDs& camera_ids, const std::vector<float>& fovs)
     {
         // Create message for AirSim
-        airsim_interfaces::msg::CameraFovCmd msg;
+        flychams_api::msg::CameraFovCmd msg;
         msg.camera_names = camera_ids;
         msg.fovs = fovs;
 

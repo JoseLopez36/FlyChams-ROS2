@@ -9,6 +9,7 @@ endif()
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(flychams_common REQUIRED)
+find_package(flychams_api REQUIRED)
 
 # Create coordinator library
 set(COORD_SRC
@@ -27,7 +28,7 @@ target_include_directories(${PROJECT_NAME} PUBLIC
 
 # Export dependencies
 ament_target_dependencies(${PROJECT_NAME}
-  rclcpp flychams_common
+  rclcpp flychams_common flychams_api
 )
 
 # Link to required libraries
@@ -38,22 +39,22 @@ target_link_libraries(${PROJECT_NAME}
 # Create executable for element registrator node
 add_executable(element_registrator_node src/element_registrator_node.cpp)
 target_link_libraries(element_registrator_node ${PROJECT_NAME})
-ament_target_dependencies(element_registrator_node rclcpp flychams_common)
+ament_target_dependencies(element_registrator_node rclcpp flychams_common flychams_api)
 
 # Create executable for target clustering node
 add_executable(target_clustering_node src/target_clustering_node.cpp)
 target_link_libraries(target_clustering_node ${PROJECT_NAME})
-ament_target_dependencies(target_clustering_node rclcpp flychams_common)
+ament_target_dependencies(target_clustering_node rclcpp flychams_common flychams_api)
 
 # Create executable for cluster analysis node
 add_executable(cluster_analysis_node src/cluster_analysis_node.cpp)
 target_link_libraries(cluster_analysis_node ${PROJECT_NAME})
-ament_target_dependencies(cluster_analysis_node rclcpp flychams_common)
+ament_target_dependencies(cluster_analysis_node rclcpp flychams_common flychams_api)
 
 # Create executable for agent assignment node
 add_executable(agent_assignment_node src/agent_assignment_node.cpp)
 target_link_libraries(agent_assignment_node ${PROJECT_NAME})
-ament_target_dependencies(agent_assignment_node rclcpp flychams_common)
+ament_target_dependencies(agent_assignment_node rclcpp flychams_common flychams_api)
 
 # Install targets and headers
 install(TARGETS ${PROJECT_NAME}
@@ -85,6 +86,7 @@ ament_export_targets(${PROJECT_NAME} HAS_LIBRARY_TARGET)
 ament_export_dependencies(
   rclcpp
   flychams_common
+  flychams_api
 )
 ament_export_libraries(${PROJECT_NAME})
 ament_export_include_directories(include)

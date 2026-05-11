@@ -1,9 +1,9 @@
 #pragma once
 
-// AirSim interfaces includes
-#include <airsim_interfaces/msg/gimbal_angle_cmd.hpp>
-#include <airsim_interfaces/msg/camera_fov_cmd.hpp>
-#include <airsim_interfaces/msg/camera_orientation.hpp>
+// FlyChams API includes
+#include <flychams_api/msg/gimbal_angle_cmd.hpp>
+#include <flychams_api/msg/camera_fov_cmd.hpp>
+#include <flychams_api/msg/camera_orientation.hpp>
 
 // Hardware includes
 #include "flychams_agent/camera/siyi_a8_mini.hpp"
@@ -43,7 +43,7 @@ namespace flychams::agent
         using SharedPtr = std::shared_ptr<CameraCommunication>;
 
     public: // Camera state methods
-        core::SubscriberPtr<airsim_interfaces::msg::CameraOrientation> subscribeCameraOrientation(const std::function<void(const airsim_interfaces::msg::CameraOrientation::SharedPtr)>& callback, const rclcpp::SubscriptionOptions& options = rclcpp::SubscriptionOptions());
+        core::SubscriberPtr<flychams_api::msg::CameraOrientation> subscribeCameraOrientation(const std::function<void(const flychams_api::msg::CameraOrientation::SharedPtr)>& callback, const rclcpp::SubscriptionOptions& options = rclcpp::SubscriptionOptions());
 
     public: // Camera control methods
         void setGimbalOrientations(const core::IDs& camera_ids, const std::vector<core::QuaternionMsg>& quaternions);
@@ -58,8 +58,8 @@ namespace flychams::agent
         core::NodePtr node_;
 
         // Publishers
-        core::PublisherPtr<airsim_interfaces::msg::GimbalAngleCmd> gimbal_angle_cmd_pub_;
-        core::PublisherPtr<airsim_interfaces::msg::CameraFovCmd> camera_fov_cmd_pub_;
+        core::PublisherPtr<flychams_api::msg::GimbalAngleCmd> gimbal_angle_cmd_pub_;
+        core::PublisherPtr<flychams_api::msg::CameraFovCmd> camera_fov_cmd_pub_;
 
         // Hardware drivers
         std::map<core::ID, std::shared_ptr<SiyiA8Mini>> hardware_drivers_;

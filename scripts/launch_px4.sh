@@ -8,40 +8,7 @@ if [ -z "$AGENT_IDX" ]; then
     exit 1
 fi
 
-CONTAINER_NAME="flychams-px4-${AGENT_IDX}"
 DETACH="${DETACH:-false}"
 
-[ "$DETACH" = "true" ] && RUN_FLAGS="--rm -d" || RUN_FLAGS="--rm -it"
-
-# PX4 Docker repository
-PX4_DOCKER_REPO="px4io/px4-dev-nuttx-focal:2021-04-29"
-
-# Create cache directory
-CCACHE_DIR=${HOME}/.ccache
-mkdir -p "${CCACHE_DIR}"
-
-# Command to run
-CMD="PX4_SIM_HOSTNAME=172.17.0.1 PX4_SIM_MODEL=iris ${FLYCHAMS_PX4_PATH}/build/px4_sitl_default/bin/px4 -i ${AGENT_INDEX} -d ${FLYCHAMS_PX4_PATH}/ROMFS/px4fmu_common -s etc/init.d-posix/rcS"
-
-docker run ${RUN_FLAGS} \
-    --name "$CONTAINER_NAME" \
-	--privileged \
-	--network host \
-	-e AWS_ACCESS_KEY_ID \
-	-e AWS_SECRET_ACCESS_KEY \
-	-e BRANCH_NAME \
-	-e CCACHE_DIR="${CCACHE_DIR}" \
-	-e CI \
-	-e CODECOV_TOKEN \
-	-e COVERALLS_REPO_TOKEN \
-	-e LOCAL_USER_ID="$(id -u)" \
-	-e PX4_ASAN \
-	-e PX4_MSAN \
-	-e PX4_TSAN \
-	-e PX4_UBSAN \
-	-e TRAVIS_BRANCH \
-	-e TRAVIS_BUILD_ID \
-	-v ${CCACHE_DIR}:${CCACHE_DIR}:rw \
-	-v ${FLYCHAMS_PX4_PATH}:${FLYCHAMS_PX4_PATH}:rw \
-	-w "${FLYCHAMS_PX4_PATH}" \
-	${PX4_DOCKER_REPO} /bin/bash -c "$CMD"
+CMD="PX4_SIM_HOSTNAME=172.17.0.1 PX4_SIM_MODEL=iris ${FLYCHAMS_PX4_PATH}/build/px4_sitl_default/bin/px4 -i ${AGENT_IDX} -d ${FLYCHAMS_PX4_PATH}/ROMFS/px4fmu_common -s etc/init.d-posix/rcS" \
+    DETACH="$DETACH" "$SCRIPT_DIR/docker/run_px4.sh" "$AGENT_IDX"

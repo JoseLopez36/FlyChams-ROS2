@@ -37,9 +37,9 @@ namespace flychams::agent
         struct Agent
         {
             // Subscribers
-            core::SubscriberPtr<airsim_interfaces::msg::CameraOrientation> camera_orientation_sub;
+            core::SubscriberPtr<flychams_api::msg::CameraOrientation> camera_orientation_sub;
             // Data
-            airsim_interfaces::msg::CameraOrientation::SharedPtr last_camera_orientation;
+            flychams_api::msg::CameraOrientation::SharedPtr last_camera_orientation;
             // Constructor
             Agent()
                 : camera_orientation_sub(), last_camera_orientation()
@@ -58,7 +58,7 @@ namespace flychams::agent
         CameraCommunication::SharedPtr camera_communication_;
 
     private: // Callbacks
-        void cameraOrientationCallback(const airsim_interfaces::msg::CameraOrientation::SharedPtr msg);
+        void cameraOrientationCallback(const flychams_api::msg::CameraOrientation::SharedPtr msg);
 
     private: // Frames creation
         void createCameraOpticalFrame(const core::ID camera_id);

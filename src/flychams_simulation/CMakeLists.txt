@@ -10,6 +10,7 @@ find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(airsim_interfaces REQUIRED)
 find_package(flychams_common REQUIRED)
+find_package(flychams_api REQUIRED)
 
 # Create simulation library
 set(SIMULATION_SRC
@@ -27,7 +28,7 @@ target_include_directories(${PROJECT_NAME} PUBLIC
 
 # Export dependencies
 ament_target_dependencies(${PROJECT_NAME}
-  rclcpp airsim_interfaces flychams_common
+  rclcpp airsim_interfaces flychams_common flychams_api
 )
 
 # Link to required libraries
@@ -38,17 +39,17 @@ target_link_libraries(${PROJECT_NAME}
 # Create executable for simulation GUI node
 add_executable(simulation_gui_node src/simulation_gui_node.cpp)
 target_link_libraries(simulation_gui_node ${PROJECT_NAME})
-ament_target_dependencies(simulation_gui_node rclcpp airsim_interfaces flychams_common)
+ament_target_dependencies(simulation_gui_node rclcpp airsim_interfaces flychams_common flychams_api)
 
 # Create executable for target state node
 add_executable(target_state_node src/target_state_node.cpp)
 target_link_libraries(target_state_node ${PROJECT_NAME})
-ament_target_dependencies(target_state_node rclcpp flychams_common)
+ament_target_dependencies(target_state_node rclcpp flychams_common flychams_api)
 
 # Create executable for target control node
 add_executable(target_control_node src/target_control_node.cpp)
 target_link_libraries(target_control_node ${PROJECT_NAME})
-ament_target_dependencies(target_control_node rclcpp airsim_interfaces flychams_common)
+ament_target_dependencies(target_control_node rclcpp airsim_interfaces flychams_common flychams_api)
 
 # Install targets and headers
 install(TARGETS ${PROJECT_NAME}
@@ -81,6 +82,7 @@ ament_export_dependencies(
   rclcpp
   airsim_interfaces
   flychams_common
+  flychams_api
 )
 ament_export_libraries(${PROJECT_NAME})
 ament_export_include_directories(include)

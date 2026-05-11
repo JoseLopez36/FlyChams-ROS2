@@ -12,10 +12,7 @@ find_package(rclcpp REQUIRED)
 find_package(mavros REQUIRED)
 find_package(mavros_msgs REQUIRED)
 find_package(flychams_common REQUIRED)
-
-find_package(PkgConfig REQUIRED)
-pkg_check_modules(GST REQUIRED gstreamer-1.0 gstreamer-base-1.0 gstreamer-app-1.0 gstreamer-video-1.0)
-pkg_check_modules(GLIB REQUIRED glib-2.0 gobject-2.0)
+find_package(flychams_api REQUIRED)
 
 # Find GeographicLib
 set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH};/usr/share/cmake/geographiclib")
@@ -43,72 +40,68 @@ target_include_directories(${PROJECT_NAME} PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   $<INSTALL_INTERFACE:include>
   ${GeographicLib_INCLUDE_DIRS}
-  ${GST_INCLUDE_DIRS}
-  ${GLIB_INCLUDE_DIRS}
 )
 
 # Export dependencies
 ament_target_dependencies(${PROJECT_NAME}
-  rclcpp mavros mavros_msgs flychams_common
+  rclcpp mavros mavros_msgs flychams_common flychams_api
 )
 
 # Link to required libraries
 target_link_libraries(${PROJECT_NAME}
   rclcpp::rclcpp
   ${GeographicLib_LIBRARIES}
-  ${GST_LIBRARIES}
-  ${GLIB_LIBRARIES}
 )
 
 # Create executable for mavros manager node
 add_executable(mavros_manager_node src/mavros_manager_node.cpp)
 target_link_libraries(mavros_manager_node ${PROJECT_NAME})
-ament_target_dependencies(mavros_manager_node rclcpp mavros_msgs flychams_common)
+ament_target_dependencies(mavros_manager_node rclcpp mavros_msgs flychams_common flychams_api)
 
 # Create executable for drone frames node
 add_executable(drone_frames_node src/drone_frames_node.cpp)
 target_link_libraries(drone_frames_node ${PROJECT_NAME})
-ament_target_dependencies(drone_frames_node rclcpp mavros_msgs flychams_common)
+ament_target_dependencies(drone_frames_node rclcpp mavros_msgs flychams_common flychams_api)
 
 # Create executable for drone state node
 add_executable(drone_state_node src/drone_state_node.cpp)
 target_link_libraries(drone_state_node ${PROJECT_NAME})
-ament_target_dependencies(drone_state_node rclcpp mavros_msgs flychams_common)
+ament_target_dependencies(drone_state_node rclcpp mavros_msgs flychams_common flychams_api)
 
 # Create executable for drone control node
 add_executable(drone_control_node src/drone_control_node.cpp)
 target_link_libraries(drone_control_node ${PROJECT_NAME})
-ament_target_dependencies(drone_control_node rclcpp mavros_msgs flychams_common)
+ament_target_dependencies(drone_control_node rclcpp mavros_msgs flychams_common flychams_api)
 
 # Create executable for camera frames node
 add_executable(camera_frames_node src/camera_frames_node.cpp)
 target_link_libraries(camera_frames_node ${PROJECT_NAME})
-ament_target_dependencies(camera_frames_node rclcpp flychams_common)
+ament_target_dependencies(camera_frames_node rclcpp flychams_common flychams_api)
 
 # Create executable for camera control node
 add_executable(camera_control_node src/camera_control_node.cpp)
 target_link_libraries(camera_control_node ${PROJECT_NAME})
-ament_target_dependencies(camera_control_node rclcpp flychams_common)
+ament_target_dependencies(camera_control_node rclcpp flychams_common flychams_api)
 
 # Create executable for agent analysis node
 add_executable(agent_analysis_node src/agent_analysis_node.cpp)
 target_link_libraries(agent_analysis_node ${PROJECT_NAME})
-ament_target_dependencies(agent_analysis_node rclcpp flychams_common)
+ament_target_dependencies(agent_analysis_node rclcpp flychams_common flychams_api)
 
 # Create executable for agent positioning node
 add_executable(agent_positioning_node src/agent_positioning_node.cpp)
 target_link_libraries(agent_positioning_node ${PROJECT_NAME})
-ament_target_dependencies(agent_positioning_node rclcpp flychams_common)
+ament_target_dependencies(agent_positioning_node rclcpp flychams_common flychams_api)
 
 # Create executable for agent tracking node
 add_executable(agent_tracking_node src/agent_tracking_node.cpp)
 target_link_libraries(agent_tracking_node ${PROJECT_NAME})
-ament_target_dependencies(agent_tracking_node rclcpp flychams_common)
+ament_target_dependencies(agent_tracking_node rclcpp flychams_common flychams_api)
 
 # Create executable for agent stream node
 add_executable(agent_stream_node src/agent_stream_node.cpp)
 target_link_libraries(agent_stream_node ${PROJECT_NAME})
-ament_target_dependencies(agent_stream_node rclcpp flychams_common)
+ament_target_dependencies(agent_stream_node rclcpp flychams_common flychams_api)
 
 # Install Python package
 ament_python_install_package(${PROJECT_NAME})
@@ -156,6 +149,7 @@ ament_export_dependencies(
   mavros
   mavros_msgs
   flychams_common
+  flychams_api
 )
 ament_export_libraries(${PROJECT_NAME})
 ament_export_include_directories(include)

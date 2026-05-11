@@ -67,7 +67,7 @@ namespace flychams::agent
     // CALLBACKS: Callback functions
     // ════════════════════════════════════════════════════════════════════════════
 
-    void CameraFrames::cameraOrientationCallback(const airsim_interfaces::msg::CameraOrientation::SharedPtr msg)
+    void CameraFrames::cameraOrientationCallback(const flychams_api::msg::CameraOrientation::SharedPtr msg)
     {
         // Store last camera orientation
         agent_.last_camera_orientation = msg;

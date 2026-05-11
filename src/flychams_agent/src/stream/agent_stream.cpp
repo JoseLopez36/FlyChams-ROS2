@@ -69,7 +69,7 @@ namespace flychams::agent
         const std::string pipeline_str = createPipeline(gpu_type_);
 
         // Initialize GStreamer
-        gst_init(nullptr, nullptr);
+        // gst_init(nullptr, nullptr);
 
         // Start pipeline
         startStream(pipeline_str);
@@ -121,19 +121,19 @@ namespace flychams::agent
                 }
 
                 // Update videocrop properties
-                if (i < croppers_.size() && croppers_[i] != nullptr)
-                {
-                    g_object_set(croppers_[i],
-                        "left", left,
-                        "right", right,
-                        "top", top,
-                        "bottom", bottom,
-                        NULL);
-                }
-                else
-                {
-                    RCLCPP_ERROR(node_->get_logger(), "Agent stream: Crop element %zu is not available", i);
-                }
+                // if (i < croppers_.size() && croppers_[i] != nullptr)
+                // {
+                //     g_object_set(croppers_[i],
+                //         "left", left,
+                //         "right", right,
+                //         "top", top,
+                //         "bottom", bottom,
+                //         NULL);
+                // }
+                // else
+                // {
+                //     RCLCPP_ERROR(node_->get_logger(), "Agent stream: Crop element %zu is not available", i);
+                // }
             }
         }
     }
@@ -232,17 +232,17 @@ namespace flychams::agent
 
     std::string AgentStream::detectGpuType()
     {
-        GstRegistry* registry = gst_registry_get();
+        // GstRegistry* registry = gst_registry_get();
 
-        if (gst_registry_find_feature(registry, "nvh265enc", GST_TYPE_ELEMENT_FACTORY))
-        {
-            return "nvidia";
-        }
+        // if (gst_registry_find_feature(registry, "nvh265enc", GST_TYPE_ELEMENT_FACTORY))
+        // {
+        //     return "nvidia";
+        // }
 
-        if (gst_registry_find_feature(registry, "vah265enc", GST_TYPE_ELEMENT_FACTORY))
-        {
-            return "amd";
-        }
+        // if (gst_registry_find_feature(registry, "vah265enc", GST_TYPE_ELEMENT_FACTORY))
+        // {
+        //     return "amd";
+        // }
 
         RCLCPP_WARN(node_->get_logger(), "No hardware acceleration found. Defaulting to NVIDIA (NVENC) pipeline");
         return "nvidia";
@@ -339,37 +339,37 @@ namespace flychams::agent
         stream_thread_ = std::thread([this, pipeline_str]() {
             RCLCPP_INFO(node_->get_logger(), "Launching pipeline: %s", pipeline_str.c_str());
 
-            GError* error = nullptr;
-            pipeline_ = gst_parse_launch(pipeline_str.c_str(), &error);
+            // GError* error = nullptr;
+            // pipeline_ = gst_parse_launch(pipeline_str.c_str(), &error);
 
-            if (error)
-            {
-                RCLCPP_ERROR(node_->get_logger(), "Failed to parse pipeline: %s", error->message);
-                g_error_free(error);
-                return;
-            }
+            // if (error)
+            // {
+            //     RCLCPP_ERROR(node_->get_logger(), "Failed to parse pipeline: %s", error->message);
+            //     // g_error_free(error);
+            //     // return;
+            // }
 
             // Retrieve crop elements
-            croppers_.clear();
+            // croppers_.clear();
             for (size_t i = 0; i < interface_stream_infos_.size(); ++i)
             {
                 std::string name = "crop_" + std::to_string(i);
-                GstElement* cropper = gst_bin_get_by_name(GST_BIN(pipeline_), name.c_str());
-                if (cropper)
-                {
-                    croppers_.push_back(cropper);
-                }
-                else
-                {
-                    croppers_.push_back(nullptr);
-                    RCLCPP_ERROR(node_->get_logger(), "Could not find element named '%s'", name.c_str());
-                }
+                // GstElement* cropper = gst_bin_get_by_name(GST_BIN(pipeline_), name.c_str());
+                // if (cropper)
+                // {
+                //     croppers_.push_back(cropper);
+                // }
+                // else
+                // {
+                //     // croppers_.push_back(nullptr);
+                //     RCLCPP_ERROR(node_->get_logger(), "Could not find element named '%s'", name.c_str());
+                // }
             }
 
             // Start pipeline
             running_ = true;
             RCLCPP_INFO(node_->get_logger(), "Pipeline started");
-            gst_element_set_state(pipeline_, GST_STATE_PLAYING);
+            // gst_element_set_state(pipeline_, GST_STATE_PLAYING);
             });
     }
 
@@ -385,21 +385,21 @@ namespace flychams::agent
         running_ = false;
 
         // Clear crops references
-        for (auto* cropper : croppers_)
-        {
-            if (cropper)
-            {
-                gst_object_unref(cropper);
-            }
-        }
-        croppers_.clear();
+        // for (auto* cropper : croppers_)
+        // {
+        //     if (cropper)
+        //     {
+        //         // gst_object_unref(cropper);
+        //     }
+        // }
+        // croppers_.clear();
 
-        if (pipeline_)
-        {
-            gst_element_set_state(pipeline_, GST_STATE_NULL);
-            gst_object_unref(pipeline_);
-            pipeline_ = nullptr;
-        }
+        // if (pipeline_)
+        // {
+        //     gst_element_set_state(pipeline_, GST_STATE_NULL);
+        //     gst_object_unref(pipeline_);
+        //     pipeline_ = nullptr;
+        // }
         RCLCPP_INFO(node_->get_logger(), "Pipeline stopped");
     }
 

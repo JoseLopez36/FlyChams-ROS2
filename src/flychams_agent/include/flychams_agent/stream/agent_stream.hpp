@@ -1,7 +1,7 @@
 #pragma once
 
 // GStreamer includes
-#include <gst/gst.h>
+// #include <gst/gst.h>
 
 // Standard includes
 #include <thread>
@@ -70,8 +70,8 @@ namespace flychams::agent
         int source_height_;
 
     private: // Data
-        GstElement* pipeline_ = nullptr;
-        std::vector<GstElement*> croppers_;
+        // GstElement* pipeline_ = nullptr;
+        // std::vector<GstElement*> croppers_;
         std::atomic<bool> running_ = false;
         std::thread stream_thread_;
 

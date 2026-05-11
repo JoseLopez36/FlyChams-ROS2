@@ -32,6 +32,10 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   "msg/ClusterAssignment.msg"
   "msg/ClusterGeometry.msg"
   "msg/ClusterMetrics.msg"
+  # External messages (AirSim)
+  "msg/GimbalAngleCmd.msg"
+  "msg/CameraFovCmd.msg"
+  "msg/CameraOrientation.msg"
   DEPENDENCIES std_msgs geometry_msgs
 )
 
