@@ -93,7 +93,26 @@ Containers started with `--rm` are removed automatically on stop.
 
 ---
 
-## 5. Environment Variables
+## 5. Logs
+
+Tail stdout of all running FlyChams containers simultaneously, each line prefixed with its container name:
+
+```bash
+scripts/logs.sh
+```
+
+To inspect a single container:
+
+```bash
+docker logs -f flychams-coordinator
+docker logs -f flychams-simulation
+docker logs -f flychams-agent-AGENT00
+docker logs -f flychams-px4-0
+```
+
+---
+
+## 6. Environment Variables
 
 All containers inherit the following from the host (with defaults):
 
