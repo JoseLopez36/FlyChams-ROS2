@@ -81,7 +81,35 @@ Each script sources `install/setup.bash` inside the container before invoking `r
 
 ---
 
-## 4. Stop
+## 4. Operator
+
+Foxglove Bridge exposes all ROS2 topics over a WebSocket so [Foxglove Studio](https://foxglove.dev/studio) can connect remotely or locally.
+
+### Build
+
+```bash
+scripts/docker/build_operator.sh
+```
+
+### Launch
+
+```bash
+# Interactive (default port 8765)
+scripts/launch_operator.sh
+
+# Detached with custom port
+DETACH=true FOXGLOVE_PORT=8765 scripts/launch_operator.sh
+```
+
+### Connect from Foxglove Studio
+
+Open Foxglove Studio → **Open connection** → **Foxglove WebSocket** → `ws://<host-ip>:8765`.
+
+A baseline layout is provided at `foxglove/layout.json`. Import it via **File → Import layout from file**.
+
+---
+
+## 5. Stop
 
 Stop all running FlyChams containers (coordinator, simulation, agents, PX4):
 
@@ -93,7 +121,7 @@ Containers started with `--rm` are removed automatically on stop.
 
 ---
 
-## 5. Logs
+## 6. Logs
 
 Tail stdout of all running FlyChams containers simultaneously, each line prefixed with its container name:
 
@@ -112,7 +140,7 @@ docker logs -f flychams-px4-0
 
 ---
 
-## 6. Environment Variables
+## 7. Environment Variables
 
 All containers inherit the following from the host (with defaults):
 
@@ -121,6 +149,7 @@ All containers inherit the following from the host (with defaults):
 | `ROS_DOMAIN_ID` | `0` | ROS2 DDS domain |
 | `FASTDDS_BUILTIN_TRANSPORTS` | `UDPv4` | FastDDS transport |
 | `FLYCHAMS_PX4_PATH` | — | Absolute path to the PX4 source tree (required for `launch_px4.sh`) |
+| `FOXGLOVE_PORT` | `8765` | WebSocket port for Foxglove Bridge |
 
 Override on the command line:
 
@@ -130,7 +159,7 @@ ROS_DOMAIN_ID=5 scripts/flychams.py sim
 
 ---
 
-## 5. Configuration
+## 8. Configuration
 
 | File | Purpose |
 |---|---|

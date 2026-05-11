@@ -9,7 +9,8 @@ ros:humble-ros-base
   └── flychams-base              (docker/base.Dockerfile)
         ├── flychams-coordinator (docker/coordinator.Dockerfile)
         ├── flychams-simulation  (docker/simulation.Dockerfile)
-        └── flychams-agent       (docker/agent.Dockerfile)
+        ├── flychams-agent       (docker/agent.Dockerfile)
+        └── flychams-operator    (docker/operator.Dockerfile)
 ```
 
 ## Images
@@ -39,6 +40,12 @@ Extends `flychams-base` with agent-specific tooling.
 - **GeographicLib**: Datasets for MAVROS coordinate transformations.
 - **Ultralytics**: YOLO models via `ultralytics` + `lapx`.
 
+### flychams-operator
+
+Extends `flychams-base` with Foxglove Bridge for remote monitoring via Foxglove Studio.
+
+- **Foxglove Bridge**: `ros-humble-foxglove-bridge` — exposes all ROS2 topics over a WebSocket on port `8765`.
+
 ### px4-dev-nuttx-focal (external)
 
 Required for PX4 SITL simulation. Not built locally — pulled from Docker Hub.
@@ -67,6 +74,7 @@ scripts/docker/build_base.sh         # flychams-base
 scripts/docker/build_coordinator.sh  # flychams-coordinator
 scripts/docker/build_simulation.sh   # flychams-simulation
 scripts/docker/build_agent.sh        # flychams-agent
+scripts/docker/build_operator.sh     # flychams-operator
 ```
 
 ### Run
@@ -77,6 +85,7 @@ Start containers in interactive mode. Existing containers with the same name are
 scripts/docker/run_coordinator.sh
 scripts/docker/run_simulation.sh
 scripts/docker/run_agent.sh AGENT00
+scripts/docker/run_operator.sh
 ```
 
 All containers use:
@@ -85,7 +94,7 @@ All containers use:
 - Project root mounted at `/home/testuser/FlyChams-ROS2`.
 - `ROS_DOMAIN_ID` and `FASTDDS_BUILTIN_TRANSPORTS` forwarded from the host.
 
-The agent container additionally receives `AGENT_ID` as an environment variable.
+The agent container additionally receives `AGENT_ID` as an environment variable. The operator container does not require GPU access and omits `--runtime nvidia`.
 
 ### Exec
 
