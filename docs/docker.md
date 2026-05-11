@@ -39,6 +39,17 @@ Extends `flychams-base` with agent-specific tooling.
 - **GeographicLib**: Datasets for MAVROS coordinate transformations.
 - **Ultralytics**: YOLO models via `ultralytics` + `lapx`.
 
+### px4-dev-nuttx-focal (external)
+
+Required for PX4 SITL simulation. Not built locally — pulled from Docker Hub.
+
+- **Image**: `px4io/px4-dev-nuttx-focal:2021-04-29`
+- **Purpose**: Provides the NuttX toolchain used to compile and run PX4 firmware in software-in-the-loop (SITL) mode.
+
+```bash
+docker pull px4io/px4-dev-nuttx-focal:2021-04-29
+```
+
 ## Scripts
 
 All scripts live in `scripts/` and are run from the project root.

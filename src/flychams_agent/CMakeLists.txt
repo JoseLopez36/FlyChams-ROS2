@@ -11,7 +11,6 @@ find_package(ament_cmake_python REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(mavros REQUIRED)
 find_package(mavros_msgs REQUIRED)
-find_package(airsim_interfaces REQUIRED)
 find_package(flychams_common REQUIRED)
 
 find_package(PkgConfig REQUIRED)
@@ -50,7 +49,7 @@ target_include_directories(${PROJECT_NAME} PUBLIC
 
 # Export dependencies
 ament_target_dependencies(${PROJECT_NAME}
-  rclcpp mavros mavros_msgs airsim_interfaces flychams_common
+  rclcpp mavros mavros_msgs flychams_common
 )
 
 # Link to required libraries
@@ -84,12 +83,12 @@ ament_target_dependencies(drone_control_node rclcpp mavros_msgs flychams_common)
 # Create executable for camera frames node
 add_executable(camera_frames_node src/camera_frames_node.cpp)
 target_link_libraries(camera_frames_node ${PROJECT_NAME})
-ament_target_dependencies(camera_frames_node rclcpp airsim_interfaces flychams_common)
+ament_target_dependencies(camera_frames_node rclcpp flychams_common)
 
 # Create executable for camera control node
 add_executable(camera_control_node src/camera_control_node.cpp)
 target_link_libraries(camera_control_node ${PROJECT_NAME})
-ament_target_dependencies(camera_control_node rclcpp airsim_interfaces flychams_common)
+ament_target_dependencies(camera_control_node rclcpp flychams_common)
 
 # Create executable for agent analysis node
 add_executable(agent_analysis_node src/agent_analysis_node.cpp)
@@ -156,7 +155,6 @@ ament_export_dependencies(
   rclpy
   mavros
   mavros_msgs
-  airsim_interfaces
   flychams_common
 )
 ament_export_libraries(${PROJECT_NAME})

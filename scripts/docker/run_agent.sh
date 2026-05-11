@@ -22,7 +22,7 @@ if docker ps -a --format '{{.Names}}' | grep -q "^${CONTAINER_NAME}$"; then
 fi
 
 echo "Starting agent container: $CONTAINER_NAME"
-docker run --rm -it \
+docker run --rm -d \
     --name "$CONTAINER_NAME" \
     --privileged \
     --network host \

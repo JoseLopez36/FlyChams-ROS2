@@ -19,7 +19,6 @@
   <depend>mavros</depend>
   <depend>mavros_msgs</depend>
   <depend>geographiclib</depend>
-  <depend>airsim_interfaces</depend>
   <depend>flychams_common</depend>
 
   <!-- Export -->

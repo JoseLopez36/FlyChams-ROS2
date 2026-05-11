@@ -8,10 +8,10 @@
 
     # Path settings
     path:
-      config_spreadsheet_path: "/home/jose-lopez/Documents/FlyChams-ROS2/config/Configuration-Multi-Target-Heterogeneus.xlsx"
-      mission_settings_path: "/home/jose-lopez/Documents/FlyChams-ROS2/config/generated/mission.yaml"
-      airsim_settings_path: "/home/jose-lopez/Documents/FlyChams-ROS2/config/generated/airsim.json"
-      trajectory_root: "/home/jose-lopez/Documents/FlyChams-ROS2/config/trajectories"
+      config_spreadsheet_path: "/home/testuser/FlyChams-ROS2/src/flychams_common/config/Configuration-Multi-Target-Heterogeneus.xlsx"
+      mission_settings_path: "/home/testuser/FlyChams-ROS2/src/flychams_common/config/generated/mission.yaml"
+      airsim_settings_path: "/home/testuser/FlyChams-ROS2/src/flychams_common/config/generated/airsim.json"
+      trajectory_root: "/home/testuser/FlyChams-ROS2/src/flychams_common/config/trajectories"
       
     # GUI settings
     gui:

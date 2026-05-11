@@ -8,23 +8,37 @@ import os
 import yaml
 
 def generate_launch_description():
+    # Resolve config directories
+    common_core_dir = os.path.join(
+        get_package_share_directory('flychams_common'), 'config', 'core')
+    common_generated_dir = os.path.join(
+        get_package_share_directory('flychams_common'), 'config', 'generated')
+    pkg_config_dir = os.path.join(
+        get_package_share_directory('flychams_simulation'), 'config')
+
     # Declare launch arguments
-    config_dir = DeclareLaunchArgument(
-        'config_dir',
-        default_value=os.path.join(
-            get_package_share_directory('flychams_simulation'), 'config'),
-        description='Path to simulation configuration directory'
+    mission_yaml = DeclareLaunchArgument(
+        'mission_yaml',
+        default_value=os.path.join(common_generated_dir, 'mission.yaml'),
+        description='Path to generated mission YAML'
     )
 
     # Load launch configuration
-    launch_config_path = os.path.join(
-        get_package_share_directory('flychams_simulation'), 'config', 'launch.yaml')
-    
+    launch_config_path = os.path.join(pkg_config_dir, 'launch.yaml')
     with open(launch_config_path, 'r') as f:
         launch_config = yaml.safe_load(f)
 
     node_allowlist = launch_config.get('node_allowlist', [])
     node_log_levels = launch_config.get('node_log_levels', {})
+
+    # Common parameter files loaded by every node (in merge order)
+    common_params = [
+        os.path.join(common_core_dir, 'system.yaml'),
+        os.path.join(common_core_dir, 'topics.yaml'),
+        os.path.join(common_core_dir, 'frames.yaml'),
+        LaunchConfiguration('mission_yaml'),
+        os.path.join(pkg_config_dir, 'nodes.yaml'),
+    ]
 
     # Define node configurations
     node_configs = {
@@ -51,16 +65,16 @@ def generate_launch_description():
     for node_name in node_allowlist:
         if node_name in node_configs:
             config = node_configs[node_name]
-            
+
             # Set log level if specified
             log_level = node_log_levels.get(node_name, 'info')
-            
+
             node = Node(
                 package='flychams_simulation',
                 executable=config['executable'],
                 name=config['name'],
                 parameters=[
-                    LaunchConfiguration('config_dir'),
+                    *common_params,
                     {'log_level': log_level}
                 ],
                 output='screen',
@@ -69,6 +83,6 @@ def generate_launch_description():
             nodes.append(node)
 
     return LaunchDescription([
-        config_dir,
+        mission_yaml,
         *nodes
     ])

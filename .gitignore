@@ -4,20 +4,12 @@ config/generated/
 # Ignore ROS2 files
 build/
 install/
-build-docker/
-install-docker/
 log/
-
-# Ignore dataset files
-dataset/
 
 # Ignore IDE files
 .vscode/
 .cursor/
+.windsurf/
 
 # Ignore python cache
 __pycache__/
-
-# Pixi environments
-.pixi/*
-!.pixi/config.toml
