@@ -1,1 +1,0 @@
-"""FlyChams Operator Python package"""

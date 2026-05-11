@@ -1,0 +1,1023 @@
+{
+    "SettingsVersion": 2.0,
+    "SimMode": "Multirotor",
+    "ClockType": "SteppableClock",
+    "ClockSpeed": 1.0,
+    "ViewMode": "NoDisplay",
+    "LogMessagesVisible": false,
+    "ApiServerPort": 41451,
+    "PawnPaths": {
+        "FlyChamsQuadcopter": {
+            "PawnBP": "Class'/AirSim/Blueprints/BP_FlyChamsQuadcopter.BP_FlyChamsQuadcopter_C'"
+        },
+        "FlyChamsHexacopter": {
+            "PawnBP": "Class'/AirSim/Blueprints/BP_FlyChamsHexacopter.BP_FlyChamsHexacopter_C'"
+        }
+    },
+    "OriginGeopoint": {
+        "Latitude": 35.98655700683594,
+        "Longitude": -5.89301061630249,
+        "Altitude": 0.0
+    },
+    "TimeOfDay": {
+        "Enabled": true,
+        "StartDateTime": "2024-12-13 16:30:0",
+        "CelestialClockSpeed": 1,
+        "StartDateTimeDst": false,
+        "UpdateIntervalSecs": 1
+    },
+    "Wind": {
+        "X": 3.0,
+        "Y": -1.5,
+        "Z": -0.0
+    },
+    "CameraDefaults": {
+        "CaptureSettings": [
+            {
+                "ImageType": 0,
+                "Width": 1920,
+                "Height": 1080,
+                "SensorWidth": 0.013199999928474426,
+                "SensorHeight": 0.007424999959766865,
+                "FOV_Degrees": 90,
+                "LumenGIEnable": false,
+                "LumenReflectionEnable": false,
+                "LumenFinalQuality": 0,
+                "LumenSceneDetail": 0,
+                "LumenSceneLightningDetail": 0
+            }
+        ]
+    },
+    "Vehicles": {
+        "AGENT00": {
+            "PawnPath": "FlyChamsQuadcopter",
+            "X": 10.0,
+            "Y": -0.0,
+            "Z": -0.0,
+            "Roll": 0.0,
+            "Pitch": -0.0,
+            "Yaw": -0.0,
+            "VehicleType": "PX4Multirotor",
+            "Model": "FlyChamsQuadcopter",
+            "UseSerial": false,
+            "LockStep": true,
+            "UseTcp": true,
+            "TcpPort": 4560,
+            "ControlIp": "remote",
+            "ControlPortLocal": 14540,
+            "ControlPortRemote": 14580,
+            "LocalHostIp": "172.17.0.1",
+            "Parameters": {
+                "MPC_TILTMAX_AIR": 10.0,
+                "MPC_XY_VEL_MAX": 3.5,
+                "NAV_RCL_ACT": 0,
+                "NAV_DLL_ACT": 0,
+                "COM_OBL_ACT": 1,
+                "LPE_LAT": 35.98655700683594,
+                "LPE_LON": -5.89301061630249
+            },
+            "Sensors": {
+                "Barometer": {
+                    "SensorType": 1,
+                    "Enabled": true,
+                    "PressureFactorSigma": 0.00018250000721309334,
+                    "UncorrelatedNoiseSigma": 8.0
+                },
+                "Imu": {
+                    "SensorType": 2,
+                    "Enabled": true,
+                    "GenerateNoise": true,
+                    "AngularRandomWalk": 0.800000011920929,
+                    "VelocityRandomWalk": 0.6000000238418579
+                },
+                "Gps": {
+                    "SensorType": 3,
+                    "Enabled": true,
+                    "EphInitial": 50.0,
+                    "EpvInitial": 50.0,
+                    "EphFinal": 2.0,
+                    "EpvFinal": 2.0
+                },
+                "Magnetometer": {
+                    "SensorType": 4,
+                    "Enabled": true,
+                    "NoiseSigma": 0.019999999552965164,
+                    "NoiseBias": 0.0
+                }
+            },
+            "Cameras": {
+                "MULTICAMERA00": {
+                    "CaptureSettings": [
+                        {
+                            "ImageType": 0,
+                            "Width": 1280,
+                            "Height": 720,
+                            "SensorWidth": 0.013199999928474426,
+                            "SensorHeight": 0.007424999959766865,
+                            "FOV_Degrees": 131.11209106445313,
+                            "K1": -0.029999999329447746,
+                            "K2": 0.0020000000949949026,
+                            "K3": 0.0,
+                            "P1": 0.0005000000237487257,
+                            "P2": -0.00039999998989515007,
+                            "LumenGIEnable": false,
+                            "LumenReflectionEnable": false,
+                            "LumenFinalQuality": 0,
+                            "LumenSceneDetail": 0,
+                            "LumenSceneLightningDetail": 0
+                        }
+                    ],
+                    "Gimbal": {
+                        "YawMin": -320.0,
+                        "PitchMin": -40.0,
+                        "RollMin": -20.0,
+                        "YawMax": 320.0,
+                        "PitchMax": 130.0,
+                        "RollMax": 20.0,
+                        "YawSpeed": 270.0,
+                        "PitchSpeed": 180.0,
+                        "RollSpeed": 180.0,
+                        "Roll": 0.0,
+                        "Pitch": 0.0,
+                        "Yaw": -90.0
+                    },
+                    "NoiseSettings": [
+                        {
+                            "Enabled": true,
+                            "ImageType": 0,
+                            "RandContrib": 0.0010000000474974513,
+                            "RandSpeed": 50000.0,
+                            "RandSize": 100.0,
+                            "RandDensity": 2,
+                            "HorzWaveContrib": 0.00039999998989515007,
+                            "HorzWaveStrength": 0.000699999975040555,
+                            "HorzWaveVertSize": 1.0,
+                            "HorzWaveScreenSize": 1.0,
+                            "HorzNoiseLinesContrib": 0.0007999999797903001,
+                            "HorzNoiseLinesDensityY": 9.999999747378752e-05,
+                            "HorzNoiseLinesDensityXY": 0.004000000189989805,
+                            "HorzDistortionContrib": 0.0,
+                            "HorzDistortionStrength": 0.0
+                        }
+                    ],
+                    "X": 0.0,
+                    "Y": -0.0,
+                    "Z": 0.05000000074505806,
+                    "Roll": 0.0,
+                    "Pitch": -90.0,
+                    "Yaw": 0.0,
+                    "EnableGimbal": true,
+                    "CameraVisible": true,
+                    "CameraScale": 0.699999988079071
+                },
+                "MULTICAMERA01": {
+                    "CaptureSettings": [
+                        {
+                            "ImageType": 0,
+                            "Width": 960,
+                            "Height": 540,
+                            "SensorWidth": 0.013199999928474426,
+                            "SensorHeight": 0.007424999959766865,
+                            "FOV_Degrees": 66.84962463378906,
+                            "K1": -0.029999999329447746,
+                            "K2": 0.0020000000949949026,
+                            "K3": 0.0,
+                            "P1": 0.0005000000237487257,
+                            "P2": -0.00039999998989515007,
+                            "LumenGIEnable": false,
+                            "LumenReflectionEnable": false,
+                            "LumenFinalQuality": 0,
+                            "LumenSceneDetail": 0,
+                            "LumenSceneLightningDetail": 0
+                        }
+                    ],
+                    "Gimbal": {
+                        "YawMin": -320.0,
+                        "PitchMin": -40.0,
+                        "RollMin": -20.0,
+                        "YawMax": 320.0,
+                        "PitchMax": 130.0,
+                        "RollMax": 20.0,
+                        "YawSpeed": 270.0,
+                        "PitchSpeed": 180.0,
+                        "RollSpeed": 180.0,
+                        "Roll": 0.0,
+                        "Pitch": 0.0,
+                        "Yaw": -0.0
+                    },
+                    "NoiseSettings": [
+                        {
+                            "Enabled": true,
+                            "ImageType": 0,
+                            "RandContrib": 0.0010000000474974513,
+                            "RandSpeed": 50000.0,
+                            "RandSize": 100.0,
+                            "RandDensity": 2,
+                            "HorzWaveContrib": 0.00039999998989515007,
+                            "HorzWaveStrength": 0.000699999975040555,
+                            "HorzWaveVertSize": 1.0,
+                            "HorzWaveScreenSize": 1.0,
+                            "HorzNoiseLinesContrib": 0.0007999999797903001,
+                            "HorzNoiseLinesDensityY": 9.999999747378752e-05,
+                            "HorzNoiseLinesDensityXY": 0.004000000189989805,
+                            "HorzDistortionContrib": 0.0,
+                            "HorzDistortionStrength": 0.0
+                        }
+                    ],
+                    "X": 0.30000001192092896,
+                    "Y": -0.0,
+                    "Z": 0.05000000074505806,
+                    "Roll": 0.0,
+                    "Pitch": -90.0,
+                    "Yaw": 0.0,
+                    "EnableGimbal": true,
+                    "CameraVisible": true,
+                    "CameraScale": 0.699999988079071
+                },
+                "MULTICAMERA02": {
+                    "CaptureSettings": [
+                        {
+                            "ImageType": 0,
+                            "Width": 960,
+                            "Height": 540,
+                            "SensorWidth": 0.013199999928474426,
+                            "SensorHeight": 0.007424999959766865,
+                            "FOV_Degrees": 66.84962463378906,
+                            "K1": -0.029999999329447746,
+                            "K2": 0.0020000000949949026,
+                            "K3": 0.0,
+                            "P1": 0.0005000000237487257,
+                            "P2": -0.00039999998989515007,
+                            "LumenGIEnable": false,
+                            "LumenReflectionEnable": false,
+                            "LumenFinalQuality": 0,
+                            "LumenSceneDetail": 0,
+                            "LumenSceneLightningDetail": 0
+                        }
+                    ],
+                    "Gimbal": {
+                        "YawMin": -320.0,
+                        "PitchMin": -40.0,
+                        "RollMin": -20.0,
+                        "YawMax": 320.0,
+                        "PitchMax": 130.0,
+                        "RollMax": 20.0,
+                        "YawSpeed": 270.0,
+                        "PitchSpeed": 180.0,
+                        "RollSpeed": 180.0,
+                        "Roll": 0.0,
+                        "Pitch": 0.0,
+                        "Yaw": -90.0
+                    },
+                    "NoiseSettings": [
+                        {
+                            "Enabled": true,
+                            "ImageType": 0,
+                            "RandContrib": 0.0010000000474974513,
+                            "RandSpeed": 50000.0,
+                            "RandSize": 100.0,
+                            "RandDensity": 2,
+                            "HorzWaveContrib": 0.00039999998989515007,
+                            "HorzWaveStrength": 0.000699999975040555,
+                            "HorzWaveVertSize": 1.0,
+                            "HorzWaveScreenSize": 1.0,
+                            "HorzNoiseLinesContrib": 0.0007999999797903001,
+                            "HorzNoiseLinesDensityY": 9.999999747378752e-05,
+                            "HorzNoiseLinesDensityXY": 0.004000000189989805,
+                            "HorzDistortionContrib": 0.0,
+                            "HorzDistortionStrength": 0.0
+                        }
+                    ],
+                    "X": 0.0,
+                    "Y": -0.30000001192092896,
+                    "Z": 0.05000000074505806,
+                    "Roll": 0.0,
+                    "Pitch": -90.0,
+                    "Yaw": 0.0,
+                    "EnableGimbal": true,
+                    "CameraVisible": true,
+                    "CameraScale": 0.699999988079071
+                },
+                "SCENARIOCAM": {
+                    "X": -80.0,
+                    "Y": 80.0,
+                    "Z": -70.0,
+                    "Roll": 0.0,
+                    "Pitch": -15.0,
+                    "Yaw": -45.0,
+                    "External": true
+                },
+                "AGENTCAM": {
+                    "X": -1.5,
+                    "Y": 1.5,
+                    "Z": -1.0,
+                    "Roll": 0.0,
+                    "Pitch": -33.33000183105469,
+                    "Yaw": -45.0
+                },
+                "PAYLOADCAM": {
+                    "X": -0.699999988079071,
+                    "Y": 0.699999988079071,
+                    "Z": 0.5,
+                    "Roll": 0.0,
+                    "Pitch": -0.0,
+                    "Yaw": -45.0
+                }
+            }
+        },
+        "AGENT01": {
+            "PawnPath": "FlyChamsQuadcopter",
+            "X": -10.0,
+            "Y": -0.0,
+            "Z": -0.0,
+            "Roll": 0.0,
+            "Pitch": -0.0,
+            "Yaw": -0.0,
+            "VehicleType": "PX4Multirotor",
+            "Model": "FlyChamsQuadcopter",
+            "UseSerial": false,
+            "LockStep": true,
+            "UseTcp": true,
+            "TcpPort": 4561,
+            "ControlIp": "remote",
+            "ControlPortLocal": 14541,
+            "ControlPortRemote": 14581,
+            "LocalHostIp": "172.17.0.1",
+            "Parameters": {
+                "MPC_TILTMAX_AIR": 10.0,
+                "MPC_XY_VEL_MAX": 3.5,
+                "NAV_RCL_ACT": 0,
+                "NAV_DLL_ACT": 0,
+                "COM_OBL_ACT": 1,
+                "LPE_LAT": 35.98655700683594,
+                "LPE_LON": -5.89301061630249
+            },
+            "Sensors": {
+                "Barometer": {
+                    "SensorType": 1,
+                    "Enabled": true,
+                    "PressureFactorSigma": 0.00018250000721309334,
+                    "UncorrelatedNoiseSigma": 8.0
+                },
+                "Imu": {
+                    "SensorType": 2,
+                    "Enabled": true,
+                    "GenerateNoise": true,
+                    "AngularRandomWalk": 0.800000011920929,
+                    "VelocityRandomWalk": 0.6000000238418579
+                },
+                "Gps": {
+                    "SensorType": 3,
+                    "Enabled": true,
+                    "EphInitial": 50.0,
+                    "EpvInitial": 50.0,
+                    "EphFinal": 2.0,
+                    "EpvFinal": 2.0
+                },
+                "Magnetometer": {
+                    "SensorType": 4,
+                    "Enabled": true,
+                    "NoiseSigma": 0.019999999552965164,
+                    "NoiseBias": 0.0
+                }
+            },
+            "Cameras": {
+                "MULTICAMERA03": {
+                    "CaptureSettings": [
+                        {
+                            "ImageType": 0,
+                            "Width": 1280,
+                            "Height": 720,
+                            "SensorWidth": 0.013199999928474426,
+                            "SensorHeight": 0.007424999959766865,
+                            "FOV_Degrees": 131.11209106445313,
+                            "K1": -0.029999999329447746,
+                            "K2": 0.0020000000949949026,
+                            "K3": 0.0,
+                            "P1": 0.0005000000237487257,
+                            "P2": -0.00039999998989515007,
+                            "LumenGIEnable": false,
+                            "LumenReflectionEnable": false,
+                            "LumenFinalQuality": 0,
+                            "LumenSceneDetail": 0,
+                            "LumenSceneLightningDetail": 0
+                        }
+                    ],
+                    "Gimbal": {
+                        "YawMin": -320.0,
+                        "PitchMin": -40.0,
+                        "RollMin": -20.0,
+                        "YawMax": 320.0,
+                        "PitchMax": 130.0,
+                        "RollMax": 20.0,
+                        "YawSpeed": 270.0,
+                        "PitchSpeed": 180.0,
+                        "RollSpeed": 180.0,
+                        "Roll": 0.0,
+                        "Pitch": 0.0,
+                        "Yaw": -90.0
+                    },
+                    "NoiseSettings": [
+                        {
+                            "Enabled": true,
+                            "ImageType": 0,
+                            "RandContrib": 0.0010000000474974513,
+                            "RandSpeed": 50000.0,
+                            "RandSize": 100.0,
+                            "RandDensity": 2,
+                            "HorzWaveContrib": 0.00039999998989515007,
+                            "HorzWaveStrength": 0.000699999975040555,
+                            "HorzWaveVertSize": 1.0,
+                            "HorzWaveScreenSize": 1.0,
+                            "HorzNoiseLinesContrib": 0.0007999999797903001,
+                            "HorzNoiseLinesDensityY": 9.999999747378752e-05,
+                            "HorzNoiseLinesDensityXY": 0.004000000189989805,
+                            "HorzDistortionContrib": 0.0,
+                            "HorzDistortionStrength": 0.0
+                        }
+                    ],
+                    "X": 0.0,
+                    "Y": -0.0,
+                    "Z": 0.05000000074505806,
+                    "Roll": 0.0,
+                    "Pitch": -90.0,
+                    "Yaw": 0.0,
+                    "EnableGimbal": true,
+                    "CameraVisible": true,
+                    "CameraScale": 0.699999988079071
+                },
+                "MULTICAMERA04": {
+                    "CaptureSettings": [
+                        {
+                            "ImageType": 0,
+                            "Width": 960,
+                            "Height": 540,
+                            "SensorWidth": 0.013199999928474426,
+                            "SensorHeight": 0.007424999959766865,
+                            "FOV_Degrees": 66.84962463378906,
+                            "K1": -0.029999999329447746,
+                            "K2": 0.0020000000949949026,
+                            "K3": 0.0,
+                            "P1": 0.0005000000237487257,
+                            "P2": -0.00039999998989515007,
+                            "LumenGIEnable": false,
+                            "LumenReflectionEnable": false,
+                            "LumenFinalQuality": 0,
+                            "LumenSceneDetail": 0,
+                            "LumenSceneLightningDetail": 0
+                        }
+                    ],
+                    "Gimbal": {
+                        "YawMin": -320.0,
+                        "PitchMin": -40.0,
+                        "RollMin": -20.0,
+                        "YawMax": 320.0,
+                        "PitchMax": 130.0,
+                        "RollMax": 20.0,
+                        "YawSpeed": 270.0,
+                        "PitchSpeed": 180.0,
+                        "RollSpeed": 180.0,
+                        "Roll": 0.0,
+                        "Pitch": 0.0,
+                        "Yaw": -0.0
+                    },
+                    "NoiseSettings": [
+                        {
+                            "Enabled": true,
+                            "ImageType": 0,
+                            "RandContrib": 0.0010000000474974513,
+                            "RandSpeed": 50000.0,
+                            "RandSize": 100.0,
+                            "RandDensity": 2,
+                            "HorzWaveContrib": 0.00039999998989515007,
+                            "HorzWaveStrength": 0.000699999975040555,
+                            "HorzWaveVertSize": 1.0,
+                            "HorzWaveScreenSize": 1.0,
+                            "HorzNoiseLinesContrib": 0.0007999999797903001,
+                            "HorzNoiseLinesDensityY": 9.999999747378752e-05,
+                            "HorzNoiseLinesDensityXY": 0.004000000189989805,
+                            "HorzDistortionContrib": 0.0,
+                            "HorzDistortionStrength": 0.0
+                        }
+                    ],
+                    "X": 0.30000001192092896,
+                    "Y": -0.0,
+                    "Z": 0.05000000074505806,
+                    "Roll": 0.0,
+                    "Pitch": -90.0,
+                    "Yaw": 0.0,
+                    "EnableGimbal": true,
+                    "CameraVisible": true,
+                    "CameraScale": 0.699999988079071
+                },
+                "MULTICAMERA05": {
+                    "CaptureSettings": [
+                        {
+                            "ImageType": 0,
+                            "Width": 960,
+                            "Height": 540,
+                            "SensorWidth": 0.013199999928474426,
+                            "SensorHeight": 0.007424999959766865,
+                            "FOV_Degrees": 66.84962463378906,
+                            "K1": -0.029999999329447746,
+                            "K2": 0.0020000000949949026,
+                            "K3": 0.0,
+                            "P1": 0.0005000000237487257,
+                            "P2": -0.00039999998989515007,
+                            "LumenGIEnable": false,
+                            "LumenReflectionEnable": false,
+                            "LumenFinalQuality": 0,
+                            "LumenSceneDetail": 0,
+                            "LumenSceneLightningDetail": 0
+                        }
+                    ],
+                    "Gimbal": {
+                        "YawMin": -320.0,
+                        "PitchMin": -40.0,
+                        "RollMin": -20.0,
+                        "YawMax": 320.0,
+                        "PitchMax": 130.0,
+                        "RollMax": 20.0,
+                        "YawSpeed": 270.0,
+                        "PitchSpeed": 180.0,
+                        "RollSpeed": 180.0,
+                        "Roll": 0.0,
+                        "Pitch": 0.0,
+                        "Yaw": -90.0
+                    },
+                    "NoiseSettings": [
+                        {
+                            "Enabled": true,
+                            "ImageType": 0,
+                            "RandContrib": 0.0010000000474974513,
+                            "RandSpeed": 50000.0,
+                            "RandSize": 100.0,
+                            "RandDensity": 2,
+                            "HorzWaveContrib": 0.00039999998989515007,
+                            "HorzWaveStrength": 0.000699999975040555,
+                            "HorzWaveVertSize": 1.0,
+                            "HorzWaveScreenSize": 1.0,
+                            "HorzNoiseLinesContrib": 0.0007999999797903001,
+                            "HorzNoiseLinesDensityY": 9.999999747378752e-05,
+                            "HorzNoiseLinesDensityXY": 0.004000000189989805,
+                            "HorzDistortionContrib": 0.0,
+                            "HorzDistortionStrength": 0.0
+                        }
+                    ],
+                    "X": 0.0,
+                    "Y": -0.30000001192092896,
+                    "Z": 0.05000000074505806,
+                    "Roll": 0.0,
+                    "Pitch": -90.0,
+                    "Yaw": 0.0,
+                    "EnableGimbal": true,
+                    "CameraVisible": true,
+                    "CameraScale": 0.699999988079071
+                },
+                "SCENARIOCAM": {
+                    "X": -80.0,
+                    "Y": 80.0,
+                    "Z": -70.0,
+                    "Roll": 0.0,
+                    "Pitch": -15.0,
+                    "Yaw": -45.0,
+                    "External": true
+                },
+                "AGENTCAM": {
+                    "X": -1.5,
+                    "Y": 1.5,
+                    "Z": -1.0,
+                    "Roll": 0.0,
+                    "Pitch": -33.33000183105469,
+                    "Yaw": -45.0
+                },
+                "PAYLOADCAM": {
+                    "X": -0.699999988079071,
+                    "Y": 0.699999988079071,
+                    "Z": 0.5,
+                    "Roll": 0.0,
+                    "Pitch": -0.0,
+                    "Yaw": -45.0
+                }
+            }
+        },
+        "AGENT02": {
+            "PawnPath": "FlyChamsQuadcopter",
+            "X": 0.0,
+            "Y": -10.0,
+            "Z": -0.0,
+            "Roll": 0.0,
+            "Pitch": -0.0,
+            "Yaw": -0.0,
+            "VehicleType": "PX4Multirotor",
+            "Model": "FlyChamsQuadcopter",
+            "UseSerial": false,
+            "LockStep": true,
+            "UseTcp": true,
+            "TcpPort": 4562,
+            "ControlIp": "remote",
+            "ControlPortLocal": 14542,
+            "ControlPortRemote": 14582,
+            "LocalHostIp": "172.17.0.1",
+            "Parameters": {
+                "MPC_TILTMAX_AIR": 10.0,
+                "MPC_XY_VEL_MAX": 3.5,
+                "NAV_RCL_ACT": 0,
+                "NAV_DLL_ACT": 0,
+                "COM_OBL_ACT": 1,
+                "LPE_LAT": 35.98655700683594,
+                "LPE_LON": -5.89301061630249
+            },
+            "Sensors": {
+                "Barometer": {
+                    "SensorType": 1,
+                    "Enabled": true,
+                    "PressureFactorSigma": 0.00018250000721309334,
+                    "UncorrelatedNoiseSigma": 8.0
+                },
+                "Imu": {
+                    "SensorType": 2,
+                    "Enabled": true,
+                    "GenerateNoise": true,
+                    "AngularRandomWalk": 0.800000011920929,
+                    "VelocityRandomWalk": 0.6000000238418579
+                },
+                "Gps": {
+                    "SensorType": 3,
+                    "Enabled": true,
+                    "EphInitial": 50.0,
+                    "EpvInitial": 50.0,
+                    "EphFinal": 2.0,
+                    "EpvFinal": 2.0
+                },
+                "Magnetometer": {
+                    "SensorType": 4,
+                    "Enabled": true,
+                    "NoiseSigma": 0.019999999552965164,
+                    "NoiseBias": 0.0
+                }
+            },
+            "Cameras": {
+                "MULTICAMERA06": {
+                    "CaptureSettings": [
+                        {
+                            "ImageType": 0,
+                            "Width": 1280,
+                            "Height": 720,
+                            "SensorWidth": 0.013199999928474426,
+                            "SensorHeight": 0.007424999959766865,
+                            "FOV_Degrees": 131.11209106445313,
+                            "K1": -0.029999999329447746,
+                            "K2": 0.0020000000949949026,
+                            "K3": 0.0,
+                            "P1": 0.0005000000237487257,
+                            "P2": -0.00039999998989515007,
+                            "LumenGIEnable": false,
+                            "LumenReflectionEnable": false,
+                            "LumenFinalQuality": 0,
+                            "LumenSceneDetail": 0,
+                            "LumenSceneLightningDetail": 0
+                        }
+                    ],
+                    "Gimbal": {
+                        "YawMin": -320.0,
+                        "PitchMin": -40.0,
+                        "RollMin": -20.0,
+                        "YawMax": 320.0,
+                        "PitchMax": 130.0,
+                        "RollMax": 20.0,
+                        "YawSpeed": 270.0,
+                        "PitchSpeed": 180.0,
+                        "RollSpeed": 180.0,
+                        "Roll": 0.0,
+                        "Pitch": 0.0,
+                        "Yaw": -90.0
+                    },
+                    "NoiseSettings": [
+                        {
+                            "Enabled": true,
+                            "ImageType": 0,
+                            "RandContrib": 0.0010000000474974513,
+                            "RandSpeed": 50000.0,
+                            "RandSize": 100.0,
+                            "RandDensity": 2,
+                            "HorzWaveContrib": 0.00039999998989515007,
+                            "HorzWaveStrength": 0.000699999975040555,
+                            "HorzWaveVertSize": 1.0,
+                            "HorzWaveScreenSize": 1.0,
+                            "HorzNoiseLinesContrib": 0.0007999999797903001,
+                            "HorzNoiseLinesDensityY": 9.999999747378752e-05,
+                            "HorzNoiseLinesDensityXY": 0.004000000189989805,
+                            "HorzDistortionContrib": 0.0,
+                            "HorzDistortionStrength": 0.0
+                        }
+                    ],
+                    "X": 0.0,
+                    "Y": -0.0,
+                    "Z": 0.05000000074505806,
+                    "Roll": 0.0,
+                    "Pitch": -90.0,
+                    "Yaw": 0.0,
+                    "EnableGimbal": true,
+                    "CameraVisible": true,
+                    "CameraScale": 0.699999988079071
+                },
+                "MULTICAMERA07": {
+                    "CaptureSettings": [
+                        {
+                            "ImageType": 0,
+                            "Width": 960,
+                            "Height": 540,
+                            "SensorWidth": 0.013199999928474426,
+                            "SensorHeight": 0.007424999959766865,
+                            "FOV_Degrees": 66.84962463378906,
+                            "K1": -0.029999999329447746,
+                            "K2": 0.0020000000949949026,
+                            "K3": 0.0,
+                            "P1": 0.0005000000237487257,
+                            "P2": -0.00039999998989515007,
+                            "LumenGIEnable": false,
+                            "LumenReflectionEnable": false,
+                            "LumenFinalQuality": 0,
+                            "LumenSceneDetail": 0,
+                            "LumenSceneLightningDetail": 0
+                        }
+                    ],
+                    "Gimbal": {
+                        "YawMin": -320.0,
+                        "PitchMin": -40.0,
+                        "RollMin": -20.0,
+                        "YawMax": 320.0,
+                        "PitchMax": 130.0,
+                        "RollMax": 20.0,
+                        "YawSpeed": 270.0,
+                        "PitchSpeed": 180.0,
+                        "RollSpeed": 180.0,
+                        "Roll": 0.0,
+                        "Pitch": 0.0,
+                        "Yaw": -0.0
+                    },
+                    "NoiseSettings": [
+                        {
+                            "Enabled": true,
+                            "ImageType": 0,
+                            "RandContrib": 0.0010000000474974513,
+                            "RandSpeed": 50000.0,
+                            "RandSize": 100.0,
+                            "RandDensity": 2,
+                            "HorzWaveContrib": 0.00039999998989515007,
+                            "HorzWaveStrength": 0.000699999975040555,
+                            "HorzWaveVertSize": 1.0,
+                            "HorzWaveScreenSize": 1.0,
+                            "HorzNoiseLinesContrib": 0.0007999999797903001,
+                            "HorzNoiseLinesDensityY": 9.999999747378752e-05,
+                            "HorzNoiseLinesDensityXY": 0.004000000189989805,
+                            "HorzDistortionContrib": 0.0,
+                            "HorzDistortionStrength": 0.0
+                        }
+                    ],
+                    "X": 0.30000001192092896,
+                    "Y": -0.0,
+                    "Z": 0.05000000074505806,
+                    "Roll": 0.0,
+                    "Pitch": -90.0,
+                    "Yaw": 0.0,
+                    "EnableGimbal": true,
+                    "CameraVisible": true,
+                    "CameraScale": 0.699999988079071
+                },
+                "MULTICAMERA08": {
+                    "CaptureSettings": [
+                        {
+                            "ImageType": 0,
+                            "Width": 960,
+                            "Height": 540,
+                            "SensorWidth": 0.013199999928474426,
+                            "SensorHeight": 0.007424999959766865,
+                            "FOV_Degrees": 66.84962463378906,
+                            "K1": -0.029999999329447746,
+                            "K2": 0.0020000000949949026,
+                            "K3": 0.0,
+                            "P1": 0.0005000000237487257,
+                            "P2": -0.00039999998989515007,
+                            "LumenGIEnable": false,
+                            "LumenReflectionEnable": false,
+                            "LumenFinalQuality": 0,
+                            "LumenSceneDetail": 0,
+                            "LumenSceneLightningDetail": 0
+                        }
+                    ],
+                    "Gimbal": {
+                        "YawMin": -320.0,
+                        "PitchMin": -40.0,
+                        "RollMin": -20.0,
+                        "YawMax": 320.0,
+                        "PitchMax": 130.0,
+                        "RollMax": 20.0,
+                        "YawSpeed": 270.0,
+                        "PitchSpeed": 180.0,
+                        "RollSpeed": 180.0,
+                        "Roll": 0.0,
+                        "Pitch": 0.0,
+                        "Yaw": -90.0
+                    },
+                    "NoiseSettings": [
+                        {
+                            "Enabled": true,
+                            "ImageType": 0,
+                            "RandContrib": 0.0010000000474974513,
+                            "RandSpeed": 50000.0,
+                            "RandSize": 100.0,
+                            "RandDensity": 2,
+                            "HorzWaveContrib": 0.00039999998989515007,
+                            "HorzWaveStrength": 0.000699999975040555,
+                            "HorzWaveVertSize": 1.0,
+                            "HorzWaveScreenSize": 1.0,
+                            "HorzNoiseLinesContrib": 0.0007999999797903001,
+                            "HorzNoiseLinesDensityY": 9.999999747378752e-05,
+                            "HorzNoiseLinesDensityXY": 0.004000000189989805,
+                            "HorzDistortionContrib": 0.0,
+                            "HorzDistortionStrength": 0.0
+                        }
+                    ],
+                    "X": 0.0,
+                    "Y": -0.30000001192092896,
+                    "Z": 0.05000000074505806,
+                    "Roll": 0.0,
+                    "Pitch": -90.0,
+                    "Yaw": 0.0,
+                    "EnableGimbal": true,
+                    "CameraVisible": true,
+                    "CameraScale": 0.699999988079071
+                },
+                "SCENARIOCAM": {
+                    "X": -80.0,
+                    "Y": 80.0,
+                    "Z": -70.0,
+                    "Roll": 0.0,
+                    "Pitch": -15.0,
+                    "Yaw": -45.0,
+                    "External": true
+                },
+                "AGENTCAM": {
+                    "X": -1.5,
+                    "Y": 1.5,
+                    "Z": -1.0,
+                    "Roll": 0.0,
+                    "Pitch": -33.33000183105469,
+                    "Yaw": -45.0
+                },
+                "PAYLOADCAM": {
+                    "X": -0.699999988079071,
+                    "Y": 0.699999988079071,
+                    "Z": 0.5,
+                    "Roll": 0.0,
+                    "Pitch": -0.0,
+                    "Yaw": -45.0
+                }
+            }
+        }
+    },
+    "SubWindows": [
+        {
+            "WindowID": 0,
+            "CameraName": "SCENARIOCAM",
+            "ImageType": 0,
+            "VehicleName": "AGENT00",
+            "Visible": true
+        },
+        {
+            "WindowID": 1,
+            "CameraName": "AGENTCAM",
+            "ImageType": 0,
+            "VehicleName": "AGENT00",
+            "Visible": true
+        },
+        {
+            "WindowID": 2,
+            "CameraName": "MAPVIEW",
+            "ImageType": 0,
+            "VehicleName": "",
+            "Visible": false
+        },
+        {
+            "WindowID": 3,
+            "CameraName": "PAYLOADCAM",
+            "ImageType": 0,
+            "VehicleName": "AGENT00",
+            "Visible": true
+        },
+        {
+            "WindowID": 4,
+            "CameraName": "MULTICAMERA00",
+            "ImageType": 0,
+            "VehicleName": "AGENT00",
+            "Visible": false
+        },
+        {
+            "WindowID": 5,
+            "CameraName": "MULTICAMERA01",
+            "ImageType": 0,
+            "VehicleName": "AGENT00",
+            "Visible": false
+        },
+        {
+            "WindowID": 6,
+            "CameraName": "MULTICAMERA02",
+            "ImageType": 0,
+            "VehicleName": "AGENT00",
+            "Visible": false
+        }
+    ],
+    "Streams": [
+        {
+            "CameraName": "MULTICAMERA00",
+            "ImageType": 0,
+            "VehicleName": "AGENT00",
+            "UdpPort": 5000
+        },
+        {
+            "CameraName": "MULTICAMERA01",
+            "ImageType": 0,
+            "VehicleName": "AGENT00",
+            "UdpPort": 5001
+        },
+        {
+            "CameraName": "MULTICAMERA02",
+            "ImageType": 0,
+            "VehicleName": "AGENT00",
+            "UdpPort": 5002
+        },
+        {
+            "CameraName": "MULTICAMERA03",
+            "ImageType": 0,
+            "VehicleName": "AGENT01",
+            "UdpPort": 5003
+        },
+        {
+            "CameraName": "MULTICAMERA04",
+            "ImageType": 0,
+            "VehicleName": "AGENT01",
+            "UdpPort": 5004
+        },
+        {
+            "CameraName": "MULTICAMERA05",
+            "ImageType": 0,
+            "VehicleName": "AGENT01",
+            "UdpPort": 5005
+        },
+        {
+            "CameraName": "MULTICAMERA06",
+            "ImageType": 0,
+            "VehicleName": "AGENT02",
+            "UdpPort": 5006
+        },
+        {
+            "CameraName": "MULTICAMERA07",
+            "ImageType": 0,
+            "VehicleName": "AGENT02",
+            "UdpPort": 5007
+        },
+        {
+            "CameraName": "MULTICAMERA08",
+            "ImageType": 0,
+            "VehicleName": "AGENT02",
+            "UdpPort": 5008
+        }
+    ],
+    "QualitySettings": {
+        "FrameRate": {
+            "MaxFPS": 30,
+            "CameraCaptureFPS": 15
+        },
+        "Scalability": {
+            "ResolutionQuality": 70,
+            "ViewDistanceQuality": 1,
+            "AntiAliasingQuality": 1,
+            "ShadowQuality": 0,
+            "GlobalIlluminationQuality": 0,
+            "ReflectionQuality": 0,
+            "PostProcessQuality": 0,
+            "TextureQuality": 1,
+            "EffectsQuality": 1,
+            "FoliageQuality": 0,
+            "ShadingQuality": 1
+        },
+        "RenderingFeatures": {
+            "MotionBlur": false,
+            "Bloom": false,
+            "AmbientOcclusion": false,
+            "ScreenSpaceReflections": false,
+            "VolumetricFog": false,
+            "LensFlares": false,
+            "DepthOfField": false,
+            "ContactShadows": false
+        },
+        "World": {
+            "FoliageDensityScale": 0.25,
+            "GrassDensityScale": 0.0,
+            "ViewDistanceScale": 0.5,
+            "ShadowDistanceScale": 0.25
+        }
+    }
+}
