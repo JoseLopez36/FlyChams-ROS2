@@ -4,16 +4,16 @@
 
 # Node allowlist: Only launch these nodes
 node_allowlist:
-  - mavros_manager
-  - drone_frames
-  - drone_state
-  - drone_control
-  - camera_frames
-  - camera_control
-  - agent_analysis
-  - agent_positioning
-  - agent_tracking
-  # - agent_stream
+  # - mavros_manager
+  # - drone_frames
+  # - drone_state
+  # - drone_control
+  # - camera_frames
+  # - camera_control
+  # - agent_analysis
+  # - agent_positioning
+  # - agent_tracking
+  - agent_stream
   # - target_detection
 
 # Per-node log level overrides
@@ -27,5 +27,5 @@ node_log_levels:
   agent_analysis: "error"
   agent_positioning: "error"
   agent_tracking: "error"
-  agent_stream: "error"
+  agent_stream: "info"
   target_detection: "error"

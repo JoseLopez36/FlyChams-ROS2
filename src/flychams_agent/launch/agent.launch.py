@@ -108,6 +108,7 @@ def generate_launch_description():
                 package='flychams_agent',
                 executable=config['executable'],
                 name=config['name'],
+                namespace=['flychams/agent/', LaunchConfiguration('agent_id')],
                 parameters=[
                     *common_params,
                     {'agent_id': LaunchConfiguration('agent_id')},

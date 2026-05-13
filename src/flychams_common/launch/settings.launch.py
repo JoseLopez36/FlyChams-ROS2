@@ -14,6 +14,7 @@ def generate_launch_description():
         package='flychams_common',
         executable='settings_creator_node',
         name='settings_creator_node',
+        namespace='flychams/common',
         parameters=[
             os.path.join(common_core_dir, 'system.yaml'),
             os.path.join(common_core_dir, 'topics.yaml'),

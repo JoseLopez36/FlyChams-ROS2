@@ -88,7 +88,7 @@ namespace flychams::agent
         void guiSetpointsCallback(const core::AgentGuiSetpointsMsg::SharedPtr msg);
 
     private: // Stream configuration
-        std::string createPipeline(const core::MultiCameraConfigPtr& multi_camera) const;
+        std::string createPipeline(const core::MultiCameraConfigPtr& camera) const;
 
     private: // Stream management
         void streamPipeline(const std::shared_ptr<StreamUnit>& unit);

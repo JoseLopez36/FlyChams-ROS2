@@ -46,15 +46,24 @@ def generate_launch_description():
         executable='airsim_node',
         name='airsim_node',
         output='screen',
-        arguments=['--ros-args', '--log-level', 'error']
+        namespace='airsim',
+        arguments=['--ros-args', '--log-level', 'error'],
+        parameters=[{
+            'update_airsim_state_every_n_sec': 0.020,
+            'update_sim_clock_every_n_sec': 0.001,
+            'world_frame_id': 'world',
+            'vehicle_local_frame_id': 'local',
+            'vehicle_body_frame_id': 'body',
+            'camera_body_frame_id': 'body',
+            'camera_optical_frame_id': 'optical',
+            'host_ip': 'localhost',
+            'host_port': 41451,
+            'broadcast_transforms': False
+        }]
     )
 
     # Define node configurations
     node_configs = {
-        'simulation_gui': {
-            'executable': 'simulation_gui_node',
-            'name': 'simulation_gui_node'
-        },
         'target_state': {
             'executable': 'target_state_node',
             'name': 'target_state_node'
@@ -62,6 +71,10 @@ def generate_launch_description():
         'target_control': {
             'executable': 'target_control_node',
             'name': 'target_control_node'
+        },
+        'camera_manager': {
+            'executable': 'camera_manager_node',
+            'name': 'camera_manager_node'
         }
     }
 
@@ -78,6 +91,7 @@ def generate_launch_description():
                 package='flychams_simulation',
                 executable=config['executable'],
                 name=config['name'],
+                namespace='flychams/simulation',
                 parameters=[
                     *common_params,
                     {'log_level': log_level}

@@ -73,6 +73,7 @@ def generate_launch_description():
                 package='flychams_coordinator',
                 executable=config['executable'],
                 name=config['name'],
+                namespace='flychams/coordinator',
                 parameters=[
                     *common_params,
                     {'log_level': log_level}

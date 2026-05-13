@@ -130,7 +130,6 @@
         safety_radius: 3.000
         max_altitude: 300.000
         battery_capacity: 12000.000
-        inference_stream_url: "tcp://127.0.0.1:5500"
         tracking:
           id: TRACKING00
           name: "Multi-Camera 1 Tracking (2 Cameras)"
@@ -158,8 +157,7 @@
               min_focal: 0.003000
               max_focal: 0.003000
               ref_focal: 0.003000
-              source_stream_url: "udp://127.0.0.1:5000"
-              interface_stream_url: "udp://127.0.0.1:6000"
+              source_stream_url: "rtsp://127.0.0.1:8554/AGENT00/MULTICAMERA00"
               hardware: "SIYI A8 Mini"
               ip: "192.168.144.25"
               port: 37260
@@ -226,8 +224,7 @@
               min_focal: 0.008000
               max_focal: 0.040000
               ref_focal: 0.010000
-              source_stream_url: "udp://127.0.0.1:5001"
-              interface_stream_url: "udp://127.0.0.1:6001"
+              source_stream_url: "rtsp://127.0.0.1:8554/AGENT00/MULTICAMERA01"
               hardware: "SIYI A8 Mini"
               ip: "192.168.144.25"
               port: 37260
@@ -294,8 +291,7 @@
               min_focal: 0.008000
               max_focal: 0.040000
               ref_focal: 0.010000
-              source_stream_url: "udp://127.0.0.1:5002"
-              interface_stream_url: "udp://127.0.0.1:6002"
+              source_stream_url: "rtsp://127.0.0.1:8554/AGENT00/MULTICAMERA02"
               hardware: "SIYI A8 Mini"
               ip: "192.168.144.25"
               port: 37260
@@ -392,7 +388,6 @@
         safety_radius: 3.000
         max_altitude: 300.000
         battery_capacity: 12000.000
-        inference_stream_url: "tcp://127.0.0.1:5501"
         tracking:
           id: TRACKING01
           name: "Multi-Camera 2 Tracking (2 Cameras)"
@@ -420,8 +415,7 @@
               min_focal: 0.003000
               max_focal: 0.003000
               ref_focal: 0.003000
-              source_stream_url: "udp://127.0.0.1:5003"
-              interface_stream_url: "udp://127.0.0.1:6003"
+              source_stream_url: "rtsp://127.0.0.1:8554/AGENT01/MULTICAMERA03"
               hardware: "SIYI A8 Mini"
               ip: "192.168.144.25"
               port: 37260
@@ -488,8 +482,7 @@
               min_focal: 0.008000
               max_focal: 0.040000
               ref_focal: 0.010000
-              source_stream_url: "udp://127.0.0.1:5004"
-              interface_stream_url: "udp://127.0.0.1:6004"
+              source_stream_url: "rtsp://127.0.0.1:8554/AGENT01/MULTICAMERA04"
               hardware: "SIYI A8 Mini"
               ip: "192.168.144.25"
               port: 37260
@@ -556,8 +549,7 @@
               min_focal: 0.008000
               max_focal: 0.040000
               ref_focal: 0.010000
-              source_stream_url: "udp://127.0.0.1:5005"
-              interface_stream_url: "udp://127.0.0.1:6005"
+              source_stream_url: "rtsp://127.0.0.1:8554/AGENT01/MULTICAMERA05"
               hardware: "SIYI A8 Mini"
               ip: "192.168.144.25"
               port: 37260
@@ -654,7 +646,6 @@
         safety_radius: 3.000
         max_altitude: 300.000
         battery_capacity: 12000.000
-        inference_stream_url: "tcp://127.0.0.1:5502"
         tracking:
           id: TRACKING02
           name: "Multi-Camera 3 Tracking (2 Cameras)"
@@ -682,8 +673,7 @@
               min_focal: 0.003000
               max_focal: 0.003000
               ref_focal: 0.003000
-              source_stream_url: "udp://127.0.0.1:5006"
-              interface_stream_url: "udp://127.0.0.1:6006"
+              source_stream_url: "rtsp://127.0.0.1:8554/AGENT02/MULTICAMERA06"
               hardware: "SIYI A8 Mini"
               ip: "192.168.144.25"
               port: 37260
@@ -750,8 +740,7 @@
               min_focal: 0.008000
               max_focal: 0.040000
               ref_focal: 0.010000
-              source_stream_url: "udp://127.0.0.1:5007"
-              interface_stream_url: "udp://127.0.0.1:6007"
+              source_stream_url: "rtsp://127.0.0.1:8554/AGENT02/MULTICAMERA07"
               hardware: "SIYI A8 Mini"
               ip: "192.168.144.25"
               port: 37260
@@ -818,8 +807,7 @@
               min_focal: 0.008000
               max_focal: 0.040000
               ref_focal: 0.010000
-              source_stream_url: "udp://127.0.0.1:5008"
-              interface_stream_url: "udp://127.0.0.1:6008"
+              source_stream_url: "rtsp://127.0.0.1:8554/AGENT02/MULTICAMERA08"
               hardware: "SIYI A8 Mini"
               ip: "192.168.144.25"
               port: 37260

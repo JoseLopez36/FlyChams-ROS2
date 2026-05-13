@@ -934,55 +934,55 @@
             "CameraName": "MULTICAMERA00",
             "ImageType": 0,
             "VehicleName": "AGENT00",
-            "UdpPort": 5000
+            "RtspPort": 8554
         },
         {
             "CameraName": "MULTICAMERA01",
             "ImageType": 0,
             "VehicleName": "AGENT00",
-            "UdpPort": 5001
+            "RtspPort": 8554
         },
         {
             "CameraName": "MULTICAMERA02",
             "ImageType": 0,
             "VehicleName": "AGENT00",
-            "UdpPort": 5002
+            "RtspPort": 8554
         },
         {
             "CameraName": "MULTICAMERA03",
             "ImageType": 0,
             "VehicleName": "AGENT01",
-            "UdpPort": 5003
+            "RtspPort": 8554
         },
         {
             "CameraName": "MULTICAMERA04",
             "ImageType": 0,
             "VehicleName": "AGENT01",
-            "UdpPort": 5004
+            "RtspPort": 8554
         },
         {
             "CameraName": "MULTICAMERA05",
             "ImageType": 0,
             "VehicleName": "AGENT01",
-            "UdpPort": 5005
+            "RtspPort": 8554
         },
         {
             "CameraName": "MULTICAMERA06",
             "ImageType": 0,
             "VehicleName": "AGENT02",
-            "UdpPort": 5006
+            "RtspPort": 8554
         },
         {
             "CameraName": "MULTICAMERA07",
             "ImageType": 0,
             "VehicleName": "AGENT02",
-            "UdpPort": 5007
+            "RtspPort": 8554
         },
         {
             "CameraName": "MULTICAMERA08",
             "ImageType": 0,
             "VehicleName": "AGENT02",
-            "UdpPort": 5008
+            "RtspPort": 8554
         }
     ],
     "QualitySettings": {

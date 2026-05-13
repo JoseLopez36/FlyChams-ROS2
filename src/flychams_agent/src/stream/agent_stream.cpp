@@ -26,13 +26,13 @@ namespace flychams::agent
 
         // Get observation units config
         const TrackingConfig& tracking_config = settings_tools_->getTracking(agent_id_);
-        for (const auto& [multi_camera_id, multi_camera] : tracking_config.multi_camera_set)
+        for (const auto& [camera_id, camera] : tracking_config.multi_camera_set)
         {
             std::shared_ptr<StreamUnit> unit = std::make_shared<StreamUnit>();
-            unit->config = multi_camera;
-            unit->pipeline = createPipeline(multi_camera);
-            unit->frame_id = transform_tools_->getCameraOpticalFrame(agent_id_, multi_camera->id);
-            if (multi_camera->role == ObservationRole::Central)
+            unit->config = camera;
+            unit->pipeline = createPipeline(camera);
+            unit->frame_id = transform_tools_->getCameraOpticalFrame(agent_id_, camera_id);
+            if (camera->role == ObservationRole::Central)
             {
                 unit->output_width = central_view_width;
                 unit->output_height = central_view_height;
@@ -45,24 +45,23 @@ namespace flychams::agent
                     unit->crops.resize(nw);
                     for (const auto& [window_id, window] : tracking_config.multi_window_set)
                     {
-                        unit->crop_pubs.push_back(topic_tools_->getAgentMultiWindowImagePublisher(agent_id_, window->id));
+                        unit->crop_pubs.push_back(topic_tools_->createAgentMultiWindowImagePublisher(agent_id_, window_id));
                     }
                     unit->crop_output_width = tracking_view_width;
                     unit->crop_output_height = tracking_view_height;
                 }
             }
-            }
-            else if (multi_camera->role == ObservationRole::Tracking)
+            else if (camera->role == ObservationRole::Tracking)
             {
                 unit->output_width = tracking_view_width;
                 unit->output_height = tracking_view_height;
                 unit->enable_crops = false;
             }
 
-            unit->crop_pubs.push_back(topic_tools_->getAgentMultiCameraImagePublisher(agent_id_, multi_camera->id));
+            unit->image_pub = topic_tools_->createAgentMultiCameraImagePublisher(agent_id_, camera_id);
             unit->running = true;
             unit->thread = std::thread(&AgentStream::streamPipeline, this, unit);
-            stream_units_[multi_camera->id] = unit;
+            stream_units_[camera_id] = unit;
         }
 
         // Subscribe to GUI setpoints topic
@@ -77,11 +76,11 @@ namespace flychams::agent
         gui_setpoints_sub_.reset();
 
         // Stop stream units
-        for (auto& [multi_camera_id, unit] : stream_units_)
+        for (auto& [id, unit] : stream_units_)
         {
             unit->running = false;
         }
-        for (auto& [multi_camera_id, unit] : stream_units_)
+        for (auto& [id, unit] : stream_units_)
         {
             if (unit->thread.joinable())
             {
@@ -124,9 +123,9 @@ namespace flychams::agent
     // STREAM CONFIGURATION
     // ════════════════════════════════════════════════════════════════════════════
 
-    std::string AgentStream::createPipeline(const MultiCameraConfigPtr& multi_camera) const
+    std::string AgentStream::createPipeline(const MultiCameraConfigPtr& camera) const
     {
-        const std::string& source = multi_camera->source_stream_url;
+        const std::string& source = camera->source_stream_url;
         if (source.rfind("rtsp://", 0) == 0)
         {
             std::stringstream pipeline;

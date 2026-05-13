@@ -468,11 +468,11 @@ namespace flychams::core
 
 					multi_camera->source_stream_url = getCellValue<std::string>(row.findCell(12));
 
-					multi_camera->hardware = getCellValue<std::string>(row.findCell(14));
+					multi_camera->hardware = getCellValue<std::string>(row.findCell(13));
 
-					multi_camera->ip = getCellValue<std::string>(row.findCell(15));
+					multi_camera->ip = getCellValue<std::string>(row.findCell(14));
 
-					multi_camera->port = getCellValue<int>(row.findCell(16));
+					multi_camera->port = getCellValue<int>(row.findCell(15));
 
 					// Parse camera model
 					parseCameraModel(book, multi_camera);

@@ -4,14 +4,12 @@
 
 # Node allowlist: Only launch these nodes
 node_allowlist:
-  # Simulation nodes
-  - simulation_gui
   - target_state
   - target_control
+  - camera_manager
 
 # Per-node log level overrides
 node_log_levels:
-  # Simulation nodes
-  simulation_gui: "error"
   target_state: "error"
   target_control: "error"
+  camera_manager: "info"
