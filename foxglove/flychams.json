@@ -39,7 +39,8 @@
                 "second": "Image!a1c4",
                 "direction": "row"
               },
-              "direction": "column"
+              "direction": "column",
+              "splitPercentage": 49.83975487816963
             },
             "direction": "column",
             "splitPercentage": 50
@@ -301,9 +302,9 @@
     "Image!a1c0": {
       "synchronize": false,
       "imageMode": {
-        "imageTopic": "/flychams/operator/AGENT01/MULTICAMERA05/image/compressed"
+        "imageTopic": "/flychams/operator/AGENT01/MULTICAMERA03/image/compressed"
       },
-      "foxglovePanelTitle": "AGENT01 — Central (MULTICAMERA05)",
+      "foxglovePanelTitle": "AGENT01 — Central",
       "cameraState": {
         "distance": 20,
         "perspective": true,
@@ -347,9 +348,9 @@
     "Image!a1c1": {
       "synchronize": false,
       "imageMode": {
-        "imageTopic": "/flychams/operator/AGENT01/MULTICAMERA06/image/compressed"
+        "imageTopic": "/flychams/operator/AGENT01/MULTICAMERA04/image/compressed"
       },
-      "foxglovePanelTitle": "AGENT01 — Tracking 1 (MULTICAMERA06)",
+      "foxglovePanelTitle": "AGENT01 — Tracking 1",
       "cameraState": {
         "distance": 20,
         "perspective": true,
@@ -393,9 +394,9 @@
     "Image!a1c2": {
       "synchronize": false,
       "imageMode": {
-        "imageTopic": "/flychams/operator/AGENT01/MULTICAMERA07/image/compressed"
+        "imageTopic": "/flychams/operator/AGENT01/MULTICAMERA05/image/compressed"
       },
-      "foxglovePanelTitle": "AGENT01 — Tracking 2 (MULTICAMERA07)",
+      "foxglovePanelTitle": "AGENT01 — Tracking 2",
       "cameraState": {
         "distance": 20,
         "perspective": true,
@@ -439,9 +440,9 @@
     "Image!a1c3": {
       "synchronize": false,
       "imageMode": {
-        "imageTopic": "/flychams/operator/AGENT01/MULTICAMERA08/image/compressed"
+        "imageTopic": ""
       },
-      "foxglovePanelTitle": "AGENT01 — Tracking 3 (MULTICAMERA08)",
+      "foxglovePanelTitle": "AGENT01 — Tracking 3",
       "cameraState": {
         "distance": 20,
         "perspective": true,
@@ -485,9 +486,9 @@
     "Image!a1c4": {
       "synchronize": false,
       "imageMode": {
-        "imageTopic": "/flychams/operator/AGENT01/MULTICAMERA09/image/compressed"
+        "imageTopic": ""
       },
-      "foxglovePanelTitle": "AGENT01 — Tracking 4 (MULTICAMERA09)",
+      "foxglovePanelTitle": "AGENT01 — Tracking 4",
       "cameraState": {
         "distance": 20,
         "perspective": true,
@@ -531,37 +532,232 @@
     "Image!a2c0": {
       "synchronize": false,
       "imageMode": {
-        "imageTopic": "/flychams/operator/AGENT02/MULTICAMERA10/image/compressed"
+        "imageTopic": "/flychams/operator/AGENT02/MULTICAMERA06/image/compressed"
       },
-      "foxglovePanelTitle": "AGENT02 — Central (MULTICAMERA10)"
+      "foxglovePanelTitle": "AGENT02 — Central",
+      "cameraState": {
+        "distance": 20,
+        "perspective": true,
+        "phi": 60,
+        "target": [
+          0,
+          0,
+          0
+        ],
+        "targetOffset": [
+          0,
+          0,
+          0
+        ],
+        "targetOrientation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "thetaOffset": 60,
+        "fovy": 45,
+        "near": 0.5,
+        "far": 5000
+      },
+      "followMode": "follow-pose",
+      "scene": {},
+      "transforms": {},
+      "topics": {},
+      "layers": {},
+      "publish": {
+        "type": "point",
+        "poseTopic": "/move_base_simple/goal",
+        "pointTopic": "/clicked_point",
+        "poseEstimateTopic": "/initialpose",
+        "poseEstimateXDeviation": 0.5,
+        "poseEstimateYDeviation": 0.5,
+        "poseEstimateThetaDeviation": 0.26179939
+      }
     },
     "Image!a2c1": {
       "synchronize": false,
       "imageMode": {
-        "imageTopic": "/flychams/operator/AGENT02/MULTICAMERA11/image/compressed"
+        "imageTopic": "/flychams/operator/AGENT02/MULTICAMERA07/image/compressed"
       },
-      "foxglovePanelTitle": "AGENT02 — Tracking 1 (MULTICAMERA11)"
+      "foxglovePanelTitle": "AGENT02 — Tracking 1",
+      "cameraState": {
+        "distance": 20,
+        "perspective": true,
+        "phi": 60,
+        "target": [
+          0,
+          0,
+          0
+        ],
+        "targetOffset": [
+          0,
+          0,
+          0
+        ],
+        "targetOrientation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "thetaOffset": 60,
+        "fovy": 45,
+        "near": 0.5,
+        "far": 5000
+      },
+      "followMode": "follow-pose",
+      "scene": {},
+      "transforms": {},
+      "topics": {},
+      "layers": {},
+      "publish": {
+        "type": "point",
+        "poseTopic": "/move_base_simple/goal",
+        "pointTopic": "/clicked_point",
+        "poseEstimateTopic": "/initialpose",
+        "poseEstimateXDeviation": 0.5,
+        "poseEstimateYDeviation": 0.5,
+        "poseEstimateThetaDeviation": 0.26179939
+      }
     },
     "Image!a2c2": {
       "synchronize": false,
       "imageMode": {
-        "imageTopic": "/flychams/operator/AGENT02/MULTICAMERA12/image/compressed"
+        "imageTopic": "/flychams/operator/AGENT02/MULTICAMERA08/image/compressed"
       },
-      "foxglovePanelTitle": "AGENT02 — Tracking 2 (MULTICAMERA12)"
+      "foxglovePanelTitle": "AGENT02 — Tracking 2",
+      "cameraState": {
+        "distance": 20,
+        "perspective": true,
+        "phi": 60,
+        "target": [
+          0,
+          0,
+          0
+        ],
+        "targetOffset": [
+          0,
+          0,
+          0
+        ],
+        "targetOrientation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "thetaOffset": 60,
+        "fovy": 45,
+        "near": 0.5,
+        "far": 5000
+      },
+      "followMode": "follow-pose",
+      "scene": {},
+      "transforms": {},
+      "topics": {},
+      "layers": {},
+      "publish": {
+        "type": "point",
+        "poseTopic": "/move_base_simple/goal",
+        "pointTopic": "/clicked_point",
+        "poseEstimateTopic": "/initialpose",
+        "poseEstimateXDeviation": 0.5,
+        "poseEstimateYDeviation": 0.5,
+        "poseEstimateThetaDeviation": 0.26179939
+      }
     },
     "Image!a2c3": {
       "synchronize": false,
       "imageMode": {
-        "imageTopic": "/flychams/operator/AGENT02/MULTICAMERA13/image/compressed"
+        "imageTopic": ""
       },
-      "foxglovePanelTitle": "AGENT02 — Tracking 3 (MULTICAMERA13)"
+      "foxglovePanelTitle": "AGENT02 — Tracking 3",
+      "cameraState": {
+        "distance": 20,
+        "perspective": true,
+        "phi": 60,
+        "target": [
+          0,
+          0,
+          0
+        ],
+        "targetOffset": [
+          0,
+          0,
+          0
+        ],
+        "targetOrientation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "thetaOffset": 60,
+        "fovy": 45,
+        "near": 0.5,
+        "far": 5000
+      },
+      "followMode": "follow-pose",
+      "scene": {},
+      "transforms": {},
+      "topics": {},
+      "layers": {},
+      "publish": {
+        "type": "point",
+        "poseTopic": "/move_base_simple/goal",
+        "pointTopic": "/clicked_point",
+        "poseEstimateTopic": "/initialpose",
+        "poseEstimateXDeviation": 0.5,
+        "poseEstimateYDeviation": 0.5,
+        "poseEstimateThetaDeviation": 0.26179939
+      }
     },
     "Image!a2c4": {
       "synchronize": false,
       "imageMode": {
-        "imageTopic": "/flychams/operator/AGENT02/MULTICAMERA14/image/compressed"
+        "imageTopic": ""
       },
-      "foxglovePanelTitle": "AGENT02 — Tracking 4 (MULTICAMERA14)"
+      "foxglovePanelTitle": "AGENT02 — Tracking 4",
+      "cameraState": {
+        "distance": 20,
+        "perspective": true,
+        "phi": 60,
+        "target": [
+          0,
+          0,
+          0
+        ],
+        "targetOffset": [
+          0,
+          0,
+          0
+        ],
+        "targetOrientation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "thetaOffset": 60,
+        "fovy": 45,
+        "near": 0.5,
+        "far": 5000
+      },
+      "followMode": "follow-pose",
+      "scene": {},
+      "transforms": {},
+      "topics": {},
+      "layers": {},
+      "publish": {
+        "type": "point",
+        "poseTopic": "/move_base_simple/goal",
+        "pointTopic": "/clicked_point",
+        "poseEstimateTopic": "/initialpose",
+        "poseEstimateXDeviation": 0.5,
+        "poseEstimateYDeviation": 0.5,
+        "poseEstimateThetaDeviation": 0.26179939
+      }
     },
     "Stack!agmetrics": {
       "panels": [

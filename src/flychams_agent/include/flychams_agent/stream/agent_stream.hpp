@@ -83,6 +83,7 @@ namespace flychams::agent
         int rtsp_latency_ms_;
         int reconnect_delay_ms_;
         std::string output_encoding_;
+        bool use_nvidia_;
 
     private: // Data
         // Stream units
@@ -93,6 +94,8 @@ namespace flychams::agent
 
     private: // Stream configuration
         std::string createPipeline(const core::MultiCameraConfigPtr& camera) const;
+        std::string createNvidiaPipeline(const std::string& source) const;
+        std::string createDefaultPipeline(const std::string& source) const;
 
     private: // Stream management
         void streamPipeline(const std::shared_ptr<StreamUnit>& unit);

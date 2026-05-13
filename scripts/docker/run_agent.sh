@@ -33,6 +33,7 @@ docker run ${RUN_FLAGS} \
     --gpus all \
     -e NVIDIA_DRIVER_CAPABILITIES=all \
     -e NVIDIA_VISIBLE_DEVICES=all \
+    -e XDG_RUNTIME_DIR=/tmp \
     -e AGENT_ID="$AGENT_ID" \
     -e ROS_DOMAIN_ID="${ROS_DOMAIN_ID}" \
     -e FASTDDS_BUILTIN_TRANSPORTS="${FASTDDS_BUILTIN_TRANSPORTS}" \

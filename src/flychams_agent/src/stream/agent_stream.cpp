@@ -21,6 +21,7 @@ namespace flychams::agent
         rtsp_latency_ms_ = RosUtils::getParameterOr<int>(node_, "rtsp_latency_ms", 100);
         reconnect_delay_ms_ = RosUtils::getParameterOr<int>(node_, "reconnect_delay_ms", 2000);
         output_encoding_ = RosUtils::getParameterOr<std::string>(node_, "output_encoding", "jpg");
+        use_nvidia_ = RosUtils::getParameterOr<bool>(node_, "use_nvidia", true);
 
         // Initialize stream variables
         stream_units_.clear();
@@ -132,15 +133,35 @@ namespace flychams::agent
         const std::string& source = camera->source_stream_url;
         if (source.rfind("rtsp://", 0) == 0)
         {
-            std::stringstream pipeline;
-            pipeline << "rtspsrc location=" << source << " latency=" << rtsp_latency_ms_
-                << " ! rtph265depay ! h265parse ! avdec_h265"
-                << " ! videoconvert ! appsink sync=false";
-
-            return pipeline.str();
+            if (use_nvidia_)
+                return createNvidiaPipeline(source);
+            else
+                return createDefaultPipeline(source);
         }
 
         return source;
+    }
+
+    std::string AgentStream::createNvidiaPipeline(const std::string& source) const
+    {
+        std::stringstream pipeline;
+        pipeline << "rtspsrc location=" << source << " latency=" << rtsp_latency_ms_
+                << " ! rtph265depay ! h265parse ! nvh265dec"
+                << " ! videoconvert ! video/x-raw,format=BGRx"
+                << " ! appsink sync=false";
+
+        return pipeline.str();
+    }
+
+    std::string AgentStream::createDefaultPipeline(const std::string& source) const
+    {
+        std::stringstream pipeline;
+        pipeline << "rtspsrc location=" << source << " latency=" << rtsp_latency_ms_
+                << " ! rtph265depay ! h265parse ! avdec_h265"
+                << " ! videoconvert ! video/x-raw,format=BGRx"
+                << " ! appsink sync=false";
+
+        return pipeline.str();
     }
 
     // ════════════════════════════════════════════════════════════════════════════
@@ -150,6 +171,8 @@ namespace flychams::agent
     void AgentStream::streamPipeline(const std::shared_ptr<StreamUnit>& unit)
     {
         cv::VideoCapture capture;
+        cv::Mat frame;
+
         while (unit->running)
         {
             RCLCPP_INFO(node_->get_logger(), "Agent stream: Attempting to open stream for camera %s: %s",
@@ -161,62 +184,63 @@ namespace flychams::agent
             {
                 RCLCPP_ERROR(node_->get_logger(), "Agent stream: Could not open stream for camera %s, retrying in %d ms...",
                     unit->config->id.c_str(), reconnect_delay_ms_);
+                capture.release();
                 std::this_thread::sleep_for(std::chrono::milliseconds(reconnect_delay_ms_));
                 continue;
             }
 
             RCLCPP_INFO(node_->get_logger(), "Agent stream: Stream opened for camera %s", unit->config->id.c_str());
-            break;
-        }
 
-        cv::Mat frame;
-
-        while (unit->running)
-        {
-            // Move from GPU to CPU through PCIe (very fast)
-            bool success = capture.read(frame);
-            
-            // Check frame validity
-            if (!success || frame.empty())
+            while (unit->running)
             {
-                std::this_thread::sleep_for(std::chrono::milliseconds(10));
-                continue;
-            }
+                // Move from GPU to CPU through PCIe (very fast)
+                bool success = capture.read(frame);
 
-            // Downscale on CPU (nearest neighbor for speed)
-            cv::Mat low_res_frame;
-            cv::resize(frame, low_res_frame, cv::Size(unit->output_width, unit->output_height), 0, 0, cv::INTER_NEAREST);
-            unit->image_pub->publish(makeCompressedImage(low_res_frame, unit->frame_id));
-
-            // Crop on CPU (zero-copy in RAM)
-            if (unit->enable_crops)
-            {
-                std::vector<CropMsg> crops;
+                // Check frame validity
+                if (!success || frame.empty())
                 {
-                    std::lock_guard<std::mutex> lock(unit->crops_mutex);
-                    crops = unit->crops;
+                    RCLCPP_WARN(node_->get_logger(), "Agent stream: Stream lost for camera %s, reconnecting in %d ms...",
+                        unit->config->id.c_str(), reconnect_delay_ms_);
+                    capture.release();
+                    std::this_thread::sleep_for(std::chrono::milliseconds(reconnect_delay_ms_));
+                    break;
                 }
 
-                for (size_t i = 0; i < crops.size(); i++)
-                {
-                    const auto& crop = crops[i];
+                // Downscale on CPU (nearest neighbor for speed)
+                cv::Mat low_res_frame;
+                cv::resize(frame, low_res_frame, cv::Size(unit->output_width, unit->output_height), 0, 0, cv::INTER_NEAREST);
+                unit->image_pub->publish(makeCompressedImage(low_res_frame, unit->frame_id));
 
-                    cv::Rect rect(crop.x, crop.y, crop.w, crop.h);
-                    rect = rect & cv::Rect(0, 0, frame.cols, frame.rows);
-                    if (rect.width <= 0 || rect.height <= 0)
+                // Crop on CPU (zero-copy in RAM)
+                if (unit->enable_crops)
+                {
+                    std::vector<CropMsg> crops;
                     {
-                        continue;
+                        std::lock_guard<std::mutex> lock(unit->crops_mutex);
+                        crops = unit->crops;
                     }
 
-                    cv::Mat crop_frame = frame(rect);
-                    cv::Mat low_res_crop;
-                    cv::resize(crop_frame, low_res_crop, cv::Size(unit->crop_output_width, unit->crop_output_height), 0, 0, cv::INTER_NEAREST);
-                    unit->crop_pubs[i]->publish(makeCompressedImage(low_res_crop, unit->frame_id));
+                    for (size_t i = 0; i < crops.size(); i++)
+                    {
+                        const auto& crop = crops[i];
+
+                        cv::Rect rect(crop.x, crop.y, crop.w, crop.h);
+                        rect = rect & cv::Rect(0, 0, frame.cols, frame.rows);
+                        if (rect.width <= 0 || rect.height <= 0)
+                        {
+                            continue;
+                        }
+
+                        cv::Mat crop_frame = frame(rect);
+                        cv::Mat low_res_crop;
+                        cv::resize(crop_frame, low_res_crop, cv::Size(unit->crop_output_width, unit->crop_output_height), 0, 0, cv::INTER_NEAREST);
+                        unit->crop_pubs[i]->publish(makeCompressedImage(low_res_crop, unit->frame_id));
+                    }
                 }
             }
-        }
 
-        capture.release();
+            capture.release();
+        }
     }
 
     // ════════════════════════════════════════════════════════════════════════════
