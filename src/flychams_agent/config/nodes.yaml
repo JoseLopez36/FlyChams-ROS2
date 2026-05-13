@@ -89,5 +89,6 @@
     jpeg_quality: 80
     rtsp_latency_ms: 100
     reconnect_delay_ms: 2000
+    stream_start_delay_ms: 500
     output_encoding: jpg
     use_nvidia: true

@@ -6,7 +6,7 @@
 node_allowlist:
   - target_state
   - target_control
-  - camera_manager
+  # - camera_manager
 
 # Per-node log level overrides
 node_log_levels:

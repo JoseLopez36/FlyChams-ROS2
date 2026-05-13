@@ -20,6 +20,7 @@ namespace flychams::agent
         jpeg_quality_ = RosUtils::getParameterOr<int>(node_, "jpeg_quality", 80);
         rtsp_latency_ms_ = RosUtils::getParameterOr<int>(node_, "rtsp_latency_ms", 100);
         reconnect_delay_ms_ = RosUtils::getParameterOr<int>(node_, "reconnect_delay_ms", 2000);
+        stream_start_delay_ms_ = RosUtils::getParameterOr<int>(node_, "stream_start_delay_ms", 500);
         output_encoding_ = RosUtils::getParameterOr<std::string>(node_, "output_encoding", "jpg");
         use_nvidia_ = RosUtils::getParameterOr<bool>(node_, "use_nvidia", true);
 
@@ -31,6 +32,7 @@ namespace flychams::agent
 
         // Get observation units config
         const TrackingConfig& tracking_config = settings_tools_->getTracking(agent_id_);
+        int stream_index = 0;
         for (const auto& [camera_id, camera] : tracking_config.multi_camera_set)
         {
             std::shared_ptr<StreamUnit> unit = std::make_shared<StreamUnit>();
@@ -64,9 +66,11 @@ namespace flychams::agent
             }
 
             unit->image_pub = topic_tools_->createAgentMultiCameraImagePublisher(agent_id_, camera_id);
+            unit->start_delay_ms = stream_index * stream_start_delay_ms_;
             unit->running = true;
             unit->thread = std::thread(&AgentStream::streamPipeline, this, unit);
             stream_units_[camera_id] = unit;
+            stream_index++;
         }
 
         // Subscribe to GUI setpoints topic
@@ -172,6 +176,9 @@ namespace flychams::agent
     {
         cv::VideoCapture capture;
         cv::Mat frame;
+
+        if (unit->start_delay_ms > 0 && unit->running)
+            std::this_thread::sleep_for(std::chrono::milliseconds(unit->start_delay_ms));
 
         while (unit->running)
         {

@@ -7,6 +7,22 @@ FlyChams-Sim-UE5 is the Unreal Engine 5 + AirSim environment used for software-i
 - FlyChams-Sim-UE5 binary package.
 - Generated AirSim settings: `config/generated/airsim.json` (run `scripts/launch_settings.sh` to generate).
 
+## Installation
+
+### NVIDIA Encoder Stream Limit
+
+When running a high number of simulated cameras (e.g. 9+ cameras on a consumer GPU such as an RTX 5070 laptop), the NVIDIA driver enforces a simultaneous NVENC session limit that will cause encoding failures or black feeds.
+
+Apply the [nvidia-patch](https://github.com/keylase/nvidia-patch) to remove this restriction:
+
+```bash
+git clone https://github.com/keylase/nvidia-patch.git
+cd nvidia-patch
+sudo bash patch.sh
+```
+
+> **Note:** Re-apply the patch after every NVIDIA driver update.
+
 ## Launch
 
 ### Using the launch script (recommended)

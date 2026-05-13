@@ -63,10 +63,11 @@ namespace flychams::agent
             // Runtime
             std::atomic_bool running;
             std::thread thread;
+            int start_delay_ms;
             // Constructor
             StreamUnit()
                 : config(), pipeline(), frame_id(), output_width(0), output_height(0), enable_crops(false),
-                crops(), crops_mutex(), image_pub(), crop_pubs(), running(false), thread()
+                crops(), crops_mutex(), image_pub(), crop_pubs(), running(false), thread(), start_delay_ms(0)
             {
             }
         };
@@ -82,6 +83,7 @@ namespace flychams::agent
         int jpeg_quality_;
         int rtsp_latency_ms_;
         int reconnect_delay_ms_;
+        int stream_start_delay_ms_;
         std::string output_encoding_;
         bool use_nvidia_;
 

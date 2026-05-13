@@ -2,6 +2,7 @@
 import argparse
 import subprocess
 import os
+import time
 import yaml
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -31,16 +32,20 @@ def launch_sim(agent_ids: list):
     # One PX4 container per agent
     for i in range(len(agent_ids)):
         run(f"DETACH=true {SCRIPT_DIR}/launch_px4.sh {i}")
+        time.sleep(1)
 
     # Coordinator
     run(f"DETACH=true {SCRIPT_DIR}/launch_coordinator.sh")
+    time.sleep(1)
 
     # Simulation
     run(f"DETACH=true {SCRIPT_DIR}/launch_simulation.sh")
+    time.sleep(1)
 
     # One agent container per agent
     for agent_id in agent_ids:
         run(f"DETACH=true {SCRIPT_DIR}/launch_agent.sh {agent_id}")
+        time.sleep(1)
 
 # ------------------------------------------------------------------
 # Real mode
