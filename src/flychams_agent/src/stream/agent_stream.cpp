@@ -27,9 +27,6 @@ namespace flychams::agent
         // Initialize stream variables
         stream_units_.clear();
 
-        // Initialize GStreamer
-        gst_init(nullptr, nullptr);
-
         // Get observation units config
         const TrackingConfig& tracking_config = settings_tools_->getTracking(agent_id_);
         int stream_index = 0;
@@ -37,7 +34,7 @@ namespace flychams::agent
         {
             std::shared_ptr<StreamUnit> unit = std::make_shared<StreamUnit>();
             unit->config = camera;
-            unit->pipeline = createPipeline(camera);
+            unit->pipeline = camera->source_stream_url;
             unit->frame_id = transform_tools_->getCameraOpticalFrame(agent_id_, camera_id);
             if (camera->role == ObservationRole::Central)
             {
@@ -72,6 +69,12 @@ namespace flychams::agent
             stream_units_[camera_id] = unit;
             stream_index++;
         }
+
+        // Set OpenCV FFMPEG capture options
+        if (use_nvidia_)
+            setenv("OPENCV_FFMPEG_CAPTURE_OPTIONS", "video_codec;hevc_cuvid|rtsp_transport;tcp", 1);
+        else
+            setenv("OPENCV_FFMPEG_CAPTURE_OPTIONS", "rtsp_transport;tcp", 1);
 
         // Subscribe to GUI setpoints topic
         gui_setpoints_sub_ = topic_tools_->createAgentGuiSetpointsSubscriber(agent_id_,
@@ -129,46 +132,6 @@ namespace flychams::agent
     }
 
     // ════════════════════════════════════════════════════════════════════════════
-    // STREAM CONFIGURATION
-    // ════════════════════════════════════════════════════════════════════════════
-
-    std::string AgentStream::createPipeline(const MultiCameraConfigPtr& camera) const
-    {
-        const std::string& source = camera->source_stream_url;
-        if (source.rfind("rtsp://", 0) == 0)
-        {
-            if (use_nvidia_)
-                return createNvidiaPipeline(source);
-            else
-                return createDefaultPipeline(source);
-        }
-
-        return source;
-    }
-
-    std::string AgentStream::createNvidiaPipeline(const std::string& source) const
-    {
-        std::stringstream pipeline;
-        pipeline << "rtspsrc location=" << source << " latency=" << rtsp_latency_ms_
-                << " ! rtph265depay ! h265parse ! nvh265dec"
-                << " ! videoconvert ! video/x-raw,format=BGRx"
-                << " ! appsink sync=false";
-
-        return pipeline.str();
-    }
-
-    std::string AgentStream::createDefaultPipeline(const std::string& source) const
-    {
-        std::stringstream pipeline;
-        pipeline << "rtspsrc location=" << source << " latency=" << rtsp_latency_ms_
-                << " ! rtph265depay ! h265parse ! avdec_h265"
-                << " ! videoconvert ! video/x-raw,format=BGRx"
-                << " ! appsink sync=false";
-
-        return pipeline.str();
-    }
-
-    // ════════════════════════════════════════════════════════════════════════════
     // STREAM MANAGEMENT
     // ════════════════════════════════════════════════════════════════════════════
 
@@ -185,7 +148,7 @@ namespace flychams::agent
             RCLCPP_INFO(node_->get_logger(), "Agent stream: Attempting to open stream for camera %s: %s",
                 unit->config->id.c_str(), unit->pipeline.c_str());
 
-            capture.open(unit->pipeline, cv::CAP_GSTREAMER);
+            capture.open(unit->pipeline, cv::CAP_FFMPEG);
 
             if (!capture.isOpened())
             {
@@ -197,6 +160,7 @@ namespace flychams::agent
             }
 
             RCLCPP_INFO(node_->get_logger(), "Agent stream: Stream opened for camera %s", unit->config->id.c_str());
+            capture.set(cv::CAP_PROP_BUFFERSIZE, 1);
 
             while (unit->running)
             {

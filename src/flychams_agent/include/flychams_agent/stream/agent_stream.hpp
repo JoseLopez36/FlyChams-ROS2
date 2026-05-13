@@ -6,14 +6,11 @@
 #include <thread>
 #include <algorithm>
 #include <chrono>
-#include <sstream>
+#include <cstdlib>
 #include <unordered_map>
 
 // OpenCV include
 #include <opencv2/opencv.hpp>
-
-// GStreamer include
-#include <gst/gst.h>
 
 // Base module include
 #include "flychams_common/base/base_module.hpp"
@@ -22,7 +19,7 @@ namespace flychams::agent
 {
     /**
      * ════════════════════════════════════════════════════════════════
-     * @brief Class to handle video streaming using GStreamer
+     * @brief Class to handle video streaming using FFmpeg
      * ════════════════════════════════════════════════════════════════
      * @author Jose Francisco Lopez Ruiz
      * @date 2026-03-06
@@ -93,11 +90,6 @@ namespace flychams::agent
 
     private: // Callbacks
         void guiSetpointsCallback(const core::AgentGuiSetpointsMsg::SharedPtr msg);
-
-    private: // Stream configuration
-        std::string createPipeline(const core::MultiCameraConfigPtr& camera) const;
-        std::string createNvidiaPipeline(const std::string& source) const;
-        std::string createDefaultPipeline(const std::string& source) const;
 
     private: // Stream management
         void streamPipeline(const std::shared_ptr<StreamUnit>& unit);

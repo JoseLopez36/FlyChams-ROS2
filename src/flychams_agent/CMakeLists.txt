@@ -18,10 +18,6 @@ find_package(flychams_api REQUIRED)
 set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH};/usr/share/cmake/geographiclib")
 find_package(GeographicLib REQUIRED)
 
-# Find GStreamer
-find_package(PkgConfig REQUIRED)
-pkg_check_modules(GSTREAMER REQUIRED gstreamer-1.0)
-
 # Create control library
 set(CONTROL_SRC
   src/mavros/mavros_manager.cpp
@@ -44,7 +40,6 @@ target_include_directories(${PROJECT_NAME} PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   $<INSTALL_INTERFACE:include>
   ${GeographicLib_INCLUDE_DIRS}
-  ${GSTREAMER_INCLUDE_DIRS}
 )
 
 # Export dependencies
@@ -56,7 +51,6 @@ ament_target_dependencies(${PROJECT_NAME}
 target_link_libraries(${PROJECT_NAME}
   rclcpp::rclcpp
   ${GeographicLib_LIBRARIES}
-  ${GSTREAMER_LIBRARIES}
 )
 
 # Create executable for mavros manager node
