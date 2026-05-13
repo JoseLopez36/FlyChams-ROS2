@@ -105,7 +105,7 @@ DETACH=true FOXGLOVE_PORT=8765 scripts/launch_operator.sh
 
 Open Foxglove Studio → **Open connection** → **Foxglove WebSocket** → `ws://<host-ip>:8765`.
 
-A baseline layout is provided at `foxglove/layout.json`. Import it via **File → Import layout from file**.
+A layout is provided at `foxglove/flychams.json`. Import it via **File → Import layout from file**. See [foxglove.md](foxglove.md) for a full panel and topic reference.
 
 ---
 
