@@ -19,10 +19,14 @@ namespace flychams::agent
         // Stream parameters
         jpeg_quality_ = RosUtils::getParameterOr<int>(node_, "jpeg_quality", 80);
         rtsp_latency_ms_ = RosUtils::getParameterOr<int>(node_, "rtsp_latency_ms", 100);
+        reconnect_delay_ms_ = RosUtils::getParameterOr<int>(node_, "reconnect_delay_ms", 2000);
         output_encoding_ = RosUtils::getParameterOr<std::string>(node_, "output_encoding", "jpg");
 
         // Initialize stream variables
         stream_units_.clear();
+
+        // Initialize GStreamer
+        gst_init(nullptr, nullptr);
 
         // Get observation units config
         const TrackingConfig& tracking_config = settings_tools_->getTracking(agent_id_);
@@ -130,7 +134,8 @@ namespace flychams::agent
         {
             std::stringstream pipeline;
             pipeline << "rtspsrc location=" << source << " latency=" << rtsp_latency_ms_
-                << " ! rtph264depay ! h264parse ! avdec_h264 ! videoconvert ! appsink sync=false";
+                << " ! rtph265depay ! h265parse ! avdec_h265"
+                << " ! videoconvert ! appsink sync=false";
 
             return pipeline.str();
         }
@@ -144,16 +149,24 @@ namespace flychams::agent
 
     void AgentStream::streamPipeline(const std::shared_ptr<StreamUnit>& unit)
     {
-        RCLCPP_INFO(node_->get_logger(), "Agent stream: Launching stream for camera %s: %s",
-            unit->config->id.c_str(), unit->pipeline.c_str());
-
-        cv::VideoCapture capture(unit->pipeline, cv::CAP_GSTREAMER);
-
-        if (!capture.isOpened())
+        cv::VideoCapture capture;
+        while (unit->running)
         {
-            RCLCPP_ERROR(node_->get_logger(), "Agent stream: Could not open stream for camera %s",
-                unit->config->id.c_str());
-            return;
+            RCLCPP_INFO(node_->get_logger(), "Agent stream: Attempting to open stream for camera %s: %s",
+                unit->config->id.c_str(), unit->pipeline.c_str());
+
+            capture.open(unit->pipeline, cv::CAP_GSTREAMER);
+
+            if (!capture.isOpened())
+            {
+                RCLCPP_ERROR(node_->get_logger(), "Agent stream: Could not open stream for camera %s, retrying in %d ms...",
+                    unit->config->id.c_str(), reconnect_delay_ms_);
+                std::this_thread::sleep_for(std::chrono::milliseconds(reconnect_delay_ms_));
+                continue;
+            }
+
+            RCLCPP_INFO(node_->get_logger(), "Agent stream: Stream opened for camera %s", unit->config->id.c_str());
+            break;
         }
 
         cv::Mat frame;

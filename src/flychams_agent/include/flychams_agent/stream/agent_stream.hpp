@@ -12,6 +12,9 @@
 // OpenCV include
 #include <opencv2/opencv.hpp>
 
+// GStreamer include
+#include <gst/gst.h>
+
 // Base module include
 #include "flychams_common/base/base_module.hpp"
 
@@ -78,6 +81,7 @@ namespace flychams::agent
         // Stream parameters
         int jpeg_quality_;
         int rtsp_latency_ms_;
+        int reconnect_delay_ms_;
         std::string output_encoding_;
 
     private: // Data
