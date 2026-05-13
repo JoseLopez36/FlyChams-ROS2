@@ -326,8 +326,6 @@ namespace flychams::core
 
 					agent->battery_capacity = getCellValue<float>(row.findCell(10));
 
-					agent->inference_stream_url = getCellValue<std::string>(row.findCell(11));
-
 					// Parse tracking
 					parseTracking(book, agent);
 
@@ -470,8 +468,6 @@ namespace flychams::core
 
 					multi_camera->source_stream_url = getCellValue<std::string>(row.findCell(12));
 
-					multi_camera->interface_stream_url = getCellValue<std::string>(row.findCell(13));
-
 					multi_camera->hardware = getCellValue<std::string>(row.findCell(14));
 
 					multi_camera->ip = getCellValue<std::string>(row.findCell(15));
@@ -541,8 +537,6 @@ namespace flychams::core
 					multi_window->max_lambda = getCellValue<float>(row.findCell(6));
 
 					multi_window->ref_lambda = getCellValue<float>(row.findCell(7));
-
-					multi_window->interface_stream_url = getCellValue<std::string>(row.findCell(8));
 
 					// Store setting
 					agent_ptr->tracking.multi_window_set.insert({ multi_window->id, multi_window });

@@ -40,6 +40,8 @@ namespace flychams::core
             agent_topics_.optimization_duration_pattern = topic_config.agent_optimization_duration;
             agent_topics_.observation_setpoints_pattern = topic_config.agent_observation_setpoints;
             agent_topics_.gui_setpoints_pattern = topic_config.agent_gui_setpoints;
+            agent_topics_.multi_camera_image_pattern = topic_config.agent_multi_camera_image;
+            agent_topics_.multi_window_image_pattern = topic_config.agent_multi_window_image;
             agent_topics_.metrics_pattern = topic_config.agent_metrics;
             agent_topics_.markers_pattern = topic_config.agent_markers;
 
@@ -90,6 +92,8 @@ namespace flychams::core
             std::string optimization_duration_pattern;
             std::string observation_setpoints_pattern;
             std::string gui_setpoints_pattern;
+            std::string multi_camera_image_pattern;
+            std::string multi_window_image_pattern;
             std::string metrics_pattern;
             std::string markers_pattern;
         };
@@ -174,6 +178,14 @@ namespace flychams::core
         std::string getAgentGuiSetpointsTopic(const ID& agent_id)
         {
             return RosUtils::replace(agent_topics_.gui_setpoints_pattern, "AGENTID", agent_id);
+        }
+        std::string getAgentMultiCameraImageTopic(const ID& agent_id, const ID& camera_id)
+        {
+            return RosUtils::replace(RosUtils::replace(agent_topics_.multi_camera_image_pattern, "AGENTID", agent_id), "MULTICAMERAID", camera_id);
+        }
+        std::string getAgentMultiWindowImageTopic(const ID& agent_id, const ID& window_id)
+        {
+            return RosUtils::replace(RosUtils::replace(agent_topics_.multi_window_image_pattern, "AGENTID", agent_id), "MULTIWINDOWID", window_id);
         }
         std::string getAgentMetricsTopic(const ID& agent_id)
         {
@@ -277,6 +289,14 @@ namespace flychams::core
         {
             return node_->create_publisher<AgentGuiSetpointsMsg>(getAgentGuiSetpointsTopic(agent_id), 10);
         }
+        PublisherPtr<CompressedImageMsg> createAgentMultiCameraImagePublisher(const ID& agent_id, const ID& camera_id)
+        {
+            return node_->create_publisher<CompressedImageMsg>(getAgentMultiCameraImageTopic(agent_id, camera_id), 10);
+        }     
+        PublisherPtr<CompressedImageMsg> createAgentMultiWindowImagePublisher(const ID& agent_id, const ID& window_id)
+        {
+            return node_->create_publisher<CompressedImageMsg>(getAgentMultiWindowImageTopic(agent_id, window_id), 10);
+        }   
         PublisherPtr<AgentMetricsMsg> createAgentMetricsPublisher(const ID& agent_id)
         {
             return node_->create_publisher<AgentMetricsMsg>(getAgentMetricsTopic(agent_id), 10);
@@ -378,6 +398,14 @@ namespace flychams::core
         SubscriberPtr<AgentGuiSetpointsMsg> createAgentGuiSetpointsSubscriber(const ID& agent_id, std::function<void(const AgentGuiSetpointsMsg::SharedPtr)> callback, const rclcpp::SubscriptionOptions& options = rclcpp::SubscriptionOptions())
         {
             return node_->create_subscription<AgentGuiSetpointsMsg>(getAgentGuiSetpointsTopic(agent_id), 10, std::move(callback), options);
+        }
+        SubscriberPtr<CompressedImageMsg> createAgentMultiCameraImageSubscriber(const ID& agent_id, const ID& camera_id, std::function<void(const CompressedImageMsg::SharedPtr)> callback, const rclcpp::SubscriptionOptions& options = rclcpp::SubscriptionOptions())
+        {
+            return node_->create_subscription<CompressedImageMsg>(getAgentMultiCameraImageTopic(agent_id, camera_id), 10, std::move(callback), options);
+        }
+        SubscriberPtr<CompressedImageMsg> createAgentMultiWindowImageSubscriber(const ID& agent_id, const ID& window_id, std::function<void(const CompressedImageMsg::SharedPtr)> callback, const rclcpp::SubscriptionOptions& options = rclcpp::SubscriptionOptions())
+        {
+            return node_->create_subscription<CompressedImageMsg>(getAgentMultiWindowImageTopic(agent_id, window_id), 10, std::move(callback), options);
         }
         SubscriberPtr<AgentMetricsMsg> createAgentMetricsSubscriber(const ID& agent_id, std::function<void(const AgentMetricsMsg::SharedPtr)> callback, const rclcpp::SubscriptionOptions& options = rclcpp::SubscriptionOptions())
         {

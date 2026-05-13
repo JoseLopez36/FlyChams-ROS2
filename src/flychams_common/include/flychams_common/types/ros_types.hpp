@@ -26,6 +26,7 @@
 
 // Sensor messages
 #include <sensor_msgs/msg/nav_sat_fix.hpp>
+#include <sensor_msgs/msg/compressed_image.hpp>
 
 // Geographic messages
 #include <geographic_msgs/msg/geo_point.hpp>
@@ -132,6 +133,8 @@ namespace flychams::core
     using OdometryMsg = nav_msgs::msg::Odometry;
     // NavSatFix
     using NavSatFixMsg = sensor_msgs::msg::NavSatFix;
+    // CompressedImage
+    using CompressedImageMsg = sensor_msgs::msg::CompressedImage;
     // Geographic
     using GeoPointMsg = geographic_msgs::msg::GeoPoint;
     using GeoPointStampedMsg = geographic_msgs::msg::GeoPointStamped;

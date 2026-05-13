@@ -8,7 +8,7 @@ RUN apt-get update && \
     ros-$ROS_DISTRO-tf2-geometry-msgs \
     ros-$ROS_DISTRO-vision-opencv \
     ros-$ROS_DISTRO-geographic-msgs \
-    ros-$ROS_DISTRO-image-transport \
+    ros-$ROS_DISTRO-compressed-image-transport \
     libyaml-cpp-dev \
     ros-$ROS_DISTRO-pcl-ros \
     ros-$ROS_DISTRO-pcl-conversions \

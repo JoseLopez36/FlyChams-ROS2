@@ -11,80 +11,84 @@ namespace flychams::agent
     void AgentStream::onInit()
     {
         // Get parameters from parameter server
-        // YOLO stream parameters
-        yolo_width_ = RosUtils::getParameterOr<int>(node_, "yolo_stream.width", 640);
-        yolo_height_ = RosUtils::getParameterOr<int>(node_, "yolo_stream.height", 640);
-        yolo_bitrate_ = RosUtils::getParameterOr<int>(node_, "yolo_stream.bitrate", 1000);
-        // Interface streams parameters
-        interface_width_ = RosUtils::getParameterOr<int>(node_, "interface_streams.width", 1280);
-        interface_height_ = RosUtils::getParameterOr<int>(node_, "interface_streams.height", 720);
-        interface_bitrate_ = RosUtils::getParameterOr<int>(node_, "interface_streams.bitrate", 3000);
-        // GPU type
-        gpu_type_ = RosUtils::getParameterOr<std::string>(node_, "gpu_type", "auto");
+        // Interface parameters
+        central_view_width = RosUtils::getParameterOr<int>(node_, "central_view.width", 854);
+        central_view_height = RosUtils::getParameterOr<int>(node_, "central_view.height", 480);
+        tracking_view_width = RosUtils::getParameterOr<int>(node_, "tracking_view.width", 427);
+        tracking_view_height = RosUtils::getParameterOr<int>(node_, "tracking_view.height", 240);
+        // Stream parameters
+        jpeg_quality_ = RosUtils::getParameterOr<int>(node_, "jpeg_quality", 80);
+        rtsp_latency_ms_ = RosUtils::getParameterOr<int>(node_, "rtsp_latency_ms", 100);
+        output_encoding_ = RosUtils::getParameterOr<std::string>(node_, "output_encoding", "jpg");
 
-        // Get relevant config
-        const AgentConfigPtr& agent_config = settings_tools_->getAgent(agent_id_);
+        // Initialize stream variables
+        stream_units_.clear();
+
+        // Get observation units config
         const TrackingConfig& tracking_config = settings_tools_->getTracking(agent_id_);
-        MultiCameraConfigPtr central_camera_config;
-        std::vector<MultiCameraConfigPtr> camera_configs;
-        std::vector<MultiWindowConfigPtr> window_configs;
-        source_width_ = 0;
-        source_height_ = 0;
         for (const auto& [multi_camera_id, multi_camera] : tracking_config.multi_camera_set)
         {
+            std::shared_ptr<StreamUnit> unit = std::make_shared<StreamUnit>();
+            unit->config = multi_camera;
+            unit->pipeline = createPipeline(multi_camera);
+            unit->frame_id = transform_tools_->getCameraOpticalFrame(agent_id_, multi_camera->id);
             if (multi_camera->role == ObservationRole::Central)
             {
-                central_camera_config = multi_camera;
-                source_width_ = multi_camera->camera.resolution(0);
-                source_height_ = multi_camera->camera.resolution(1);
+                unit->output_width = central_view_width;
+                unit->output_height = central_view_height;
+
+                // Configure multi-window
+                int nw = tracking_config.multi_window_set.size();
+                if (nw > 0)
+                {
+                    unit->enable_crops = true;
+                    unit->crops.resize(nw);
+                    for (const auto& [window_id, window] : tracking_config.multi_window_set)
+                    {
+                        unit->crop_pubs.push_back(topic_tools_->getAgentMultiWindowImagePublisher(agent_id_, window->id));
+                    }
+                    unit->crop_output_width = tracking_view_width;
+                    unit->crop_output_height = tracking_view_height;
+                }
             }
-            camera_configs.push_back(multi_camera);
-        }
-        for (const auto& [multi_window_id, multi_window] : tracking_config.multi_window_set)
-        {
-            window_configs.push_back(multi_window);
-        }
+            }
+            else if (multi_camera->role == ObservationRole::Tracking)
+            {
+                unit->output_width = tracking_view_width;
+                unit->output_height = tracking_view_height;
+                unit->enable_crops = false;
+            }
 
-        // Get stream info
-        source_stream_info_ = getSourceStreamInfo(central_camera_config);
-        yolo_stream_info_ = getYoloStreamInfo(agent_config);
-        interface_stream_infos_.clear();
-        for (const auto& camera : camera_configs)
-        {
-            interface_stream_infos_.push_back(getInterfaceStreamInfo(camera));
+            unit->crop_pubs.push_back(topic_tools_->getAgentMultiCameraImagePublisher(agent_id_, multi_camera->id));
+            unit->running = true;
+            unit->thread = std::thread(&AgentStream::streamPipeline, this, unit);
+            stream_units_[multi_camera->id] = unit;
         }
-        for (const auto& window : window_configs)
-        {
-            interface_stream_infos_.push_back(getInterfaceStreamInfo(window));
-        }
-
-        // Detect GPU type if not specified
-        if (gpu_type_ == "auto")
-        {
-            gpu_type_ = detectGpuType();
-            RCLCPP_INFO(node_->get_logger(), "Auto-detected GPU type: %s", gpu_type_.c_str());
-        }
-
-        // Create pipeline
-        const std::string pipeline_str = createPipeline(gpu_type_);
-
-        // Initialize GStreamer
-        // gst_init(nullptr, nullptr);
-
-        // Start pipeline
-        startStream(pipeline_str);
 
         // Subscribe to GUI setpoints topic
         gui_setpoints_sub_ = topic_tools_->createAgentGuiSetpointsSubscriber(agent_id_,
             std::bind(&AgentStream::guiSetpointsCallback, this, std::placeholders::_1), sub_options_with_module_cb_group_);
+
     }
 
     void AgentStream::onShutdown()
     {
-        stopStream();
-
         // Destroy subscribers
         gui_setpoints_sub_.reset();
+
+        // Stop stream units
+        for (auto& [multi_camera_id, unit] : stream_units_)
+        {
+            unit->running = false;
+        }
+        for (auto& [multi_camera_id, unit] : stream_units_)
+        {
+            if (unit->thread.joinable())
+            {
+                unit->thread.join();
+            }
+        }
+        stream_units_.clear();
     }
 
     // ════════════════════════════════════════════════════════════════════════════
@@ -93,47 +97,25 @@ namespace flychams::agent
 
     void AgentStream::guiSetpointsCallback(const core::AgentGuiSetpointsMsg::SharedPtr msg)
     {
-        if (!running_)
-        {
-            return;
-        }
-
         // Iterate through the crops in the message
-        for (size_t i = 0; i < msg->crops.size(); ++i)
+        const size_t n = msg->crops.size();
+        for (size_t i = 0; i < n; ++i)
         {
             const auto& crop = msg->crops[i];
+            const auto& camera_id = msg->camera_ids[i];
 
-            // Only update if it's not out of bounds
-            if (!crop.is_out_of_bounds)
+            // Only update if it's not out of bounds and the camera has crops enabled
+            if (!crop.is_out_of_bounds && stream_units_.find(camera_id) != stream_units_.end())
             {
-                // Calculate margins for videocrop element
-                int left = std::min(std::max(0, (int)crop.x), source_width_);
-                int top = std::min(std::max(0, (int)crop.y), source_height_);
-                int right = std::min(std::max(0, source_width_ - ((int)crop.x + (int)crop.w)), source_width_);
-                int bottom = std::min(std::max(0, source_height_ - ((int)crop.y + (int)crop.h)), source_height_);
+                std::shared_ptr<StreamUnit> unit = stream_units_[camera_id];
 
-                // Ensure we don't crop more than the image dimensions
-                if (left + right >= source_width_) {
-                    right = 0;
-                }
-                if (top + bottom >= source_height_) {
-                    bottom = 0;
+                if (!unit->enable_crops)
+                {
+                    continue;
                 }
 
-                // Update videocrop properties
-                // if (i < croppers_.size() && croppers_[i] != nullptr)
-                // {
-                //     g_object_set(croppers_[i],
-                //         "left", left,
-                //         "right", right,
-                //         "top", top,
-                //         "bottom", bottom,
-                //         NULL);
-                // }
-                // else
-                // {
-                //     RCLCPP_ERROR(node_->get_logger(), "Agent stream: Crop element %zu is not available", i);
-                // }
+                std::lock_guard<std::mutex> lock(unit->crops_mutex);
+                unit->crops[i] = crop;
             }
         }
     }
@@ -142,265 +124,113 @@ namespace flychams::agent
     // STREAM CONFIGURATION
     // ════════════════════════════════════════════════════════════════════════════
 
-    AgentStream::StreamInfo AgentStream::getSourceStreamInfo(const core::MultiCameraConfigPtr& camera_config)
+    std::string AgentStream::createPipeline(const MultiCameraConfigPtr& multi_camera) const
     {
-        StreamInfo info;
-        info.url = camera_config->source_stream_url;
-        info.width = source_width_;
-        info.height = source_height_;
-        info.bitrate = 0;
-
-        parseUrl(info.url, info.protocol, info.host, info.port);
-
-        return info;
-    }
-
-    AgentStream::StreamInfo AgentStream::getYoloStreamInfo(const core::AgentConfigPtr& agent_config)
-    {
-        StreamInfo info;
-        info.url = agent_config->inference_stream_url;
-        info.width = yolo_width_;
-        info.height = yolo_height_;
-        info.bitrate = yolo_bitrate_;
-
-        parseUrl(info.url, info.protocol, info.host, info.port);
-
-        return info;
-    }
-
-    AgentStream::StreamInfo AgentStream::getInterfaceStreamInfo(const core::MultiCameraConfigPtr& camera_config)
-    {
-        StreamInfo info;
-        info.url = camera_config->interface_stream_url;
-        info.width = interface_width_;
-        info.height = interface_height_;
-        info.bitrate = interface_bitrate_;
-
-        parseUrl(info.url, info.protocol, info.host, info.port);
-
-        return info;
-    }
-
-    AgentStream::StreamInfo AgentStream::getInterfaceStreamInfo(const core::MultiWindowConfigPtr& window_config)
-    {
-        StreamInfo info;
-        info.url = window_config->interface_stream_url;
-        info.width = interface_width_;
-        info.height = interface_height_;
-        info.bitrate = interface_bitrate_;
-
-        parseUrl(info.url, info.protocol, info.host, info.port);
-
-        return info;
-    }
-
-    void AgentStream::parseUrl(const std::string& url, std::string& protocol, std::string& host, int& port)
-    {
-        // Parse URL: protocol://host:port
-        std::string url_copy = url;
-        size_t protocol_end_pos = url_copy.find("://");
-        if (protocol_end_pos != std::string::npos)
+        const std::string& source = multi_camera->source_stream_url;
+        if (source.rfind("rtsp://", 0) == 0)
         {
-            protocol = url_copy.substr(0, protocol_end_pos);
-            size_t host_start = protocol_end_pos + 3;
-            size_t port_start_pos = url_copy.find(':', host_start);
-            if (port_start_pos != std::string::npos)
+            std::stringstream pipeline;
+            pipeline << "rtspsrc location=" << source << " latency=" << rtsp_latency_ms_
+                << " ! rtph264depay ! h264parse ! avdec_h264 ! videoconvert ! appsink sync=false";
+
+            return pipeline.str();
+        }
+
+        return source;
+    }
+
+    // ════════════════════════════════════════════════════════════════════════════
+    // STREAM MANAGEMENT
+    // ════════════════════════════════════════════════════════════════════════════
+
+    void AgentStream::streamPipeline(const std::shared_ptr<StreamUnit>& unit)
+    {
+        RCLCPP_INFO(node_->get_logger(), "Agent stream: Launching stream for camera %s: %s",
+            unit->config->id.c_str(), unit->pipeline.c_str());
+
+        cv::VideoCapture capture(unit->pipeline, cv::CAP_GSTREAMER);
+
+        if (!capture.isOpened())
+        {
+            RCLCPP_ERROR(node_->get_logger(), "Agent stream: Could not open stream for camera %s",
+                unit->config->id.c_str());
+            return;
+        }
+
+        cv::Mat frame;
+
+        while (unit->running)
+        {
+            // Move from GPU to CPU through PCIe (very fast)
+            bool success = capture.read(frame);
+            
+            // Check frame validity
+            if (!success || frame.empty())
             {
-                host = url_copy.substr(host_start, port_start_pos - host_start);
-                try
+                std::this_thread::sleep_for(std::chrono::milliseconds(10));
+                continue;
+            }
+
+            // Downscale on CPU (nearest neighbor for speed)
+            cv::Mat low_res_frame;
+            cv::resize(frame, low_res_frame, cv::Size(unit->output_width, unit->output_height), 0, 0, cv::INTER_NEAREST);
+            unit->image_pub->publish(makeCompressedImage(low_res_frame, unit->frame_id));
+
+            // Crop on CPU (zero-copy in RAM)
+            if (unit->enable_crops)
+            {
+                std::vector<CropMsg> crops;
                 {
-                    port = std::stoi(url_copy.substr(port_start_pos + 1));
+                    std::lock_guard<std::mutex> lock(unit->crops_mutex);
+                    crops = unit->crops;
                 }
-                catch (...)
+
+                for (size_t i = 0; i < crops.size(); i++)
                 {
-                    port = 0;
+                    const auto& crop = crops[i];
+
+                    cv::Rect rect(crop.x, crop.y, crop.w, crop.h);
+                    rect = rect & cv::Rect(0, 0, frame.cols, frame.rows);
+                    if (rect.width <= 0 || rect.height <= 0)
+                    {
+                        continue;
+                    }
+
+                    cv::Mat crop_frame = frame(rect);
+                    cv::Mat low_res_crop;
+                    cv::resize(crop_frame, low_res_crop, cv::Size(unit->crop_output_width, unit->crop_output_height), 0, 0, cv::INTER_NEAREST);
+                    unit->crop_pubs[i]->publish(makeCompressedImage(low_res_crop, unit->frame_id));
                 }
             }
-            else
-            {
-                host = url_copy.substr(host_start);
-                port = 0;
-            }
         }
-        else
-        {
-            protocol = "";
-            host = "";
-            port = 0;
-        }
+
+        capture.release();
     }
 
-    std::string AgentStream::detectGpuType()
+    // ════════════════════════════════════════════════════════════════════════════
+    // IMAGE UTILITIES
+    // ════════════════════════════════════════════════════════════════════════════
+
+    core::CompressedImageMsg AgentStream::makeCompressedImage(const cv::Mat& image, const std::string& frame_id) const
     {
-        // GstRegistry* registry = gst_registry_get();
+        CompressedImageMsg msg;
+        msg.header.stamp = node_->now();
+        msg.header.frame_id = frame_id;
+        msg.format = output_encoding_;
 
-        // if (gst_registry_find_feature(registry, "nvh265enc", GST_TYPE_ELEMENT_FACTORY))
-        // {
-        //     return "nvidia";
-        // }
+        std::vector<int> params;
+        std::string extension = "." + output_encoding_;
 
-        // if (gst_registry_find_feature(registry, "vah265enc", GST_TYPE_ELEMENT_FACTORY))
-        // {
-        //     return "amd";
-        // }
-
-        RCLCPP_WARN(node_->get_logger(), "No hardware acceleration found. Defaulting to NVIDIA (NVENC) pipeline");
-        return "nvidia";
-    }
-
-    std::string AgentStream::createPipeline(const std::string& gpu_type)
-    {
-        if (gpu_type == "nvidia")
+        if (output_encoding_ == "jpg" || output_encoding_ == "jpeg")
         {
-            return createNvidiaPipeline();
-        }
-        else
-        {
-            return createAmdPipeline();
-        }
-    }
-
-    std::string AgentStream::createNvidiaPipeline()
-    {
-        std::string pipeline_str;
-
-        // Source branch
-        if (source_stream_info_.protocol == "udp")
-        {
-            pipeline_str =
-                "udpsrc port=" + std::to_string(source_stream_info_.port) + " buffer-size=5242880 caps=\"application/x-rtp, media=(string)video, clock-rate=(int)90000, encoding-name=(string)H265, payload=(int)96\" ! "
-                "rtph265depay ! h265parse ! nvh265dec ! queue max-size-buffers=1 ! tee name=t ";
-        }
-        else if (source_stream_info_.protocol == "rtsp")
-        {
-            pipeline_str =
-                "rtspsrc location=" + source_stream_info_.url + " latency=100 ! "
-                "rtph265depay ! h265parse ! nvh265dec ! queue max-size-buffers=1 ! tee name=t ";
-        }
-        else
-        {
-            RCLCPP_ERROR(node_->get_logger(), "Agent stream: Unsupported source protocol: %s", source_stream_info_.protocol.c_str());
-            return "";
+            params = {cv::IMWRITE_JPEG_QUALITY, std::clamp(jpeg_quality_, 1, 100)};
+            extension = ".jpg";
+            msg.format = "jpeg";
         }
 
-        // YOLO branch
-        pipeline_str += "t. ! queue leaky=downstream max-size-buffers=10 ! videoscale ! video/x-raw,width=" + std::to_string(yolo_stream_info_.width) + ",height=" + std::to_string(yolo_stream_info_.height) + " ! nvh264enc bitrate=" + std::to_string(yolo_stream_info_.bitrate) + " rc-mode=cbr ! h264parse config-interval=-1 ! tcpserversink host=" + yolo_stream_info_.host + " port=" + std::to_string(yolo_stream_info_.port) + " sync=false ";
+        cv::imencode(extension, image, msg.data, params);
 
-        // Interface branches
-        for (size_t i = 0; i < interface_stream_infos_.size(); ++i)
-        {
-            const auto& info = interface_stream_infos_[i];
-            std::string crop_name = "crop_" + std::to_string(i);
-            pipeline_str += "t. ! queue leaky=downstream max-size-buffers=10 ! videocrop name=" + crop_name + " ! videoscale ! video/x-raw,width=" + std::to_string(info.width) + ",height=" + std::to_string(info.height) + " ! nvh264enc bitrate=" + std::to_string(info.bitrate) + " rc-mode=cbr ! h264parse config-interval=-1 ! mpegtsmux ! udpsink host=" + info.host + " port=" + std::to_string(info.port) + " sync=false ";
-        }
-
-        return pipeline_str;
-    }
-
-    std::string AgentStream::createAmdPipeline()
-    {
-        std::string pipeline_str;
-
-        // Source branch
-        if (source_stream_info_.protocol == "udp")
-        {
-            pipeline_str =
-                "udpsrc port=" + std::to_string(source_stream_info_.port) + " buffer-size=5242880 caps=\"application/x-rtp, media=(string)video, clock-rate=(int)90000, encoding-name=(string)H265, payload=(int)96\" ! "
-                "rtph265depay ! h265parse ! vah265dec ! queue max-size-buffers=1 ! tee name=t ";
-        }
-        else if (source_stream_info_.protocol == "rtsp")
-        {
-            pipeline_str =
-                "rtspsrc location=" + source_stream_info_.url + " latency=100 ! "
-                "rtph265depay ! h265parse ! vah265dec ! queue max-size-buffers=1 ! tee name=t ";
-        }
-        else
-        {
-            RCLCPP_ERROR(node_->get_logger(), "Agent stream: Unsupported source protocol: %s", source_stream_info_.protocol.c_str());
-            return "";
-        }
-
-        // YOLO branch
-        pipeline_str += "t. ! queue leaky=downstream max-size-buffers=10 ! vapostproc ! video/x-raw,width=" + std::to_string(yolo_stream_info_.width) + ",height=" + std::to_string(yolo_stream_info_.height) + " ! vah264enc bitrate=" + std::to_string(yolo_stream_info_.bitrate) + " ! h264parse config-interval=-1 ! tcpserversink host=" + yolo_stream_info_.host + " port=" + std::to_string(yolo_stream_info_.port) + " sync=false ";
-
-        // Interface branches
-        for (size_t i = 0; i < interface_stream_infos_.size(); ++i)
-        {
-            const auto& info = interface_stream_infos_[i];
-            std::string crop_name = "crop_" + std::to_string(i);
-            pipeline_str += "t. ! queue leaky=downstream max-size-buffers=10 ! videocrop name=" + crop_name + " ! vapostproc ! video/x-raw,width=" + std::to_string(info.width) + ",height=" + std::to_string(info.height) + " ! vah264enc bitrate=" + std::to_string(info.bitrate) + " rc-mode=cbr ! h264parse config-interval=-1 ! mpegtsmux ! udpsink host=" + info.host + " port=" + std::to_string(info.port) + " sync=false ";
-        }
-
-        return pipeline_str;
-    }
-
-    void AgentStream::startStream(const std::string& pipeline_str)
-    {
-        stream_thread_ = std::thread([this, pipeline_str]() {
-            RCLCPP_INFO(node_->get_logger(), "Launching pipeline: %s", pipeline_str.c_str());
-
-            // GError* error = nullptr;
-            // pipeline_ = gst_parse_launch(pipeline_str.c_str(), &error);
-
-            // if (error)
-            // {
-            //     RCLCPP_ERROR(node_->get_logger(), "Failed to parse pipeline: %s", error->message);
-            //     // g_error_free(error);
-            //     // return;
-            // }
-
-            // Retrieve crop elements
-            // croppers_.clear();
-            for (size_t i = 0; i < interface_stream_infos_.size(); ++i)
-            {
-                std::string name = "crop_" + std::to_string(i);
-                // GstElement* cropper = gst_bin_get_by_name(GST_BIN(pipeline_), name.c_str());
-                // if (cropper)
-                // {
-                //     croppers_.push_back(cropper);
-                // }
-                // else
-                // {
-                //     // croppers_.push_back(nullptr);
-                //     RCLCPP_ERROR(node_->get_logger(), "Could not find element named '%s'", name.c_str());
-                // }
-            }
-
-            // Start pipeline
-            running_ = true;
-            RCLCPP_INFO(node_->get_logger(), "Pipeline started");
-            // gst_element_set_state(pipeline_, GST_STATE_PLAYING);
-            });
-    }
-
-    void AgentStream::stopStream()
-    {
-        RCLCPP_INFO(node_->get_logger(), "Stopping pipeline...");
-
-        if (stream_thread_.joinable())
-        {
-            stream_thread_.join();
-        }
-
-        running_ = false;
-
-        // Clear crops references
-        // for (auto* cropper : croppers_)
-        // {
-        //     if (cropper)
-        //     {
-        //         // gst_object_unref(cropper);
-        //     }
-        // }
-        // croppers_.clear();
-
-        // if (pipeline_)
-        // {
-        //     gst_element_set_state(pipeline_, GST_STATE_NULL);
-        //     gst_object_unref(pipeline_);
-        //     pipeline_ = nullptr;
-        // }
-        RCLCPP_INFO(node_->get_logger(), "Pipeline stopped");
+        return msg;
     }
 
 } // namespace flychams::agent

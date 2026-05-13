@@ -78,15 +78,14 @@
 
 /**/agent_stream_node:
   ros__parameters:
-    # YOLO stream parameters
-    yolo_stream:
-      width: 640
-      height: 640
-      bitrate: 1000
-    # Interface streams parameters
-    interface_streams:
-      width: 1280
-      height: 720
-      bitrate: 3000
-    # GPU type (auto, amd, nvidia)
-    gpu_type: "auto"
+    # Interface parameters
+    central_view:
+      width: 854
+      height: 480
+    tracking_view:
+      width: 427
+      height: 240
+    # Stream parameters
+    jpeg_quality: 80
+    rtsp_latency_ms: 100
+    output_encoding: jpg

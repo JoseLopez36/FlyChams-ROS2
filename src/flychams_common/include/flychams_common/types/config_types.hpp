@@ -80,6 +80,8 @@ namespace flychams::core
         std::string agent_optimization_duration;
         std::string agent_observation_setpoints;
         std::string agent_gui_setpoints;
+        std::string agent_multi_camera_image;
+        std::string agent_multi_window_image;
         std::string agent_metrics;
         std::string agent_markers;
 
@@ -189,7 +191,6 @@ namespace flychams::core
         float min_lambda;
         float max_lambda;
         float ref_lambda;
-        std::string interface_stream_url;
     };
     using MultiWindowConfigPtr = std::shared_ptr<MultiWindowConfig>;
     using MultiWindowSetConfig = std::map<ID, MultiWindowConfigPtr>;
@@ -211,7 +212,6 @@ namespace flychams::core
         float max_focal;
         float ref_focal;
         std::string source_stream_url;
-        std::string interface_stream_url;
         std::string hardware;
         std::string ip;
         int port;
@@ -255,7 +255,6 @@ namespace flychams::core
         float safety_radius;
         float max_altitude;
         float battery_capacity;
-        std::string inference_stream_url;
 
         // External config
         DroneConfig drone;

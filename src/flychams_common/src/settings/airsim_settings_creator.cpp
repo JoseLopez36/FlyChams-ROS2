@@ -517,7 +517,7 @@ namespace flychams::core
         streams = nlohmann::ordered_json::array();
 
         // Iterate over all agents to stream their cameras
-        int udp_port = 5000;
+        int rtsp_port = 8554;
         for (const auto& [agent_id, agent_ptr] : config_ptr->agent_team)
         {
             for (const auto& [camera_id, camera_ptr] : agent_ptr->tracking.multi_camera_set)
@@ -525,8 +525,7 @@ namespace flychams::core
                 streams.push_back({ {"CameraName", camera_id},
                                      {"ImageType", 0},
                                      {"VehicleName", agent_id},
-                                     {"UdpPort", udp_port} });
-                udp_port++;
+                                     {"RtspPort", rtsp_port} });
             }
         }
     }

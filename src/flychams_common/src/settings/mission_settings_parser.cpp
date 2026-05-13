@@ -100,8 +100,6 @@ namespace flychams::core
 			agent->max_altitude = RosUtils::getParameter<float>(node, agent_prefix + "max_altitude");
 			agent->battery_capacity = RosUtils::getParameter<float>(node, agent_prefix + "battery_capacity");
 
-			agent->inference_stream_url = RosUtils::getParameter<std::string>(node, agent_prefix + "inference_stream_url");
-
 			parseTrackingParameters(node, agent, agent_prefix + "tracking.");
 			parseDroneParameters(node, agent, agent_prefix + "drone.");
 
@@ -164,7 +162,6 @@ namespace flychams::core
 		multi_camera->ref_focal = RosUtils::getParameter<float>(node, prefix + "ref_focal");
 
 		multi_camera->source_stream_url = RosUtils::getParameter<std::string>(node, prefix + "source_stream_url");
-		multi_camera->interface_stream_url = RosUtils::getParameter<std::string>(node, prefix + "interface_stream_url");
 
 		multi_camera->hardware = RosUtils::getParameter<std::string>(node, prefix + "hardware");
 		multi_camera->ip = RosUtils::getParameter<std::string>(node, prefix + "ip");
@@ -186,8 +183,6 @@ namespace flychams::core
 		multi_window->min_lambda = RosUtils::getParameter<float>(node, prefix + "min_lambda");
 		multi_window->max_lambda = RosUtils::getParameter<float>(node, prefix + "max_lambda");
 		multi_window->ref_lambda = RosUtils::getParameter<float>(node, prefix + "ref_lambda");
-
-		multi_window->interface_stream_url = RosUtils::getParameter<std::string>(node, prefix + "interface_stream_url");
 	}
 
 	void MissionSettingsParser::parseCameraParameters(const NodePtr& node, MultiCameraConfigPtr& multi_camera, const std::string& prefix)
@@ -397,6 +392,8 @@ namespace flychams::core
 		config_ptr->topics.agent_optimization_duration = RosUtils::getParameter<std::string>(node, "agent_topics.optimization_duration");
 		config_ptr->topics.agent_observation_setpoints = RosUtils::getParameter<std::string>(node, "agent_topics.observation_setpoints");
 		config_ptr->topics.agent_gui_setpoints = RosUtils::getParameter<std::string>(node, "agent_topics.gui_setpoints");
+		config_ptr->topics.agent_multi_camera_image = RosUtils::getParameter<std::string>(node, "agent_topics.multi_camera_image");
+		config_ptr->topics.agent_multi_window_image = RosUtils::getParameter<std::string>(node, "agent_topics.multi_window_image");
 		config_ptr->topics.agent_metrics = RosUtils::getParameter<std::string>(node, "agent_topics.metrics");
 		config_ptr->topics.agent_markers = RosUtils::getParameter<std::string>(node, "agent_topics.markers");
 

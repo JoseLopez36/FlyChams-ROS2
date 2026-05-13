@@ -1,11 +1,16 @@
 #pragma once
 
-// GStreamer includes
-// #include <gst/gst.h>
-
 // Standard includes
-#include <thread>
 #include <atomic>
+#include <mutex>
+#include <thread>
+#include <algorithm>
+#include <chrono>
+#include <sstream>
+#include <unordered_map>
+
+// OpenCV include
+#include <opencv2/opencv.hpp>
 
 // Base module include
 #include "flychams_common/base/base_module.hpp"
@@ -35,63 +40,61 @@ namespace flychams::agent
 
     public: // Types
         using SharedPtr = std::shared_ptr<AgentStream>;
-        struct StreamInfo
+        struct StreamUnit
         {
-            // URL
-            std::string url;
-            // URL info
-            std::string protocol;
-            std::string host;
-            int port;
-            // Parameters
-            int width;
-            int height;
-            int bitrate;
+            // Unit configuration
+            core::MultiCameraConfigPtr config;
+            std::string pipeline;
+            std::string frame_id;
+            int output_width;
+            int output_height;
+            bool enable_crops;
+            // Crop data
+            std::vector<core::CropMsg> crops;
+            int crop_output_width;
+            int crop_output_height;
+            std::mutex crops_mutex;
+            // Publisher
+            core::PublisherPtr<core::CompressedImageMsg> image_pub;
+            std::vector<core::PublisherPtr<core::CompressedImageMsg>> crop_pubs;
+            // Runtime
+            std::atomic_bool running;
+            std::thread thread;
+            // Constructor
+            StreamUnit()
+                : config(), pipeline(), frame_id(), output_width(0), output_height(0), enable_crops(false),
+                crops(), crops_mutex(), image_pub(), crop_pubs(), running(false), thread()
+            {
+            }
         };
-
+        
     private: // Parameters
         core::ID agent_id_;
-        // YOLO stream parameters
-        int yolo_width_;
-        int yolo_height_;
-        int yolo_bitrate_;
-        // Interface streams parameters
-        int interface_width_;
-        int interface_height_;
-        int interface_bitrate_;
-        // Stream info (for pipeline)
-        StreamInfo source_stream_info_;
-        StreamInfo yolo_stream_info_;
-        std::vector<StreamInfo> interface_stream_infos_;
-        // GPU type
-        std::string gpu_type_;
-        // Source stream parameters
-        int source_width_;
-        int source_height_;
+        // Interface parameters
+        int central_view_width;
+        int central_view_height;
+        int tracking_view_width;
+        int tracking_view_height;
+        // Stream parameters
+        int jpeg_quality_;
+        int rtsp_latency_ms_;
+        std::string output_encoding_;
 
     private: // Data
-        // GstElement* pipeline_ = nullptr;
-        // std::vector<GstElement*> croppers_;
-        std::atomic<bool> running_ = false;
-        std::thread stream_thread_;
+        // Stream units
+        std::unordered_map<core::ID, std::shared_ptr<StreamUnit>> stream_units_;
 
     private: // Callbacks
         void guiSetpointsCallback(const core::AgentGuiSetpointsMsg::SharedPtr msg);
 
     private: // Stream configuration
-        StreamInfo getSourceStreamInfo(const core::MultiCameraConfigPtr& camera_config);
-        StreamInfo getYoloStreamInfo(const core::AgentConfigPtr& agent_config);
-        StreamInfo getInterfaceStreamInfo(const core::MultiCameraConfigPtr& camera_config);
-        StreamInfo getInterfaceStreamInfo(const core::MultiWindowConfigPtr& window_config);
-        void parseUrl(const std::string& url, std::string& protocol, std::string& host, int& port);
-        std::string detectGpuType();
-        std::string createPipeline(const std::string& gpu_type);
-        std::string createNvidiaPipeline();
-        std::string createAmdPipeline();
+        std::string createPipeline(const core::MultiCameraConfigPtr& multi_camera) const;
 
     private: // Stream management
-        void startStream(const std::string& pipeline_str);
-        void stopStream();
+        void streamPipeline(const std::shared_ptr<StreamUnit>& unit);
+
+    private: // Image utilities
+        core::CompressedImageMsg makeCompressedImage(const cv::Mat& image, const std::string& frame_id) const;
 
     private: // ROS components
         // Subscriber
