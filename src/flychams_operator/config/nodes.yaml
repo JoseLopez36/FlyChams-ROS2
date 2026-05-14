@@ -1,0 +1,9 @@
+/**/metrics_node:
+  ros__parameters:
+    # Update rate (Hz)
+    update_rate: 10.0
+
+/**/markers_node:
+  ros__parameters:
+    # Update rate (Hz)
+    update_rate: 10.0

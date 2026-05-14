@@ -9,11 +9,11 @@
 The Flying Chameleons (FlyChams) project implements a complete system for controlling and coordinating multiple UAVs equipped with modifiable tracking systems. The primary goal is to optimize target tracking through collaborative agent positioning and camera control.
 
 The project leverages:
-- **ROS2 Humble** for the distributed robotics framework
-- **Unreal Engine 5** for photorealistic simulation
-- **AirSim** for high-fidelity physics simulation
-- **PX4** for commercial flight control
-- **Docker** for containerised deployment of all system components
+- **ROS2 Humble** for the distributed robotics framework.
+- **Unreal Engine 5** for photorealistic simulation.
+- **AirSim** for high-fidelity physics simulation.
+- **PX4** for commercial flight control.
+- **Docker** for containerised deployment of all system components.
 
 ---
 
@@ -55,10 +55,10 @@ This project is part of a broader research initiative by the Department of Syste
 *Target acquisition and tracking in the Unreal Engine 5 simulation environment.*
 
 **MATLAB Test** - [📹 View Video](media/videos/MatlabTest.mp4)  
-*Target acquisition and tracking in Matlab*
+*Target acquisition and tracking in Matlab.*
 
 **Camera Gimbal Mechanics** - [📹 Gimbal Movement](media/videos/GimbalMovement.gif)  
-*Independent gimbal control test*
+*Independent gimbal control test.*
 
 ## System Architecture
 
@@ -102,10 +102,10 @@ For building Docker images and preparing the workspaces see **[docs/setup.md](do
 ## 🚀 Quick Start
 
 See **[docs/launch.md](docs/launch.md)** for the full launch reference, including:
-- Unified launcher (`scripts/flychams.py`) for sim and hardware modes
-- Individual launch scripts per service
-- Operator / Foxglove bridge
-- Stop and log commands
+- Unified launcher (`scripts/flychams.py`) for sim and hardware modes.
+- Individual launch scripts per service.
+- Operator / Foxglove bridge.
+- Stop and log commands.
 
 ## ⚙️ Configuration
 
