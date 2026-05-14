@@ -67,7 +67,7 @@ This project is part of a broader research initiative by the Department of Syste
 | `flychams_coordinator`  | Perception algorithms for clustering targets and agent assignment |
 | `flychams_simulation`   | Simulation framework manager and target control |
 | `flychams_agent`        | Agent control, tracking, and positioning       |
-| `flychams_operator`     | Operator interface GUI and visualization tools |
+| `flychams_operator`     | Metrics aggregation, visualization markers, and Foxglove bridge |
 | `flychams_common`       | Core domain models, utilities, and interfaces   |
 | `flychams_api`          | Custom messages and services for FlyChams      |
 

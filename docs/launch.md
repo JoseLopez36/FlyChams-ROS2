@@ -43,12 +43,16 @@ Each script sources `install/setup.bash` inside the container before invoking `r
 
 ## 2. Operator
 
-Foxglove Bridge exposes all ROS2 topics over a WebSocket so [Foxglove Studio](https://foxglove.dev/studio) can connect remotely or locally.
+`operator.launch.py` starts the full operator stack inside the `flychams-operator` container:
+
+- **`metrics_node`** — aggregates per-agent, per-target and per-cluster metrics and publishes them as `AgentMetrics`, `TargetMetrics`, `ClusterMetrics` and `MissionMetrics` messages.
+- **`markers_node`** — publishes `visualization_msgs/MarkerArray` per agent, target and cluster for 3D visualization in Foxglove.
+- **`foxglove_bridge`** — exposes all ROS2 topics over a WebSocket so [Foxglove Studio](https://foxglove.dev/studio) can connect remotely or locally.
 
 ### Build
 
 ```bash
-scripts/docker/build_operator.sh
+scripts/build_operator_ws.sh
 ```
 
 ### Launch
@@ -58,14 +62,16 @@ scripts/docker/build_operator.sh
 scripts/launch_operator.sh
 
 # Detached with custom port
-DETACH=true FOXGLOVE_PORT=8765 scripts/launch_operator.sh
+DETACH=true FOXGLOVE_PORT=8766 scripts/launch_operator.sh
 ```
+
+`FOXGLOVE_PORT` is forwarded into the container and picked up by `operator.launch.py` at launch time (default `8765`).
 
 ### Connect from Foxglove Studio
 
 Open Foxglove Studio → **Open connection** → **Foxglove WebSocket** → `ws://<host-ip>:8765`.
 
-A layout is provided at `foxglove/flychams.json`. Import it via **File → Import layout from file**. See [foxglove.md](foxglove.md) for a full panel and topic reference.
+Import the layout at `foxglove/flychams.json` via **File → Import layout from file**. See [foxglove.md](foxglove.md) for the full interface reference.
 
 ---
 

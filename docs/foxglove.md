@@ -1,20 +1,45 @@
 # Foxglove Operator Interface
 
-Foxglove Studio is used as the operator interface for real-flight and debugging scenarios. The operator Docker container runs `foxglove_bridge`, which exposes all ROS 2 topics over a WebSocket so Foxglove Studio can connect from any machine on the network.
+Foxglove Studio is used as the operator monitoring interface for real-flight and debugging scenarios. The `flychams_operator` package publishes metrics and visualization markers that Foxglove Studio displays. `foxglove_bridge` — launched as part of `operator.launch.py` — exposes all ROS2 topics over a WebSocket so Foxglove Studio can connect from any machine on the network.
 
 ---
 
-## Connection
+## Initializing the Interface
 
-1. Launch the operator container (see [launch.md](launch.md)):
-   ```bash
-   scripts/launch_operator.sh
-   ```
-2. Open [Foxglove Studio](https://foxglove.dev/studio) (desktop or web).
-3. **Open connection → Foxglove WebSocket** → `ws://<host-ip>:8765`.
-4. Import the layout: **File → Import layout from file** → select `foxglove/flychams.json`.
+### 1. Build the operator workspace
 
-> The `FOXGLOVE_PORT` environment variable controls the WebSocket port (default `8765`).
+Inside the operator container (first-time or after a source change):
+
+```bash
+scripts/build_operator_ws.sh
+```
+
+### 2. Launch the operator stack
+
+```bash
+# Interactive (logs visible in terminal, default port 8765)
+scripts/launch_operator.sh
+
+# Detached (background, custom port)
+DETACH=true FOXGLOVE_PORT=8765 scripts/launch_operator.sh
+```
+
+This starts `metrics_node`, `markers_node`, and `foxglove_bridge` via `operator.launch.py`.
+
+### 3. Connect Foxglove Studio
+
+1. Open [Foxglove Studio](https://foxglove.dev/studio) (desktop app or web).
+2. Click **Open connection** → select **Foxglove WebSocket**.
+3. Enter the URL: `ws://<host-ip>:8765` (replace `<host-ip>` with the machine running the operator container, or `localhost` if running locally).
+4. Click **Open**.
+
+> `FOXGLOVE_PORT` controls the WebSocket port (default `8765`). Pass it as an environment variable before `scripts/launch_operator.sh` to override.
+
+### 4. Import the layout
+
+1. In Foxglove Studio: **File → Import layout from file**.
+2. Select `foxglove/flychams.json` from the project root.
+3. The full multi-panel layout will load automatically.
 
 ---
 

@@ -24,6 +24,7 @@ Build each ROS2 workspace inside its respective container.
 scripts/build_coordinator_ws.sh
 scripts/build_simulation_ws.sh
 scripts/build_agent_ws.sh
+scripts/build_operator_ws.sh
 ```
 
 Each script runs `colcon build` for the relevant packages inside the corresponding Docker container.
