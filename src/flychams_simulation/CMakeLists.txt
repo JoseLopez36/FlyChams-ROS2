@@ -17,7 +17,6 @@ set(SIMULATION_SRC
   src/target/target_state.cpp
   src/target/target_control.cpp
   src/tools/simulation_tools.cpp
-  src/tools/airsim_tools.cpp
   src/agent/agent_simulation_bridge.cpp
 )
 add_library(${PROJECT_NAME} SHARED ${SIMULATION_SRC})
