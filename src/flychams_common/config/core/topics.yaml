@@ -1,37 +1,31 @@
 /**:
   ros__parameters:
-    # Global topics
-    global_topics:
-      registration: "/flychams/bringup/registration"                          # Registration.msg (custom)
-      global_origin: "/flychams/bringup/global_origin"                        # GeoPointStamped.msg
-      metrics: "/flychams/operator/global/metrics"                           # GlobalMetrics.msg (custom)
+    # Coordinator topics
+    coordinator_topics:
+      registration: "/flychams/coordinator/registration" # Registration.msg (custom)
+      global_origin: "/flychams/coordinator/global_origin" # GeoPointStamped.msg
+      target_position: "/flychams/coordinator/TARGETID/position" # PointStamped.msg
+      cluster_assignment: "/flychams/coordinator/CLUSTERID/assignment" # ClusterAssignment.msg (custom)
+      cluster_geometry: "/flychams/coordinator/CLUSTERID/geometry" # ClusterGeometry.msg (custom)
 
     # Agent topics
     agent_topics:
-      status: "/flychams/control/AGENTID/status"                              # AgentStatus.msg (custom)
-      local_position: "/flychams/control/AGENTID/local/position"              # PointStamped.msg
-      global_position: "/flychams/control/AGENTID/global/position"            # PointStamped.msg
-      assignment: "/flychams/coordination/AGENTID/assignment"                 # AgentAssignment.msg (custom)
-      clusters: "/flychams/coordination/AGENTID/clusters"                     # AgentClusters.msg (custom)
-      position_setpoint: "/flychams/coordination/AGENTID/setpoint/position"   # PointStamped.msg
-      optimization_duration: "/flychams/coordination/AGENTID/optimization_duration" # Float32.msg
-      observation_setpoints: "/flychams/coordination/AGENTID/setpoint/observation"  # AgentObservationSetpoints.msg (custom)
-      gui_setpoints: "/flychams/operator/AGENTID/setpoint/gui"                  # GuiSetpoints.msg (custom)
-      multi_camera_image: "/flychams/operator/AGENTID/MULTICAMERAID/image/compressed" # CompressedImage.msg
-      multi_window_image: "/flychams/operator/AGENTID/MULTIWINDOWID/image/compressed" # CompressedImage.msg
-      metrics: "/flychams/operator/AGENTID/metrics"                          # AgentMetrics.msg (custom)
-      markers: "/flychams/operator/AGENTID/markers"                          # MarkerArray.msg
+      agent_status: "/flychams/agent/AGENTID/status" # AgentStatus.msg (custom)
+      agent_global_position: "/flychams/agent/AGENTID/global_position" # PointStamped.msg
+      agent_local_position: "/flychams/agent/AGENTID/local_position" # PointStamped.msg
+      agent_assignment: "/flychams/agent/AGENTID/assignment" # AgentAssignment.msg (custom)
+      agent_clusters: "/flychams/agent/AGENTID/clusters" # AgentClusters.msg (custom)
+      agent_position_setpoint: "/flychams/agent/AGENTID/position_setpoint" # PointStamped.msg
+      agent_observation_setpoints: "/flychams/agent/AGENTID/observation_setpoints" # AgentObservationSetpoints.msg (custom)
+      multi_camera_image: "/flychams/agent/AGENTID/MULTICAMERAID/image" # CompressedImage.msg
+      multi_window_image: "/flychams/agent/AGENTID/MULTIWINDOWID/image" # CompressedImage.msg
 
-    # Target topics
-    target_topics:
-      true_position: "/flychams/targets/TARGETID/true_position"               # PointStamped.msg
-      est_position: "/flychams/perception/TARGETID/est_position"              # PointStamped.msg
-      metrics: "/flychams/operator/TARGETID/metrics"                         # TargetMetrics.msg (custom)
-      markers: "/flychams/operator/TARGETID/markers"                         # MarkerArray.msg
-
-    # Cluster topics
-    cluster_topics:
-      assignment: "/flychams/perception/CLUSTERID/assignment"                 # ClusterAssignment.msg (custom)
-      geometry: "/flychams/perception/CLUSTERID/geometry"                     # ClusterGeometry.msg (custom)
-      metrics: "/flychams/operator/CLUSTERID/metrics"                        # ClusterMetrics.msg (custom)
-      markers: "/flychams/operator/CLUSTERID/markers"                        # MarkerArray.msg
+    # Operator topics
+    operator_topics:
+      mission_metrics: "/flychams/operator/mission_metrics" # MissionMetrics.msg (custom)
+      agent_metrics: "/flychams/operator/AGENTID/agent_metrics" # AgentMetrics.msg (custom)
+      target_metrics: "/flychams/operator/TARGETID/target_metrics" # TargetMetrics.msg (custom)
+      cluster_metrics: "/flychams/operator/CLUSTERID/cluster_metrics" # ClusterMetrics.msg (custom)
+      agent_markers: "/flychams/operator/AGENTID/agent_markers" # MarkerArray.msg
+      target_markers: "/flychams/operator/TARGETID/target_markers" # MarkerArray.msg
+      cluster_markers: "/flychams/operator/CLUSTERID/cluster_markers" # MarkerArray.msg

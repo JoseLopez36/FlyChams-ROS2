@@ -13,29 +13,23 @@ find_package(geometry_msgs REQUIRED)
 
 # Generate interfaces
 rosidl_generate_interfaces(${PROJECT_NAME}
-  # Basic messages
+  # Base messages
   "msg/Element.msg"
   "msg/Crop.msg"
-  # Global messages
+  # Coordinator messages
   "msg/Registration.msg"
-  "msg/GlobalMetrics.msg"
+  "msg/ClusterAssignment.msg"
+  "msg/ClusterGeometry.msg"
   # Agent messages
   "msg/AgentStatus.msg"
   "msg/AgentAssignment.msg"
   "msg/AgentClusters.msg"
   "msg/AgentObservationSetpoints.msg"
-  "msg/AgentGuiSetpoints.msg"
+  # Operator messages
+  "msg/MissionMetrics.msg"
   "msg/AgentMetrics.msg"
-  # Target messages
   "msg/TargetMetrics.msg"
-  # Cluster messages
-  "msg/ClusterAssignment.msg"
-  "msg/ClusterGeometry.msg"
   "msg/ClusterMetrics.msg"
-  # External messages (AirSim)
-  "msg/GimbalAngleCmd.msg"
-  "msg/CameraFovCmd.msg"
-  "msg/CameraOrientation.msg"
   DEPENDENCIES std_msgs geometry_msgs
 )
 

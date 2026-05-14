@@ -65,36 +65,31 @@ namespace flychams::core
 
     struct TopicParameters
     {
-        // Global topics
+        // Coordinator topics
         std::string registration;
         std::string global_origin;
-        std::string global_metrics;
+        std::string target_position;
+        std::string cluster_assignment;
+        std::string cluster_geometry;
 
         // Agent topics
         std::string agent_status;
-        std::string agent_local_position;
         std::string agent_global_position;
+        std::string agent_local_position;
         std::string agent_assignment;
         std::string agent_clusters;
         std::string agent_position_setpoint;
-        std::string agent_optimization_duration;
         std::string agent_observation_setpoints;
-        std::string agent_gui_setpoints;
         std::string agent_multi_camera_image;
         std::string agent_multi_window_image;
+
+        // Operator topics
+        std::string mission_metrics;
         std::string agent_metrics;
-        std::string agent_markers;
-
-        // Target topics
-        std::string target_true_position;
-        std::string target_est_position;
         std::string target_metrics;
-        std::string target_markers;
-
-        // Cluster topics
-        std::string cluster_assignment;
-        std::string cluster_geometry;
         std::string cluster_metrics;
+        std::string agent_markers;
+        std::string target_markers;
         std::string cluster_markers;
     };
 

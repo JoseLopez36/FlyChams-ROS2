@@ -85,7 +85,7 @@ Vertically split (50 / 50):
 
 **Top — Mission Overview**
 
-Time-series of system-level scalar metrics from `GlobalMetrics.msg`:
+Time-series of system-level scalar metrics from `MissionMetrics.msg`:
 
 | Series | Field |
 |---|---|

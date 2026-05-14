@@ -377,37 +377,32 @@ namespace flychams::core
 
 	void MissionSettingsParser::parseTopicParameters(const NodePtr& node, MissionConfigPtr& config_ptr)
 	{
-		// Global topics
-		config_ptr->topics.registration = RosUtils::getParameter<std::string>(node, "global_topics.registration");
-		config_ptr->topics.global_origin = RosUtils::getParameter<std::string>(node, "global_topics.global_origin");
-		config_ptr->topics.global_metrics = RosUtils::getParameter<std::string>(node, "global_topics.metrics");
+		// Coordinator topics
+		config_ptr->topics.registration = RosUtils::getParameter<std::string>(node, "coordinator_topics.registration");
+		config_ptr->topics.global_origin = RosUtils::getParameter<std::string>(node, "coordinator_topics.global_origin");
+		config_ptr->topics.target_position = RosUtils::getParameter<std::string>(node, "coordinator_topics.target_position");
+		config_ptr->topics.cluster_assignment = RosUtils::getParameter<std::string>(node, "coordinator_topics.cluster_assignment");
+		config_ptr->topics.cluster_geometry = RosUtils::getParameter<std::string>(node, "coordinator_topics.cluster_geometry");
 
 		// Agent topics
-		config_ptr->topics.agent_status = RosUtils::getParameter<std::string>(node, "agent_topics.status");
-		config_ptr->topics.agent_local_position = RosUtils::getParameter<std::string>(node, "agent_topics.local_position");
-		config_ptr->topics.agent_global_position = RosUtils::getParameter<std::string>(node, "agent_topics.global_position");
-		config_ptr->topics.agent_assignment = RosUtils::getParameter<std::string>(node, "agent_topics.assignment");
-		config_ptr->topics.agent_clusters = RosUtils::getParameter<std::string>(node, "agent_topics.clusters");
-		config_ptr->topics.agent_position_setpoint = RosUtils::getParameter<std::string>(node, "agent_topics.position_setpoint");
-		config_ptr->topics.agent_optimization_duration = RosUtils::getParameter<std::string>(node, "agent_topics.optimization_duration");
-		config_ptr->topics.agent_observation_setpoints = RosUtils::getParameter<std::string>(node, "agent_topics.observation_setpoints");
-		config_ptr->topics.agent_gui_setpoints = RosUtils::getParameter<std::string>(node, "agent_topics.gui_setpoints");
+		config_ptr->topics.agent_status = RosUtils::getParameter<std::string>(node, "agent_topics.agent_status");
+		config_ptr->topics.agent_global_position = RosUtils::getParameter<std::string>(node, "agent_topics.agent_global_position");
+		config_ptr->topics.agent_local_position = RosUtils::getParameter<std::string>(node, "agent_topics.agent_local_position");
+		config_ptr->topics.agent_assignment = RosUtils::getParameter<std::string>(node, "agent_topics.agent_assignment");
+		config_ptr->topics.agent_clusters = RosUtils::getParameter<std::string>(node, "agent_topics.agent_clusters");
+		config_ptr->topics.agent_position_setpoint = RosUtils::getParameter<std::string>(node, "agent_topics.agent_position_setpoint");
+		config_ptr->topics.agent_observation_setpoints = RosUtils::getParameter<std::string>(node, "agent_topics.agent_observation_setpoints");
 		config_ptr->topics.agent_multi_camera_image = RosUtils::getParameter<std::string>(node, "agent_topics.multi_camera_image");
 		config_ptr->topics.agent_multi_window_image = RosUtils::getParameter<std::string>(node, "agent_topics.multi_window_image");
-		config_ptr->topics.agent_metrics = RosUtils::getParameter<std::string>(node, "agent_topics.metrics");
-		config_ptr->topics.agent_markers = RosUtils::getParameter<std::string>(node, "agent_topics.markers");
 
-		// Target topics
-		config_ptr->topics.target_true_position = RosUtils::getParameter<std::string>(node, "target_topics.true_position");
-		config_ptr->topics.target_est_position = RosUtils::getParameter<std::string>(node, "target_topics.est_position");
-		config_ptr->topics.target_metrics = RosUtils::getParameter<std::string>(node, "target_topics.metrics");
-		config_ptr->topics.target_markers = RosUtils::getParameter<std::string>(node, "target_topics.markers");
-
-		// Cluster topics
-		config_ptr->topics.cluster_assignment = RosUtils::getParameter<std::string>(node, "cluster_topics.assignment");
-		config_ptr->topics.cluster_geometry = RosUtils::getParameter<std::string>(node, "cluster_topics.geometry");
-		config_ptr->topics.cluster_metrics = RosUtils::getParameter<std::string>(node, "cluster_topics.metrics");
-		config_ptr->topics.cluster_markers = RosUtils::getParameter<std::string>(node, "cluster_topics.markers");
+		// Operator topics
+		config_ptr->topics.mission_metrics = RosUtils::getParameter<std::string>(node, "operator_topics.mission_metrics");
+		config_ptr->topics.agent_metrics = RosUtils::getParameter<std::string>(node, "operator_topics.agent_metrics");
+		config_ptr->topics.target_metrics = RosUtils::getParameter<std::string>(node, "operator_topics.target_metrics");
+		config_ptr->topics.cluster_metrics = RosUtils::getParameter<std::string>(node, "operator_topics.cluster_metrics");
+		config_ptr->topics.agent_markers = RosUtils::getParameter<std::string>(node, "operator_topics.agent_markers");
+		config_ptr->topics.target_markers = RosUtils::getParameter<std::string>(node, "operator_topics.target_markers");
+		config_ptr->topics.cluster_markers = RosUtils::getParameter<std::string>(node, "operator_topics.cluster_markers");
 	}
 
 	void MissionSettingsParser::parseFrameParameters(const NodePtr& node, MissionConfigPtr& config_ptr)

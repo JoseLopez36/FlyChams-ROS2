@@ -538,32 +538,30 @@ namespace flychams::core
 
         // Topic Parameters
         RCLCPP_INFO(node_->get_logger(), "\n[TOPICS]");
-        RCLCPP_INFO(node_->get_logger(), "  Global Topics:");
+        RCLCPP_INFO(node_->get_logger(), "  Coordinator Topics:");
         RCLCPP_INFO(node_->get_logger(), "    Registration: %s", config_ptr_->topics.registration.c_str());
         RCLCPP_INFO(node_->get_logger(), "    Global Origin: %s", config_ptr_->topics.global_origin.c_str());
-        RCLCPP_INFO(node_->get_logger(), "    Global Metrics: %s", config_ptr_->topics.global_metrics.c_str());
+        RCLCPP_INFO(node_->get_logger(), "    Target Position: %s", config_ptr_->topics.target_position.c_str());
+        RCLCPP_INFO(node_->get_logger(), "    Cluster Assignment: %s", config_ptr_->topics.cluster_assignment.c_str());
+        RCLCPP_INFO(node_->get_logger(), "    Cluster Geometry: %s", config_ptr_->topics.cluster_geometry.c_str());
         RCLCPP_INFO(node_->get_logger(), "  Agent Topics:");
         RCLCPP_INFO(node_->get_logger(), "    Status: %s", config_ptr_->topics.agent_status.c_str());
-        RCLCPP_INFO(node_->get_logger(), "    Local Position: %s", config_ptr_->topics.agent_local_position.c_str());
         RCLCPP_INFO(node_->get_logger(), "    Global Position: %s", config_ptr_->topics.agent_global_position.c_str());
+        RCLCPP_INFO(node_->get_logger(), "    Local Position: %s", config_ptr_->topics.agent_local_position.c_str());
         RCLCPP_INFO(node_->get_logger(), "    Assignment: %s", config_ptr_->topics.agent_assignment.c_str());
         RCLCPP_INFO(node_->get_logger(), "    Clusters: %s", config_ptr_->topics.agent_clusters.c_str());
         RCLCPP_INFO(node_->get_logger(), "    Position Setpoint: %s", config_ptr_->topics.agent_position_setpoint.c_str());
-        RCLCPP_INFO(node_->get_logger(), "    Optimization Duration: %s", config_ptr_->topics.agent_optimization_duration.c_str());
         RCLCPP_INFO(node_->get_logger(), "    Observation Setpoints: %s", config_ptr_->topics.agent_observation_setpoints.c_str());
-        RCLCPP_INFO(node_->get_logger(), "    GUI Setpoints: %s", config_ptr_->topics.agent_gui_setpoints.c_str());
-        RCLCPP_INFO(node_->get_logger(), "    Metrics: %s", config_ptr_->topics.agent_metrics.c_str());
-        RCLCPP_INFO(node_->get_logger(), "    Markers: %s", config_ptr_->topics.agent_markers.c_str());
-        RCLCPP_INFO(node_->get_logger(), "  Target Topics:");
-        RCLCPP_INFO(node_->get_logger(), "    True Position: %s", config_ptr_->topics.target_true_position.c_str());
-        RCLCPP_INFO(node_->get_logger(), "    Est Position: %s", config_ptr_->topics.target_est_position.c_str());
-        RCLCPP_INFO(node_->get_logger(), "    Metrics: %s", config_ptr_->topics.target_metrics.c_str());
-        RCLCPP_INFO(node_->get_logger(), "    Markers: %s", config_ptr_->topics.target_markers.c_str());
-        RCLCPP_INFO(node_->get_logger(), "  Cluster Topics:");
-        RCLCPP_INFO(node_->get_logger(), "    Assignment: %s", config_ptr_->topics.cluster_assignment.c_str());
-        RCLCPP_INFO(node_->get_logger(), "    Geometry: %s", config_ptr_->topics.cluster_geometry.c_str());
-        RCLCPP_INFO(node_->get_logger(), "    Metrics: %s", config_ptr_->topics.cluster_metrics.c_str());
-        RCLCPP_INFO(node_->get_logger(), "    Markers: %s", config_ptr_->topics.cluster_markers.c_str());
+        RCLCPP_INFO(node_->get_logger(), "    Multi Camera Image: %s", config_ptr_->topics.agent_multi_camera_image.c_str());
+        RCLCPP_INFO(node_->get_logger(), "    Multi Window Image: %s", config_ptr_->topics.agent_multi_window_image.c_str());
+        RCLCPP_INFO(node_->get_logger(), "  Operator Topics:");
+        RCLCPP_INFO(node_->get_logger(), "    Mission Metrics: %s", config_ptr_->topics.mission_metrics.c_str());
+        RCLCPP_INFO(node_->get_logger(), "    Agent Metrics: %s", config_ptr_->topics.agent_metrics.c_str());
+        RCLCPP_INFO(node_->get_logger(), "    Target Metrics: %s", config_ptr_->topics.target_metrics.c_str());
+        RCLCPP_INFO(node_->get_logger(), "    Cluster Metrics: %s", config_ptr_->topics.cluster_metrics.c_str());
+        RCLCPP_INFO(node_->get_logger(), "    Agent Markers: %s", config_ptr_->topics.agent_markers.c_str());
+        RCLCPP_INFO(node_->get_logger(), "    Target Markers: %s", config_ptr_->topics.target_markers.c_str());
+        RCLCPP_INFO(node_->get_logger(), "    Cluster Markers: %s", config_ptr_->topics.cluster_markers.c_str());
 
         // Frame Parameters
         RCLCPP_INFO(node_->get_logger(), "\n[FRAMES]");
