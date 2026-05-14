@@ -13,7 +13,7 @@ The project leverages:
 - **Unreal Engine 5** for photorealistic simulation
 - **AirSim** for high-fidelity physics simulation
 - **PX4** for commercial flight control
-- **Pixi** for GCS dependency and environment management
+- **Docker** for containerised deployment of all system components
 
 ---
 
@@ -26,15 +26,6 @@ The project leverages:
 | :---: | :---: |
 | <img src="media/images/MultiWindowViews.png" alt="Target Tracking" width="70%"/> | <img src="media/images/MultiWindowAgent.png" alt="Drone Close-up" width="100%"/> |
 | *Real-time multi-target tracking windows* | *High-fidelity hexacopter model in UE5* |
-
-## Key Features
-
-- **Multi-agent coordination** for optimal target coverage
-- **Independent control** of multiple cameras per agent
-- **Clustering algorithms** for grouping and tracking targets
-- **Configurable missions** via Excel configuration files
-- **Realistic simulation** in photorealistic Unreal Engine environments
-- **Interactive operator interface** with map visualization and camera streams
 
 ## Research
 
@@ -58,27 +49,35 @@ This project is part of a broader research initiative by the Department of Syste
    
    > This work generalizes the multi-camera agent concept to enable collaboration among multiple agents in a single monitoring mission. Additionally, it explores the potential of Unreal Engine 5 as a photorealistic graphical simulation tool for implementing and validating the proposal. Note: This work was selected for presentation among the 6 works chosen at the Jornadas de Automática 2024 in Málaga.
 
+## 🎥 Demos & Validation
+
+**Flight Demonstration** - [📹 View Video](media/videos/Demo.mp4)  
+*Target acquisition and tracking in the Unreal Engine 5 simulation environment.*
+
+**MATLAB Test** - [📹 View Video](media/videos/MatlabTest.mp4)  
+*Target acquisition and tracking in Matlab*
+
+**Camera Gimbal Mechanics** - [📹 Gimbal Movement](media/videos/GimbalMovement.gif)  
+*Independent gimbal control test*
+
 ## System Architecture
 
 | Package                 | Description                                     |
 | ----------------------- | ----------------------------------------------- |
-| `flychams_common`         | Core domain models, utilities, and interfaces   |
-| `flychams_operator`     | Operator interface GUI and visualization tools |
 | `flychams_coordinator`  | Perception algorithms for clustering targets and agent assignment |
-| `flychams_agent`        | Agent control, tracking, and positioning       |
 | `flychams_simulation`   | Simulation framework manager and target control |
-| `flychams_api`   | Custom messages and services for FlyChams      |
-| `airsim_wrapper`        | ROS2 interface to the AirSim simulator         |
-| `airsim_interfaces`     | Custom messages and services for AirSim         |
+| `flychams_agent`        | Agent control, tracking, and positioning       |
+| `flychams_operator`     | Operator interface GUI and visualization tools |
+| `flychams_common`       | Core domain models, utilities, and interfaces   |
+| `flychams_api`          | Custom messages and services for FlyChams      |
 
 ## Prerequisites
 
 ### Software Requirements
 
 - **Ubuntu 20.04, 22.04, or 24.04** (or compatible Linux distribution)
-- **Pixi** - Required for the Ground Control Station (GCS) to manage the internal ROS2 environment and dependencies. Install from [pixi.sh](https://pixi.sh).
-- **Docker** - Required for running agents in isolated containers and for PX4 SITL.
-- **Unreal Engine 5.2.1** - Required for running the photorealistic simulation environment.
+- **Docker** - Required for running coordinator, simulation, agent and operator containers. It must be installed with NVIDIA Container Toolkit: [Installing NVIDIA Container Toolkit](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html)
+- **Unreal Engine 5.2.1 (optional)** - Required for creating custom photorealistic simulation environments.
 
 ### Hardware Requirements
 
@@ -93,173 +92,20 @@ This project is part of a broader research initiative by the Department of Syste
 
 ## 📦 Installation
 
-The installation instructions are divided depending on the role of the machine:
-1. **Ground Control Station (GCS)**: Typically runs on a standard PC and handles the simulation environment, operator interface, and coordination.
-2. **Agents**: Typically runs on a PC for simulation or an NVIDIA Jetson for real deployment.
-
-### 1. Common Prerequisites
-
-**Clone Main Repository**
 ```bash
 git clone https://github.com/JoseLopez36/FlyChams-ROS2.git
 cd FlyChams-ROS2
 ```
 
----
-
-### 2. Ground Control Station (GCS) Installation
-
-*Follow this section if you are setting up the main simulation and operator machine.*
-
-**Pixi Environment Manager**
-The project uses Pixi to manage the internal ROS2 environment and dependencies for the GCS.
-```bash
-curl -fsSL https://pixi.sh/install.sh | sh
-```
-
-**Clone Dependencies**
-```bash
-# AirSim Plugin (for simulation)
-git clone https://github.com/JoseLopez36/FlyChams-Cosys-AirSim.git
-cd FlyChams-Cosys-AirSim
-git checkout 5.2.1
-cd ..
-
-# PX4 Autopilot (for Simulation)
-git clone --recursive https://github.com/PX4/PX4-Autopilot.git
-cd PX4-Autopilot
-git checkout v1.12.0
-./Tools/docker_run.sh 'make px4_sitl_default none_iris' # Build SITL
-cd ..
-```
-
-**Setup Environment**
-Edit `setup.sh` to configure your paths:
-
-```bash
-export FLYCHAMS_ROS2_PATH=${HOME}/Documents/FlyChams-ROS2
-export FLYCHAMS_PX4_PATH=${HOME}/Documents/PX4-Autopilot
-export FLYCHAMS_AIRSIM_PATH=${HOME}/Documents/FlyChams-Cosys-AirSim
-```
-
-**Install & Build GCS**
-```bash
-pixi install
-pixi run gcs-build
-```
-
-**Generate Settings**
-Generate the initial AirSim settings based on the configuration:
-
-```bash
-pixi run generate-settings
-```
-
----
-
-### 3. Agent Installation
-
-*Follow this section if you are setting up an Agent. If you are running the simulation Agent on the same machine as the GCS, you have already cloned the required repositories and can skip the clone step.*
-
-**NVIDIA Container Toolkit**
-Agents run in Docker containers and require GPU access. You **must** install the NVIDIA Container Toolkit to enable GPU support in Docker.
-Follow the official guide here: [Installing NVIDIA Container Toolkit](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html)
-
-**Clone Dependencies (if on a dedicated machine like a Jetson)**
-```bash
-# AirSim Plugin
-git clone https://github.com/JoseLopez36/FlyChams-Cosys-AirSim.git
-cd FlyChams-Cosys-AirSim
-git checkout 5.2.1
-cd ..
-```
-
-**Install & Build Agents**
-```bash
-# Build the base Docker image
-bash tools/docker/build_image.sh
-# In Jetson, it may be necessary to add the user to the docker group:
-# sudo groupadd docker
-# sudo usermod -aG docker $USER
-# newgrp docker
-
-# Build the agent workspace
-bash tools/build_agent.sh
-```
+For building Docker images and preparing the workspaces see **[docs/setup.md](docs/setup.md)**.
 
 ## 🚀 Quick Start
 
-The fastest way to get the system running in simulation mode:
-
-1.  **Launch Operator Interface**:
-    ```bash
-    pixi run operator-sim-run
-    ```
-
-2.  **Start System via GUI. Example workflow**:
-    - Press **Launch Unreal Engine 5**
-    - Press **Launch Simulation Control**
-    - Press **Launch Coordinator**
-    - Press **Launch RViZ**
-    - Press **PX4-0** (Starts flight controller for Agent 0)
-    - Press **LAUNCH AGENT00** (Starts Agent 0 logic)
-
-3.  **Stop System**:
-    - Click **Stop All Processes** in the GUI.
-
-## 🎥 Demos & Validation
-
-**Flight Demonstration** - [📹 View Video](media/videos/Demo.mp4)  
-*Target acquisition and tracking in the Unreal Engine 5 simulation environment.*
-
-**MATLAB Test** - [📹 View Video](media/videos/MatlabTest.mp4)  
-*Target acquisition and tracking in Matlab*
-
-**Camera Gimbal Mechanics** - [📹 Gimbal Movement](media/videos/GimbalMovement.gif)  
-*Independent gimbal control test*
-
-## Detailed Usage
-
-### Method 1: Operator Interface (GUI)
-
-The Operator Interface is the central control hub.
-
-```bash
-pixi run operator-sim-run      # Simulation Mode
-# OR
-pixi run operator-hardware-run # Hardware Mode
-```
-
-**Features:**
-- **Mission Control**: Start/Stop Coordinator, Simulation, Agents, etc.
-- **System Logs**: Logs for each process.
-- **Real-Time Map**: Real-time 2D map of agents, targets and clusters.
-- **Monitoring Feeds**: Live video feeds from agent cameras.
-
-### Method 2: Command Line (Pixi Tasks)
-
-You can run individual components using Pixi tasks defined in `pixi.toml`.
-
-#### Simulation & Core
-```bash
-/path/to/FlyChamsSim.sh -settings="$FLYCHAMS_ROS2_PATH/config/generated/airsim.json"
-pixi run simulation-run        # Launch Simulation Control
-pixi run coordinator-sim-run   # Launch Coordinator
-```
-
-#### Agents (Docker)
-Agents in simulation run inside Docker containers.
-
-```bash
-bash tools/docker/build_image.sh        # Build base Docker image
-bash tools/build_agent.sh               # Build workspace for agents
-bash tools/agent_setup.sh run AGENT00   # Run AGENT00
-```
-
-#### PX4 (SITL)
-```bash
-pixi run simulation-px4-run 0  # Launch PX4 for Agent 0
-```
+See **[docs/launch.md](docs/launch.md)** for the full launch reference, including:
+- Unified launcher (`scripts/flychams.py`) for sim and hardware modes
+- Individual launch scripts per service
+- Operator / Foxglove bridge
+- Stop and log commands
 
 ## ⚙️ Configuration
 
@@ -267,28 +113,37 @@ The system uses a workflow where Excel spreadsheets drive the configuration.
 
 1.  **Edit Configuration**: Modify Excel files in `config/` (e.g., `Configuration-TFG.xlsx`).
     - Define mission parameters.
-2.  **Generate YAML**: Run the generator to create ROS2 and AirSim config files based on user configuration.
-    ```bash
-    pixi run generate-settings
-    ```
-    Files are generated in `config/generated/`.
+2.  **Generate YAML**: Run `scripts/launch_settings.sh` to create ROS2 and AirSim config files.
+    Files are generated in `src/flychams_common/config/generated/`.
+
+See `src/flychams_common/config/core/system.yaml` for all configurable paths and parameters.
 
 ## 📂 Directory Structure
 
 ```
 FlyChams-ROS2/
-├── config/             # Excel sources & generated YAMLs
-├── launch/             # Python launch files
-├── src/                # Source code (ROS2 packages)
+├── docs/               # Documentation (setup, launch, docker, foxglove, simulator)
+├── docker/             # Dockerfiles for each container role
+├── scripts/            # Build, launch, stop, and log helper scripts
+├── src/                # ROS2 packages
 │   ├── flychams_common/
-│   ├── flychams_operator/
 │   ├── flychams_coordinator/
 │   ├── flychams_agent/
-│   └── ...
-├── tools/              # Helper scripts
-├── pixi.toml           # Pixi environment & task definitions
+│   ├── flychams_operator/
+│   └── flychams_api/
+├── foxglove/           # Foxglove Studio layout
 └── README.md
 ```
+
+### Documentation
+
+| File | Contents |
+|---|---|
+| [docs/setup.md](docs/setup.md) | Prerequisites, building workspaces, generating settings, env vars |
+| [docs/launch.md](docs/launch.md) | Launching, stopping, and inspecting logs |
+| [docs/docker.md](docs/docker.md) | Building and managing Docker images |
+| [docs/simulator.md](docs/simulator.md) | AirSim / UE5 simulator setup |
+| [docs/foxglove.md](docs/foxglove.md) | Foxglove Studio operator interface |
 
 ## License
 

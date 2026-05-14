@@ -6,7 +6,7 @@ Foxglove Studio is used as the operator interface for real-flight and debugging 
 
 ## Connection
 
-1. Launch the operator container (see [setup.md](setup.md)):
+1. Launch the operator container (see [launch.md](launch.md)):
    ```bash
    scripts/launch_operator.sh
    ```

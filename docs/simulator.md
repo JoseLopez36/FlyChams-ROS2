@@ -41,7 +41,7 @@ The script validates that the AirSim settings exist and launches the simulator w
 
 **Notes:**
 - The `-settings` argument must be an absolute path.
-- Launch the simulator **before** starting the FlyChams ROS2 stack (see [setup.md](setup.md)).
+- Launch the simulator **before** starting the FlyChams ROS2 stack (see [launch.md](launch.md)).
 
 ## Settings File
 
