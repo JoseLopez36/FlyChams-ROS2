@@ -25,11 +25,8 @@ set(CONTROL_SRC
   src/drone/drone_state.cpp
   src/drone/drone_control.cpp
   src/camera/camera_frames.cpp
-  src/camera/camera_control.cpp
-  src/camera/siyi_a8_mini.cpp
   src/mavros/mavros_communication.cpp
   src/mavros/mavros_utils.cpp
-  src/camera/camera_communication.cpp
   src/analysis/agent_analysis.cpp
   src/positioning/agent_positioning.cpp
   src/tracking/agent_tracking.cpp
@@ -78,11 +75,6 @@ add_executable(camera_frames_node src/camera_frames_node.cpp)
 target_link_libraries(camera_frames_node ${PROJECT_NAME})
 ament_target_dependencies(camera_frames_node rclcpp flychams_common flychams_api)
 
-# Create executable for camera control node
-add_executable(camera_control_node src/camera_control_node.cpp)
-target_link_libraries(camera_control_node ${PROJECT_NAME})
-ament_target_dependencies(camera_control_node rclcpp flychams_common flychams_api)
-
 # Create executable for agent analysis node
 add_executable(agent_analysis_node src/agent_analysis_node.cpp)
 target_link_libraries(agent_analysis_node ${PROJECT_NAME})
@@ -115,7 +107,7 @@ install(TARGETS ${PROJECT_NAME}
   INCLUDES DESTINATION include
 )
 
-install(TARGETS drone_frames_node drone_state_node drone_control_node camera_frames_node camera_control_node mavros_manager_node agent_analysis_node agent_positioning_node agent_tracking_node agent_stream_node
+install(TARGETS drone_frames_node drone_state_node drone_control_node camera_frames_node mavros_manager_node agent_analysis_node agent_positioning_node agent_tracking_node agent_stream_node
   RUNTIME DESTINATION lib/${PROJECT_NAME}
 )
 

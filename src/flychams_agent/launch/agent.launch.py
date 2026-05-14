@@ -65,10 +65,6 @@ def generate_launch_description():
             'executable': 'drone_frames_node',
             'name': 'drone_frames_node'
         },
-        'camera_control': {
-            'executable': 'camera_control_node',
-            'name': 'camera_control_node'
-        },
         'camera_frames': {
             'executable': 'camera_frames_node',
             'name': 'camera_frames_node'

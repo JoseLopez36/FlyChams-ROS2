@@ -17,9 +17,6 @@ namespace flychams::agent
         // Initialize data
         agent_ = Agent();
 
-        // Initialize communication
-        camera_communication_ = std::make_shared<CameraCommunication>(agent_id_, node_, settings_tools_);
-
         // Get multi camera set
         auto multi_camera_set = settings_tools_->getMultiCameraSet(agent_id_);
 
@@ -32,18 +29,21 @@ namespace flychams::agent
             position_msg.y = camera_config_ptr->position.y();
             position_msg.z = camera_config_ptr->position.z();
 
-            // Get camera quaternion from config (static relative to body)
+            // Create initial camera body frame with identity orientation
             QuaternionMsg orientation_msg;
-            RosUtils::toMsg(MavrosUtils::eulerToQuat(camera_config_ptr->orientation), orientation_msg);
+            orientation_msg.x = 0.0;
+            orientation_msg.y = 0.0;
+            orientation_msg.z = 0.0;
+            orientation_msg.w = 1.0;
 
             // Create frames
             updateCameraBodyFrame(camera_id, position_msg, orientation_msg);
             createCameraOpticalFrame(camera_id);
         }
 
-        // Subscribe to topics
-        agent_.camera_orientation_sub = camera_communication_->subscribeCameraOrientation(
-            std::bind(&CameraFrames::cameraOrientationCallback, this, std::placeholders::_1), sub_options_with_module_cb_group_);
+        // Subscribe to agent observation setpoints
+        agent_.observation_setpoints_sub = topic_tools_->createAgentObservationSetpointsSubscriber(agent_id_,
+            std::bind(&CameraFrames::observationSetpointsCallback, this, std::placeholders::_1), sub_options_with_module_cb_group_);
 
         // Set update timer
         update_timer_ = rclcpp::create_timer(node_, 
@@ -56,9 +56,7 @@ namespace flychams::agent
     void CameraFrames::onShutdown()
     {
         // Destroy subscriber
-        agent_.camera_orientation_sub.reset();
-        // Shutdown communication
-        camera_communication_.reset();
+        agent_.observation_setpoints_sub.reset();
         // Destroy update timer
         update_timer_.reset();
     }
@@ -67,10 +65,11 @@ namespace flychams::agent
     // CALLBACKS: Callback functions
     // ════════════════════════════════════════════════════════════════════════════
 
-    void CameraFrames::cameraOrientationCallback(const flychams_api::msg::CameraOrientation::SharedPtr msg)
+    void CameraFrames::observationSetpointsCallback(const core::AgentObservationSetpointsMsg::SharedPtr msg)
     {
-        // Store last camera orientation
-        agent_.last_camera_orientation = msg;
+        // Update observation setpoints
+        agent_.observation_setpoints = *msg;
+        agent_.has_observation_setpoints = true;
     }
 
     // ════════════════════════════════════════════════════════════════════════════
@@ -104,18 +103,23 @@ namespace flychams::agent
 
     void CameraFrames::update()
     {
-        // Check if we have received any camera orientation
-        if (!agent_.last_camera_orientation)
+        // Check if we have received observation setpoints
+        if (!agent_.has_observation_setpoints)
         {
             return;
         }
 
-        // Iterate through all cameras in the message
-        for (size_t i = 0; i < agent_.last_camera_orientation->camera_names.size(); i++)
+        // Iterate through all observation units
+        for (int i = 0; i < agent_.observation_setpoints.n_o; ++i)
         {
-            // Get camera ID and orientation
-            ID camera_id = agent_.last_camera_orientation->camera_names[i];
-            const auto& orientation_msg = agent_.last_camera_orientation->orientations[i];
+            // Filter out units that are not cameras
+            if (agent_.observation_setpoints.types[i] != static_cast<uint8_t>(core::ObservationType::Camera))
+            {
+                continue;
+            }
+
+            // Get camera ID
+            const ID& camera_id = agent_.observation_setpoints.ids[i];
 
             // Get camera configuration
             const auto& camera_config_ptr = settings_tools_->getMultiCamera(agent_id_, camera_id);
@@ -125,6 +129,19 @@ namespace flychams::agent
             position_msg.x = camera_config_ptr->position.x();
             position_msg.y = camera_config_ptr->position.y();
             position_msg.z = camera_config_ptr->position.z();
+
+            // Convert rotation (RPY) to quaternion
+            const auto& rotation = agent_.observation_setpoints.rotations[i];
+            Vector3r rpy_vec(rotation.x, rotation.y, rotation.z);
+
+            // Eigen Euler to Quaternion conversion (Z-Y-X order: yaw-pitch-roll)
+            Quaternionr quat =
+                Eigen::AngleAxisf(rpy_vec.z(), Vector3r::UnitZ()) *
+                Eigen::AngleAxisf(rpy_vec.y(), Vector3r::UnitY()) *
+                Eigen::AngleAxisf(rpy_vec.x(), Vector3r::UnitX());
+
+            QuaternionMsg orientation_msg;
+            RosUtils::toMsg(quat, orientation_msg);
 
             // Update frame
             updateCameraBodyFrame(camera_id, position_msg, orientation_msg);

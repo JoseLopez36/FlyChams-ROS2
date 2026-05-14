@@ -1,22 +1,33 @@
 #pragma once
 
+// AirSim interfaces includes
+#include <airsim_interfaces/msg/gimbal_angle_cmd.hpp>
+#include <airsim_interfaces/msg/camera_fov_cmd.hpp>
+
 // Base module include
 #include "flychams_common/base/base_module.hpp"
 
-namespace flychams::agent
+namespace flychams::simulation
 {
     /**
      * ════════════════════════════════════════════════════════════════
-     * @brief Frame manager for UAV cameras
+     * @brief Bridge for agent simulation control
+     *
+     * @details
+     * This class is responsible for bridging agent observation setpoints
+     * to AirSim wrapper commands (CameraFovCmd and GimbalAngleCmd).
+     * It listens to agent_observation_setpoints per agent and publishes
+     * the corresponding camera FOV and gimbal angle commands.
+     *
      * ════════════════════════════════════════════════════════════════
      * @author Jose Francisco Lopez Ruiz
-     * @date 2025-12-09
+     * @date 2025-05-14
      * ════════════════════════════════════════════════════════════════
      */
-    class CameraFrames : public core::BaseModule
+    class AgentSimulationBridge : public core::BaseModule
     {
     public: // Constructor/Destructor
-        CameraFrames(const core::ID& agent_id, core::NodePtr node, core::SettingsTools::SharedPtr settings_tools, core::TopicTools::SharedPtr topic_tools, core::TransformTools::SharedPtr transform_tools, core::CallbackGroupPtr module_cb_group)
+        AgentSimulationBridge(const core::ID& agent_id, core::NodePtr node, core::SettingsTools::SharedPtr settings_tools, core::TopicTools::SharedPtr topic_tools, core::TransformTools::SharedPtr transform_tools, core::CallbackGroupPtr module_cb_group)
             : BaseModule(node, settings_tools, topic_tools, transform_tools, module_cb_group), agent_id_(agent_id)
         {
             init();
@@ -27,17 +38,21 @@ namespace flychams::agent
         void onShutdown() override;
 
     public: // Types
-        using SharedPtr = std::shared_ptr<CameraFrames>;
+        using SharedPtr = std::shared_ptr<AgentSimulationBridge>;
         struct Agent
         {
-            // Subscriber for observation setpoints
+            // Observation setpoints subscriber
             core::SubscriberPtr<core::AgentObservationSetpointsMsg> observation_setpoints_sub;
-            // Data
+            // Camera FOV command publisher
+            core::PublisherPtr<airsim_interfaces::msg::CameraFovCmd> camera_fov_cmd_pub;
+            // Gimbal angle command publisher
+            core::PublisherPtr<airsim_interfaces::msg::GimbalAngleCmd> gimbal_angle_cmd_pub;
+            // Latest observation setpoints
             core::AgentObservationSetpointsMsg observation_setpoints;
             bool has_observation_setpoints;
             // Constructor
             Agent()
-                : observation_setpoints_sub(), observation_setpoints(), has_observation_setpoints(false)
+                : observation_setpoints_sub(), camera_fov_cmd_pub(), gimbal_angle_cmd_pub(), observation_setpoints(), has_observation_setpoints(false)
             {
             }
         };
@@ -53,19 +68,14 @@ namespace flychams::agent
     private: // Callbacks
         void observationSetpointsCallback(const core::AgentObservationSetpointsMsg::SharedPtr msg);
 
-    private: // Frames creation
-        void createCameraOpticalFrame(const core::ID camera_id);
-
-    private: // Frames management
+    private: // Bridge management
         void update();
-
-    private: // Frames update methods
-        void updateCameraBodyFrame(const core::ID camera_id, const core::PointMsg& position, const core::QuaternionMsg& orientation);
+        void publishCameraFovCmd();
+        void publishGimbalAngleCmd();
 
     private: // ROS components
         // Timer
         core::TimerPtr update_timer_;
     };
 
-} // namespace flychams::agent
-
+} // namespace flychams::simulation

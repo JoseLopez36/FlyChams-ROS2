@@ -257,9 +257,6 @@ namespace flychams::core
 		yaml << prefix << "max_focal: " << std::fixed << std::setprecision(6) << multi_camera->max_focal << "\n";
 		yaml << prefix << "ref_focal: " << std::fixed << std::setprecision(6) << multi_camera->ref_focal << "\n";
 		yaml << prefix << "source_stream_url: \"" << multi_camera->source_stream_url << "\"\n";
-		yaml << prefix << "hardware: \"" << multi_camera->hardware << "\"\n";
-		yaml << prefix << "ip: \"" << multi_camera->ip << "\"\n";
-		yaml << prefix << "port: " << multi_camera->port << "\n";
 
 		yaml << prefix << "camera:\n";
 		writeCameraSection(yaml, multi_camera->camera, prefix + "  ");

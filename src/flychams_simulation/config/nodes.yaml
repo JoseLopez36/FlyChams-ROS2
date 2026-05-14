@@ -16,3 +16,8 @@
     highlight_targets: false
     # Highlight clusters
     highlight_clusters: false
+
+/**/agent_simulation_bridge_node:
+  ros__parameters:
+    # Bridge update rate (Hz)
+    bridge_update_rate: 20.0

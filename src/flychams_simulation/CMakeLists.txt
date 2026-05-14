@@ -18,6 +18,7 @@ set(SIMULATION_SRC
   src/target/target_control.cpp
   src/tools/simulation_tools.cpp
   src/tools/airsim_tools.cpp
+  src/agent/agent_simulation_bridge.cpp
 )
 add_library(${PROJECT_NAME} SHARED ${SIMULATION_SRC})
 target_include_directories(${PROJECT_NAME} PUBLIC
@@ -45,6 +46,11 @@ add_executable(target_control_node src/target_control_node.cpp)
 target_link_libraries(target_control_node ${PROJECT_NAME})
 ament_target_dependencies(target_control_node rclcpp airsim_interfaces flychams_common flychams_api)
 
+# Create executable for agent simulation bridge node
+add_executable(agent_simulation_bridge_node src/agent_simulation_bridge_node.cpp)
+target_link_libraries(agent_simulation_bridge_node ${PROJECT_NAME})
+ament_target_dependencies(agent_simulation_bridge_node rclcpp airsim_interfaces flychams_common flychams_api)
+
 # Install targets and headers
 install(TARGETS ${PROJECT_NAME}
   EXPORT ${PROJECT_NAME}
@@ -54,7 +60,7 @@ install(TARGETS ${PROJECT_NAME}
   INCLUDES DESTINATION include
 )
 
-install(TARGETS target_state_node target_control_node
+install(TARGETS target_state_node target_control_node agent_simulation_bridge_node
   RUNTIME DESTINATION lib/${PROJECT_NAME}
 )
 

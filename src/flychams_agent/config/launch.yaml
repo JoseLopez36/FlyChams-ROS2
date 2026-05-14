@@ -9,7 +9,6 @@ node_allowlist:
   # - drone_state
   # - drone_control
   # - camera_frames
-  # - camera_control
   # - agent_analysis
   # - agent_positioning
   # - agent_tracking
@@ -23,7 +22,6 @@ node_log_levels:
   drone_state: "error"
   drone_control: "error"
   camera_frames: "error"
-  camera_control: "error"
   agent_analysis: "error"
   agent_positioning: "error"
   agent_tracking: "error"
