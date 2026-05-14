@@ -70,7 +70,7 @@ namespace flychams::coordinator
 		targets_.insert({ target_id, Target() });
 
 		// Create target true position subscriber
-		targets_[target_id].position_sub = topic_tools_->createTargetTruePositionSubscriber(target_id,
+		targets_[target_id].position_sub = topic_tools_->createTargetPositionSubscriber(target_id,
 			[this, target_id](const PointStampedMsg::SharedPtr msg)
 			{
 				this->targetPositionCallback(target_id, msg);

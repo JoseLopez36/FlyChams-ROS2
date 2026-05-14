@@ -16,7 +16,6 @@ find_package(flychams_api REQUIRED)
 set(SIMULATION_SRC
   src/target/target_state.cpp
   src/target/target_control.cpp
-  src/camera/camera_manager.cpp
   src/tools/simulation_tools.cpp
   src/tools/airsim_tools.cpp
 )
@@ -46,11 +45,6 @@ add_executable(target_control_node src/target_control_node.cpp)
 target_link_libraries(target_control_node ${PROJECT_NAME})
 ament_target_dependencies(target_control_node rclcpp airsim_interfaces flychams_common flychams_api)
 
-# Create executable for camera control node
-add_executable(camera_manager_node src/camera_manager_node.cpp)
-target_link_libraries(camera_manager_node ${PROJECT_NAME})
-ament_target_dependencies(camera_manager_node rclcpp airsim_interfaces flychams_common flychams_api)
-
 # Install targets and headers
 install(TARGETS ${PROJECT_NAME}
   EXPORT ${PROJECT_NAME}
@@ -60,7 +54,7 @@ install(TARGETS ${PROJECT_NAME}
   INCLUDES DESTINATION include
 )
 
-install(TARGETS target_state_node target_control_node camera_manager_node
+install(TARGETS target_state_node target_control_node
   RUNTIME DESTINATION lib/${PROJECT_NAME}
 )
 

@@ -71,10 +71,6 @@ def generate_launch_description():
         'target_control': {
             'executable': 'target_control_node',
             'name': 'target_control_node'
-        },
-        'camera_manager': {
-            'executable': 'camera_manager_node',
-            'name': 'camera_manager_node'
         }
     }
 

@@ -48,7 +48,7 @@ namespace flychams::simulation
         target_.position.point.z = trajectory_.points[0].z;
 
         // Initialize target position publisher and publish first message
-        target_.position_pub = topic_tools_->createTargetTruePositionPublisher(target_id_);
+        target_.position_pub = topic_tools_->createTargetPositionPublisher(target_id_);
         target_.position_pub->publish(target_.position);
 
         // Set update timer
