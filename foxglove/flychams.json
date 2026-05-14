@@ -1,5 +1,55 @@
 {
   "configById": {
+    "button.Button!mstart": {
+      "outputMode": "publisher",
+      "name": "/flychams/fleet/cmd/mission/start",
+      "buttonMode": "push",
+      "activeColor": "#31daa2",
+      "inactiveColor": "#10b981",
+      "activeText": "▶  Start",
+      "inactiveText": "▶  Start",
+      "foxglovePanelTitle": "Start"
+    },
+    "button.Button!mpause": {
+      "outputMode": "publisher",
+      "name": "/flychams/fleet/cmd/mission/pause",
+      "buttonMode": "push",
+      "activeColor": "#e59132",
+      "inactiveColor": "#D97706",
+      "activeText": "⏸  Pause",
+      "inactiveText": "⏸  Pause",
+      "foxglovePanelTitle": "Pause"
+    },
+    "button.Button!mabort": {
+      "outputMode": "publisher",
+      "name": "/flychams/fleet/cmd/mission/abort",
+      "buttonMode": "push",
+      "activeColor": "#e33c3c",
+      "inactiveColor": "#DC2626",
+      "activeText": "⏹  Abort",
+      "inactiveText": "⏹  Abort",
+      "foxglovePanelTitle": "Abort"
+    },
+    "button.Button!armall": {
+      "outputMode": "publisher",
+      "name": "/flychams/fleet/cmd/arm",
+      "buttonMode": "toggle",
+      "activeColor": "#10B981",
+      "inactiveColor": "#EF4444",
+      "activeText": "🔓  Armed",
+      "inactiveText": "🔒  Disarmed",
+      "foxglovePanelTitle": "Arm / Disarm"
+    },
+    "button.Button!rth": {
+      "outputMode": "publisher",
+      "name": "/flychams/fleet/cmd/mission/rth",
+      "buttonMode": "push",
+      "activeColor": "#2ab9dd",
+      "inactiveColor": "#0891B2",
+      "activeText": "🏠  Home",
+      "inactiveText": "🏠  Home",
+      "foxglovePanelTitle": "Home"
+    },
     "Tab!cams": {
       "activeTabIdx": 0,
       "tabs": [
@@ -331,7 +381,9 @@
         "far": 5000
       },
       "followMode": "follow-pose",
-      "scene": {},
+      "scene": {
+        "enableStats": false
+      },
       "transforms": {},
       "topics": {},
       "layers": {},
@@ -941,57 +993,21 @@
       "isSynced": true,
       "foxglovePanelTitle": "Agent States"
     },
-    "Teleop!ctrl": {
-      "publishRate": 5,
-      "autoSendStopOnRelease": true,
-      "upButton": {
-        "field": "linear-z",
-        "value": 1
-      },
-      "downButton": {
-        "field": "linear-z",
-        "value": -1
-      },
-      "leftButton": {
-        "field": "angular-z",
-        "value": 1
-      },
-      "rightButton": {
-        "field": "angular-z",
-        "value": -1
-      },
-      "stopButton": {
-        "field": "linear-z",
-        "value": 0
-      },
-      "foxglovePanelTitle": "Velocity Commands"
-    },
-    "RosOut!log": {
-      "minLogLevel": 2,
-      "preload": true,
-      "searchTerms": [],
-      "nameFilter": {
-        "foxglove_bridge": {
-          "visible": false
-        }
-      },
-      "fontSize": 14,
-      "foxglovePanelTitle": "System Log"
-    },
     "3D!scene": {
       "cameraState": {
-        "distance": 400,
         "perspective": true,
-        "phi": 20,
-        "target": [
+        "distance": 399.99999999999966,
+        "phi": 19.999999999999993,
+        "thetaOffset": 60.000000000000036,
+        "targetOffset": [
           0,
           0,
           0
         ],
-        "targetOffset": [
+        "target": [
           0,
           0,
-          -50
+          0
         ],
         "targetOrientation": [
           0,
@@ -999,7 +1015,6 @@
           0,
           1
         ],
-        "thetaOffset": 315,
         "fovy": 45,
         "near": 0.5,
         "far": 5000
@@ -1079,33 +1094,64 @@
       "imageMode": {},
       "foxglovePanelTitle": "Situational Awareness"
     },
+    "RosOut!log": {
+      "minLogLevel": 2,
+      "preload": true,
+      "searchTerms": [],
+      "nameFilter": {
+        "foxglove_bridge": {
+          "visible": false
+        }
+      },
+      "fontSize": 14,
+      "foxglovePanelTitle": "System Log"
+    },
+    "Tab!fleetctrl": {
+      "activeTabIdx": 0,
+      "tabs": [
+        {
+          "title": "Mission",
+          "layout": {
+            "first": {
+              "first": "button.Button!mstart",
+              "second": "button.Button!mpause",
+              "direction": "row"
+            },
+            "second": "button.Button!mabort",
+            "direction": "column",
+            "splitPercentage": 50
+          }
+        },
+        {
+          "title": "Fleet",
+          "layout": {
+            "first": "button.Button!armall",
+            "second": "button.Button!rth",
+            "direction": "row",
+            "splitPercentage": 50
+          }
+        }
+      ]
+    },
     "Tab!right": {
       "activeTabIdx": 0,
       "tabs": [
         {
-          "title": "CAMERAS",
+          "title": "Cameras",
           "layout": "Tab!cams"
         },
         {
-          "title": "AGENT METRICS",
+          "title": "Agent Metrics",
           "layout": "Stack!agmetrics"
         },
         {
-          "title": "MISSION",
+          "title": "Mission Metrics",
           "layout": {
             "first": "Plot!global",
             "second": "StateTransitions!states",
             "direction": "column",
             "splitPercentage": 50
           }
-        },
-        {
-          "title": "COMMANDS",
-          "layout": "Teleop!ctrl"
-        },
-        {
-          "title": "LOGGING",
-          "layout": "RosOut!log"
         }
       ]
     }
@@ -1116,7 +1162,17 @@
     "speed": 1
   },
   "layout": {
-    "first": "3D!scene",
+    "first": {
+      "first": "3D!scene",
+      "second": {
+        "first": "RosOut!log",
+        "second": "Tab!fleetctrl",
+        "direction": "row",
+        "splitPercentage": 55
+      },
+      "direction": "column",
+      "splitPercentage": 69.98962368214747
+    },
     "second": "Tab!right",
     "direction": "row",
     "splitPercentage": 53.5

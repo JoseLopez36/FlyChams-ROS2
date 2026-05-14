@@ -24,14 +24,21 @@ The layout is a two-column split:
 
 | Column | Width | Content |
 |---|---|---|
-| Left | 53.5 % | 3D panel |
-| Right | 46.5 % | Tabbed panel with 5 tabs |
+| Left | 53.5 % | Situational Awareness (top 70 %) + System Log / Fleet Control side-by-side (bottom 30 %) |
+| Right | 46.5 % | Tabbed panel (Cameras · Agent Metrics · Mission Metrics) |
+
+The bottom-left area is a horizontal row split:
+
+| Panel | Width |
+|---|---|
+| System Log | 55 % |
+| Fleet Control | 45 % |
 
 ---
 
 ## Panel Reference
 
-### 3D Situational Awareness
+### Situational Awareness
 
 The primary overview panel for real-time situational awareness.
 
@@ -72,7 +79,7 @@ All three agents (AGENT00 / AGENT01 / AGENT02) are overlaid on each plot with a 
 
 ---
 
-### Mission Tab
+### Mission Metrics Tab
 
 Vertically split (50 / 50):
 
@@ -113,13 +120,7 @@ Field: `.status`
 
 ---
 
-### Commands Tab
-
-To be implemented.
-
----
-
-### Logging Tab
+### System Log
 
 ROS console log viewer:
 
@@ -128,3 +129,37 @@ ROS console log viewer:
 | Minimum log level | WARN (2) |
 | Preload | enabled |
 | Hidden nodes | `foxglove_bridge` |
+
+---
+
+### Fleet Control
+
+A tabbed panel placed to the right of System Log in the bottom-left area. Each button is a [**Button extension**](https://github.com/adityakamath/foxglove_extensions/tree/main/button) panel (`Kamath Robotics.button.Button`) that publishes `std_msgs/Bool` on a dedicated topic on press/toggle.
+
+#### Installation
+
+1. Download the latest `.foxe` file from the [releases page](https://github.com/adityakamath/foxglove_extensions/releases) (look for `button-*.foxe`).
+2. In Foxglove Studio: **Extensions** (top-right menu) → **Install Extension** → select the `.foxe` file.
+3. Restart Foxglove (`Ctrl+R` / `Cmd+R`).
+4. The **Button** panel will appear in the panel list.
+
+> Alternatively, build from source: `cd foxglove_extensions/button && npm install && npm run local-install`, then restart Foxglove.
+
+#### Mission tab
+
+Four push buttons in a 2×2 grid. Each publishes `{ data: true }` on press:
+
+| Panel | Topic | Button mode | Label | Purpose |
+|---|---|---|---|---|
+| Start Mission | `/flychams/fleet/cmd/mission/start` | push | `▶  Start` | Begin the planned mission for all agents |
+| Pause Mission | `/flychams/fleet/cmd/mission/pause` | push | `⏸  Pause` | Hold all agents at current position |
+| Abort Mission | `/flychams/fleet/cmd/mission/abort` | push | `⏹  Abort` | Abort mission and hold position |
+
+#### Arm / Disarm tab
+
+Two panels side-by-side:
+
+| Panel | Topic | Button mode | Active / Inactive label | Purpose |
+|---|---|---|---|---|
+| Arm / Disarm All | `/flychams/fleet/cmd/arm` | toggle | `🔓  Armed` / `🔒  Disarmed` | Publishes `true` on arm, `false` on disarm |
+| Return to Home | `/flychams/fleet/cmd/mission/rth` | push | `🏠  Home` | Command all agents to return to home |
