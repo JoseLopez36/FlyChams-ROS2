@@ -16,7 +16,7 @@ namespace flychams::simulation
      * @details
      * This class is responsible for bridging agent observation setpoints
      * to AirSim wrapper commands (CameraFovCmd and GimbalAngleCmd).
-     * It listens to agent_observation_setpoints per agent and publishes
+     * It listens to observation_setpoints per agent and publishes
      * the corresponding camera FOV and gimbal angle commands.
      *
      * ════════════════════════════════════════════════════════════════
@@ -39,16 +39,18 @@ namespace flychams::simulation
 
     public: // Types
         using SharedPtr = std::shared_ptr<AgentSimulationBridge>;
+        using CameraFovCmdMsg = airsim_interfaces::msg::CameraFovCmd;
+        using GimbalAngleCmdMsg = airsim_interfaces::msg::GimbalAngleCmd;
         struct Agent
         {
             // Observation setpoints subscriber
-            core::SubscriberPtr<core::AgentObservationSetpointsMsg> observation_setpoints_sub;
+            core::SubscriberPtr<core::ObservationSetpointsMsg> observation_setpoints_sub;
             // Camera FOV command publisher
             core::PublisherPtr<airsim_interfaces::msg::CameraFovCmd> camera_fov_cmd_pub;
             // Gimbal angle command publisher
             core::PublisherPtr<airsim_interfaces::msg::GimbalAngleCmd> gimbal_angle_cmd_pub;
             // Latest observation setpoints
-            core::AgentObservationSetpointsMsg observation_setpoints;
+            core::ObservationSetpointsMsg observation_setpoints;
             bool has_observation_setpoints;
             // Constructor
             Agent()
@@ -66,7 +68,7 @@ namespace flychams::simulation
         Agent agent_;
 
     private: // Callbacks
-        void observationSetpointsCallback(const core::AgentObservationSetpointsMsg::SharedPtr msg);
+        void observationSetpointsCallback(const core::ObservationSetpointsMsg::SharedPtr msg);
 
     private: // Bridge management
         void update();

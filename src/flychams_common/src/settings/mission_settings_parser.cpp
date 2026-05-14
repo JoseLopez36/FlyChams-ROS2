@@ -387,7 +387,7 @@ namespace flychams::core
 		config_ptr->topics.agent_assignment = RosUtils::getParameter<std::string>(node, "agent_topics.agent_assignment");
 		config_ptr->topics.agent_clusters = RosUtils::getParameter<std::string>(node, "agent_topics.agent_clusters");
 		config_ptr->topics.agent_position_setpoint = RosUtils::getParameter<std::string>(node, "agent_topics.agent_position_setpoint");
-		config_ptr->topics.agent_observation_setpoints = RosUtils::getParameter<std::string>(node, "agent_topics.agent_observation_setpoints");
+		config_ptr->topics.observation_setpoints = RosUtils::getParameter<std::string>(node, "agent_topics.observation_setpoints");
 		config_ptr->topics.agent_multi_camera_image = RosUtils::getParameter<std::string>(node, "agent_topics.multi_camera_image");
 		config_ptr->topics.agent_multi_window_image = RosUtils::getParameter<std::string>(node, "agent_topics.multi_window_image");
 

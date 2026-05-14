@@ -38,6 +38,8 @@ namespace flychams::agent
             unit->frame_id = transform_tools_->getCameraOpticalFrame(agent_id_, camera_id);
             if (camera->role == ObservationRole::Central)
             {
+                central_camera_id_ = camera_id;
+
                 unit->output_width = central_view_width;
                 unit->output_height = central_view_height;
 
@@ -77,15 +79,15 @@ namespace flychams::agent
             setenv("OPENCV_FFMPEG_CAPTURE_OPTIONS", "rtsp_transport;tcp", 1);
 
         // Subscribe to GUI setpoints topic
-        gui_setpoints_sub_ = topic_tools_->createAgentGuiSetpointsSubscriber(agent_id_,
-            std::bind(&AgentStream::guiSetpointsCallback, this, std::placeholders::_1), sub_options_with_module_cb_group_);
+        observation_setpoints_sub_ = topic_tools_->createObservationSetpointsSubscriber(agent_id_,
+            std::bind(&AgentStream::observationSetpointsCallback, this, std::placeholders::_1), sub_options_with_module_cb_group_);
 
     }
 
     void AgentStream::onShutdown()
     {
         // Destroy subscribers
-        gui_setpoints_sub_.reset();
+        observation_setpoints_sub_.reset();
 
         // Stop stream units
         for (auto& [id, unit] : stream_units_)
@@ -106,25 +108,20 @@ namespace flychams::agent
     // CALLBACKS: Callback functions
     // ════════════════════════════════════════════════════════════════════════════
 
-    void AgentStream::guiSetpointsCallback(const core::AgentGuiSetpointsMsg::SharedPtr msg)
+    void AgentStream::observationSetpointsCallback(const core::ObservationSetpointsMsg::SharedPtr msg)
     {
+        // Get central stream unit
+        std::shared_ptr<StreamUnit> unit = stream_units_[central_camera_id_];
+
         // Iterate through the crops in the message
         const size_t n = msg->crops.size();
         for (size_t i = 0; i < n; ++i)
         {
             const auto& crop = msg->crops[i];
-            const auto& camera_id = msg->camera_ids[i];
-
-            // Only update if it's not out of bounds and the camera has crops enabled
-            if (!crop.is_out_of_bounds && stream_units_.find(camera_id) != stream_units_.end())
+            
+            // Only update if it's not out of bounds
+            if (!crop.is_out_of_bounds)
             {
-                std::shared_ptr<StreamUnit> unit = stream_units_[camera_id];
-
-                if (!unit->enable_crops)
-                {
-                    continue;
-                }
-
                 std::lock_guard<std::mutex> lock(unit->crops_mutex);
                 unit->crops[i] = crop;
             }

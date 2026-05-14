@@ -42,7 +42,7 @@ namespace flychams::agent
         }
 
         // Subscribe to agent observation setpoints
-        agent_.observation_setpoints_sub = topic_tools_->createAgentObservationSetpointsSubscriber(agent_id_,
+        agent_.observation_setpoints_sub = topic_tools_->createObservationSetpointsSubscriber(agent_id_,
             std::bind(&CameraFrames::observationSetpointsCallback, this, std::placeholders::_1), sub_options_with_module_cb_group_);
 
         // Set update timer
@@ -65,7 +65,7 @@ namespace flychams::agent
     // CALLBACKS: Callback functions
     // ════════════════════════════════════════════════════════════════════════════
 
-    void CameraFrames::observationSetpointsCallback(const core::AgentObservationSetpointsMsg::SharedPtr msg)
+    void CameraFrames::observationSetpointsCallback(const core::ObservationSetpointsMsg::SharedPtr msg)
     {
         // Update observation setpoints
         agent_.observation_setpoints = *msg;

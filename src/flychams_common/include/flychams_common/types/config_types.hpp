@@ -79,7 +79,7 @@ namespace flychams::core
         std::string agent_assignment;
         std::string agent_clusters;
         std::string agent_position_setpoint;
-        std::string agent_observation_setpoints;
+        std::string observation_setpoints;
         std::string agent_multi_camera_image;
         std::string agent_multi_window_image;
 

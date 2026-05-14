@@ -59,7 +59,7 @@
 #include "flychams_api/msg/agent_status.hpp"
 #include "flychams_api/msg/agent_assignment.hpp"
 #include "flychams_api/msg/agent_clusters.hpp"
-#include "flychams_api/msg/agent_observation_setpoints.hpp"
+#include "flychams_api/msg/observation_setpoints.hpp"
 // Operator messages
 #include "flychams_api/msg/mission_metrics.hpp"
 #include "flychams_api/msg/agent_metrics.hpp"
@@ -171,7 +171,7 @@ namespace flychams::core
     using AgentStatusMsg = flychams_api::msg::AgentStatus;
     using AgentAssignmentMsg = flychams_api::msg::AgentAssignment;
     using AgentClustersMsg = flychams_api::msg::AgentClusters;
-    using AgentObservationSetpointsMsg = flychams_api::msg::AgentObservationSetpoints;
+    using ObservationSetpointsMsg = flychams_api::msg::ObservationSetpoints;
     // Operator messages
     using MissionMetricsMsg = flychams_api::msg::MissionMetrics;
     using AgentMetricsMsg = flychams_api::msg::AgentMetrics;

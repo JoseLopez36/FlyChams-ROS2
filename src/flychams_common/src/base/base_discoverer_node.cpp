@@ -88,6 +88,11 @@ namespace flychams::core
                     // Call onAddCluster callback
                     onAddCluster(element_id);
                     break;
+
+                case ElementType::None:
+                    // Unexpected element type - log warning
+                    RCLCPP_WARN(get_logger(), "Cannot add element %s: invalid element type 'None'", element_id.c_str());
+                    break;
                 }
             }
         }
@@ -124,6 +129,11 @@ namespace flychams::core
             case ElementType::Cluster:
                 // Call onRemoveCluster callback
                 onRemoveCluster(element_id);
+                break;
+
+            case ElementType::None:
+                // Unexpected element type - log warning
+                RCLCPP_WARN(get_logger(), "Cannot remove element %s: invalid element type 'None'", element_id.c_str());
                 break;
             }
         }

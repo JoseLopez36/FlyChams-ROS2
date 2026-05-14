@@ -16,7 +16,7 @@
       agent_assignment: "/flychams/agent/AGENTID/assignment" # AgentAssignment.msg (custom)
       agent_clusters: "/flychams/agent/AGENTID/clusters" # AgentClusters.msg (custom)
       agent_position_setpoint: "/flychams/agent/AGENTID/position_setpoint" # PointStamped.msg
-      agent_observation_setpoints: "/flychams/agent/AGENTID/observation_setpoints" # AgentObservationSetpoints.msg (custom)
+      observation_setpoints: "/flychams/agent/AGENTID/observation_setpoints" # ObservationSetpoints.msg (custom)
       multi_camera_image: "/flychams/agent/AGENTID/MULTICAMERAID/image" # CompressedImage.msg
       multi_window_image: "/flychams/agent/AGENTID/MULTIWINDOWID/image" # CompressedImage.msg
 

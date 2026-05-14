@@ -46,30 +46,7 @@ namespace flychams::agent
             agent_.observation_setpoints.roles.push_back(static_cast<uint8_t>(unit.role));
             agent_.observation_setpoints.zoom_factors.push_back(unit.upsilon_ref);
             agent_.observation_setpoints.rotations.push_back(Vector3Msg());
-        }
-
-        // Initialize GUI setpoints message
-        agent_.gui_setpoints.header = RosUtils::createHeader(node_, transform_tools_->getGlobalFrame());
-        // Set full crop for all units
-        CropMsg full_crop;
-        full_crop.x = 0;
-        full_crop.y = 0;
-        full_crop.w = 0;
-        full_crop.h = 0;
-        full_crop.is_out_of_bounds = false;
-        for (const auto& unit : tracking_params_.observation_units_params)
-        {
-            agent_.gui_setpoints.crops.push_back(full_crop);
-
-            // Fill camera IDs based on unit type (Camera: unit ID, Window: central camera ID)
-            if (unit.type == ObservationType::Camera)
-            {
-                agent_.gui_setpoints.camera_ids.push_back(unit.id);
-            }
-            else if (unit.type == ObservationType::Window)
-            {
-                agent_.gui_setpoints.camera_ids.push_back(tracking_params_.observation_units_params[0].id);
-            }
+            agent_.observation_setpoints.crops.push_back(CropMsg());
         }
 
         // Create observation unit solvers
@@ -91,9 +68,8 @@ namespace flychams::agent
         agent_.clusters_sub = topic_tools_->createAgentClustersSubscriber(agent_id_,
             std::bind(&AgentTracking::clustersCallback, this, std::placeholders::_1), sub_options_with_module_cb_group_);
 
-        // Create publisher for tracking and GUI setpoints
-        agent_.observation_setpoints_pub = topic_tools_->createAgentObservationSetpointsPublisher(agent_id_);
-        agent_.gui_setpoints_pub = topic_tools_->createAgentGuiSetpointsPublisher(agent_id_);
+        // Create publisher for observation setpoints
+        agent_.observation_setpoints_pub = topic_tools_->createObservationSetpointsPublisher(agent_id_);
 
         // Set update timer
         update_timer_ = rclcpp::create_timer(node_,
@@ -109,7 +85,6 @@ namespace flychams::agent
         agent_.status_sub.reset();
         agent_.clusters_sub.reset();
         agent_.observation_setpoints_pub.reset();
-        agent_.gui_setpoints_pub.reset();
         // Destroy update timer
         update_timer_.reset();
     }
@@ -154,7 +129,7 @@ namespace flychams::agent
         }
 
         // Convert clusters message to Eigen types
-        int n = static_cast<int>(agent_.clusters.centers.size());
+        size_t n = agent_.clusters.centers.size();
         Matrix3Xr tab_P = Matrix3Xr::Zero(3, n);
         RowVectorXr tab_r = RowVectorXr::Zero(n);
         for (size_t i = 0; i < n; i++)
@@ -181,23 +156,23 @@ namespace flychams::agent
             Crop crop;         // Only for Window type
 
             // Solve based on unit type
-            if (unit.type == ObservationType::Camera && unit.role == ObservationRole::Tracking)
-            {
-                std::tie(zoom_factor, rotation) = updateCamera(tab_P.col(i), tab_r(i), tab_T[i], solvers_[i]);
-            }
-            else if (unit.type == ObservationType::Camera && unit.role == ObservationRole::Central)
+            if (unit.type == ObservationType::Camera && unit.role == ObservationRole::Central)
             {
                 // Set central camera reference focal length
                 zoom_factor = tracking_params_.observation_units_params[0].upsilon_ref;
                 // Get central camera initial orientation
                 rotation = settings_tools_->getMultiCamera(agent_id_, unit.id)->orientation;
             }
+            else if (unit.type == ObservationType::Camera && unit.role == ObservationRole::Tracking)
+            {
+                std::tie(zoom_factor, rotation) = updateCamera(tab_P.col(i), tab_r(i), tab_T[i], solvers_[i]);
+            }
             else if (unit.type == ObservationType::Window)
             {
                 std::tie(zoom_factor, crop) = updateWindow(tab_P.col(i), tab_r(i), tab_T[0], solvers_[i]);
             }
 
-            // Update observation and GUI setpoints
+            // Update observation setpoints
             agent_.observation_setpoints.zoom_factors[i] = zoom_factor;
             if (unit.type == ObservationType::Camera)
             {
@@ -205,15 +180,14 @@ namespace flychams::agent
             }
             else if (unit.type == ObservationType::Window)
             {
-                RosUtils::toMsg(crop, agent_.gui_setpoints.crops[i]);
+                RosUtils::toMsg(crop, agent_.observation_setpoints.crops[i]);
             }
 
             i++;
         }
 
-        // Publish tracking and GUI setpoints messages
+        // Publish observation setpoints
         agent_.observation_setpoints_pub->publish(agent_.observation_setpoints);
-        agent_.gui_setpoints_pub->publish(agent_.gui_setpoints);
     }
 
     // ════════════════════════════════════════════════════════════════════════════

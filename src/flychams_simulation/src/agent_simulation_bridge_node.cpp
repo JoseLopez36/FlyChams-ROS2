@@ -16,7 +16,7 @@ using namespace flychams::simulation;
  *
  * @details
  * This class implements the agent simulation bridge node that listens
- * to agent_observation_setpoints per agent and publishes CameraFovCmd
+ * to observation_setpoints per agent and publishes CameraFovCmd
  * and GimbalAngleCmd messages to the AirSim wrapper.
  *
  * ════════════════════════════════════════════════════════════════

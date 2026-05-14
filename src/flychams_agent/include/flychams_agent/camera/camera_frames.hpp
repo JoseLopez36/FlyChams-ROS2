@@ -31,9 +31,9 @@ namespace flychams::agent
         struct Agent
         {
             // Subscriber for observation setpoints
-            core::SubscriberPtr<core::AgentObservationSetpointsMsg> observation_setpoints_sub;
+            core::SubscriberPtr<core::ObservationSetpointsMsg> observation_setpoints_sub;
             // Data
-            core::AgentObservationSetpointsMsg observation_setpoints;
+            core::ObservationSetpointsMsg observation_setpoints;
             bool has_observation_setpoints;
             // Constructor
             Agent()
@@ -51,7 +51,7 @@ namespace flychams::agent
         Agent agent_;
 
     private: // Callbacks
-        void observationSetpointsCallback(const core::AgentObservationSetpointsMsg::SharedPtr msg);
+        void observationSetpointsCallback(const core::ObservationSetpointsMsg::SharedPtr msg);
 
     private: // Frames creation
         void createCameraOpticalFrame(const core::ID camera_id);

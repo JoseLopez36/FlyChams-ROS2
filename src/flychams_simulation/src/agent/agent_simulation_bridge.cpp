@@ -22,7 +22,7 @@ namespace flychams::simulation
         agent_ = Agent();
 
         // Create subscriber for agent observation setpoints
-        agent_.observation_setpoints_sub = topic_tools_->createAgentObservationSetpointsSubscriber(agent_id_,
+        agent_.observation_setpoints_sub = topic_tools_->createObservationSetpointsSubscriber(agent_id_,
             std::bind(&AgentSimulationBridge::observationSetpointsCallback, this, std::placeholders::_1), sub_options_with_module_cb_group_);
 
         // Create publishers for AirSim commands
@@ -53,7 +53,7 @@ namespace flychams::simulation
     // CALLBACKS: Callback functions
     // ════════════════════════════════════════════════════════════════════════════
 
-    void AgentSimulationBridge::observationSetpointsCallback(const AgentObservationSetpointsMsg::SharedPtr msg)
+    void AgentSimulationBridge::observationSetpointsCallback(const ObservationSetpointsMsg::SharedPtr msg)
     {
         // Update observation setpoints
         agent_.observation_setpoints = *msg;

@@ -71,6 +71,7 @@ namespace flychams::agent
         
     private: // Parameters
         core::ID agent_id_;
+        core::ID central_camera_id_;
         // Interface parameters
         int central_view_width;
         int central_view_height;
@@ -89,7 +90,7 @@ namespace flychams::agent
         std::unordered_map<core::ID, std::shared_ptr<StreamUnit>> stream_units_;
 
     private: // Callbacks
-        void guiSetpointsCallback(const core::AgentGuiSetpointsMsg::SharedPtr msg);
+        void observationSetpointsCallback(const core::ObservationSetpointsMsg::SharedPtr msg);
 
     private: // Stream management
         void streamPipeline(const std::shared_ptr<StreamUnit>& unit);
@@ -99,7 +100,7 @@ namespace flychams::agent
 
     private: // ROS components
         // Subscriber
-        core::SubscriberPtr<core::AgentGuiSetpointsMsg> gui_setpoints_sub_;
+        core::SubscriberPtr<core::ObservationSetpointsMsg> observation_setpoints_sub_;
     };
 
 } // namespace flychams::agent

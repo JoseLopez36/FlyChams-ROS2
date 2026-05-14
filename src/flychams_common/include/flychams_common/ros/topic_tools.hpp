@@ -39,7 +39,7 @@ namespace flychams::core
             agent_topics_.assignment_pattern = topic_config.agent_assignment;
             agent_topics_.clusters_pattern = topic_config.agent_clusters;
             agent_topics_.position_setpoint_pattern = topic_config.agent_position_setpoint;
-            agent_topics_.observation_setpoints_pattern = topic_config.agent_observation_setpoints;
+            agent_topics_.observation_setpoints_pattern = topic_config.observation_setpoints;
             agent_topics_.multi_camera_image_pattern = topic_config.agent_multi_camera_image;
             agent_topics_.multi_window_image_pattern = topic_config.agent_multi_window_image;
 
@@ -162,7 +162,7 @@ namespace flychams::core
         {
             return RosUtils::replace(agent_topics_.position_setpoint_pattern, "AGENTID", agent_id);
         }
-        std::string getAgentObservationSetpointsTopic(const ID& agent_id)
+        std::string getObservationSetpointsTopic(const ID& agent_id)
         {
             return RosUtils::replace(agent_topics_.observation_setpoints_pattern, "AGENTID", agent_id);
         }
@@ -259,9 +259,9 @@ namespace flychams::core
         {
             return node_->create_publisher<PointStampedMsg>(getAgentPositionSetpointTopic(agent_id), 10);
         }
-        PublisherPtr<AgentObservationSetpointsMsg> createAgentObservationSetpointsPublisher(const ID& agent_id)
+        PublisherPtr<ObservationSetpointsMsg> createObservationSetpointsPublisher(const ID& agent_id)
         {
-            return node_->create_publisher<AgentObservationSetpointsMsg>(getAgentObservationSetpointsTopic(agent_id), 10);
+            return node_->create_publisher<ObservationSetpointsMsg>(getObservationSetpointsTopic(agent_id), 10);
         }
         PublisherPtr<CompressedImageMsg> createAgentMultiCameraImagePublisher(const ID& agent_id, const ID& camera_id)
         {
@@ -273,9 +273,9 @@ namespace flychams::core
         }
 
         // Operator publishers
-        PublisherPtr<GlobalMetricsMsg> createGlobalMetricsPublisher()
+        PublisherPtr<MissionMetricsMsg> createMissionMetricsPublisher()
         {
-            return node_->create_publisher<GlobalMetricsMsg>(getGlobalMetricsTopic(), 10);
+            return node_->create_publisher<MissionMetricsMsg>(getGlobalMetricsTopic(), 10);
         }
         PublisherPtr<AgentMetricsMsg> createAgentMetricsPublisher(const ID& agent_id)
         {
@@ -355,9 +355,9 @@ namespace flychams::core
         {
             return node_->create_subscription<PointStampedMsg>(getAgentPositionSetpointTopic(agent_id), 10, std::move(callback), options);
         }
-        SubscriberPtr<AgentObservationSetpointsMsg> createAgentObservationSetpointsSubscriber(const ID& agent_id, std::function<void(const AgentObservationSetpointsMsg::SharedPtr)> callback, const rclcpp::SubscriptionOptions& options = rclcpp::SubscriptionOptions())
+        SubscriberPtr<ObservationSetpointsMsg> createObservationSetpointsSubscriber(const ID& agent_id, std::function<void(const ObservationSetpointsMsg::SharedPtr)> callback, const rclcpp::SubscriptionOptions& options = rclcpp::SubscriptionOptions())
         {
-            return node_->create_subscription<AgentObservationSetpointsMsg>(getAgentObservationSetpointsTopic(agent_id), 10, std::move(callback), options);
+            return node_->create_subscription<ObservationSetpointsMsg>(getObservationSetpointsTopic(agent_id), 10, std::move(callback), options);
         }
         SubscriberPtr<CompressedImageMsg> createAgentMultiCameraImageSubscriber(const ID& agent_id, const ID& camera_id, std::function<void(const CompressedImageMsg::SharedPtr)> callback, const rclcpp::SubscriptionOptions& options = rclcpp::SubscriptionOptions())
         {
@@ -369,9 +369,9 @@ namespace flychams::core
         }
 
         // Operator subscribers
-        SubscriberPtr<GlobalMetricsMsg> createGlobalMetricsSubscriber(std::function<void(const GlobalMetricsMsg::SharedPtr)> callback, const rclcpp::SubscriptionOptions& options = rclcpp::SubscriptionOptions())
+        SubscriberPtr<MissionMetricsMsg> createGlobalMetricsSubscriber(std::function<void(const MissionMetricsMsg::SharedPtr)> callback, const rclcpp::SubscriptionOptions& options = rclcpp::SubscriptionOptions())
         {
-            return node_->create_subscription<GlobalMetricsMsg>(getGlobalMetricsTopic(), 10, std::move(callback), options);
+            return node_->create_subscription<MissionMetricsMsg>(getGlobalMetricsTopic(), 10, std::move(callback), options);
         }
         SubscriberPtr<AgentMetricsMsg> createAgentMetricsSubscriber(const ID& agent_id, std::function<void(const AgentMetricsMsg::SharedPtr)> callback, const rclcpp::SubscriptionOptions& options = rclcpp::SubscriptionOptions())
         {

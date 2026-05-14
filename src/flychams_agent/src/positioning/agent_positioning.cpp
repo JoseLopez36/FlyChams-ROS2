@@ -57,7 +57,6 @@ namespace flychams::agent
 
         // Create publisher for agent setpoint
         agent_.setpoint_pub = topic_tools_->createAgentPositionSetpointPublisher(agent_id_);
-        agent_.optimization_duration_pub = topic_tools_->createAgentOptimizationDurationPublisher(agent_id_);
 
         // Set update timer
         update_timer_ = rclcpp::create_timer(node_, 
@@ -76,7 +75,6 @@ namespace flychams::agent
         agent_.position_sub.reset();
         agent_.clusters_sub.reset();
         agent_.setpoint_pub.reset();
-        agent_.optimization_duration_pub.reset();
         // Destroy update timer
         update_timer_.reset();
     }
@@ -155,11 +153,6 @@ namespace flychams::agent
         agent_.setpoint.header.stamp = RosUtils::now(node_);
         RosUtils::toMsg(optimal_position, agent_.setpoint.point);
         agent_.setpoint_pub->publish(agent_.setpoint);
-
-        // Publish optimization duration
-        Float32Msg duration_msg;
-        duration_msg.data = time_elapsed;
-        agent_.optimization_duration_pub->publish(duration_msg);
     }
 
     // ════════════════════════════════════════════════════════════════════════════

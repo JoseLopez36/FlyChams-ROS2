@@ -39,19 +39,17 @@ namespace flychams::agent
             // Clusters data
             core::AgentClustersMsg clusters;
             bool has_clusters;
-            // Tracking setpoint messages
-            core::AgentObservationSetpointsMsg observation_setpoints;
-            core::AgentGuiSetpointsMsg gui_setpoints;
+            // Observation setpoint message
+            core::ObservationSetpointsMsg observation_setpoints;
             // Subscribers
             core::SubscriberPtr<core::AgentStatusMsg> status_sub;
             core::SubscriberPtr<core::AgentClustersMsg> clusters_sub;
             // Publisher
-            core::PublisherPtr<core::AgentObservationSetpointsMsg> observation_setpoints_pub;
-            core::PublisherPtr<core::AgentGuiSetpointsMsg> gui_setpoints_pub;
+            core::PublisherPtr<core::ObservationSetpointsMsg> observation_setpoints_pub;
             // Constructor
             Agent()
                 : status(), has_status(false), clusters(), has_clusters(false), observation_setpoints(),
-                gui_setpoints(), status_sub(), clusters_sub(), observation_setpoints_pub(), gui_setpoints_pub()
+                status_sub(), clusters_sub(), observation_setpoints_pub()
             {
             }
         };

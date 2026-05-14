@@ -548,7 +548,7 @@ namespace flychams::core
         RCLCPP_INFO(node_->get_logger(), "    Assignment: %s", config_ptr_->topics.agent_assignment.c_str());
         RCLCPP_INFO(node_->get_logger(), "    Clusters: %s", config_ptr_->topics.agent_clusters.c_str());
         RCLCPP_INFO(node_->get_logger(), "    Position Setpoint: %s", config_ptr_->topics.agent_position_setpoint.c_str());
-        RCLCPP_INFO(node_->get_logger(), "    Observation Setpoints: %s", config_ptr_->topics.agent_observation_setpoints.c_str());
+        RCLCPP_INFO(node_->get_logger(), "    Observation Setpoints: %s", config_ptr_->topics.observation_setpoints.c_str());
         RCLCPP_INFO(node_->get_logger(), "    Multi Camera Image: %s", config_ptr_->topics.agent_multi_camera_image.c_str());
         RCLCPP_INFO(node_->get_logger(), "    Multi Window Image: %s", config_ptr_->topics.agent_multi_window_image.c_str());
         RCLCPP_INFO(node_->get_logger(), "  Operator Topics:");

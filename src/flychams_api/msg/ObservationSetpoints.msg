@@ -14,3 +14,4 @@ uint8[] roles                        # Unit roles (0: None, 1: Central, 2: Track
 # Unit data
 float32[] zoom_factors               # Unit zoom factor
 geometry_msgs/Vector3[] rotations    # Unit goal roll, pitch and yaw (rad) (only for Camera type)
+flychams_api/Crop[] crops            # Unit goal crop or ROI (only for Window type)

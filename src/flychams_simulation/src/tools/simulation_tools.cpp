@@ -1,5 +1,6 @@
 #include "flychams_simulation/tools/simulation_tools.hpp"
 
+using namespace airsim_interfaces::msg;
 using namespace airsim_interfaces::srv;
 using namespace flychams::core;
 

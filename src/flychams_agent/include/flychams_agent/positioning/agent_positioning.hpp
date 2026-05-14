@@ -50,12 +50,11 @@ namespace flychams::agent
             core::SubscriberPtr<core::AgentClustersMsg> clusters_sub;
             // Publisher
             core::PublisherPtr<core::PointStampedMsg> setpoint_pub;
-            core::PublisherPtr<core::Float32Msg> optimization_duration_pub;
             // Constructor
             Agent()
                 : status(), has_status(false), position(), has_position(false), clusters(),
                 has_clusters(false), setpoint(), status_sub(), position_sub(), clusters_sub(),
-                setpoint_pub(), optimization_duration_pub()
+                setpoint_pub()
             {
             }
         };
