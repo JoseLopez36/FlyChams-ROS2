@@ -1,4 +1,4 @@
-#include "flychams_simulation/agent/agent_simulation_bridge.hpp"
+#include "flychams_simulation/bridge/agent_bridge.hpp"
 
 // Utils includes
 #include "flychams_common/utils/vision_utils.hpp"

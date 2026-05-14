@@ -74,9 +74,9 @@ def generate_launch_description():
             'executable': 'target_control_node',
             'name': 'target_control_node'
         },
-        'agent_simulation_bridge': {
-            'executable': 'agent_simulation_bridge_node',
-            'name': 'agent_simulation_bridge_node'
+        'agent_bridge': {
+            'executable': 'agent_bridge_node',
+            'name': 'agent_bridge_node'
         }
     }
 

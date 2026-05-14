@@ -6,10 +6,10 @@
 node_allowlist:
   - target_state
   - target_control
-  - agent_simulation_bridge
+  - agent_bridge
 
 # Per-node log level overrides
 node_log_levels:
   target_state: "info"
   target_control: "info"
-  agent_simulation_bridge: "info"
+  agent_bridge: "info"

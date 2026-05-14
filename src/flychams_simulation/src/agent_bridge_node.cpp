@@ -1,7 +1,7 @@
 #include "rclcpp/rclcpp.hpp"
 
 // Simulation bridge includes
-#include "flychams_simulation/agent/agent_simulation_bridge.hpp"
+#include "flychams_simulation/bridge/agent_bridge.hpp"
 
 // Core includes
 #include "flychams_common/base/base_discoverer_node.hpp"
@@ -24,10 +24,10 @@ using namespace flychams::simulation;
  * @date 2025-05-14
  * ════════════════════════════════════════════════════════════════
  */
-class AgentSimulationBridgeNode : public BaseDiscovererNode
+class AgentBridgeNode : public BaseDiscovererNode
 {
 public: // Constructor/Destructor
-    AgentSimulationBridgeNode(const std::string& node_name, const rclcpp::NodeOptions& options)
+    AgentBridgeNode(const std::string& node_name, const rclcpp::NodeOptions& options)
         : BaseDiscovererNode(node_name, options)
     {
         // Nothing to do
@@ -98,7 +98,7 @@ int main(int argc, char** argv)
     options.allow_undeclared_parameters(true);
     options.automatically_declare_parameters_from_overrides(true);
     // Create and initialize node
-    auto node = std::make_shared<AgentSimulationBridgeNode>("agent_simulation_bridge_node", options);
+    auto node = std::make_shared<AgentBridgeNode>("agent_bridge_node", options);
     node->init();
     // Create executor and add node
     rclcpp::executors::MultiThreadedExecutor executor;
