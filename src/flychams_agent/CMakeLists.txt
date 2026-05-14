@@ -20,7 +20,6 @@ find_package(GeographicLib REQUIRED)
 
 # Create control library
 set(CONTROL_SRC
-  src/mavros/mavros_manager.cpp
   src/drone/drone_frames.cpp
   src/drone/drone_state.cpp
   src/drone/drone_control.cpp
@@ -49,11 +48,6 @@ target_link_libraries(${PROJECT_NAME}
   rclcpp::rclcpp
   ${GeographicLib_LIBRARIES}
 )
-
-# Create executable for mavros manager node
-add_executable(mavros_manager_node src/mavros_manager_node.cpp)
-target_link_libraries(mavros_manager_node ${PROJECT_NAME})
-ament_target_dependencies(mavros_manager_node rclcpp mavros_msgs flychams_common flychams_api)
 
 # Create executable for drone frames node
 add_executable(drone_frames_node src/drone_frames_node.cpp)
@@ -107,7 +101,7 @@ install(TARGETS ${PROJECT_NAME}
   INCLUDES DESTINATION include
 )
 
-install(TARGETS drone_frames_node drone_state_node drone_control_node camera_frames_node mavros_manager_node agent_analysis_node agent_positioning_node agent_tracking_node agent_stream_node
+install(TARGETS drone_frames_node drone_state_node drone_control_node camera_frames_node agent_analysis_node agent_positioning_node agent_tracking_node agent_stream_node
   RUNTIME DESTINATION lib/${PROJECT_NAME}
 )
 

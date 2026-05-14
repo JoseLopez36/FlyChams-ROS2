@@ -7,6 +7,30 @@ from ament_index_python.packages import get_package_share_directory
 import os
 import yaml
 
+def launch_airsim():
+    return [
+        Node(
+            package='airsim_wrapper',
+            executable='airsim_node',
+            name='airsim_node',
+            output='screen',
+            namespace='airsim',
+            arguments=['--ros-args', '--log-level', 'error'],
+            parameters=[{
+                'update_airsim_state_every_n_sec': 0.020,
+                'update_sim_clock_every_n_sec': 0.001,
+                'world_frame_id': 'world',
+                'vehicle_local_frame_id': 'local',
+                'vehicle_body_frame_id': 'body',
+                'camera_body_frame_id': 'body',
+                'camera_optical_frame_id': 'optical',
+                'host_ip': 'localhost',
+                'host_port': 41451,
+                'broadcast_transforms': False
+            }]
+        )
+    ]
+
 def generate_launch_description():
     # Resolve config directories
     common_core_dir = os.path.join(
@@ -39,28 +63,6 @@ def generate_launch_description():
         LaunchConfiguration('mission_yaml'),
         os.path.join(pkg_config_dir, 'nodes.yaml'),
     ]
-
-    # AirSim node
-    airsim_node = Node(
-        package='airsim_wrapper',
-        executable='airsim_node',
-        name='airsim_node',
-        output='screen',
-        namespace='airsim',
-        arguments=['--ros-args', '--log-level', 'error'],
-        parameters=[{
-            'update_airsim_state_every_n_sec': 0.020,
-            'update_sim_clock_every_n_sec': 0.001,
-            'world_frame_id': 'world',
-            'vehicle_local_frame_id': 'local',
-            'vehicle_body_frame_id': 'body',
-            'camera_body_frame_id': 'body',
-            'camera_optical_frame_id': 'optical',
-            'host_ip': 'localhost',
-            'host_port': 41451,
-            'broadcast_transforms': False
-        }]
-    )
 
     # Define node configurations
     node_configs = {
@@ -101,8 +103,11 @@ def generate_launch_description():
             )
             nodes.append(node)
 
+    # Launch AirSim wrapper
+    airsim_node = launch_airsim()
+
     return LaunchDescription([
         mission_yaml,
-        airsim_node,
-        *nodes
+        *nodes,
+        *airsim_node
     ])

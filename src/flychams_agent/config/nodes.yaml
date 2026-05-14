@@ -12,14 +12,14 @@
     # Control mode (0: position, 1: velocity)
     control_mode: 0
 
-/**/mavros_manager_node:
+/**/mavros_node:
   ros__parameters:
-    # Mavros launch parameters
+    # FCU connection parameters
     fcu_url: udp://:14030@172.17.0.2:14280
+    gcs_url: ""
     tgt_system: 1
-
-    # Mavros stream rate (Hz)
-    local_position_odom_rate: 800.0
+    tgt_component: 1
+    fcu_protocol: v2.0
 
 /**/camera_frames_node:
   ros__parameters:

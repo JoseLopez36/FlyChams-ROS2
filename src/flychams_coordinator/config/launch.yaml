@@ -5,13 +5,13 @@
 # Node allowlist: Only launch these nodes
 node_allowlist:
   - element_registrator
-  # - target_clustering
-  # - cluster_analysis
-  # - agent_assignment
+  - target_clustering
+  - cluster_analysis
+  - agent_assignment
 
 # Per-node log level overrides
 node_log_levels:
-  element_registrator: "error"
-  target_clustering: "error"
-  cluster_analysis: "error"
-  agent_assignment: "error"
+  element_registrator: "info"
+  target_clustering: "info"
+  cluster_analysis: "info"
+  agent_assignment: "info"
