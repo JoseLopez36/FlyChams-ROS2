@@ -1,12 +1,10 @@
 #include "rclcpp/rclcpp.hpp"
 
 // Registration includes
-#include "flychams_coordinator/registration/agent_registration.hpp"
-#include "flychams_coordinator/registration/target_registration.hpp"
-#include "flychams_coordinator/registration/cluster_registration.hpp"
+#include "flychams_coordinator/registration/element_registration.hpp"
 
 // Core includes
-#include "flychams_common/base/base_registrator_node.hpp"
+#include "flychams_common/base/base_node.hpp"
 
 using namespace flychams::core;
 using namespace flychams::coordinator;
@@ -20,105 +18,32 @@ using namespace flychams::coordinator;
  * @date 2025-02-28
  * ════════════════════════════════════════════════════════════════
  */
-class ElementRegistratorNode : public BaseRegistratorNode
+class ElementRegistratorNode : public BaseNode
 {
 public: // Constructor/Destructor
     ElementRegistratorNode(const std::string& node_name, const rclcpp::NodeOptions& options)
-        : BaseRegistratorNode(node_name, options)
+        : BaseNode(node_name, options)
     {
         // Nothing to do
     }
 
     void onInit() override
     {
-        // Use callback group from registration node (to avoid race conditions)
-        // Create registration instances for each element type
-        agent_registration_ = std::make_shared<AgentRegistration>(node_, settings_tools_, topic_tools_, transform_tools_, registration_cb_group_);
-        target_registration_ = std::make_shared<TargetRegistration>(node_, settings_tools_, topic_tools_, transform_tools_, registration_cb_group_);
-        cluster_registration_ = std::make_shared<ClusterRegistration>(node_, settings_tools_, topic_tools_, transform_tools_, registration_cb_group_);
+        // Initialize element registration system
+        element_registration_ = std::make_shared<ElementRegistration>(node_, settings_tools_, topic_tools_, transform_tools_, node_cb_group_);
 
-        // Get all elements
-        agents_ = agent_registration_->getAgents();
-        targets_ = target_registration_->getTargets();
-        clusters_ = cluster_registration_->getClusters();
-
-        // Check if every element type is correctly registered
-        if (agents_.empty())
-        {
-            RCLCPP_ERROR(node_->get_logger(), "No agents registered. Cannot setup the simulation");
-            rclcpp::shutdown();
-            return;
-        }
-        if (targets_.empty())
-        {
-            RCLCPP_ERROR(node_->get_logger(), "No targets registered. Cannot setup the simulation");
-            rclcpp::shutdown();
-            return;
-        }
-        if (clusters_.empty())
-        {
-            RCLCPP_ERROR(node_->get_logger(), "No clusters registered. Cannot setup the simulation");
-            rclcpp::shutdown();
-            return;
-        }
-
-        // Register all agents, targets and clusters
-        for (const auto& agent_id : agents_)
-            registerElement(agent_id, ElementType::Agent);
-        for (const auto& target_id : targets_)
-            registerElement(target_id, ElementType::Target);
-        for (const auto& cluster_id : clusters_)
-            registerElement(cluster_id, ElementType::Cluster);
-
-        // Create global origin publisher
-        global_origin_pub_ = topic_tools_->createGlobalOriginPublisher();
-
-        // Publish global origin
-        GeoPointStampedMsg origin_msg;
-        origin_msg.header = RosUtils::createHeader(node_, transform_tools_->getGlobalFrame());
-        origin_msg.position.latitude = settings_tools_->getEnvironment().geopoint.latitude;
-        origin_msg.position.longitude = settings_tools_->getEnvironment().geopoint.longitude;
-        origin_msg.position.altitude = settings_tools_->getEnvironment().geopoint.altitude;
-        global_origin_pub_->publish(origin_msg);
+        RCLCPP_INFO(node_->get_logger(), "Element registration created");
     }
 
     void onShutdown() override
     {
-        // Unregister all elements
-        for (const auto& agent_id : agents_)
-            unregisterElement(agent_id, ElementType::Agent);
-        for (const auto& target_id : targets_)
-            unregisterElement(target_id, ElementType::Target);
-        for (const auto& cluster_id : clusters_)
-            unregisterElement(cluster_id, ElementType::Cluster);
-
-        // Clear elements
-        agents_.clear();
-        targets_.clear();
-        clusters_.clear();
-
-        // Destroy registration instances
-        agent_registration_.reset();
-        target_registration_.reset();
-        cluster_registration_.reset();
-
-        // Destroy global origin publisher
-        global_origin_pub_.reset();
+        // Destroy element registration system
+        element_registration_.reset();
     }
 
 private: // Components
-    // Registration instances
-    AgentRegistration::SharedPtr agent_registration_;
-    TargetRegistration::SharedPtr target_registration_;
-    ClusterRegistration::SharedPtr cluster_registration_;
-
-    // Elements
-    IDs agents_;
-    IDs targets_;
-    IDs clusters_;
-
-    // Global origin publisher
-    PublisherPtr<GeoPointStampedMsg> global_origin_pub_;
+    // Element registration system
+    ElementRegistration::SharedPtr element_registration_;
 };
 
 int main(int argc, char** argv)

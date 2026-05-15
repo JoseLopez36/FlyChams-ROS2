@@ -2,8 +2,8 @@
 
 namespace flychams::core
 {
-    BaseModule::BaseModule(NodePtr node, SettingsTools::SharedPtr settings_tools, TopicTools::SharedPtr topic_tools, TransformTools::SharedPtr transform_tools, CallbackGroupPtr module_cb_group)
-        : node_(node), settings_tools_(settings_tools), topic_tools_(topic_tools), transform_tools_(transform_tools), module_cb_group_(module_cb_group)
+    BaseModule::BaseModule(NodePtr node, SettingsTools::SharedPtr settings, CallbackGroupPtr module_cb_group)
+        : node_(node), settings_(settings), module_cb_group_(module_cb_group)
     {
         // Nothing to do
     }
@@ -14,7 +14,7 @@ namespace flychams::core
         sub_options_with_module_cb_group_.callback_group = module_cb_group_;
 
         // Call on init overridable method
-        onInit();
+        onModuleInit();
     }
 
     BaseModule::~BaseModule()
@@ -25,11 +25,9 @@ namespace flychams::core
     void BaseModule::shutdown()
     {
         // Call on shutdown overridable method
-        onShutdown();
-        // Destroy tools
-        settings_tools_.reset();
-        topic_tools_.reset();
-        transform_tools_.reset();
+        onModuleShutdown();
+        // Destroy settings tools
+        settings_.reset();
         // Destroy node
         node_.reset();
     }

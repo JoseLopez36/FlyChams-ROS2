@@ -1,50 +1,40 @@
 #pragma once
 
-// Tools includes
-#include "flychams_common/settings/settings_tools.hpp"
-#include "flychams_common/ros/topic_tools.hpp"
-#include "flychams_common/ros/transform_tools.hpp"
-
-// Core includes
-#include "flychams_common/types/core_types.hpp"
-#include "flychams_common/types/ros_types.hpp"
-#include "flychams_common/utils/ros_utils.hpp"
+// Base node include
+#include "flychams_common/base/base_status_node.hpp"
 
 namespace flychams::core
 {
     /**
      * ════════════════════════════════════════════════════════════════
-     * @brief Discoverer node for discovering the different elements
-     * in the simulation
+     * @brief Base node for discovering system elements
      *
      * @details
-     * This class implements the discoverer node for discovering agents,
-     * targets, and clusters with the help of the various tools. It serves
-     * as a base class for the different nodes that need to discover elements
-     * dynamically in the simulation.
+     * Extends BaseStatusNode with element (agent, target, cluster)
+     * discovery via a RegistrationMsg subscriber. Provides onAdd/onRemove
+     * callbacks for dynamic element management. Used as the base for
+     * multi-element coordinator and simulation nodes.
      *
      * ════════════════════════════════════════════════════════════════
      * @author Jose Francisco Lopez Ruiz
      * @date 2025-02-28
      * ════════════════════════════════════════════════════════════════
      */
-    class BaseDiscovererNode : public rclcpp::Node
+    class BaseDiscovererNode : public BaseStatusNode
     {
     public: // Constructor/Destructor
         BaseDiscovererNode(const std::string& node_name, const rclcpp::NodeOptions& options);
 
-        void init();
-
-        virtual ~BaseDiscovererNode();
-
-        void shutdown();
+        virtual ~BaseDiscovererNode() = default;
 
     public: // Types
         using SharedPtr = std::shared_ptr<BaseDiscovererNode>;
 
-    protected: // Overridable methods
-        virtual void onInit() {}
-        virtual void onShutdown() {}
+    protected: // Overridable discovery hooks
+        virtual void onDiscoveryInit() {}
+        virtual void onDiscoveryShutdown() {}
+
+    protected: // Overridable discovery callbacks
         virtual void onAddAgent(const ID& agent_id) {}
         virtual void onRemoveAgent(const ID& agent_id) {}
         virtual void onAddTarget(const ID& target_id) {}
@@ -52,24 +42,19 @@ namespace flychams::core
         virtual void onAddCluster(const ID& cluster_id) {}
         virtual void onRemoveCluster(const ID& cluster_id) {}
 
+    protected: // Overridable methods
+        void onStatusInit() override;
+        void onStatusShutdown() override;
+
+    protected: // Discovery data
+        std::unordered_map<ID, ElementType> elements_;
+
+    private: // ROS components
+        // Subscribers
+        SubscriberPtr<RegistrationMsg> discovery_sub_;
+
     private: // Discovery callback
         void onDiscovery(const RegistrationMsg::SharedPtr msg);
-
-    protected: // Components
-        // Node
-        NodePtr node_;
-        const std::string node_name_;
-        // Tools
-        SettingsTools::SharedPtr settings_tools_;
-        TopicTools::SharedPtr topic_tools_;
-        TransformTools::SharedPtr transform_tools_;
-        // Discovered elements
-        std::unordered_map<ID, ElementType> elements_;
-        // Callback group
-        CallbackGroupPtr discovery_cb_group_;
-        rclcpp::SubscriptionOptions sub_options_with_discovery_cb_group_;
-        // Discovery subscriber
-        SubscriberPtr<RegistrationMsg> discovery_sub_;
     };
 
 } // namespace flychams::core

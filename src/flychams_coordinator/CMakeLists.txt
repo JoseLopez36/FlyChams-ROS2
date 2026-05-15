@@ -16,6 +16,7 @@ set(COORD_SRC
   src/registration/agent_registration.cpp
   src/registration/target_registration.cpp
   src/registration/cluster_registration.cpp
+  src/registration/element_registration.cpp
   src/status/fleet_status.cpp
   src/clustering/target_clustering.cpp
   src/analysis/cluster_analysis.cpp

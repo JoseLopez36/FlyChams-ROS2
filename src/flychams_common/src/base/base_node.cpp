@@ -2,6 +2,10 @@
 
 namespace flychams::core
 {
+    // ════════════════════════════════════════════════════════════════════════════
+    // CONSTRUCTOR: Constructor and destructor
+    // ════════════════════════════════════════════════════════════════════════════
+
     BaseNode::BaseNode(const std::string& node_name, const rclcpp::NodeOptions& options)
         : Node(node_name, options), node_name_(node_name)
     {
@@ -18,8 +22,57 @@ namespace flychams::core
         node_cb_group_ = node_->create_callback_group(rclcpp::CallbackGroupType::MutuallyExclusive);
         sub_options_with_node_cb_group_.callback_group = node_cb_group_;
 
+        // Create settings tools
+        settings_ = std::make_shared<SettingsTools>(node_);
+
+        // Initialize topic data
+        const auto& topic_config = settings_->getTopics();
+
+        // Coordinator topics
+        coordinator_topics_.registration = topic_config.registration;
+        coordinator_topics_.fleet_status = topic_config.fleet_status;
+        coordinator_topics_.mission_status = topic_config.mission_status;
+        coordinator_topics_.global_origin = topic_config.global_origin;
+        coordinator_topics_.target_position_pattern = topic_config.target_position;
+        coordinator_topics_.cluster_assignment_pattern = topic_config.cluster_assignment;
+        coordinator_topics_.cluster_geometry_pattern = topic_config.cluster_geometry;
+
+        // Agent topics
+        agent_topics_.status_pattern = topic_config.agent_status;
+        agent_topics_.global_position_pattern = topic_config.agent_global_position;
+        agent_topics_.local_position_pattern = topic_config.agent_local_position;
+        agent_topics_.assignment_pattern = topic_config.agent_assignment;
+        agent_topics_.clusters_pattern = topic_config.agent_clusters;
+        agent_topics_.position_setpoint_pattern = topic_config.agent_position_setpoint;
+        agent_topics_.observation_setpoints_pattern = topic_config.observation_setpoints;
+        agent_topics_.multi_camera_image_pattern = topic_config.agent_multi_camera_image;
+        agent_topics_.multi_window_image_pattern = topic_config.agent_multi_window_image;
+
+        // Operator topics
+        operator_topics_.metrics = topic_config.mission_metrics;
+        operator_topics_.agent_metrics_pattern = topic_config.agent_metrics;
+        operator_topics_.target_metrics_pattern = topic_config.target_metrics;
+        operator_topics_.cluster_metrics_pattern = topic_config.cluster_metrics;
+        operator_topics_.agent_markers_pattern = topic_config.agent_markers;
+        operator_topics_.target_markers_pattern = topic_config.target_markers;
+        operator_topics_.cluster_markers_pattern = topic_config.cluster_markers;
+
+        // Initialize TF2 components
+        tf_buffer_ = std::make_shared<tf2_ros::Buffer>(node_->get_clock());
+        tf_listener_ = std::make_shared<tf2_ros::TransformListener>(*tf_buffer_);
+        tf_broadcaster_ = std::make_shared<tf2_ros::TransformBroadcaster>(node_);
+        static_tf_broadcaster_ = std::make_shared<tf2_ros::StaticTransformBroadcaster>(node_);
+        
+        // Get frame config
+        const auto& frame_config = settings_->getFrames();
+        world_frame_ = frame_config.world;
+        agent_frames_.agent_local_pattern_ = frame_config.agent_local;
+        agent_frames_.agent_body_pattern_ = frame_config.agent_body;
+        agent_frames_.camera_body_pattern_ = frame_config.camera_body;
+        agent_frames_.camera_optical_pattern_ = frame_config.camera_optical;
+
         // Call on init overridable method
-        onInit();
+        onNodeInit();
         RCLCPP_INFO(node_->get_logger(), "%s node running", node_name_.c_str());
     }
 
@@ -32,7 +85,496 @@ namespace flychams::core
     {
         RCLCPP_INFO(node_->get_logger(), "Shutting down %s node...", node_name_.c_str());
         // Call on shutdown overridable method
-        onShutdown();
+        onNodeShutdown();
+        // Destroy TF2 components
+        tf_listener_.reset();
+        tf_buffer_.reset();
+        tf_broadcaster_.reset();
+        static_tf_broadcaster_.reset();
+        // Destroy settings tools
+        settings_.reset();
+    }
+
+    // ════════════════════════════════════════════════════════════════════════════
+    // TOPIC GETTERS
+    // ════════════════════════════════════════════════════════════════════════════
+
+    std::string BaseNode::getRegistrationTopic()
+    {
+        return coordinator_topics_.registration;
+    }
+
+    std::string BaseNode::getFleetStatusTopic()
+    {
+        return coordinator_topics_.fleet_status;
+    }
+
+    std::string BaseNode::getMissionStatusTopic()
+    {
+        return coordinator_topics_.mission_status;
+    }
+
+    std::string BaseNode::getGlobalOriginTopic()
+    {
+        return coordinator_topics_.global_origin;
+    }
+
+    std::string BaseNode::getTargetPositionTopic(const ID& target_id)
+    {
+        return RosUtils::replace(coordinator_topics_.target_position_pattern, "TARGETID", target_id);
+    }
+
+    std::string BaseNode::getClusterAssignmentTopic(const ID& cluster_id)
+    {
+        return RosUtils::replace(coordinator_topics_.cluster_assignment_pattern, "CLUSTERID", cluster_id);
+    }
+
+    std::string BaseNode::getClusterGeometryTopic(const ID& cluster_id)
+    {
+        return RosUtils::replace(coordinator_topics_.cluster_geometry_pattern, "CLUSTERID", cluster_id);
+    }
+
+    std::string BaseNode::getAgentStatusTopic(const ID& agent_id)
+    {
+        return RosUtils::replace(agent_topics_.status_pattern, "AGENTID", agent_id);
+    }
+
+    std::string BaseNode::getAgentGlobalPositionTopic(const ID& agent_id)
+    {
+        return RosUtils::replace(agent_topics_.global_position_pattern, "AGENTID", agent_id);
+    }
+
+    std::string BaseNode::getAgentLocalPositionTopic(const ID& agent_id)
+    {
+        return RosUtils::replace(agent_topics_.local_position_pattern, "AGENTID", agent_id);
+    }
+
+    std::string BaseNode::getAgentAssignmentTopic(const ID& agent_id)
+    {
+        return RosUtils::replace(agent_topics_.assignment_pattern, "AGENTID", agent_id);
+    }
+
+    std::string BaseNode::getAgentClustersTopic(const ID& agent_id)
+    {
+        return RosUtils::replace(agent_topics_.clusters_pattern, "AGENTID", agent_id);
+    }
+
+    std::string BaseNode::getAgentPositionSetpointTopic(const ID& agent_id)
+    {
+        return RosUtils::replace(agent_topics_.position_setpoint_pattern, "AGENTID", agent_id);
+    }
+
+    std::string BaseNode::getObservationSetpointsTopic(const ID& agent_id)
+    {
+        return RosUtils::replace(agent_topics_.observation_setpoints_pattern, "AGENTID", agent_id);
+    }
+
+    std::string BaseNode::getAgentMultiCameraImageTopic(const ID& agent_id, const ID& camera_id)
+    {
+        return RosUtils::replace(RosUtils::replace(agent_topics_.multi_camera_image_pattern, "AGENTID", agent_id), "MULTICAMERAID", camera_id);
+    }
+
+    std::string BaseNode::getAgentMultiWindowImageTopic(const ID& agent_id, const ID& window_id)
+    {
+        return RosUtils::replace(RosUtils::replace(agent_topics_.multi_window_image_pattern, "AGENTID", agent_id), "MULTIWINDOWID", window_id);
+    }
+
+    std::string BaseNode::getGlobalMetricsTopic()
+    {
+        return operator_topics_.metrics;
+    }
+
+    std::string BaseNode::getAgentMetricsTopic(const ID& agent_id)
+    {
+        return RosUtils::replace(operator_topics_.agent_metrics_pattern, "AGENTID", agent_id);
+    }
+
+    std::string BaseNode::getTargetMetricsTopic(const ID& target_id)
+    {
+        return RosUtils::replace(operator_topics_.target_metrics_pattern, "TARGETID", target_id);
+    }
+
+    std::string BaseNode::getClusterMetricsTopic(const ID& cluster_id)
+    {
+        return RosUtils::replace(operator_topics_.cluster_metrics_pattern, "CLUSTERID", cluster_id);
+    }
+
+    std::string BaseNode::getAgentMarkersTopic(const ID& agent_id)
+    {
+        return RosUtils::replace(operator_topics_.agent_markers_pattern, "AGENTID", agent_id);
+    }
+
+    std::string BaseNode::getTargetMarkersTopic(const ID& target_id)
+    {
+        return RosUtils::replace(operator_topics_.target_markers_pattern, "TARGETID", target_id);
+    }
+
+    std::string BaseNode::getClusterMarkersTopic(const ID& cluster_id)
+    {
+        return RosUtils::replace(operator_topics_.cluster_markers_pattern, "CLUSTERID", cluster_id);
+    }
+
+    // ════════════════════════════════════════════════════════════════════════════
+    // PUBLISHER CREATION
+    // ════════════════════════════════════════════════════════════════════════════
+
+    PublisherPtr<RegistrationMsg> BaseNode::createRegistrationPublisher()
+    {
+        rclcpp::QoS qos = rclcpp::QoS(rclcpp::KeepLast(1)).reliable().transient_local();
+        return node_->create_publisher<RegistrationMsg>(getRegistrationTopic(), qos);
+    }
+
+    PublisherPtr<FleetStatusMsg> BaseNode::createFleetStatusPublisher()
+    {
+        rclcpp::QoS qos = rclcpp::QoS(rclcpp::KeepLast(1)).reliable().transient_local();
+        return node_->create_publisher<FleetStatusMsg>(getFleetStatusTopic(), qos);
+    }
+
+    PublisherPtr<MissionStatusMsg> BaseNode::createMissionStatusPublisher()
+    {
+        rclcpp::QoS qos = rclcpp::QoS(rclcpp::KeepLast(1)).reliable().transient_local();
+        return node_->create_publisher<MissionStatusMsg>(getMissionStatusTopic(), qos);
+    }
+
+    PublisherPtr<GeoPointStampedMsg> BaseNode::createGlobalOriginPublisher()
+    {
+        rclcpp::QoS qos = rclcpp::QoS(rclcpp::KeepLast(1)).reliable().transient_local();
+        return node_->create_publisher<GeoPointStampedMsg>(getGlobalOriginTopic(), qos);
+    }
+
+    PublisherPtr<PointStampedMsg> BaseNode::createTargetPositionPublisher(const ID& target_id)
+    {
+        return node_->create_publisher<PointStampedMsg>(getTargetPositionTopic(target_id), 10);
+    }
+
+    PublisherPtr<ClusterAssignmentMsg> BaseNode::createClusterAssignmentPublisher(const ID& cluster_id)
+    {
+        rclcpp::QoS qos = rclcpp::QoS(rclcpp::KeepLast(1)).reliable().transient_local();
+        return node_->create_publisher<ClusterAssignmentMsg>(getClusterAssignmentTopic(cluster_id), qos);
+    }
+
+    PublisherPtr<ClusterGeometryMsg> BaseNode::createClusterGeometryPublisher(const ID& cluster_id)
+    {
+        return node_->create_publisher<ClusterGeometryMsg>(getClusterGeometryTopic(cluster_id), 10);
+    }
+
+    PublisherPtr<AgentStatusMsg> BaseNode::createAgentStatusPublisher(const ID& agent_id)
+    {
+        rclcpp::QoS qos = rclcpp::QoS(rclcpp::KeepLast(1)).reliable().transient_local();
+        return node_->create_publisher<AgentStatusMsg>(getAgentStatusTopic(agent_id), qos);
+    }
+
+    PublisherPtr<PointStampedMsg> BaseNode::createAgentGlobalPositionPublisher(const ID& agent_id)
+    {
+        return node_->create_publisher<PointStampedMsg>(getAgentGlobalPositionTopic(agent_id), 10);
+    }
+
+    PublisherPtr<PointStampedMsg> BaseNode::createAgentLocalPositionPublisher(const ID& agent_id)
+    {
+        return node_->create_publisher<PointStampedMsg>(getAgentLocalPositionTopic(agent_id), 10);
+    }
+
+    PublisherPtr<AgentAssignmentMsg> BaseNode::createAgentAssignmentPublisher(const ID& agent_id)
+    {
+        rclcpp::QoS qos = rclcpp::QoS(rclcpp::KeepLast(1)).reliable().transient_local();
+        return node_->create_publisher<AgentAssignmentMsg>(getAgentAssignmentTopic(agent_id), qos);
+    }
+
+    PublisherPtr<AgentClustersMsg> BaseNode::createAgentClustersPublisher(const ID& agent_id)
+    {
+        return node_->create_publisher<AgentClustersMsg>(getAgentClustersTopic(agent_id), 10);
+    }
+
+    PublisherPtr<PointStampedMsg> BaseNode::createAgentPositionSetpointPublisher(const ID& agent_id)
+    {
+        return node_->create_publisher<PointStampedMsg>(getAgentPositionSetpointTopic(agent_id), 10);
+    }
+
+    PublisherPtr<ObservationSetpointsMsg> BaseNode::createObservationSetpointsPublisher(const ID& agent_id)
+    {
+        return node_->create_publisher<ObservationSetpointsMsg>(getObservationSetpointsTopic(agent_id), 10);
+    }
+
+    PublisherPtr<CompressedImageMsg> BaseNode::createAgentMultiCameraImagePublisher(const ID& agent_id, const ID& camera_id)
+    {
+        return node_->create_publisher<CompressedImageMsg>(getAgentMultiCameraImageTopic(agent_id, camera_id), 10);
+    }
+
+    PublisherPtr<CompressedImageMsg> BaseNode::createAgentMultiWindowImagePublisher(const ID& agent_id, const ID& window_id)
+    {
+        return node_->create_publisher<CompressedImageMsg>(getAgentMultiWindowImageTopic(agent_id, window_id), 10);
+    }
+
+    PublisherPtr<MissionMetricsMsg> BaseNode::createMissionMetricsPublisher()
+    {
+        return node_->create_publisher<MissionMetricsMsg>(getGlobalMetricsTopic(), 10);
+    }
+
+    PublisherPtr<AgentMetricsMsg> BaseNode::createAgentMetricsPublisher(const ID& agent_id)
+    {
+        return node_->create_publisher<AgentMetricsMsg>(getAgentMetricsTopic(agent_id), 10);
+    }
+
+    PublisherPtr<TargetMetricsMsg> BaseNode::createTargetMetricsPublisher(const ID& target_id)
+    {
+        return node_->create_publisher<TargetMetricsMsg>(getTargetMetricsTopic(target_id), 10);
+    }
+
+    PublisherPtr<ClusterMetricsMsg> BaseNode::createClusterMetricsPublisher(const ID& cluster_id)
+    {
+        return node_->create_publisher<ClusterMetricsMsg>(getClusterMetricsTopic(cluster_id), 10);
+    }
+
+    PublisherPtr<MarkerArrayMsg> BaseNode::createAgentMarkersPublisher(const ID& agent_id)
+    {
+        return node_->create_publisher<MarkerArrayMsg>(getAgentMarkersTopic(agent_id), 10);
+    }
+
+    PublisherPtr<MarkerArrayMsg> BaseNode::createTargetMarkersPublisher(const ID& target_id)
+    {
+        return node_->create_publisher<MarkerArrayMsg>(getTargetMarkersTopic(target_id), 10);
+    }
+
+    PublisherPtr<MarkerArrayMsg> BaseNode::createClusterMarkersPublisher(const ID& cluster_id)
+    {
+        return node_->create_publisher<MarkerArrayMsg>(getClusterMarkersTopic(cluster_id), 10);
+    }
+
+    // ════════════════════════════════════════════════════════════════════════════
+    // SUBSCRIBER CREATION
+    // ════════════════════════════════════════════════════════════════════════════
+
+    SubscriberPtr<RegistrationMsg> BaseNode::createRegistrationSubscriber(std::function<void(const RegistrationMsg::SharedPtr)> callback, const rclcpp::SubscriptionOptions& options)
+    {
+        rclcpp::QoS qos = rclcpp::QoS(rclcpp::KeepLast(1)).reliable().transient_local();
+        return node_->create_subscription<RegistrationMsg>(getRegistrationTopic(), qos, std::move(callback), options);
+    }
+
+    SubscriberPtr<FleetStatusMsg> BaseNode::createFleetStatusSubscriber(std::function<void(const FleetStatusMsg::SharedPtr)> callback, const rclcpp::SubscriptionOptions& options)
+    {
+        rclcpp::QoS qos = rclcpp::QoS(rclcpp::KeepLast(1)).reliable().transient_local();
+        return node_->create_subscription<FleetStatusMsg>(getFleetStatusTopic(), qos, std::move(callback), options);
+    }
+
+    SubscriberPtr<MissionStatusMsg> BaseNode::createMissionStatusSubscriber(std::function<void(const MissionStatusMsg::SharedPtr)> callback, const rclcpp::SubscriptionOptions& options)
+    {
+        rclcpp::QoS qos = rclcpp::QoS(rclcpp::KeepLast(1)).reliable().transient_local();
+        return node_->create_subscription<MissionStatusMsg>(getMissionStatusTopic(), qos, std::move(callback), options);
+    }
+
+    SubscriberPtr<GeoPointStampedMsg> BaseNode::createGlobalOriginSubscriber(std::function<void(const GeoPointStampedMsg::SharedPtr)> callback, const rclcpp::SubscriptionOptions& options)
+    {
+        rclcpp::QoS qos = rclcpp::QoS(rclcpp::KeepLast(1)).reliable().transient_local();
+        return node_->create_subscription<GeoPointStampedMsg>(getGlobalOriginTopic(), qos, std::move(callback), options);
+    }
+
+    SubscriberPtr<PointStampedMsg> BaseNode::createTargetPositionSubscriber(const ID& target_id, std::function<void(const PointStampedMsg::SharedPtr)> callback, const rclcpp::SubscriptionOptions& options)
+    {
+        return node_->create_subscription<PointStampedMsg>(getTargetPositionTopic(target_id), 10, std::move(callback), options);
+    }
+
+    SubscriberPtr<ClusterAssignmentMsg> BaseNode::createClusterAssignmentSubscriber(const ID& cluster_id, std::function<void(const ClusterAssignmentMsg::SharedPtr)> callback, const rclcpp::SubscriptionOptions& options)
+    {
+        rclcpp::QoS qos = rclcpp::QoS(rclcpp::KeepLast(1)).reliable().transient_local();
+        return node_->create_subscription<ClusterAssignmentMsg>(getClusterAssignmentTopic(cluster_id), qos, std::move(callback), options);
+    }
+
+    SubscriberPtr<ClusterGeometryMsg> BaseNode::createClusterGeometrySubscriber(const ID& cluster_id, std::function<void(const ClusterGeometryMsg::SharedPtr)> callback, const rclcpp::SubscriptionOptions& options)
+    {
+        return node_->create_subscription<ClusterGeometryMsg>(getClusterGeometryTopic(cluster_id), 10, std::move(callback), options);
+    }
+
+    SubscriberPtr<AgentStatusMsg> BaseNode::createAgentStatusSubscriber(const ID& agent_id, std::function<void(const AgentStatusMsg::SharedPtr)> callback, const rclcpp::SubscriptionOptions& options)
+    {
+        rclcpp::QoS qos = rclcpp::QoS(rclcpp::KeepLast(1)).reliable().transient_local();
+        return node_->create_subscription<AgentStatusMsg>(getAgentStatusTopic(agent_id), qos, std::move(callback), options);
+    }
+
+    SubscriberPtr<PointStampedMsg> BaseNode::createAgentGlobalPositionSubscriber(const ID& agent_id, std::function<void(const PointStampedMsg::SharedPtr)> callback, const rclcpp::SubscriptionOptions& options)
+    {
+        return node_->create_subscription<PointStampedMsg>(getAgentGlobalPositionTopic(agent_id), 10, std::move(callback), options);
+    }
+
+    SubscriberPtr<PointStampedMsg> BaseNode::createAgentLocalPositionSubscriber(const ID& agent_id, std::function<void(const PointStampedMsg::SharedPtr)> callback, const rclcpp::SubscriptionOptions& options)
+    {
+        return node_->create_subscription<PointStampedMsg>(getAgentLocalPositionTopic(agent_id), 10, std::move(callback), options);
+    }
+
+    SubscriberPtr<AgentAssignmentMsg> BaseNode::createAgentAssignmentSubscriber(const ID& agent_id, std::function<void(const AgentAssignmentMsg::SharedPtr)> callback, const rclcpp::SubscriptionOptions& options)
+    {
+        rclcpp::QoS qos = rclcpp::QoS(rclcpp::KeepLast(1)).reliable().transient_local();
+        return node_->create_subscription<AgentAssignmentMsg>(getAgentAssignmentTopic(agent_id), qos, std::move(callback), options);
+    }
+
+    SubscriberPtr<AgentClustersMsg> BaseNode::createAgentClustersSubscriber(const ID& agent_id, std::function<void(const AgentClustersMsg::SharedPtr)> callback, const rclcpp::SubscriptionOptions& options)
+    {
+        return node_->create_subscription<AgentClustersMsg>(getAgentClustersTopic(agent_id), 10, std::move(callback), options);
+    }
+
+    SubscriberPtr<PointStampedMsg> BaseNode::createAgentPositionSetpointSubscriber(const ID& agent_id, std::function<void(const PointStampedMsg::SharedPtr)> callback, const rclcpp::SubscriptionOptions& options)
+    {
+        return node_->create_subscription<PointStampedMsg>(getAgentPositionSetpointTopic(agent_id), 10, std::move(callback), options);
+    }
+
+    SubscriberPtr<ObservationSetpointsMsg> BaseNode::createObservationSetpointsSubscriber(const ID& agent_id, std::function<void(const ObservationSetpointsMsg::SharedPtr)> callback, const rclcpp::SubscriptionOptions& options)
+    {
+        return node_->create_subscription<ObservationSetpointsMsg>(getObservationSetpointsTopic(agent_id), 10, std::move(callback), options);
+    }
+
+    SubscriberPtr<CompressedImageMsg> BaseNode::createAgentMultiCameraImageSubscriber(const ID& agent_id, const ID& camera_id, std::function<void(const CompressedImageMsg::SharedPtr)> callback, const rclcpp::SubscriptionOptions& options)
+    {
+        return node_->create_subscription<CompressedImageMsg>(getAgentMultiCameraImageTopic(agent_id, camera_id), 10, std::move(callback), options);
+    }
+
+    SubscriberPtr<CompressedImageMsg> BaseNode::createAgentMultiWindowImageSubscriber(const ID& agent_id, const ID& window_id, std::function<void(const CompressedImageMsg::SharedPtr)> callback, const rclcpp::SubscriptionOptions& options)
+    {
+        return node_->create_subscription<CompressedImageMsg>(getAgentMultiWindowImageTopic(agent_id, window_id), 10, std::move(callback), options);
+    }
+
+    SubscriberPtr<MissionMetricsMsg> BaseNode::createGlobalMetricsSubscriber(std::function<void(const MissionMetricsMsg::SharedPtr)> callback, const rclcpp::SubscriptionOptions& options)
+    {
+        return node_->create_subscription<MissionMetricsMsg>(getGlobalMetricsTopic(), 10, std::move(callback), options);
+    }
+
+    SubscriberPtr<AgentMetricsMsg> BaseNode::createAgentMetricsSubscriber(const ID& agent_id, std::function<void(const AgentMetricsMsg::SharedPtr)> callback, const rclcpp::SubscriptionOptions& options)
+    {
+        return node_->create_subscription<AgentMetricsMsg>(getAgentMetricsTopic(agent_id), 10, std::move(callback), options);
+    }
+
+    SubscriberPtr<TargetMetricsMsg> BaseNode::createTargetMetricsSubscriber(const ID& target_id, std::function<void(const TargetMetricsMsg::SharedPtr)> callback, const rclcpp::SubscriptionOptions& options)
+    {
+        return node_->create_subscription<TargetMetricsMsg>(getTargetMetricsTopic(target_id), 10, std::move(callback), options);
+    }
+
+    SubscriberPtr<ClusterMetricsMsg> BaseNode::createClusterMetricsSubscriber(const ID& cluster_id, std::function<void(const ClusterMetricsMsg::SharedPtr)> callback, const rclcpp::SubscriptionOptions& options)
+    {
+        return node_->create_subscription<ClusterMetricsMsg>(getClusterMetricsTopic(cluster_id), 10, std::move(callback), options);
+    }
+
+    SubscriberPtr<MarkerArrayMsg> BaseNode::createAgentMarkersSubscriber(const ID& agent_id, std::function<void(const MarkerArrayMsg::SharedPtr)> callback, const rclcpp::SubscriptionOptions& options)
+    {
+        return node_->create_subscription<MarkerArrayMsg>(getAgentMarkersTopic(agent_id), 10, std::move(callback), options);
+    }
+
+    SubscriberPtr<MarkerArrayMsg> BaseNode::createTargetMarkersSubscriber(const ID& target_id, std::function<void(const MarkerArrayMsg::SharedPtr)> callback, const rclcpp::SubscriptionOptions& options)
+    {
+        return node_->create_subscription<MarkerArrayMsg>(getTargetMarkersTopic(target_id), 10, std::move(callback), options);
+    }
+
+    SubscriberPtr<MarkerArrayMsg> BaseNode::createClusterMarkersSubscriber(const ID& cluster_id, std::function<void(const MarkerArrayMsg::SharedPtr)> callback, const rclcpp::SubscriptionOptions& options)
+    {
+        return node_->create_subscription<MarkerArrayMsg>(getClusterMarkersTopic(cluster_id), 10, std::move(callback), options);
+    }
+
+    // ════════════════════════════════════════════════════════════════════════════
+    // TRANSFORM FRAME GETTERS
+    // ════════════════════════════════════════════════════════════════════════════
+
+    std::string BaseNode::getGlobalFrame()
+    {
+        return world_frame_;
+    }
+
+    std::string BaseNode::getAgentLocalFrame(const ID& agent_id)
+    {
+        return RosUtils::replace(agent_frames_.agent_local_pattern_, "AGENTID", agent_id);
+    }
+
+    std::string BaseNode::getAgentBodyFrame(const ID& agent_id)
+    {
+        return RosUtils::replace(agent_frames_.agent_body_pattern_, "AGENTID", agent_id);
+    }
+
+    std::string BaseNode::getCameraBodyFrame(const ID& agent_id, const ID& camera_id)
+    {
+        std::string pattern = RosUtils::replace(agent_frames_.camera_body_pattern_, "AGENTID", agent_id);
+        return RosUtils::replace(pattern, "HEADID", camera_id);
+    }
+
+    std::string BaseNode::getCameraOpticalFrame(const ID& agent_id, const ID& camera_id)
+    {
+        std::string pattern = RosUtils::replace(agent_frames_.camera_optical_pattern_, "AGENTID", agent_id);
+        return RosUtils::replace(pattern, "HEADID", camera_id);
+    }
+
+    // ════════════════════════════════════════════════════════════════════════════
+    // TRANSFORM UTILITIES
+    // ════════════════════════════════════════════════════════════════════════════
+
+    TransformMsg BaseNode::getTransform(const std::string& from_frame, const std::string& to_frame)
+    {
+        TransformMsg transform_msg;
+        try {
+            geometry_msgs::msg::TransformStamped transform_stamped =
+                tf_buffer_->lookupTransform(from_frame, to_frame, tf2::TimePointZero);
+            transform_msg.translation = transform_stamped.transform.translation;
+            transform_msg.rotation = transform_stamped.transform.rotation;
+        }
+        catch (const tf2::TransformException& ex) {
+            RCLCPP_WARN(node_->get_logger(), "Could not get the transform from %s to %s: %s",
+                from_frame.c_str(), to_frame.c_str(), ex.what());
+            transform_msg = TransformMsg();
+            transform_msg.rotation.w = 1.0;
+        }
+        return transform_msg;
+    }
+
+    PoseStampedMsg BaseNode::transformPose(const PoseStampedMsg& pose, const std::string& to_frame)
+    {
+        std::string from_frame = pose.header.frame_id;
+        PoseStampedMsg transformed_pose = pose;
+        transformed_pose.header.frame_id = to_frame;
+        try {
+            TransformStampedMsg transform = tf_buffer_->lookupTransform(
+                to_frame, from_frame, tf2::TimePointZero);
+            tf2::doTransform(pose, transformed_pose, transform);
+        }
+        catch (const tf2::TransformException& ex) {
+            RCLCPP_WARN(node_->get_logger(), "Failed to transform pose from %s to %s: %s",
+                from_frame.c_str(), to_frame.c_str(), ex.what());
+        }
+        return transformed_pose;
+    }
+
+    PointStampedMsg BaseNode::transformPoint(const PointStampedMsg& point, const std::string& to_frame)
+    {
+        std::string from_frame = point.header.frame_id;
+        PointStampedMsg transformed_point = point;
+        transformed_point.header.frame_id = to_frame;
+        try {
+            TransformStampedMsg transform = tf_buffer_->lookupTransform(
+                to_frame, from_frame, tf2::TimePointZero);
+            tf2::doTransform(point, transformed_point, transform);
+        }
+        catch (const tf2::TransformException& ex) {
+            RCLCPP_WARN(node_->get_logger(), "Failed to transform point from %s to %s: %s",
+                from_frame.c_str(), to_frame.c_str(), ex.what());
+        }
+        return transformed_point;
+    }
+
+    // ════════════════════════════════════════════════════════════════════════════
+    // TRANSFORM BROADCAST UTILITIES
+    // ════════════════════════════════════════════════════════════════════════════
+
+    void BaseNode::broadcastTransform(const std::string& from_frame, const std::string& to_frame, const Matrix4r& transform)
+    {
+        geometry_msgs::msg::TransformStamped transform_msg;
+        transform_msg.header.stamp = RosUtils::now(node_);
+        transform_msg.header.frame_id = from_frame;
+        transform_msg.child_frame_id = to_frame;
+        RosUtils::toMsg(transform, transform_msg.transform);
+        tf_broadcaster_->sendTransform(transform_msg);
+    }
+
+    void BaseNode::broadcastStaticTransform(const std::string& from_frame, const std::string& to_frame, const Matrix4r& transform)
+    {
+        geometry_msgs::msg::TransformStamped transform_msg;
+        transform_msg.header.stamp = RosUtils::now(node_);
+        transform_msg.header.frame_id = from_frame;
+        transform_msg.child_frame_id = to_frame;
+        RosUtils::toMsg(transform, transform_msg.transform);
+        static_tf_broadcaster_->sendTransform(transform_msg);
     }
 
 } // namespace flychams::core

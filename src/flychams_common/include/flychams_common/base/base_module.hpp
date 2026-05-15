@@ -1,14 +1,14 @@
 #pragma once
 
-// Tools includes
+// Settings include
 #include "flychams_common/settings/settings_tools.hpp"
-#include "flychams_common/ros/topic_tools.hpp"
-#include "flychams_common/ros/transform_tools.hpp"
 
-// Core includes
+// Types includes
 #include "flychams_common/types/core_types.hpp"
 #include "flychams_common/types/config_types.hpp"
 #include "flychams_common/types/ros_types.hpp"
+
+// Utils includes
 #include "flychams_common/utils/math_utils.hpp"
 #include "flychams_common/utils/vision_utils.hpp"
 #include "flychams_common/utils/ros_utils.hpp"
@@ -32,7 +32,7 @@ namespace flychams::core
     class BaseModule
     {
     public: // Constructor/Destructor
-        BaseModule(NodePtr node, SettingsTools::SharedPtr settings_tools, TopicTools::SharedPtr topic_tools, TransformTools::SharedPtr transform_tools, CallbackGroupPtr module_cb_group);
+        BaseModule(NodePtr node, SettingsTools::SharedPtr settings, CallbackGroupPtr module_cb_group);
 
         void init();
 
@@ -44,19 +44,17 @@ namespace flychams::core
         using SharedPtr = std::shared_ptr<BaseModule>;
 
     protected: // Overridable methods
-        virtual void onInit() {}
-        virtual void onShutdown() {}
+        virtual void onModuleInit() {}
+        virtual void onModuleShutdown() {}
 
-    protected: // Components
+    private: // Settings data
+        SettingsTools::SharedPtr settings_;
+
+    private: // ROS components
         // Node
         NodePtr node_;
-        // Tools
-        SettingsTools::SharedPtr settings_tools_;
-        TopicTools::SharedPtr topic_tools_;
-        TransformTools::SharedPtr transform_tools_;
         // Callback group
         CallbackGroupPtr module_cb_group_;
-        // Subscription options
         rclcpp::SubscriptionOptions sub_options_with_module_cb_group_;
     };
 

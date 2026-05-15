@@ -2,55 +2,38 @@
 
 namespace flychams::core
 {
+    // ════════════════════════════════════════════════════════════════════════════
+    // CONSTRUCTOR: Constructor and destructor
+    // ════════════════════════════════════════════════════════════════════════════
+
     BaseDiscovererNode::BaseDiscovererNode(const std::string& node_name, const rclcpp::NodeOptions& options)
-        : Node(node_name, options), node_name_(node_name)
+        : BaseStatusNode(node_name, options)
     {
         // Nothing to do
     }
 
-    void BaseDiscovererNode::init()
+    void BaseDiscovererNode::onStatusInit()
     {
-        // Get node pointer
-        node_ = this->shared_from_this();
-        RCLCPP_INFO(node_->get_logger(), "Starting %s node...", node_name_.c_str());
-
-        // Create tools
-        settings_tools_ = std::make_shared<SettingsTools>(node_);
-        topic_tools_ = std::make_shared<TopicTools>(node_, settings_tools_);
-        transform_tools_ = std::make_shared<TransformTools>(node_, settings_tools_);
-
-        // Create callback group
-        discovery_cb_group_ = node_->create_callback_group(rclcpp::CallbackGroupType::MutuallyExclusive);
-        sub_options_with_discovery_cb_group_.callback_group = discovery_cb_group_;
+        // Initialize elements map
+        elements_.clear();
 
         // Initialize discovery subscriber
-        elements_.clear();
-        discovery_sub_ = topic_tools_->createRegistrationSubscriber(
+        discovery_sub_ = createRegistrationSubscriber(
             std::bind(&BaseDiscovererNode::onDiscovery, this, std::placeholders::_1),
-            sub_options_with_discovery_cb_group_);
+            sub_options_with_node_cb_group_);
 
-        // Call on init overridable method
-        onInit();
-        RCLCPP_INFO(node_->get_logger(), "%s node running", node_name_.c_str());
+        // Call on discovery init overridable method
+        onDiscoveryInit();
     }
 
-    BaseDiscovererNode::~BaseDiscovererNode()
+    void BaseDiscovererNode::onStatusShutdown()
     {
-        shutdown();
-    }
-
-    void BaseDiscovererNode::shutdown()
-    {
-        RCLCPP_INFO(node_->get_logger(), "Shutting down %s node...", node_name_.c_str());
-        // Call on shutdown overridable method
-        onShutdown();
+        // Call on discovery shutdown overridable method
+        onDiscoveryShutdown();
         // Destroy discovery subscriber
-        elements_.clear();
         discovery_sub_.reset();
-        // Destroy tools
-        settings_tools_.reset();
-        topic_tools_.reset();
-        transform_tools_.reset();
+        // Destroy elements map
+        elements_.clear();
     }
 
     void BaseDiscovererNode::onDiscovery(const RegistrationMsg::SharedPtr msg)
@@ -140,4 +123,3 @@ namespace flychams::core
     }
 
 } // namespace flychams::core
-
