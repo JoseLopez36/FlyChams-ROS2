@@ -1,11 +1,13 @@
 #pragma once
 
-// Core includes
+// Types includes
 #include "flychams_common/types/core_types.hpp"
 #include "flychams_common/types/config_types.hpp"
 #include "flychams_common/types/ros_types.hpp"
+
+// Utils includes
 #include "flychams_common/utils/math_utils.hpp"
-#include "flychams_common/utils/ros_utils.hpp"
+#include "flychams_common/utils/vision_utils.hpp"
 
 namespace flychams::core
 {

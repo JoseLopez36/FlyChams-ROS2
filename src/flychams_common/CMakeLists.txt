@@ -43,7 +43,6 @@ add_library(${PROJECT_NAME} SHARED
   src/settings/settings_tools.cpp
   src/utils/math_utils.cpp
   src/utils/vision_utils.cpp
-  src/utils/ros_utils.cpp
   src/base/base_node.cpp
   src/base/base_status_node.cpp
   src/base/base_discoverer_node.cpp

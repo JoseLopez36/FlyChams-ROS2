@@ -1,5 +1,8 @@
 #pragma once
 
+// Standard includes
+#include <regex>
+
 // Settings include
 #include "flychams_common/settings/settings_tools.hpp"
 

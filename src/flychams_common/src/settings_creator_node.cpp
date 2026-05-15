@@ -1,17 +1,19 @@
 #include "rclcpp/rclcpp.hpp"
 
 // Settings includes
+#include "flychams_common/settings/mission_settings_parser.hpp"
 #include "flychams_common/settings/spreadsheet_parser.hpp"
 #include "flychams_common/settings/mission_settings_creator.hpp"
 #include "flychams_common/settings/airsim_settings_creator.hpp"
 
-// Core includes
+// Types includes
 #include "flychams_common/types/core_types.hpp"
 #include "flychams_common/types/config_types.hpp"
 #include "flychams_common/types/ros_types.hpp"
+
+// Utils includes
 #include "flychams_common/utils/math_utils.hpp"
-#include "flychams_common/utils/ros_utils.hpp"
-#include "flychams_common/settings/mission_settings_parser.hpp"
+#include "flychams_common/utils/vision_utils.hpp"
 
 using namespace flychams::core;
 
@@ -39,7 +41,8 @@ int main(int argc, char** argv)
     auto node = rclcpp::Node::make_shared("settings_creator_node", options);
 
     // Get path to configuration spreadsheet
-    const std::string& spreadsheet_path = RosUtils::getParameter<std::string>(node, "path.config_spreadsheet_path");
+    std::string spreadsheet_path;
+    node->get_parameter("path.config_spreadsheet_path", spreadsheet_path);
 
     // Parse mission configuration
     MissionConfigPtr config_ptr;
@@ -64,11 +67,13 @@ int main(int argc, char** argv)
     RCLCPP_INFO(node->get_logger(), "Creating settings files...");
 
     // Create mission.yaml file
-    const std::string& mission_settings_path = RosUtils::getParameter<std::string>(node, "path.mission_settings_path");
+    std::string mission_settings_path;
+    node->get_parameter("path.mission_settings_path", mission_settings_path);
     MissionSettingsCreator::createMissionSettings(config_ptr, mission_settings_path);
 
     // Create AirSim settings
-    const std::string& airsim_settings_path = RosUtils::getParameter<std::string>(node, "path.airsim_settings_path");
+    std::string airsim_settings_path;
+    node->get_parameter("path.airsim_settings_path", airsim_settings_path);
     AirsimSettingsCreator::createAirsimSettings(config_ptr, airsim_settings_path);
 
     // Finish the node
