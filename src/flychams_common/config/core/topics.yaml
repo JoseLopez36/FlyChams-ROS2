@@ -3,10 +3,12 @@
     # Coordinator topics
     coordinator_topics:
       registration: "/flychams/coordinator/registration" # Registration.msg (custom)
+      mission_status: "/flychams/coordinator/mission_status" # MissionStatus.msg (custom)
+      fleet_status: "/flychams/coordinator/fleet_status" # FleetStatus.msg (custom)
       global_origin: "/flychams/coordinator/global_origin" # GeoPointStamped.msg
       target_position: "/flychams/coordinator/TARGETID/position" # PointStamped.msg
       cluster_assignment: "/flychams/coordinator/CLUSTERID/assignment" # ClusterAssignment.msg (custom)
-      cluster_geometry: "/flychams/coordinator/CLUSTERID/geometry" # ClusterGeometry.msg (custom)
+      cluster_geometry: "/flychams/coordinator/CLUSTERID/geometry" # ClusterGeometry.msg (custom)      
 
     # Agent topics
     agent_topics:

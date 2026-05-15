@@ -2,7 +2,7 @@
   "configById": {
     "button.Button!mstart": {
       "outputMode": "publisher",
-      "name": "/flychams/fleet/cmd/mission/start",
+      "name": "/flychams/coordinator/start_mission",
       "buttonMode": "push",
       "activeColor": "#31daa2",
       "inactiveColor": "#10b981",
@@ -12,7 +12,7 @@
     },
     "button.Button!mpause": {
       "outputMode": "publisher",
-      "name": "/flychams/fleet/cmd/mission/pause",
+      "name": "/flychams/coordinator/pause_mission",
       "buttonMode": "push",
       "activeColor": "#e59132",
       "inactiveColor": "#D97706",
@@ -22,7 +22,7 @@
     },
     "button.Button!mabort": {
       "outputMode": "publisher",
-      "name": "/flychams/fleet/cmd/mission/abort",
+      "name": "/flychams/coordinator/abort_mission",
       "buttonMode": "push",
       "activeColor": "#e33c3c",
       "inactiveColor": "#DC2626",
@@ -32,7 +32,7 @@
     },
     "button.Button!armall": {
       "outputMode": "publisher",
-      "name": "/flychams/fleet/cmd/arm",
+      "name": "/flychams/coordinator/arm_all",
       "buttonMode": "toggle",
       "activeColor": "#10B981",
       "inactiveColor": "#EF4444",
@@ -42,7 +42,7 @@
     },
     "button.Button!rth": {
       "outputMode": "publisher",
-      "name": "/flychams/fleet/cmd/mission/rth",
+      "name": "/flychams/coordinator/return_home",
       "buttonMode": "push",
       "activeColor": "#2ab9dd",
       "inactiveColor": "#0891B2",

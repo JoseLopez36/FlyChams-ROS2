@@ -270,15 +270,35 @@ namespace flychams::core
     }
 
     /**
-     * Enum for agent states
+     * Enum for mission status
+     */
+    enum class MissionStatus
+    {
+        READY,    // 0: Fleet can accept mission start
+        ACTIVE,   // 1: Mission is running
+        PAUSED,   // 2: Mission paused, agents hovering
+        ABORTED   // 3: Mission aborted, agents landing
+    };
+
+    /**
+     * Enum for fleet status
+     */
+    enum class FleetStatus
+    {
+        IDLE,    // 0: All agents in IDLE
+        ACTIVE,  // 1: All agents in ACTIVE
+        MIXED,   // 2: Agents in mixed states
+        ERROR    // 3: Any agent in ERROR
+    };
+
+    /**
+     * Enum for agent status
      */
     enum class AgentStatus
     {
-        IDLE,           // 0: UAV is on the ground
-        TAKEOFF,        // 1: UAV will take off
-        MISSION,        // 2: UAV will follow the mission
-        LAND,           // 3: UAV will land
-        ERROR           // 4: Error state, requires reset
+        IDLE,    // 0: On ground, disarmed, safe
+        ACTIVE,  // 1: Armed, flying, executing mission
+        ERROR    // 2: Fault condition, requires reset
     };
 
     // ════════════════════════════════════════════════════════════════

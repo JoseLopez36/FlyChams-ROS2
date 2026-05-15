@@ -18,6 +18,8 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   "msg/Crop.msg"
   # Coordinator messages
   "msg/Registration.msg"
+  "msg/MissionStatus.msg"
+  "msg/FleetStatus.msg"
   "msg/ClusterAssignment.msg"
   "msg/ClusterGeometry.msg"
   # Agent messages

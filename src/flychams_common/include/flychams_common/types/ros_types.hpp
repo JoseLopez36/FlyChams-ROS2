@@ -53,6 +53,8 @@
 #include "flychams_api/msg/crop.hpp"
 // Coordinator messages
 #include "flychams_api/msg/registration.hpp"
+#include "flychams_api/msg/fleet_status.hpp"
+#include "flychams_api/msg/mission_status.hpp"
 #include "flychams_api/msg/cluster_assignment.hpp"
 #include "flychams_api/msg/cluster_geometry.hpp"
 // Agent messages
@@ -165,6 +167,8 @@ namespace flychams::core
     using CropMsg = flychams_api::msg::Crop;
     // Coordinator messages
     using RegistrationMsg = flychams_api::msg::Registration;
+    using FleetStatusMsg = flychams_api::msg::FleetStatus;
+    using MissionStatusMsg = flychams_api::msg::MissionStatus;
     using ClusterAssignmentMsg = flychams_api::msg::ClusterAssignment;
     using ClusterGeometryMsg = flychams_api::msg::ClusterGeometry;
     // Agent messages

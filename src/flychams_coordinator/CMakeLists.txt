@@ -16,6 +16,7 @@ set(COORD_SRC
   src/registration/agent_registration.cpp
   src/registration/target_registration.cpp
   src/registration/cluster_registration.cpp
+  src/status/fleet_status.cpp
   src/clustering/target_clustering.cpp
   src/analysis/cluster_analysis.cpp
   src/assignment/agent_assignment.cpp
@@ -41,6 +42,11 @@ add_executable(element_registrator_node src/element_registrator_node.cpp)
 target_link_libraries(element_registrator_node ${PROJECT_NAME})
 ament_target_dependencies(element_registrator_node rclcpp flychams_common flychams_api)
 
+# Create executable for fleet manager node
+add_executable(fleet_status_node src/fleet_status_node.cpp)
+target_link_libraries(fleet_status_node ${PROJECT_NAME})
+ament_target_dependencies(fleet_status_node rclcpp flychams_common flychams_api)
+
 # Create executable for target clustering node
 add_executable(target_clustering_node src/target_clustering_node.cpp)
 target_link_libraries(target_clustering_node ${PROJECT_NAME})
@@ -65,7 +71,7 @@ install(TARGETS ${PROJECT_NAME}
   INCLUDES DESTINATION include
 )
 
-install(TARGETS agent_assignment_node target_clustering_node cluster_analysis_node element_registrator_node
+install(TARGETS agent_assignment_node fleet_status_node target_clustering_node cluster_analysis_node element_registrator_node
   RUNTIME DESTINATION lib/${PROJECT_NAME}
 )
 

@@ -67,6 +67,8 @@ namespace flychams::core
     {
         // Coordinator topics
         std::string registration;
+        std::string fleet_status;
+        std::string mission_status;
         std::string global_origin;
         std::string target_position;
         std::string cluster_assignment;

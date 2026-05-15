@@ -27,6 +27,8 @@ namespace flychams::core
 
             // Get coordinator topics
             coordinator_topics_.registration = topic_config.registration;
+            coordinator_topics_.fleet_status = topic_config.fleet_status;
+            coordinator_topics_.mission_status = topic_config.mission_status;
             coordinator_topics_.global_origin = topic_config.global_origin;
             coordinator_topics_.target_position_pattern = topic_config.target_position;
             coordinator_topics_.cluster_assignment_pattern = topic_config.cluster_assignment;
@@ -72,6 +74,8 @@ namespace flychams::core
         struct CoordinatorTopics
         {
             std::string registration;
+            std::string fleet_status;
+            std::string mission_status;
             std::string global_origin;
             std::string target_position_pattern;
             std::string cluster_assignment_pattern;
@@ -119,6 +123,14 @@ namespace flychams::core
         std::string getRegistrationTopic()
         {
             return coordinator_topics_.registration;
+        }
+        std::string getFleetStatusTopic()
+        {
+            return fleet_topics_.fleet_status;
+        }
+        std::string getMissionStatusTopic()
+        {
+            return fleet_topics_.mission_status;
         }
         std::string getGlobalOriginTopic()
         {
@@ -212,6 +224,16 @@ namespace flychams::core
         {
             rclcpp::QoS qos = rclcpp::QoS(rclcpp::KeepLast(1)).reliable().transient_local();
             return node_->create_publisher<RegistrationMsg>(getRegistrationTopic(), qos);
+        }
+        PublisherPtr<FleetStatusMsg> createFleetStatusPublisher()
+        {
+            rclcpp::QoS qos = rclcpp::QoS(rclcpp::KeepLast(1)).reliable().transient_local();
+            return node_->create_publisher<FleetStatusMsg>(getFleetStatusTopic(), qos);
+        }
+        PublisherPtr<MissionStatusMsg> createMissionStatusPublisher()
+        {
+            rclcpp::QoS qos = rclcpp::QoS(rclcpp::KeepLast(1)).reliable().transient_local();
+            return node_->create_publisher<MissionStatusMsg>(getMissionStatusTopic(), qos);
         }
         PublisherPtr<GeoPointStampedMsg> createGlobalOriginPublisher()
         {
@@ -308,6 +330,16 @@ namespace flychams::core
         {
             rclcpp::QoS qos = rclcpp::QoS(rclcpp::KeepLast(1)).reliable().transient_local();
             return node_->create_subscription<RegistrationMsg>(getRegistrationTopic(), qos, std::move(callback), options);
+        }
+        SubscriberPtr<FleetStatusMsg> createFleetStatusSubscriber(std::function<void(const FleetStatusMsg::SharedPtr)> callback, const rclcpp::SubscriptionOptions& options = rclcpp::SubscriptionOptions())
+        {
+            rclcpp::QoS qos = rclcpp::QoS(rclcpp::KeepLast(1)).reliable().transient_local();
+            return node_->create_subscription<FleetStatusMsg>(getFleetStatusTopic(), qos, std::move(callback), options);
+        }
+        SubscriberPtr<MissionStatusMsg> createMissionStatusSubscriber(std::function<void(const MissionStatusMsg::SharedPtr)> callback, const rclcpp::SubscriptionOptions& options = rclcpp::SubscriptionOptions())
+        {
+            rclcpp::QoS qos = rclcpp::QoS(rclcpp::KeepLast(1)).reliable().transient_local();
+            return node_->create_subscription<MissionStatusMsg>(getMissionStatusTopic(), qos, std::move(callback), options);
         }
         SubscriberPtr<GeoPointStampedMsg> createGlobalOriginSubscriber(std::function<void(const GeoPointStampedMsg::SharedPtr)> callback, const rclcpp::SubscriptionOptions& options = rclcpp::SubscriptionOptions())
         {

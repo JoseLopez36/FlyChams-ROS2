@@ -46,6 +46,10 @@ def generate_launch_description():
             'executable': 'element_registrator_node',
             'name': 'element_registrator_node'
         },
+        'fleet_status': {
+            'executable': 'fleet_status_node',
+            'name': 'fleet_status_node'
+        },
         'agent_assignment': {
             'executable': 'agent_assignment_node',
             'name': 'agent_assignment_node'

@@ -375,6 +375,8 @@ namespace flychams::core
 	{
 		// Coordinator topics
 		config_ptr->topics.registration = RosUtils::getParameter<std::string>(node, "coordinator_topics.registration");
+		config_ptr->topics.fleet_status = RosUtils::getParameter<std::string>(node, "fleet_topics.fleet_status");
+		config_ptr->topics.mission_status = RosUtils::getParameter<std::string>(node, "fleet_topics.mission_status");
 		config_ptr->topics.global_origin = RosUtils::getParameter<std::string>(node, "coordinator_topics.global_origin");
 		config_ptr->topics.target_position = RosUtils::getParameter<std::string>(node, "coordinator_topics.target_position");
 		config_ptr->topics.cluster_assignment = RosUtils::getParameter<std::string>(node, "coordinator_topics.cluster_assignment");
