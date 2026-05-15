@@ -121,62 +121,62 @@ namespace flychams::core
 
     std::string BaseNode::getTargetPositionTopic(const ID& target_id)
     {
-        return RosUtils::replace(coordinator_topics_.target_position_pattern, "TARGETID", target_id);
+        return replace(coordinator_topics_.target_position_pattern, "TARGETID", target_id);
     }
 
     std::string BaseNode::getClusterAssignmentTopic(const ID& cluster_id)
     {
-        return RosUtils::replace(coordinator_topics_.cluster_assignment_pattern, "CLUSTERID", cluster_id);
+        return replace(coordinator_topics_.cluster_assignment_pattern, "CLUSTERID", cluster_id);
     }
 
     std::string BaseNode::getClusterGeometryTopic(const ID& cluster_id)
     {
-        return RosUtils::replace(coordinator_topics_.cluster_geometry_pattern, "CLUSTERID", cluster_id);
+        return replace(coordinator_topics_.cluster_geometry_pattern, "CLUSTERID", cluster_id);
     }
 
     std::string BaseNode::getAgentStatusTopic(const ID& agent_id)
     {
-        return RosUtils::replace(agent_topics_.status_pattern, "AGENTID", agent_id);
+        return replace(agent_topics_.status_pattern, "AGENTID", agent_id);
     }
 
     std::string BaseNode::getAgentGlobalPositionTopic(const ID& agent_id)
     {
-        return RosUtils::replace(agent_topics_.global_position_pattern, "AGENTID", agent_id);
+        return replace(agent_topics_.global_position_pattern, "AGENTID", agent_id);
     }
 
     std::string BaseNode::getAgentLocalPositionTopic(const ID& agent_id)
     {
-        return RosUtils::replace(agent_topics_.local_position_pattern, "AGENTID", agent_id);
+        return replace(agent_topics_.local_position_pattern, "AGENTID", agent_id);
     }
 
     std::string BaseNode::getAgentAssignmentTopic(const ID& agent_id)
     {
-        return RosUtils::replace(agent_topics_.assignment_pattern, "AGENTID", agent_id);
+        return replace(agent_topics_.assignment_pattern, "AGENTID", agent_id);
     }
 
     std::string BaseNode::getAgentClustersTopic(const ID& agent_id)
     {
-        return RosUtils::replace(agent_topics_.clusters_pattern, "AGENTID", agent_id);
+        return replace(agent_topics_.clusters_pattern, "AGENTID", agent_id);
     }
 
     std::string BaseNode::getAgentPositionSetpointTopic(const ID& agent_id)
     {
-        return RosUtils::replace(agent_topics_.position_setpoint_pattern, "AGENTID", agent_id);
+        return replace(agent_topics_.position_setpoint_pattern, "AGENTID", agent_id);
     }
 
     std::string BaseNode::getObservationSetpointsTopic(const ID& agent_id)
     {
-        return RosUtils::replace(agent_topics_.observation_setpoints_pattern, "AGENTID", agent_id);
+        return replace(agent_topics_.observation_setpoints_pattern, "AGENTID", agent_id);
     }
 
     std::string BaseNode::getAgentMultiCameraImageTopic(const ID& agent_id, const ID& camera_id)
     {
-        return RosUtils::replace(RosUtils::replace(agent_topics_.multi_camera_image_pattern, "AGENTID", agent_id), "MULTICAMERAID", camera_id);
+        return replace(replace(agent_topics_.multi_camera_image_pattern, "AGENTID", agent_id), "MULTICAMERAID", camera_id);
     }
 
     std::string BaseNode::getAgentMultiWindowImageTopic(const ID& agent_id, const ID& window_id)
     {
-        return RosUtils::replace(RosUtils::replace(agent_topics_.multi_window_image_pattern, "AGENTID", agent_id), "MULTIWINDOWID", window_id);
+        return replace(replace(agent_topics_.multi_window_image_pattern, "AGENTID", agent_id), "MULTIWINDOWID", window_id);
     }
 
     std::string BaseNode::getGlobalMetricsTopic()
@@ -186,32 +186,32 @@ namespace flychams::core
 
     std::string BaseNode::getAgentMetricsTopic(const ID& agent_id)
     {
-        return RosUtils::replace(operator_topics_.agent_metrics_pattern, "AGENTID", agent_id);
+        return replace(operator_topics_.agent_metrics_pattern, "AGENTID", agent_id);
     }
 
     std::string BaseNode::getTargetMetricsTopic(const ID& target_id)
     {
-        return RosUtils::replace(operator_topics_.target_metrics_pattern, "TARGETID", target_id);
+        return replace(operator_topics_.target_metrics_pattern, "TARGETID", target_id);
     }
 
     std::string BaseNode::getClusterMetricsTopic(const ID& cluster_id)
     {
-        return RosUtils::replace(operator_topics_.cluster_metrics_pattern, "CLUSTERID", cluster_id);
+        return replace(operator_topics_.cluster_metrics_pattern, "CLUSTERID", cluster_id);
     }
 
     std::string BaseNode::getAgentMarkersTopic(const ID& agent_id)
     {
-        return RosUtils::replace(operator_topics_.agent_markers_pattern, "AGENTID", agent_id);
+        return replace(operator_topics_.agent_markers_pattern, "AGENTID", agent_id);
     }
 
     std::string BaseNode::getTargetMarkersTopic(const ID& target_id)
     {
-        return RosUtils::replace(operator_topics_.target_markers_pattern, "TARGETID", target_id);
+        return replace(operator_topics_.target_markers_pattern, "TARGETID", target_id);
     }
 
     std::string BaseNode::getClusterMarkersTopic(const ID& cluster_id)
     {
-        return RosUtils::replace(operator_topics_.cluster_markers_pattern, "CLUSTERID", cluster_id);
+        return replace(operator_topics_.cluster_markers_pattern, "CLUSTERID", cluster_id);
     }
 
     // ════════════════════════════════════════════════════════════════════════════
@@ -477,24 +477,24 @@ namespace flychams::core
 
     std::string BaseNode::getAgentLocalFrame(const ID& agent_id)
     {
-        return RosUtils::replace(agent_frames_.agent_local_pattern_, "AGENTID", agent_id);
+        return replace(agent_frames_.agent_local_pattern_, "AGENTID", agent_id);
     }
 
     std::string BaseNode::getAgentBodyFrame(const ID& agent_id)
     {
-        return RosUtils::replace(agent_frames_.agent_body_pattern_, "AGENTID", agent_id);
+        return replace(agent_frames_.agent_body_pattern_, "AGENTID", agent_id);
     }
 
     std::string BaseNode::getCameraBodyFrame(const ID& agent_id, const ID& camera_id)
     {
-        std::string pattern = RosUtils::replace(agent_frames_.camera_body_pattern_, "AGENTID", agent_id);
-        return RosUtils::replace(pattern, "HEADID", camera_id);
+        std::string pattern = replace(agent_frames_.camera_body_pattern_, "AGENTID", agent_id);
+        return replace(pattern, "HEADID", camera_id);
     }
 
     std::string BaseNode::getCameraOpticalFrame(const ID& agent_id, const ID& camera_id)
     {
-        std::string pattern = RosUtils::replace(agent_frames_.camera_optical_pattern_, "AGENTID", agent_id);
-        return RosUtils::replace(pattern, "HEADID", camera_id);
+        std::string pattern = replace(agent_frames_.camera_optical_pattern_, "AGENTID", agent_id);
+        return replace(pattern, "HEADID", camera_id);
     }
 
     // ════════════════════════════════════════════════════════════════════════════
@@ -560,21 +560,148 @@ namespace flychams::core
     void BaseNode::broadcastTransform(const std::string& from_frame, const std::string& to_frame, const Matrix4r& transform)
     {
         geometry_msgs::msg::TransformStamped transform_msg;
-        transform_msg.header.stamp = RosUtils::now(node_);
+        transform_msg.header.stamp = now();
         transform_msg.header.frame_id = from_frame;
         transform_msg.child_frame_id = to_frame;
-        RosUtils::toMsg(transform, transform_msg.transform);
+        toMsg(transform, transform_msg.transform);
         tf_broadcaster_->sendTransform(transform_msg);
     }
 
     void BaseNode::broadcastStaticTransform(const std::string& from_frame, const std::string& to_frame, const Matrix4r& transform)
     {
         geometry_msgs::msg::TransformStamped transform_msg;
-        transform_msg.header.stamp = RosUtils::now(node_);
+        transform_msg.header.stamp = now();
         transform_msg.header.frame_id = from_frame;
         transform_msg.child_frame_id = to_frame;
-        RosUtils::toMsg(transform, transform_msg.transform);
+        toMsg(transform, transform_msg.transform);
         static_tf_broadcaster_->sendTransform(transform_msg);
+    }
+
+    // ════════════════════════════════════════════════════════════════════════════
+    // TIMER UTILITIES
+    // ════════════════════════════════════════════════════════════════════════════
+
+    Time BaseNode::now()
+    {
+        return node_->get_clock()->now();
+    }
+
+    TimerPtr BaseNode::createTimer(float rate_hz, std::function<void()> callback)
+    {
+        return rclcpp::create_timer(
+            node_,
+            node_->get_clock(),
+            std::chrono::duration<float>(1.0f / rate_hz),
+            std::move(callback),
+            node_cb_group_);
+    }
+
+    // ════════════════════════════════════════════════════════════════════════════
+    // MESSAGE UTILITIES
+    // ════════════════════════════════════════════════════════════════════════════
+
+    Vector3r BaseNode::fromMsg(const PointMsg& point)
+    {
+        return Vector3r{ static_cast<float>(point.x), static_cast<float>(point.y), static_cast<float>(point.z) };
+    }
+
+    Vector3r BaseNode::fromMsg(const Vector3Msg& vector)
+    {
+        return Vector3r{ static_cast<float>(vector.x), static_cast<float>(vector.y), static_cast<float>(vector.z) };
+    }
+
+    Quaternionr BaseNode::fromMsg(const QuaternionMsg& quat)
+    {
+        return Quaternionr{ static_cast<float>(quat.w), static_cast<float>(quat.x), static_cast<float>(quat.y), static_cast<float>(quat.z) };
+    }
+
+    Matrix4r BaseNode::fromMsg(const TransformMsg& transform)
+    {
+        Matrix4r T = Matrix4r::Identity();
+        T.block<3, 1>(0, 3) = fromMsg(transform.translation);
+        Quaternionr q = fromMsg(transform.rotation);
+        T.block<3, 3>(0, 0) = MathUtils::quatToMatrix(q);
+        return T;
+    }
+
+    void BaseNode::toMsg(const Vector3r& vector, PointMsg& point)
+    {
+        point.x = static_cast<double>(vector.x());
+        point.y = static_cast<double>(vector.y());
+        point.z = static_cast<double>(vector.z());
+    }
+
+    void BaseNode::toMsg(const Vector3r& vector, Vector3Msg& vec)
+    {
+        vec.x = static_cast<double>(vector.x());
+        vec.y = static_cast<double>(vector.y());
+        vec.z = static_cast<double>(vector.z());
+    }
+
+    void BaseNode::toMsg(const Quaternionr& orientation, QuaternionMsg& quat)
+    {
+        quat.x = static_cast<double>(orientation.x());
+        quat.y = static_cast<double>(orientation.y());
+        quat.z = static_cast<double>(orientation.z());
+        quat.w = static_cast<double>(orientation.w());
+    }
+
+    void BaseNode::toMsg(const Matrix4r& matrix, TransformMsg& transform)
+    {
+        toMsg(matrix.block<3, 1>(0, 3), transform.translation);
+        toMsg(MathUtils::quatFromMatrix(matrix.block<3, 3>(0, 0)), transform.rotation);
+    }
+
+    void BaseNode::toMsg(const Crop& crop, CropMsg& crop_msg)
+    {
+        crop_msg.x = crop.x;
+        crop_msg.y = crop.y;
+        crop_msg.w = crop.w;
+        crop_msg.h = crop.h;
+        crop_msg.is_out_of_bounds = crop.is_out_of_bounds;
+    }
+
+    // ════════════════════════════════════════════════════════════════════════════
+    // OTHER UTILITIES
+    // ════════════════════════════════════════════════════════════════════════════
+
+    std::string BaseNode::replace(const std::string& topic_name, const std::string& placeholder, const std::string& value)
+    {
+        return std::regex_replace(topic_name, std::regex(placeholder), value);
+    }
+
+    HeaderMsg BaseNode::createHeader(const std::string& frame_id)
+    {
+        HeaderMsg header;
+        header.frame_id = frame_id;
+        header.stamp = now();
+        return header;
+    }
+
+    bool BaseNode::addToSet(std::unordered_set<ID>& set, const ID& id)
+    {
+        // Check if element already exists
+        if (set.find(id) != set.end())
+        {
+            RCLCPP_INFO(node_->get_logger(), "Element %s already exists. Skipping addition", id.c_str());
+            return false;
+        }
+        // Insert element
+        set.insert(id);
+        return true;
+    }
+
+    bool BaseNode::removeFromSet(std::unordered_set<ID>& set, const ID& id)
+    {
+        // Check if element exists
+        if (set.find(id) == set.end())
+        {
+            RCLCPP_INFO(node_->get_logger(), "Element %s does not exist. Skipping removal", id.c_str());
+            return false;
+        }
+        // Remove element
+        set.erase(id);
+        return true;
     }
 
 } // namespace flychams::core

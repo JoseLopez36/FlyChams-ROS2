@@ -18,7 +18,6 @@
 // Utils includes
 #include "flychams_common/utils/math_utils.hpp"
 #include "flychams_common/utils/vision_utils.hpp"
-#include "flychams_common/utils/ros_utils.hpp"
 
 namespace flychams::core
 {
@@ -114,6 +113,9 @@ namespace flychams::core
         BroadcasterPtr tf_broadcaster_;
         StaticBroadcasterPtr static_tf_broadcaster_;
 
+    public: // Settings getters
+        SettingsTools::SharedPtr getSettings() { return settings_; }
+
     public: // Topic getters
         std::string getRegistrationTopic();
         std::string getFleetStatusTopic();
@@ -204,6 +206,102 @@ namespace flychams::core
     public: // Transform broadcast utilities
         void broadcastTransform(const std::string& from_frame, const std::string& to_frame, const Matrix4r& transform);
         void broadcastStaticTransform(const std::string& from_frame, const std::string& to_frame, const Matrix4r& transform);
+
+    public: // Callback group utilities
+        CallbackGroupPtr getCallbackGroup() { return node_cb_group_; }
+        rclcpp::SubscriptionOptions getSubscriptionOptions() { return sub_options_with_node_cb_group_; }
+
+    public: // Timer utilities
+        // Get the current time
+        Time now();
+        // Create a timer with the node's callback group
+        TimerPtr createTimer(float rate_hz, std::function<void()> callback);
+
+    public: // Parameter utilities
+        // Get a parameter from the parameter server or shutdown the node
+        template <typename T>
+        T getParameter(const std::string& param_name)
+        {
+            T value;
+            if (!node_->get_parameter(param_name, value))
+            {
+                RCLCPP_ERROR(node_->get_logger(), "Failed to get parameter '%s'. Shutting down node '%s'", param_name.c_str(), node_->get_name());
+                throw rclcpp::exceptions::ParameterNotDeclaredException(param_name);
+            }
+            return value;
+        }
+
+        // Get a parameter from the parameter server or a default value
+        template <typename T>
+        T getParameterOr(const std::string& param_name, const T& default_value)
+        {
+            return node_->get_parameter_or(param_name, default_value);
+        }
+
+        // Set a parameter in the parameter server
+        template <typename T>
+        void setParameter(const std::string& param_name, const T& value)
+        {
+            node_->set_parameter(rclcpp::Parameter(param_name, value));
+        }
+
+    public: // Service utilities
+        // Send a request to a service and wait for the response
+        template<typename T>
+        bool sendRequest(ClientPtr<T> client, typename T::Request::SharedPtr request, int wait_time_ms = 1000)
+        {
+            // First, wait for service to be available
+            if (!client->wait_for_service(std::chrono::milliseconds(wait_time_ms)))
+            {
+                RCLCPP_ERROR(node_->get_logger(), "Service %s wait timed out", client->get_service_name());
+                return false;
+            }
+
+            // Send the request and wait for the response
+            client->async_send_request(request);
+            return true;
+        }
+
+    public: // Message utilities
+        // Convert a PointMsg to a Vector3r
+        Vector3r fromMsg(const PointMsg& point);
+
+        // Convert a Vector3Msg to a Vector3r
+        Vector3r fromMsg(const Vector3Msg& vector);
+
+        // Convert a QuaternionMsg to a Quaternionr
+        Quaternionr fromMsg(const QuaternionMsg& quat);
+
+        // Convert a TransformMsg to a Matrix4r
+        Matrix4r fromMsg(const TransformMsg& transform);
+
+        // Convert a Vector3r to a PointMsg
+        void toMsg(const Vector3r& vector, PointMsg& point);
+
+        // Convert a Vector3r to a Vector3Msg
+        void toMsg(const Vector3r& vector, Vector3Msg& vec);
+
+        // Convert a Quaternionr to a QuaternionMsg
+        void toMsg(const Quaternionr& orientation, QuaternionMsg& quat);
+
+        // Convert a Matrix4r to a TransformMsg
+        void toMsg(const Matrix4r& matrix, TransformMsg& transform);
+
+        // Convert a Crop to a CropMsg
+        void toMsg(const Crop& crop, CropMsg& crop_msg);
+
+    public: // Other utilities
+        // Replace a placeholder in a topic name
+        std::string replace(const std::string& topic_name, const std::string& placeholder, const std::string& value);
+
+        // Create a header
+        HeaderMsg createHeader(const std::string& frame_id);
+
+        // Add an element to a set
+        bool addToSet(std::unordered_set<ID>& set, const ID& id);
+
+        // Remove an element from a set
+        bool removeFromSet(std::unordered_set<ID>& set, const ID& id);
     };
 
 } // namespace flychams::core
