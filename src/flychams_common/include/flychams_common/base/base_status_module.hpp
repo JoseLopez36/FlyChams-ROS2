@@ -1,42 +1,42 @@
 #pragma once
 
 // Base node include
-#include "flychams_common/base/base_node.hpp"
+#include "flychams_common/base/base_status_node.hpp"
 
 namespace flychams::core
 {
     /**
      * ════════════════════════════════════════════════════════════════
-     * @brief Base module for sub-nodes extending BaseNode
+     * @brief Base module for sub-nodes extending BaseStatusNode
      *
      * @details
-     * Provides access to BaseNode functionalities.
+     * Provides access to BaseStatusNode functionalities.
      *
      * ════════════════════════════════════════════════════════════════
      * @author Jose Francisco Lopez Ruiz
      * @date 2025-05-15
      * ════════════════════════════════════════════════════════════════
      */
-    class BaseModule
+    class BaseStatusModule
     {
     public: // Constructor/Destructor
-        BaseModule(BaseNode::SharedPtr node);
+        BaseStatusModule(BaseStatusNode::SharedPtr node);
 
         void init();
 
-        virtual ~BaseModule();
+        virtual ~BaseStatusModule();
 
         void shutdown();
 
     public: // Types
-        using SharedPtr = std::shared_ptr<BaseModule>;
+        using SharedPtr = std::shared_ptr<BaseStatusModule>;
 
     protected: // Overridable methods
         virtual void onModuleInit() {}
         virtual void onModuleShutdown() {}
 
     protected: // Node access
-        BaseNode::SharedPtr node_;
+        BaseStatusNode::SharedPtr node_;
     };
 
 } // namespace flychams::core

@@ -89,7 +89,7 @@ namespace flychams::core
         virtual void onNodeInit() {}
         virtual void onNodeShutdown() {}
 
-    private: // Settings data
+    protected: // Settings data
         SettingsTools::SharedPtr settings_;
 
     private: // Topic data
@@ -101,7 +101,7 @@ namespace flychams::core
         std::string world_frame_;
         AgentFrames agent_frames_;
 
-    private: // ROS components
+    protected: // ROS components
         // Node
         NodePtr node_;
         const std::string node_name_;

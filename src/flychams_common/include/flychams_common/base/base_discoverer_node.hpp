@@ -46,7 +46,7 @@ namespace flychams::core
         void onStatusInit() override;
         void onStatusShutdown() override;
 
-    protected: // Discovery data
+    private: // Discovery data
         std::unordered_map<ID, ElementType> elements_;
 
     private: // ROS components

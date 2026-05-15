@@ -1,42 +1,42 @@
 #pragma once
 
 // Base node include
-#include "flychams_common/base/base_node.hpp"
+#include "flychams_common/base/base_discoverer_node.hpp"
 
 namespace flychams::core
 {
     /**
      * ════════════════════════════════════════════════════════════════
-     * @brief Base module for sub-nodes extending BaseNode
+     * @brief Base module for sub-nodes extending BaseDiscovererNode
      *
      * @details
-     * Provides access to BaseNode functionalities.
+     * Provides access to BaseDiscovererNode functionalities.
      *
      * ════════════════════════════════════════════════════════════════
      * @author Jose Francisco Lopez Ruiz
      * @date 2025-05-15
      * ════════════════════════════════════════════════════════════════
      */
-    class BaseModule
+    class BaseDiscovererModule
     {
     public: // Constructor/Destructor
-        BaseModule(BaseNode::SharedPtr node);
+        BaseDiscovererModule(BaseDiscovererNode::SharedPtr node);
 
         void init();
 
-        virtual ~BaseModule();
+        virtual ~BaseDiscovererModule();
 
         void shutdown();
 
     public: // Types
-        using SharedPtr = std::shared_ptr<BaseModule>;
+        using SharedPtr = std::shared_ptr<BaseDiscovererModule>;
 
     protected: // Overridable methods
         virtual void onModuleInit() {}
         virtual void onModuleShutdown() {}
 
     protected: // Node access
-        BaseNode::SharedPtr node_;
+        BaseDiscovererNode::SharedPtr node_;
     };
 
 } // namespace flychams::core

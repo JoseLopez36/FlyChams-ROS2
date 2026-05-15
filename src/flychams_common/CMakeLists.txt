@@ -48,6 +48,8 @@ add_library(${PROJECT_NAME} SHARED
   src/base/base_status_node.cpp
   src/base/base_discoverer_node.cpp
   src/base/base_module.cpp
+  src/base/base_status_module.cpp
+  src/base/base_discoverer_module.cpp
   external/hungarian-algorithm-cpp/Hungarian.cpp
 )
 
@@ -172,4 +174,4 @@ ament_export_dependencies(
 )
 ament_export_libraries(${PROJECT_NAME})
 ament_export_include_directories(include)
-ament_package() 
+ament_package()

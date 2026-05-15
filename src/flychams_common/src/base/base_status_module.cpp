@@ -1,4 +1,4 @@
-#include "flychams_common/base/base_module.hpp"
+#include "flychams_common/base/base_status_module.hpp"
 
 namespace flychams::core
 {
@@ -6,29 +6,10 @@ namespace flychams::core
     // CONSTRUCTOR: Constructor
     // ════════════════════════════════════════════════════════════════════════════
 
-    BaseModule::BaseModule(BaseNode::SharedPtr node)
-        : node_(node)
+    BaseStatusModule::BaseStatusModule(BaseStatusNode::SharedPtr node, SettingsTools::SharedPtr settings, CallbackGroupPtr module_cb_group)
+        : BaseModule(node, settings, module_cb_group), status_node_(node)
     {
         // Nothing to do
-    }
-
-    void BaseModule::init()
-    {
-        // Call on init overridable method
-        onModuleInit();
-    }
-
-    BaseModule::~BaseModule()
-    {
-        shutdown();
-    }
-
-    void BaseModule::shutdown()
-    {
-        // Call on shutdown overridable method
-        onModuleShutdown();
-        // Reset node
-        node_.reset();
     }
 
 } // namespace flychams::core
