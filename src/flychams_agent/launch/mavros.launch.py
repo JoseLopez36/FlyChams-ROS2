@@ -26,7 +26,7 @@ def generate_launch_description():
     
     fcu_url_arg = DeclareLaunchArgument(
         'fcu_url',
-        default_value='udp://:14030@172.17.0.2:14280',
+        default_value='udp://:14030@127.0.0.1:14280',
         description='URL for FCU connection'
     )
     
@@ -117,7 +117,8 @@ def generate_launch_description():
                         'respawn_mavros': LaunchConfiguration('respawn_mavros')
                     }
                 ],
-                arguments=['--ros-args', '--log-level', LaunchConfiguration('log_level')]
+                arguments=['--ros-args', '--log-level', LaunchConfiguration('log_level')],
+                additional_env={'MAVROS_UAS_EXECUTOR_THREADS': '2'}
             )
         ]
 

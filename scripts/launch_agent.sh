@@ -8,7 +8,7 @@ TGT_SYSTEM="${TGT_SYSTEM:-}"
 
 AGENT_LAUNCH_ARGS="agent_id:=${AGENT_ID}"
 
-MAVROS_LAUNCH_ARGS="agent_id:=${AGENT_ID} log_level:=error"
+MAVROS_LAUNCH_ARGS="agent_id:=${AGENT_ID} log_level:=info"
 [ -n "$FCU_URL" ]    && MAVROS_LAUNCH_ARGS="$MAVROS_LAUNCH_ARGS fcu_url:=${FCU_URL}"
 [ -n "$TGT_SYSTEM" ] && MAVROS_LAUNCH_ARGS="$MAVROS_LAUNCH_ARGS tgt_system:=${TGT_SYSTEM}"
 

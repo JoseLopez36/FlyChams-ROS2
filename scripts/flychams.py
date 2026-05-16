@@ -48,7 +48,7 @@ def launch_sim(agent_ids: list):
 
     # One agent container per agent
     for i, agent_id in enumerate(agent_ids):
-        fcu_url   = f"udp://:{14540 + i}@172.17.0.2:{14580 + i}"
+        fcu_url   = f"udp://:{14030 + i}@127.0.0.1:{14280 + i}"
         tgt_system = i + 1
         run(f"DETACH=true FCU_URL={fcu_url} TGT_SYSTEM={tgt_system} {SCRIPT_DIR}/launch_agent.sh {agent_id}")
         time.sleep(1)

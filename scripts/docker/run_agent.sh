@@ -31,6 +31,8 @@ docker run ${RUN_FLAGS} \
     --network host \
     --runtime nvidia \
     --gpus all \
+    --cpus="2.0" \
+    --memory="2g" \
     -e NVIDIA_DRIVER_CAPABILITIES=all \
     -e NVIDIA_VISIBLE_DEVICES=all \
     -e XDG_RUNTIME_DIR=/tmp \

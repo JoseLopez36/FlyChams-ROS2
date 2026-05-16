@@ -89,7 +89,7 @@ namespace flychams::common
     // Node pointer
     using NodePtr = rclcpp::Node::SharedPtr;
     // Executor
-    using ExecutorPtr = rclcpp::executors::MultiThreadedExecutor::SharedPtr;
+    using ExecutorPtr = rclcpp::executors::SingleThreadedExecutor::SharedPtr;
     // TF2
     using BufferPtr = std::shared_ptr<tf2_ros::Buffer>;
     using ListenerPtr = std::shared_ptr<tf2_ros::TransformListener>;

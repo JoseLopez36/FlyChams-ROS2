@@ -30,22 +30,11 @@ fi
 echo "Starting PX4 container: $CONTAINER_NAME"
 docker run ${RUN_FLAGS} \
     --name "$CONTAINER_NAME" \
-    --privileged \
     --network host \
-    -e AWS_ACCESS_KEY_ID \
-    -e AWS_SECRET_ACCESS_KEY \
-    -e BRANCH_NAME \
-    -e CCACHE_DIR="${CCACHE_DIR}" \
-    -e CI \
-    -e CODECOV_TOKEN \
-    -e COVERALLS_REPO_TOKEN \
+    --cpus="1.0" \
+    --memory="512m" \
     -e LOCAL_USER_ID="$(id -u)" \
-    -e PX4_ASAN \
-    -e PX4_MSAN \
-    -e PX4_TSAN \
-    -e PX4_UBSAN \
-    -e TRAVIS_BRANCH \
-    -e TRAVIS_BUILD_ID \
+    -e CCACHE_DIR="${CCACHE_DIR}" \
     -v ${CCACHE_DIR}:${CCACHE_DIR}:rw \
     -v ${FLYCHAMS_PX4_PATH}:${FLYCHAMS_PX4_PATH}:rw \
     -w "${FLYCHAMS_PX4_PATH}" \

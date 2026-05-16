@@ -20,12 +20,9 @@ fi
 echo "Starting simulation container: $CONTAINER_NAME"
 docker run ${RUN_FLAGS} \
     --name "$CONTAINER_NAME" \
-    --privileged \
     --network host \
-    --runtime nvidia \
-    --gpus all \
-    -e NVIDIA_DRIVER_CAPABILITIES=all \
-    -e NVIDIA_VISIBLE_DEVICES=all \
+    --cpus="2.0" \
+    --memory="2g" \
     -e XDG_RUNTIME_DIR=/tmp \
     -e ROS_DOMAIN_ID="${ROS_DOMAIN_ID}" \
     -e FASTDDS_BUILTIN_TRANSPORTS="${FASTDDS_BUILTIN_TRANSPORTS}" \
