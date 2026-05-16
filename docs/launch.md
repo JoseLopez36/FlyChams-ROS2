@@ -34,6 +34,7 @@ For launching a single service independently:
 scripts/launch_px4.sh 0          # PX4 SITL for agent index 0
 scripts/launch_coordinator.sh
 scripts/launch_simulation.sh
+scripts/launch_operator.sh
 scripts/launch_agent.sh AGENT00
 ```
 
@@ -41,33 +42,7 @@ Each script sources `install/setup.bash` inside the container before invoking `r
 
 ---
 
-## 2. Operator
-
-`operator.launch.py` starts the full operator stack inside the `flychams-operator` container:
-
-- **`metrics_creator_node`** — aggregates per-agent, per-target and per-cluster metrics and publishes them as `AgentMetrics`, `TargetMetrics`, `ClusterMetrics` and `MissionMetrics` messages.
-- **`markers_generator_node`** — publishes `visualization_msgs/MarkerArray` per agent, target and cluster for 3D visualization in Foxglove.
-- **`foxglove_bridge`** — exposes all ROS2 topics over a WebSocket so [Foxglove Studio](https://foxglove.dev/studio) can connect remotely or locally.
-
-### Build
-
-```bash
-scripts/build_operator_ws.sh
-```
-
-### Launch
-
-```bash
-# Interactive (default port 8765)
-scripts/launch_operator.sh
-
-# Detached with custom port
-DETACH=true FOXGLOVE_PORT=8766 scripts/launch_operator.sh
-```
-
-`FOXGLOVE_PORT` is forwarded into the container and picked up by `operator.launch.py` at launch time (default `8765`).
-
-### Connect from Foxglove Studio
+## 2. Operator Interface
 
 Open Foxglove Studio → **Open connection** → **Foxglove WebSocket** → `ws://<host-ip>:8765`.
 
@@ -100,6 +75,7 @@ To inspect a single container:
 ```bash
 docker logs -f flychams-coordinator
 docker logs -f flychams-simulation
+docker logs -f flychams-operator
 docker logs -f flychams-agent-AGENT00
 docker logs -f flychams-px4-0
 ```

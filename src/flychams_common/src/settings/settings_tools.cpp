@@ -24,6 +24,9 @@ SettingsTools::SettingsTools(NodePtr node)
     MissionSettingsParser::parseSystemParameters(node_, config_ptr_);
     MissionSettingsParser::parseTopicParameters(node_, config_ptr_);
     MissionSettingsParser::parseFrameParameters(node_, config_ptr_);
+
+    // Print settings
+    printSettings();
 }
 
 const TrackingParameters SettingsTools::getTrackingParameters(const std::string& agent_id) const
@@ -308,267 +311,267 @@ std::string simulationFrameworkToString(const SimulationFramework& framework)
 // Utility methods
 void SettingsTools::printSettings() const
 {
-    RCLCPP_INFO(node_->get_logger(), "═══════════════════════════════════════════════════════════════");
-    RCLCPP_INFO(node_->get_logger(), "                    MISSION SETTINGS");
-    RCLCPP_INFO(node_->get_logger(), "═══════════════════════════════════════════════════════════════");
+    RCLCPP_DEBUG(node_->get_logger(), "═══════════════════════════════════════════════════════════════");
+    RCLCPP_DEBUG(node_->get_logger(), "                    MISSION SETTINGS");
+    RCLCPP_DEBUG(node_->get_logger(), "═══════════════════════════════════════════════════════════════");
 
     // Mission Parameters
-    RCLCPP_INFO(node_->get_logger(), "\n[MISSION]");
-    RCLCPP_INFO(node_->get_logger(), "  ID: %s", config_ptr_->id.c_str());
-    RCLCPP_INFO(node_->get_logger(), "  Name: %s", config_ptr_->name.c_str());
-    RCLCPP_INFO(node_->get_logger(), "  Environment ID: %s", config_ptr_->environment_id.c_str());
-    RCLCPP_INFO(node_->get_logger(), "  Target Group ID: %s", config_ptr_->target_group_id.c_str());
-    RCLCPP_INFO(node_->get_logger(), "  Agent Team ID: %s", config_ptr_->agent_team_id.c_str());
-    RCLCPP_INFO(node_->get_logger(), "  Horizontal Constraint: [%.3f, %.3f]",
+    RCLCPP_DEBUG(node_->get_logger(), "\n[MISSION]");
+    RCLCPP_DEBUG(node_->get_logger(), "  ID: %s", config_ptr_->id.c_str());
+    RCLCPP_DEBUG(node_->get_logger(), "  Name: %s", config_ptr_->name.c_str());
+    RCLCPP_DEBUG(node_->get_logger(), "  Environment ID: %s", config_ptr_->environment_id.c_str());
+    RCLCPP_DEBUG(node_->get_logger(), "  Target Group ID: %s", config_ptr_->target_group_id.c_str());
+    RCLCPP_DEBUG(node_->get_logger(), "  Agent Team ID: %s", config_ptr_->agent_team_id.c_str());
+    RCLCPP_DEBUG(node_->get_logger(), "  Horizontal Constraint: [%.3f, %.3f]",
         config_ptr_->horizontal_constraint(0), config_ptr_->horizontal_constraint(1));
-    RCLCPP_INFO(node_->get_logger(), "  Vertical Constraint: [%.3f, %.3f]",
+    RCLCPP_DEBUG(node_->get_logger(), "  Vertical Constraint: [%.3f, %.3f]",
         config_ptr_->vertical_constraint(0), config_ptr_->vertical_constraint(1));
-    RCLCPP_INFO(node_->get_logger(), "  Autopilot: %s", autopilotToString(config_ptr_->autopilot).c_str());
-    RCLCPP_INFO(node_->get_logger(), "  Start Date: %d/%02d/%02d",
+    RCLCPP_DEBUG(node_->get_logger(), "  Autopilot: %s", autopilotToString(config_ptr_->autopilot).c_str());
+    RCLCPP_DEBUG(node_->get_logger(), "  Start Date: %d/%02d/%02d",
         config_ptr_->start_date.year, config_ptr_->start_date.month, config_ptr_->start_date.day);
-    RCLCPP_INFO(node_->get_logger(), "  Start Hour: %02d:%02d:%02d",
+    RCLCPP_DEBUG(node_->get_logger(), "  Start Hour: %02d:%02d:%02d",
         config_ptr_->start_hour.hours, config_ptr_->start_hour.minutes, config_ptr_->start_hour.seconds);
 
 // Environment Parameters
-    RCLCPP_INFO(node_->get_logger(), "\n[ENVIRONMENT]");
-    RCLCPP_INFO(node_->get_logger(), "  ID: %s", config_ptr_->environment.id.c_str());
-    RCLCPP_INFO(node_->get_logger(), "  Name: %s", config_ptr_->environment.name.c_str());
-    RCLCPP_INFO(node_->get_logger(), "  Geopoint: lat=%.6f, lon=%.6f, alt=%.3f",
+    RCLCPP_DEBUG(node_->get_logger(), "\n[ENVIRONMENT]");
+    RCLCPP_DEBUG(node_->get_logger(), "  ID: %s", config_ptr_->environment.id.c_str());
+    RCLCPP_DEBUG(node_->get_logger(), "  Name: %s", config_ptr_->environment.name.c_str());
+    RCLCPP_DEBUG(node_->get_logger(), "  Geopoint: lat=%.6f, lon=%.6f, alt=%.3f",
         config_ptr_->environment.geopoint.latitude,
         config_ptr_->environment.geopoint.longitude,
         config_ptr_->environment.geopoint.altitude);
-    RCLCPP_INFO(node_->get_logger(), "  Wind Velocity: [%.3f, %.3f, %.3f]",
+    RCLCPP_DEBUG(node_->get_logger(), "  Wind Velocity: [%.3f, %.3f, %.3f]",
         config_ptr_->environment.wind_vel.x(),
         config_ptr_->environment.wind_vel.y(),
         config_ptr_->environment.wind_vel.z());
 
 // Target Parameters
-    RCLCPP_INFO(node_->get_logger(), "\n[TARGETS]");
-    RCLCPP_INFO(node_->get_logger(), "  Total Targets: %zu", config_ptr_->target_group.size());
+    RCLCPP_DEBUG(node_->get_logger(), "\n[TARGETS]");
+    RCLCPP_DEBUG(node_->get_logger(), "  Total Targets: %zu", config_ptr_->target_group.size());
     for (const auto& [target_id, target] : config_ptr_->target_group)
     {
-        RCLCPP_INFO(node_->get_logger(), "  [%s]", target_id.c_str());
-        RCLCPP_INFO(node_->get_logger(), "    Name: %s", target->name.c_str());
-        RCLCPP_INFO(node_->get_logger(), "    Target Group ID: %s", target->target_group_id.c_str());
-        RCLCPP_INFO(node_->get_logger(), "    Target Index: %d", target->target_index);
-        RCLCPP_INFO(node_->get_logger(), "    Type: %s", targetTypeToString(target->type).c_str());
-        RCLCPP_INFO(node_->get_logger(), "    Count: %d", target->count);
-        RCLCPP_INFO(node_->get_logger(), "    Priority: %s", priorityToString(target->priority).c_str());
-        RCLCPP_INFO(node_->get_logger(), "    Trajectory Folder: %s", target->trajectory_folder.c_str());
+        RCLCPP_DEBUG(node_->get_logger(), "  [%s]", target_id.c_str());
+        RCLCPP_DEBUG(node_->get_logger(), "    Name: %s", target->name.c_str());
+        RCLCPP_DEBUG(node_->get_logger(), "    Target Group ID: %s", target->target_group_id.c_str());
+        RCLCPP_DEBUG(node_->get_logger(), "    Target Index: %d", target->target_index);
+        RCLCPP_DEBUG(node_->get_logger(), "    Type: %s", targetTypeToString(target->type).c_str());
+        RCLCPP_DEBUG(node_->get_logger(), "    Count: %d", target->count);
+        RCLCPP_DEBUG(node_->get_logger(), "    Priority: %s", priorityToString(target->priority).c_str());
+        RCLCPP_DEBUG(node_->get_logger(), "    Trajectory Folder: %s", target->trajectory_folder.c_str());
     }
 
     // Agent Parameters
-    RCLCPP_INFO(node_->get_logger(), "\n[AGENTS]");
-    RCLCPP_INFO(node_->get_logger(), "  Total Agents: %zu", config_ptr_->agent_team.size());
+    RCLCPP_DEBUG(node_->get_logger(), "\n[AGENTS]");
+    RCLCPP_DEBUG(node_->get_logger(), "  Total Agents: %zu", config_ptr_->agent_team.size());
     for (const auto& [agent_id, agent] : config_ptr_->agent_team)
     {
-        RCLCPP_INFO(node_->get_logger(), "  [%s]", agent_id.c_str());
-        RCLCPP_INFO(node_->get_logger(), "    Name: %s", agent->name.c_str());
-        RCLCPP_INFO(node_->get_logger(), "    Agent Team ID: %s", agent->agent_team_id.c_str());
-        RCLCPP_INFO(node_->get_logger(), "    Tracking ID: %s", agent->tracking_id.c_str());
-        RCLCPP_INFO(node_->get_logger(), "    Drone ID: %s", agent->drone_id.c_str());
-        RCLCPP_INFO(node_->get_logger(), "    Position: [%.3f, %.3f, %.3f]",
+        RCLCPP_DEBUG(node_->get_logger(), "  [%s]", agent_id.c_str());
+        RCLCPP_DEBUG(node_->get_logger(), "    Name: %s", agent->name.c_str());
+        RCLCPP_DEBUG(node_->get_logger(), "    Agent Team ID: %s", agent->agent_team_id.c_str());
+        RCLCPP_DEBUG(node_->get_logger(), "    Tracking ID: %s", agent->tracking_id.c_str());
+        RCLCPP_DEBUG(node_->get_logger(), "    Drone ID: %s", agent->drone_id.c_str());
+        RCLCPP_DEBUG(node_->get_logger(), "    Position: [%.3f, %.3f, %.3f]",
             agent->position.x(), agent->position.y(), agent->position.z());
-        RCLCPP_INFO(node_->get_logger(), "    Orientation: [roll=%.3f, pitch=%.3f, yaw=%.3f]",
+        RCLCPP_DEBUG(node_->get_logger(), "    Orientation: [roll=%.3f, pitch=%.3f, yaw=%.3f]",
             agent->orientation.x(), agent->orientation.y(), agent->orientation.z());
-        RCLCPP_INFO(node_->get_logger(), "    Safety Radius: %.3f", agent->safety_radius);
-        RCLCPP_INFO(node_->get_logger(), "    Max Altitude: %.3f", agent->max_altitude);
-        RCLCPP_INFO(node_->get_logger(), "    Battery Capacity: %.3f", agent->battery_capacity);
+        RCLCPP_DEBUG(node_->get_logger(), "    Safety Radius: %.3f", agent->safety_radius);
+        RCLCPP_DEBUG(node_->get_logger(), "    Max Altitude: %.3f", agent->max_altitude);
+        RCLCPP_DEBUG(node_->get_logger(), "    Battery Capacity: %.3f", agent->battery_capacity);
 
         // Tracking Parameters
-        RCLCPP_INFO(node_->get_logger(), "    [TRACKING]");
-        RCLCPP_INFO(node_->get_logger(), "      ID: %s", agent->tracking.id.c_str());
-        RCLCPP_INFO(node_->get_logger(), "      Name: %s", agent->tracking.name.c_str());
-        RCLCPP_INFO(node_->get_logger(), "      Observation Set ID: %s", agent->tracking.observation_set_id.c_str());
-        RCLCPP_INFO(node_->get_logger(), "      Target Size: min=%.3f, max=%.3f, ref=%.3f",
+        RCLCPP_DEBUG(node_->get_logger(), "    [TRACKING]");
+        RCLCPP_DEBUG(node_->get_logger(), "      ID: %s", agent->tracking.id.c_str());
+        RCLCPP_DEBUG(node_->get_logger(), "      Name: %s", agent->tracking.name.c_str());
+        RCLCPP_DEBUG(node_->get_logger(), "      Observation Set ID: %s", agent->tracking.observation_set_id.c_str());
+        RCLCPP_DEBUG(node_->get_logger(), "      Target Size: min=%.3f, max=%.3f, ref=%.3f",
             agent->tracking.min_target_size,
             agent->tracking.max_target_size,
             agent->tracking.ref_target_size);
-        RCLCPP_INFO(node_->get_logger(), "      Multi-Cameras: %zu", agent->tracking.multi_camera_set.size());
-        RCLCPP_INFO(node_->get_logger(), "      Multi-Windows: %zu", agent->tracking.multi_window_set.size());
+        RCLCPP_DEBUG(node_->get_logger(), "      Multi-Cameras: %zu", agent->tracking.multi_camera_set.size());
+        RCLCPP_DEBUG(node_->get_logger(), "      Multi-Windows: %zu", agent->tracking.multi_window_set.size());
 
         // Multi-Camera Parameters
         for (const auto& [multi_camera_id, multi_camera] : agent->tracking.multi_camera_set)
         {
-            RCLCPP_INFO(node_->get_logger(), "      [MULTI-CAMERA: %s]", multi_camera_id.c_str());
-            RCLCPP_INFO(node_->get_logger(), "        Name: %s", multi_camera->name.c_str());
-            RCLCPP_INFO(node_->get_logger(), "        Observation Set ID: %s", multi_camera->observation_set_id.c_str());
-            RCLCPP_INFO(node_->get_logger(), "        Camera ID: %s", multi_camera->camera_id.c_str());
-            RCLCPP_INFO(node_->get_logger(), "        Gimbal ID: %s", multi_camera->gimbal_id.c_str());
-            RCLCPP_INFO(node_->get_logger(), "        Role: %s", observationRoleToString(multi_camera->role).c_str());
-            RCLCPP_INFO(node_->get_logger(), "        Position: [%.3f, %.3f, %.3f]",
+            RCLCPP_DEBUG(node_->get_logger(), "      [MULTI-CAMERA: %s]", multi_camera_id.c_str());
+            RCLCPP_DEBUG(node_->get_logger(), "        Name: %s", multi_camera->name.c_str());
+            RCLCPP_DEBUG(node_->get_logger(), "        Observation Set ID: %s", multi_camera->observation_set_id.c_str());
+            RCLCPP_DEBUG(node_->get_logger(), "        Camera ID: %s", multi_camera->camera_id.c_str());
+            RCLCPP_DEBUG(node_->get_logger(), "        Gimbal ID: %s", multi_camera->gimbal_id.c_str());
+            RCLCPP_DEBUG(node_->get_logger(), "        Role: %s", observationRoleToString(multi_camera->role).c_str());
+            RCLCPP_DEBUG(node_->get_logger(), "        Position: [%.3f, %.3f, %.3f]",
                 multi_camera->position.x(), multi_camera->position.y(), multi_camera->position.z());
-            RCLCPP_INFO(node_->get_logger(), "        Orientation: [roll=%.3f, pitch=%.3f, yaw=%.3f]",
+            RCLCPP_DEBUG(node_->get_logger(), "        Orientation: [roll=%.3f, pitch=%.3f, yaw=%.3f]",
                 multi_camera->orientation.x(), multi_camera->orientation.y(), multi_camera->orientation.z());
-            RCLCPP_INFO(node_->get_logger(), "        Focal Length: min=%.6f, max=%.6f, ref=%.6f",
+            RCLCPP_DEBUG(node_->get_logger(), "        Focal Length: min=%.6f, max=%.6f, ref=%.6f",
                 multi_camera->min_focal, multi_camera->max_focal, multi_camera->ref_focal);
-            RCLCPP_INFO(node_->get_logger(), "        Source Stream URL: %s", multi_camera->source_stream_url.c_str());
+            RCLCPP_DEBUG(node_->get_logger(), "        Source Stream URL: %s", multi_camera->source_stream_url.c_str());
 
             // Camera Parameters
-            RCLCPP_INFO(node_->get_logger(), "        [CAMERA]");
-            RCLCPP_INFO(node_->get_logger(), "          ID: %s", multi_camera->camera.id.c_str());
-            RCLCPP_INFO(node_->get_logger(), "          Name: %s", multi_camera->camera.name.c_str());
-            RCLCPP_INFO(node_->get_logger(), "          Type: %s", cameraTypeToString(multi_camera->camera.type).c_str());
-            RCLCPP_INFO(node_->get_logger(), "          Resolution: %d x %d",
+            RCLCPP_DEBUG(node_->get_logger(), "        [CAMERA]");
+            RCLCPP_DEBUG(node_->get_logger(), "          ID: %s", multi_camera->camera.id.c_str());
+            RCLCPP_DEBUG(node_->get_logger(), "          Name: %s", multi_camera->camera.name.c_str());
+            RCLCPP_DEBUG(node_->get_logger(), "          Type: %s", cameraTypeToString(multi_camera->camera.type).c_str());
+            RCLCPP_DEBUG(node_->get_logger(), "          Resolution: %d x %d",
                 multi_camera->camera.resolution(0), multi_camera->camera.resolution(1));
-            RCLCPP_INFO(node_->get_logger(), "          Sensor Size: %.6f x %.6f",
+            RCLCPP_DEBUG(node_->get_logger(), "          Sensor Size: %.6f x %.6f",
                 multi_camera->camera.sensor_size(0), multi_camera->camera.sensor_size(1));
-            RCLCPP_INFO(node_->get_logger(), "          Distortion: K1=%.6f, K2=%.6f, K3=%.6f, P1=%.6f, P2=%.6f",
+            RCLCPP_DEBUG(node_->get_logger(), "          Distortion: K1=%.6f, K2=%.6f, K3=%.6f, P1=%.6f, P2=%.6f",
                 multi_camera->camera.distortion.K1,
                 multi_camera->camera.distortion.K2,
                 multi_camera->camera.distortion.K3,
                 multi_camera->camera.distortion.P1,
                 multi_camera->camera.distortion.P2);
-            RCLCPP_INFO(node_->get_logger(), "          Sensor Noise Enabled: %s",
+            RCLCPP_DEBUG(node_->get_logger(), "          Sensor Noise Enabled: %s",
                 multi_camera->camera.enable_sensor_noise ? "true" : "false");
             if (multi_camera->camera.enable_sensor_noise)
             {
-                RCLCPP_INFO(node_->get_logger(), "          Sensor Noise: rand_contrib=%.6f, rand_size=%.3f, rand_speed=%.3f",
+                RCLCPP_DEBUG(node_->get_logger(), "          Sensor Noise: rand_contrib=%.6f, rand_size=%.3f, rand_speed=%.3f",
                     multi_camera->camera.sensor_noise.rand_contrib,
                     multi_camera->camera.sensor_noise.rand_size,
                     multi_camera->camera.sensor_noise.rand_speed);
             }
-            RCLCPP_INFO(node_->get_logger(), "          Weight: %.3f", multi_camera->camera.weight);
-            RCLCPP_INFO(node_->get_logger(), "          Power: idle=%.3f, active=%.3f",
+            RCLCPP_DEBUG(node_->get_logger(), "          Weight: %.3f", multi_camera->camera.weight);
+            RCLCPP_DEBUG(node_->get_logger(), "          Power: idle=%.3f, active=%.3f",
                 multi_camera->camera.idle_power, multi_camera->camera.active_power);
 
             // Gimbal Parameters
-            RCLCPP_INFO(node_->get_logger(), "        [GIMBAL]");
-            RCLCPP_INFO(node_->get_logger(), "          ID: %s", multi_camera->gimbal.id.c_str());
-            RCLCPP_INFO(node_->get_logger(), "          Name: %s", multi_camera->gimbal.name.c_str());
-            RCLCPP_INFO(node_->get_logger(), "          Roll: enabled=%s, [%.3f, %.3f], max_speed=%.3f",
+            RCLCPP_DEBUG(node_->get_logger(), "        [GIMBAL]");
+            RCLCPP_DEBUG(node_->get_logger(), "          ID: %s", multi_camera->gimbal.id.c_str());
+            RCLCPP_DEBUG(node_->get_logger(), "          Name: %s", multi_camera->gimbal.name.c_str());
+            RCLCPP_DEBUG(node_->get_logger(), "          Roll: enabled=%s, [%.3f, %.3f], max_speed=%.3f",
                 multi_camera->gimbal.enable_roll ? "true" : "false",
                 multi_camera->gimbal.roll.min_angle,
                 multi_camera->gimbal.roll.max_angle,
                 multi_camera->gimbal.roll.max_speed);
-            RCLCPP_INFO(node_->get_logger(), "          Pitch: enabled=%s, [%.3f, %.3f], max_speed=%.3f",
+            RCLCPP_DEBUG(node_->get_logger(), "          Pitch: enabled=%s, [%.3f, %.3f], max_speed=%.3f",
                 multi_camera->gimbal.enable_pitch ? "true" : "false",
                 multi_camera->gimbal.pitch.min_angle,
                 multi_camera->gimbal.pitch.max_angle,
                 multi_camera->gimbal.pitch.max_speed);
-            RCLCPP_INFO(node_->get_logger(), "          Yaw: enabled=%s, [%.3f, %.3f], max_speed=%.3f",
+            RCLCPP_DEBUG(node_->get_logger(), "          Yaw: enabled=%s, [%.3f, %.3f], max_speed=%.3f",
                 multi_camera->gimbal.enable_yaw ? "true" : "false",
                 multi_camera->gimbal.yaw.min_angle,
                 multi_camera->gimbal.yaw.max_angle,
                 multi_camera->gimbal.yaw.max_speed);
-            RCLCPP_INFO(node_->get_logger(), "          Weight: %.3f", multi_camera->gimbal.weight);
-            RCLCPP_INFO(node_->get_logger(), "          Power: idle=%.3f, active=%.3f",
+            RCLCPP_DEBUG(node_->get_logger(), "          Weight: %.3f", multi_camera->gimbal.weight);
+            RCLCPP_DEBUG(node_->get_logger(), "          Power: idle=%.3f, active=%.3f",
                 multi_camera->gimbal.idle_power, multi_camera->gimbal.active_power);
         }
 
         // Multi-Window Parameters
         for (const auto& [multi_window_id, multi_window] : agent->tracking.multi_window_set)
         {
-            RCLCPP_INFO(node_->get_logger(), "      [MULTI-WINDOW: %s]", multi_window_id.c_str());
-            RCLCPP_INFO(node_->get_logger(), "        Name: %s", multi_window->name.c_str());
-            RCLCPP_INFO(node_->get_logger(), "        Observation Set ID: %s", multi_window->observation_set_id.c_str());
-            RCLCPP_INFO(node_->get_logger(), "        Resolution: %d x %d",
+            RCLCPP_DEBUG(node_->get_logger(), "      [MULTI-WINDOW: %s]", multi_window_id.c_str());
+            RCLCPP_DEBUG(node_->get_logger(), "        Name: %s", multi_window->name.c_str());
+            RCLCPP_DEBUG(node_->get_logger(), "        Observation Set ID: %s", multi_window->observation_set_id.c_str());
+            RCLCPP_DEBUG(node_->get_logger(), "        Resolution: %d x %d",
                 multi_window->resolution(0), multi_window->resolution(1));
-            RCLCPP_INFO(node_->get_logger(), "        Lambda: min=%.3f, max=%.3f, ref=%.3f",
+            RCLCPP_DEBUG(node_->get_logger(), "        Lambda: min=%.3f, max=%.3f, ref=%.3f",
                 multi_window->min_lambda, multi_window->max_lambda, multi_window->ref_lambda);
         }
 
         // Drone Parameters
-        RCLCPP_INFO(node_->get_logger(), "    [DRONE]");
-        RCLCPP_INFO(node_->get_logger(), "      ID: %s", agent->drone.id.c_str());
-        RCLCPP_INFO(node_->get_logger(), "      Name: %s", agent->drone.name.c_str());
-        RCLCPP_INFO(node_->get_logger(), "      Type: %s", droneTypeToString(agent->drone.type).c_str());
-        RCLCPP_INFO(node_->get_logger(), "      Speed: cruise=%.3f, max=%.3f",
+        RCLCPP_DEBUG(node_->get_logger(), "    [DRONE]");
+        RCLCPP_DEBUG(node_->get_logger(), "      ID: %s", agent->drone.id.c_str());
+        RCLCPP_DEBUG(node_->get_logger(), "      Name: %s", agent->drone.name.c_str());
+        RCLCPP_DEBUG(node_->get_logger(), "      Type: %s", droneTypeToString(agent->drone.type).c_str());
+        RCLCPP_DEBUG(node_->get_logger(), "      Speed: cruise=%.3f, max=%.3f",
             agent->drone.cruise_speed, agent->drone.max_speed);
-        RCLCPP_INFO(node_->get_logger(), "      Barometer: enabled=%s",
+        RCLCPP_DEBUG(node_->get_logger(), "      Barometer: enabled=%s",
             agent->drone.enable_barometer ? "true" : "false");
         if (agent->drone.enable_barometer)
         {
-            RCLCPP_INFO(node_->get_logger(), "        White Noise Sigma: %.6f", agent->drone.barometer.white_noise_sigma);
+            RCLCPP_DEBUG(node_->get_logger(), "        White Noise Sigma: %.6f", agent->drone.barometer.white_noise_sigma);
         }
-        RCLCPP_INFO(node_->get_logger(), "      IMU: enabled=%s",
+        RCLCPP_DEBUG(node_->get_logger(), "      IMU: enabled=%s",
             agent->drone.enable_imu ? "true" : "false");
         if (agent->drone.enable_imu)
         {
-            RCLCPP_INFO(node_->get_logger(), "        Angular White Noise Sigma: %.6f", agent->drone.imu.angular_white_noise_sigma);
-            RCLCPP_INFO(node_->get_logger(), "        Velocity White Noise Sigma: %.6f", agent->drone.imu.velocity_white_noise_sigma);
+            RCLCPP_DEBUG(node_->get_logger(), "        Angular White Noise Sigma: %.6f", agent->drone.imu.angular_white_noise_sigma);
+            RCLCPP_DEBUG(node_->get_logger(), "        Velocity White Noise Sigma: %.6f", agent->drone.imu.velocity_white_noise_sigma);
         }
-        RCLCPP_INFO(node_->get_logger(), "      GPS: enabled=%s",
+        RCLCPP_DEBUG(node_->get_logger(), "      GPS: enabled=%s",
             agent->drone.enable_gps ? "true" : "false");
         if (agent->drone.enable_gps)
         {
-            RCLCPP_INFO(node_->get_logger(), "        EPH: initial=%.6f, final=%.6f",
+            RCLCPP_DEBUG(node_->get_logger(), "        EPH: initial=%.6f, final=%.6f",
                 agent->drone.gps.eph_initial, agent->drone.gps.eph_final);
-            RCLCPP_INFO(node_->get_logger(), "        EPV: initial=%.6f, final=%.6f",
+            RCLCPP_DEBUG(node_->get_logger(), "        EPV: initial=%.6f, final=%.6f",
                 agent->drone.gps.epv_initial, agent->drone.gps.epv_final);
         }
-        RCLCPP_INFO(node_->get_logger(), "      Magnetometer: enabled=%s",
+        RCLCPP_DEBUG(node_->get_logger(), "      Magnetometer: enabled=%s",
             agent->drone.enable_magnetometer ? "true" : "false");
         if (agent->drone.enable_magnetometer)
         {
-            RCLCPP_INFO(node_->get_logger(), "        White Noise Sigma: %.6f", agent->drone.magnetometer.white_noise_sigma);
-            RCLCPP_INFO(node_->get_logger(), "        White Noise Bias: %.6f", agent->drone.magnetometer.white_noise_bias);
+            RCLCPP_DEBUG(node_->get_logger(), "        White Noise Sigma: %.6f", agent->drone.magnetometer.white_noise_sigma);
+            RCLCPP_DEBUG(node_->get_logger(), "        White Noise Bias: %.6f", agent->drone.magnetometer.white_noise_bias);
         }
-        RCLCPP_INFO(node_->get_logger(), "      Weight: base=%.3f, max_payload=%.3f",
+        RCLCPP_DEBUG(node_->get_logger(), "      Weight: base=%.3f, max_payload=%.3f",
             agent->drone.base_weight, agent->drone.max_payload_weight);
-        RCLCPP_INFO(node_->get_logger(), "      Power: hover=%.3f, cruise=%.3f",
+        RCLCPP_DEBUG(node_->get_logger(), "      Power: hover=%.3f, cruise=%.3f",
             agent->drone.hover_power, agent->drone.cruise_power);
-        RCLCPP_INFO(node_->get_logger(), "      Load Factor: %.3f", agent->drone.load_factor);
+        RCLCPP_DEBUG(node_->get_logger(), "      Load Factor: %.3f", agent->drone.load_factor);
     }
 
     // System Parameters
-    RCLCPP_INFO(node_->get_logger(), "\n[SYSTEM]");
-    RCLCPP_INFO(node_->get_logger(), "  Simulation Framework: %s",
+    RCLCPP_DEBUG(node_->get_logger(), "\n[SYSTEM]");
+    RCLCPP_DEBUG(node_->get_logger(), "  Simulation Framework: %s",
         simulationFrameworkToString(config_ptr_->system.simulation_framework).c_str());
-    RCLCPP_INFO(node_->get_logger(), "  Clock Speed: %.3f", config_ptr_->system.clock_speed);
-    RCLCPP_INFO(node_->get_logger(), "  Config Source File: %s", config_ptr_->system.config_source_file.c_str());
-    RCLCPP_INFO(node_->get_logger(), "  AirSim Settings Destination File: %s", config_ptr_->system.airsim_settings_destination_file.c_str());
-    RCLCPP_INFO(node_->get_logger(), "  Trajectory Root: %s", config_ptr_->system.trajectory_root.c_str());
-    RCLCPP_INFO(node_->get_logger(), "  Scenario View ID: %s", config_ptr_->system.scenario_view_id.c_str());
-    RCLCPP_INFO(node_->get_logger(), "  Scenario Camera ID: %s", config_ptr_->system.scenario_camera_id.c_str());
-    RCLCPP_INFO(node_->get_logger(), "  Scenario Camera Position: [%.3f, %.3f, %.3f]",
+    RCLCPP_DEBUG(node_->get_logger(), "  Clock Speed: %.3f", config_ptr_->system.clock_speed);
+    RCLCPP_DEBUG(node_->get_logger(), "  Config Source File: %s", config_ptr_->system.config_source_file.c_str());
+    RCLCPP_DEBUG(node_->get_logger(), "  AirSim Settings Destination File: %s", config_ptr_->system.airsim_settings_destination_file.c_str());
+    RCLCPP_DEBUG(node_->get_logger(), "  Trajectory Root: %s", config_ptr_->system.trajectory_root.c_str());
+    RCLCPP_DEBUG(node_->get_logger(), "  Scenario View ID: %s", config_ptr_->system.scenario_view_id.c_str());
+    RCLCPP_DEBUG(node_->get_logger(), "  Scenario Camera ID: %s", config_ptr_->system.scenario_camera_id.c_str());
+    RCLCPP_DEBUG(node_->get_logger(), "  Scenario Camera Position: [%.3f, %.3f, %.3f]",
         config_ptr_->system.scenario_camera_position.x(),
         config_ptr_->system.scenario_camera_position.y(),
         config_ptr_->system.scenario_camera_position.z());
-    RCLCPP_INFO(node_->get_logger(), "  Agent View ID: %s", config_ptr_->system.agent_view_id.c_str());
-    RCLCPP_INFO(node_->get_logger(), "  Agent Camera ID: %s", config_ptr_->system.agent_camera_id.c_str());
-    RCLCPP_INFO(node_->get_logger(), "  Payload View ID: %s", config_ptr_->system.payload_view_id.c_str());
-    RCLCPP_INFO(node_->get_logger(), "  Payload Camera ID: %s", config_ptr_->system.payload_camera_id.c_str());
-    RCLCPP_INFO(node_->get_logger(), "  Map View ID: %s", config_ptr_->system.map_view_id.c_str());
-    RCLCPP_INFO(node_->get_logger(), "  Map Camera ID: %s", config_ptr_->system.map_camera_id.c_str());
-    RCLCPP_INFO(node_->get_logger(), "  Tracking View IDs: %zu", config_ptr_->system.tracking_view_ids.size());
+    RCLCPP_DEBUG(node_->get_logger(), "  Agent View ID: %s", config_ptr_->system.agent_view_id.c_str());
+    RCLCPP_DEBUG(node_->get_logger(), "  Agent Camera ID: %s", config_ptr_->system.agent_camera_id.c_str());
+    RCLCPP_DEBUG(node_->get_logger(), "  Payload View ID: %s", config_ptr_->system.payload_view_id.c_str());
+    RCLCPP_DEBUG(node_->get_logger(), "  Payload Camera ID: %s", config_ptr_->system.payload_camera_id.c_str());
+    RCLCPP_DEBUG(node_->get_logger(), "  Map View ID: %s", config_ptr_->system.map_view_id.c_str());
+    RCLCPP_DEBUG(node_->get_logger(), "  Map Camera ID: %s", config_ptr_->system.map_camera_id.c_str());
+    RCLCPP_DEBUG(node_->get_logger(), "  Tracking View IDs: %zu", config_ptr_->system.tracking_view_ids.size());
 
     // Topic Parameters
-    RCLCPP_INFO(node_->get_logger(), "\n[TOPICS]");
-    RCLCPP_INFO(node_->get_logger(), "  Coordinator Topics:");
-    RCLCPP_INFO(node_->get_logger(), "    Registration: %s", config_ptr_->topics.registration.c_str());
-    RCLCPP_INFO(node_->get_logger(), "    Global Origin: %s", config_ptr_->topics.global_origin.c_str());
-    RCLCPP_INFO(node_->get_logger(), "    Target Position: %s", config_ptr_->topics.target_position.c_str());
-    RCLCPP_INFO(node_->get_logger(), "    Cluster Assignment: %s", config_ptr_->topics.cluster_assignment.c_str());
-    RCLCPP_INFO(node_->get_logger(), "    Cluster Geometry: %s", config_ptr_->topics.cluster_geometry.c_str());
-    RCLCPP_INFO(node_->get_logger(), "  Agent Topics:");
-    RCLCPP_INFO(node_->get_logger(), "    Status: %s", config_ptr_->topics.agent_status.c_str());
-    RCLCPP_INFO(node_->get_logger(), "    Global Position: %s", config_ptr_->topics.agent_global_position.c_str());
-    RCLCPP_INFO(node_->get_logger(), "    Local Position: %s", config_ptr_->topics.agent_local_position.c_str());
-    RCLCPP_INFO(node_->get_logger(), "    Assignment: %s", config_ptr_->topics.agent_assignment.c_str());
-    RCLCPP_INFO(node_->get_logger(), "    Clusters: %s", config_ptr_->topics.agent_clusters.c_str());
-    RCLCPP_INFO(node_->get_logger(), "    Position Setpoint: %s", config_ptr_->topics.agent_position_setpoint.c_str());
-    RCLCPP_INFO(node_->get_logger(), "    Observation Setpoints: %s", config_ptr_->topics.observation_setpoints.c_str());
-    RCLCPP_INFO(node_->get_logger(), "    Multi Camera Image: %s", config_ptr_->topics.agent_multi_camera_image.c_str());
-    RCLCPP_INFO(node_->get_logger(), "    Multi Window Image: %s", config_ptr_->topics.agent_multi_window_image.c_str());
-    RCLCPP_INFO(node_->get_logger(), "  Operator Topics:");
-    RCLCPP_INFO(node_->get_logger(), "    Mission Metrics: %s", config_ptr_->topics.mission_metrics.c_str());
-    RCLCPP_INFO(node_->get_logger(), "    Agent Metrics: %s", config_ptr_->topics.agent_metrics.c_str());
-    RCLCPP_INFO(node_->get_logger(), "    Target Metrics: %s", config_ptr_->topics.target_metrics.c_str());
-    RCLCPP_INFO(node_->get_logger(), "    Cluster Metrics: %s", config_ptr_->topics.cluster_metrics.c_str());
-    RCLCPP_INFO(node_->get_logger(), "    Agent Markers: %s", config_ptr_->topics.agent_markers.c_str());
-    RCLCPP_INFO(node_->get_logger(), "    Target Markers: %s", config_ptr_->topics.target_markers.c_str());
-    RCLCPP_INFO(node_->get_logger(), "    Cluster Markers: %s", config_ptr_->topics.cluster_markers.c_str());
+    RCLCPP_DEBUG(node_->get_logger(), "\n[TOPICS]");
+    RCLCPP_DEBUG(node_->get_logger(), "  Coordinator Topics:");
+    RCLCPP_DEBUG(node_->get_logger(), "    Registration: %s", config_ptr_->topics.registration.c_str());
+    RCLCPP_DEBUG(node_->get_logger(), "    Global Origin: %s", config_ptr_->topics.global_origin.c_str());
+    RCLCPP_DEBUG(node_->get_logger(), "    Target Position: %s", config_ptr_->topics.target_position.c_str());
+    RCLCPP_DEBUG(node_->get_logger(), "    Cluster Assignment: %s", config_ptr_->topics.cluster_assignment.c_str());
+    RCLCPP_DEBUG(node_->get_logger(), "    Cluster Geometry: %s", config_ptr_->topics.cluster_geometry.c_str());
+    RCLCPP_DEBUG(node_->get_logger(), "  Agent Topics:");
+    RCLCPP_DEBUG(node_->get_logger(), "    Status: %s", config_ptr_->topics.agent_status.c_str());
+    RCLCPP_DEBUG(node_->get_logger(), "    Global Position: %s", config_ptr_->topics.agent_global_position.c_str());
+    RCLCPP_DEBUG(node_->get_logger(), "    Local Position: %s", config_ptr_->topics.agent_local_position.c_str());
+    RCLCPP_DEBUG(node_->get_logger(), "    Assignment: %s", config_ptr_->topics.agent_assignment.c_str());
+    RCLCPP_DEBUG(node_->get_logger(), "    Clusters: %s", config_ptr_->topics.agent_clusters.c_str());
+    RCLCPP_DEBUG(node_->get_logger(), "    Position Setpoint: %s", config_ptr_->topics.agent_position_setpoint.c_str());
+    RCLCPP_DEBUG(node_->get_logger(), "    Observation Setpoints: %s", config_ptr_->topics.observation_setpoints.c_str());
+    RCLCPP_DEBUG(node_->get_logger(), "    Multi Camera Image: %s", config_ptr_->topics.agent_multi_camera_image.c_str());
+    RCLCPP_DEBUG(node_->get_logger(), "    Multi Window Image: %s", config_ptr_->topics.agent_multi_window_image.c_str());
+    RCLCPP_DEBUG(node_->get_logger(), "  Operator Topics:");
+    RCLCPP_DEBUG(node_->get_logger(), "    Mission Metrics: %s", config_ptr_->topics.mission_metrics.c_str());
+    RCLCPP_DEBUG(node_->get_logger(), "    Agent Metrics: %s", config_ptr_->topics.agent_metrics.c_str());
+    RCLCPP_DEBUG(node_->get_logger(), "    Target Metrics: %s", config_ptr_->topics.target_metrics.c_str());
+    RCLCPP_DEBUG(node_->get_logger(), "    Cluster Metrics: %s", config_ptr_->topics.cluster_metrics.c_str());
+    RCLCPP_DEBUG(node_->get_logger(), "    Agent Markers: %s", config_ptr_->topics.agent_markers.c_str());
+    RCLCPP_DEBUG(node_->get_logger(), "    Target Markers: %s", config_ptr_->topics.target_markers.c_str());
+    RCLCPP_DEBUG(node_->get_logger(), "    Cluster Markers: %s", config_ptr_->topics.cluster_markers.c_str());
 
     // Frame Parameters
-    RCLCPP_INFO(node_->get_logger(), "\n[FRAMES]");
-    RCLCPP_INFO(node_->get_logger(), "  Global Frames:");
-    RCLCPP_INFO(node_->get_logger(), "    World: %s", config_ptr_->frames.world.c_str());
-    RCLCPP_INFO(node_->get_logger(), "  Agent Frames:");
-    RCLCPP_INFO(node_->get_logger(), "    Agent Local: %s", config_ptr_->frames.agent_local.c_str());
-    RCLCPP_INFO(node_->get_logger(), "    Agent Body: %s", config_ptr_->frames.agent_body.c_str());
-    RCLCPP_INFO(node_->get_logger(), "    Camera Body: %s", config_ptr_->frames.camera_body.c_str());
-    RCLCPP_INFO(node_->get_logger(), "    Camera Optical: %s", config_ptr_->frames.camera_optical.c_str());
+    RCLCPP_DEBUG(node_->get_logger(), "\n[FRAMES]");
+    RCLCPP_DEBUG(node_->get_logger(), "  Global Frames:");
+    RCLCPP_DEBUG(node_->get_logger(), "    World: %s", config_ptr_->frames.world.c_str());
+    RCLCPP_DEBUG(node_->get_logger(), "  Agent Frames:");
+    RCLCPP_DEBUG(node_->get_logger(), "    Agent Local: %s", config_ptr_->frames.agent_local.c_str());
+    RCLCPP_DEBUG(node_->get_logger(), "    Agent Body: %s", config_ptr_->frames.agent_body.c_str());
+    RCLCPP_DEBUG(node_->get_logger(), "    Camera Body: %s", config_ptr_->frames.camera_body.c_str());
+    RCLCPP_DEBUG(node_->get_logger(), "    Camera Optical: %s", config_ptr_->frames.camera_optical.c_str());
 
-    RCLCPP_INFO(node_->get_logger(), "\n═══════════════════════════════════════════════════════════════");
+    RCLCPP_DEBUG(node_->get_logger(), "\n═══════════════════════════════════════════════════════════════");
 }

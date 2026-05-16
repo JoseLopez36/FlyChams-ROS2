@@ -21,7 +21,7 @@ def launch_foxglove_bridge():
                 'port': port,
                 'address': '0.0.0.0',
                 'tls': False,
-                'topic_whitelist': ['.*'],
+                'topic_whitelist': ['^/flychams/.*'],
                 'send_buffer_limit': 10000000,
                 'num_threads': 4,
             }]

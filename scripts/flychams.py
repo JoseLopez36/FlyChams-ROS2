@@ -41,6 +41,10 @@ def launch_sim(agent_ids: list):
     # Simulation
     run(f"DETACH=true {SCRIPT_DIR}/launch_simulation.sh")
     time.sleep(1)
+    
+    # Operator
+    run(f"DETACH=true {SCRIPT_DIR}/launch_operator.sh")
+    time.sleep(1)
 
     # One agent container per agent
     for i, agent_id in enumerate(agent_ids):
