@@ -8,7 +8,7 @@ Date: 2026-02-12
 
 import rclpy
 from rclpy.node import Node
-from rclpy.executors import MultiThreadedExecutor
+from rclpy.executors import SingleThreadedExecutor
 
 # Import target detection module
 from flychams_agent.detection.target_detection import TargetDetection
@@ -38,7 +38,7 @@ def main(args=None):
     
     node = TargetDetectionNode()
 
-    executor = MultiThreadedExecutor()
+    executor = SingleThreadedExecutor()
     executor.add_node(node)
     
     try:

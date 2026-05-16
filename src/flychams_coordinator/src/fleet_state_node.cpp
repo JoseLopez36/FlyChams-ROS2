@@ -84,7 +84,7 @@ int main(int argc, char** argv)
     options.automatically_declare_parameters_from_overrides(true);
     auto node = std::make_shared<FleetStateNode>("fleet_status_node", options);
     node->init();
-    rclcpp::executors::MultiThreadedExecutor executor;
+    rclcpp::executors::SingleThreadedExecutor executor;
     executor.add_node(node);
     executor.spin();
     rclcpp::shutdown();

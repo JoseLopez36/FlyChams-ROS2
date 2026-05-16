@@ -94,7 +94,7 @@ int main(int argc, char** argv)
     auto node = std::make_shared<AgentAssignmentNode>("agent_assignment_node", options);
     node->init();
     // Create executor and add node
-    rclcpp::executors::MultiThreadedExecutor executor;
+    rclcpp::executors::SingleThreadedExecutor executor;
     executor.add_node(node);
     // Spin node
     executor.spin();
