@@ -4,10 +4,10 @@
 #include "flychams_common/clustering/k_means_mod.hpp"
 
 // Base module include
-#include "flychams_common/base/base_discoverer_module.hpp"
+#include "flychams_common/base/base_status_discoverer_module.hpp"
 
 // Base node include
-#include "flychams_common/base/base_discoverer_node.hpp"
+#include "flychams_common/base/base_status_discoverer_node.hpp"
 
 namespace flychams::coordinator
 {
@@ -25,11 +25,11 @@ namespace flychams::coordinator
 	 * @date 2025-02-26
 	 * ════════════════════════════════════════════════════════════════
 	 */
-	class TargetClustering : public common::BaseDiscovererModule
+	class TargetClustering : public common::BaseStatusDiscovererModule
 	{
 	public: // Constructor/Destructor
-		TargetClustering(common::BaseDiscovererNode::SharedPtr node)
-			: BaseDiscovererModule(node)
+		TargetClustering(common::BaseStatusDiscovererNode::SharedPtr node)
+			: BaseStatusDiscovererModule(node)
 		{
 			init();
 		}

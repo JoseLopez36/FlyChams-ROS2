@@ -1,7 +1,7 @@
 #pragma once
 
 // Base node include
-#include "flychams_common/base/base_node.hpp"
+#include "flychams_common/base/base_status_node.hpp"
 
 namespace flychams::common
 {
@@ -10,7 +10,7 @@ namespace flychams::common
      * @brief Base node for discovering system elements
      *
      * @details
-     * Extends BaseNode with element (agent, target, cluster)
+     * Extends BaseStatusNode with element (agent, target, cluster)
      * discovery via a RegistrationMsg subscriber. Provides onAdd/onRemove
      * callbacks for dynamic element management. Used as the base for
      * multi-element coordinator and simulation nodes.
@@ -20,15 +20,15 @@ namespace flychams::common
      * @date 2025-02-28
      * ════════════════════════════════════════════════════════════════
      */
-    class BaseDiscovererNode : public BaseNode
+    class BaseStatusDiscovererNode : public BaseStatusNode
     {
     public: // Constructor/Destructor
-        BaseDiscovererNode(const std::string& node_name, const rclcpp::NodeOptions& options);
+        BaseStatusDiscovererNode(const std::string& node_name, const rclcpp::NodeOptions& options);
 
-        virtual ~BaseDiscovererNode() = default;
+        virtual ~BaseStatusDiscovererNode() = default;
 
     public: // Types
-        using SharedPtr = std::shared_ptr<BaseDiscovererNode>;
+        using SharedPtr = std::shared_ptr<BaseStatusDiscovererNode>;
 
     protected: // Overridable discovery hooks
         virtual void onDiscoveryInit() {}
@@ -43,13 +43,13 @@ namespace flychams::common
         virtual void onRemoveCluster(const ID& cluster_id) {}
 
     protected: // Overridable methods
-        void onNodeInit() override;
-        void onNodeShutdown() override;
+        void onStatusInit() override;
+        void onStatusShutdown() override;
 
     public: // Shared from this
         SharedPtr sharedFromThis()
         {
-            return std::dynamic_pointer_cast<BaseDiscovererNode>(shared_from_this());
+            return std::dynamic_pointer_cast<BaseStatusDiscovererNode>(shared_from_this());
         }
 
     private: // Discovery data

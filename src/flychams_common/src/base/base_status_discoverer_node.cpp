@@ -1,4 +1,4 @@
-#include "flychams_common/base/base_discoverer_node.hpp"
+#include "flychams_common/base/base_status_discoverer_node.hpp"
 
 using namespace flychams::common;
 
@@ -6,27 +6,27 @@ using namespace flychams::common;
 // CONSTRUCTOR: Constructor and destructor
 // ════════════════════════════════════════════════════════════════════════════
 
-BaseDiscovererNode::BaseDiscovererNode(const std::string& node_name, const rclcpp::NodeOptions& options)
-    : BaseNode(node_name, options)
+BaseStatusDiscovererNode::BaseStatusDiscovererNode(const std::string& node_name, const rclcpp::NodeOptions& options)
+    : BaseStatusNode(node_name, options)
 {
     // Nothing to do
 }
 
-void BaseDiscovererNode::onNodeInit()
+void BaseStatusDiscovererNode::onStatusInit()
 {
     // Initialize elements map
     elements_.clear();
 
     // Initialize discovery subscriber
     discovery_sub_ = createRegistrationSubscriber(
-        std::bind(&BaseDiscovererNode::onDiscovery, this, std::placeholders::_1),
+        std::bind(&BaseStatusDiscovererNode::onDiscovery, this, std::placeholders::_1),
         sub_options_with_node_cb_group_);
 
     // Call on discovery init overridable method
     onDiscoveryInit();
 }
 
-void BaseDiscovererNode::onNodeShutdown()
+void BaseStatusDiscovererNode::onStatusShutdown()
 {
     // Call on discovery shutdown overridable method
     onDiscoveryShutdown();
@@ -36,7 +36,7 @@ void BaseDiscovererNode::onNodeShutdown()
     elements_.clear();
 }
 
-void BaseDiscovererNode::onDiscovery(const RegistrationMsg::SharedPtr msg)
+void BaseStatusDiscovererNode::onDiscovery(const RegistrationMsg::SharedPtr msg)
 {
     // Track elements in this message
     std::unordered_set<ID> current_elements;

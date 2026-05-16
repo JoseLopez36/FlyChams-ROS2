@@ -4,7 +4,7 @@
 #include "flychams_coordinator/clustering/target_clustering.hpp"
 
 // Base node include
-#include "flychams_common/base/base_discoverer_node.hpp"
+#include "flychams_common/base/base_status_discoverer_node.hpp"
 
 using namespace flychams::common;
 
@@ -26,11 +26,11 @@ using namespace flychams::coordinator;
  * @date 2025-03-01
  * ════════════════════════════════════════════════════════════════
  */
-class TargetClusteringNode : public BaseDiscovererNode
+class TargetClusteringNode : public BaseStatusDiscovererNode
 {
 public: // Constructor/Destructor
     TargetClusteringNode(const std::string& node_name, const rclcpp::NodeOptions& options)
-        : BaseDiscovererNode(node_name, options)
+        : BaseStatusDiscovererNode(node_name, options)
     {
         // Nothing to do
     }

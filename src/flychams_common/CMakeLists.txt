@@ -49,9 +49,11 @@ add_library(${PROJECT_NAME} SHARED
   src/base/base_node.cpp
   src/base/base_status_node.cpp
   src/base/base_discoverer_node.cpp
+  src/base/base_status_discoverer_node.cpp
   src/base/base_module.cpp
   src/base/base_status_module.cpp
   src/base/base_discoverer_module.cpp
+  src/base/base_status_discoverer_module.cpp
   # External
   external/hungarian-algorithm-cpp/Hungarian.cpp
 )
