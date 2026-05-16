@@ -131,21 +131,21 @@ def generate_launch_description():
 
     # Define node configurations
     node_configs = {
-        'drone_control': {
-            'executable': 'drone_control_node',
-            'name': 'drone_control_node'
+        'agent_frames': {
+            'executable': 'agent_frames_node',
+            'name': 'agent_frames_node'
         },
-        'drone_state': {
-            'executable': 'drone_state_node',
-            'name': 'drone_state_node'
+        'agent_state': {
+            'executable': 'agent_state_node',
+            'name': 'agent_state_node'
         },
-        'drone_frames': {
-            'executable': 'drone_frames_node',
-            'name': 'drone_frames_node'
+        'agent_control': {
+            'executable': 'agent_control_node',
+            'name': 'agent_control_node'
         },
-        'camera_frames': {
-            'executable': 'camera_frames_node',
-            'name': 'camera_frames_node'
+        'agent_analysis': {
+            'executable': 'agent_analysis_node',
+            'name': 'agent_analysis_node'
         },
         'agent_positioning': {
             'executable': 'agent_positioning_node',
@@ -155,17 +155,9 @@ def generate_launch_description():
             'executable': 'agent_tracking_node',
             'name': 'agent_tracking_node'
         },
-        'agent_analysis': {
-            'executable': 'agent_analysis_node',
-            'name': 'agent_analysis_node'
-        },
         'agent_stream': {
             'executable': 'agent_stream_node',
             'name': 'agent_stream_node'
-        },
-        'target_detection': {
-            'executable': 'target_detection_node',
-            'name': 'target_detection_node'
         }
     }
 

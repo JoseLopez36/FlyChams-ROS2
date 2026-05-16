@@ -1,26 +1,27 @@
 #include "rclcpp/rclcpp.hpp"
 
 // Module include
-#include "flychams_agent/drone/drone_frames.hpp"
+#include "flychams_agent/state/agent_state.hpp"
 
 // Base node include
 #include "flychams_common/base/base_node.hpp"
 
 using namespace flychams::common;
+
 using namespace flychams::agent;
 
 /**
  * ════════════════════════════════════════════════════════════════
- * @brief Control node for managing the frames of the drones
+ * @brief Control node for managing the state of the drones
  * ════════════════════════════════════════════════════════════════
  * @author Jose Francisco Lopez Ruiz
- * @date 2025-12-9
+ * @date 2025-03-31
  * ════════════════════════════════════════════════════════════════
  */
-class DroneFramesNode : public BaseNode
+class AgentStateNode : public BaseNode
 {
 public: // Constructor/Destructor
-    DroneFramesNode(const std::string& node_name, const rclcpp::NodeOptions& options)
+    AgentStateNode(const std::string& node_name, const rclcpp::NodeOptions& options)
         : BaseNode(node_name, options)
     {
         // Nothing to do
@@ -31,23 +32,23 @@ public: // Constructor/Destructor
         // Get agent ID
         agent_id_ = getParameter<std::string>("agent_id");
 
-        // Create drone frames
-        drone_frames_ = std::make_shared<DroneFrames>(agent_id_, sharedFromThis());
+        // Create drone state
+        drone_state_ = std::make_shared<DroneState>(agent_id_, sharedFromThis());
 
-        RCLCPP_INFO(node_->get_logger(), "Drone frames created for agent: %s", agent_id_.c_str());
+        RCLCPP_INFO(node_->get_logger(), "Drone state created for agent: %s", agent_id_.c_str());
     }
 
     void onNodeShutdown() override
     {
-        // Destroy drone frames
-        drone_frames_.reset();
+        // Destroy drone state
+        drone_state_.reset();
     }
 
 private: // Components
     // Agent ID
     ID agent_id_;
-    // Drone frames
-    DroneFrames::SharedPtr drone_frames_;
+    // Drone state
+    DroneState::SharedPtr drone_state_;
 };
 
 int main(int argc, char** argv)
@@ -59,7 +60,7 @@ int main(int argc, char** argv)
     options.allow_undeclared_parameters(true);
     options.automatically_declare_parameters_from_overrides(true);
     // Create and initialize node
-    auto node = std::make_shared<DroneFramesNode>("drone_frames_node", options);
+    auto node = std::make_shared<AgentStateNode>("agent_state_node", options);
     node->init();
     // Create executor and add node
     rclcpp::executors::MultiThreadedExecutor executor;

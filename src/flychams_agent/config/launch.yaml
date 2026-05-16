@@ -4,24 +4,20 @@
 
 # Node allowlist: Only launch these nodes
 node_allowlist:
-  - drone_frames
-  - drone_state
-  - drone_control
-  - camera_frames
+  - agent_frames
+  - agent_state
+  - agent_control
   - agent_analysis
   - agent_positioning
   - agent_tracking
   - agent_stream
-  # - target_detection
 
 # Per-node log level overrides
 node_log_levels:
-  drone_frames: "info"
-  drone_state: "info"
-  drone_control: "info"
-  camera_frames: "info"
+  agent_frames: "info"
+  agent_state: "info"
+  agent_control: "info"
   agent_analysis: "info"
   agent_positioning: "info"
   agent_tracking: "info"
   agent_stream: "info"
-  target_detection: "info"

@@ -7,6 +7,7 @@
 #include "flychams_common/base/base_node.hpp"
 
 using namespace flychams::common;
+
 using namespace flychams::agent;
 
 /**

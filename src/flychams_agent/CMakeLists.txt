@@ -20,16 +20,24 @@ find_package(GeographicLib REQUIRED)
 
 # Create control library
 set(CONTROL_SRC
-  src/drone/drone_frames.cpp
-  src/drone/drone_state.cpp
-  src/drone/drone_control.cpp
-  src/camera/camera_frames.cpp
+  # Frames
+  src/frames/drone_frames.cpp
+  src/frames/camera_frames.cpp
+  # State
+  src/state/agent_state.cpp
+  # Control
+  src/control/agent_control.cpp
+  # Analysis
+  src/analysis/agent_analysis.cpp
+  # Positioning
+  src/positioning/agent_positioning.cpp
+  # Tracking
+  src/tracking/agent_tracking.cpp
+  # Stream
+  src/stream/agent_stream.cpp
+  # MavROS
   src/mavros/mavros_communication.cpp
   src/mavros/mavros_utils.cpp
-  src/analysis/agent_analysis.cpp
-  src/positioning/agent_positioning.cpp
-  src/tracking/agent_tracking.cpp
-  src/stream/agent_stream.cpp
 )
 add_library(${PROJECT_NAME} SHARED ${CONTROL_SRC})
 target_include_directories(${PROJECT_NAME} PUBLIC
@@ -49,25 +57,20 @@ target_link_libraries(${PROJECT_NAME}
   ${GeographicLib_LIBRARIES}
 )
 
-# Create executable for drone frames node
-add_executable(drone_frames_node src/drone_frames_node.cpp)
-target_link_libraries(drone_frames_node ${PROJECT_NAME})
-ament_target_dependencies(drone_frames_node rclcpp mavros_msgs flychams_common flychams_api)
+# Create executable for agent frames node
+add_executable(agent_frames_node src/agent_frames_node.cpp)
+target_link_libraries(agent_frames_node ${PROJECT_NAME})
+ament_target_dependencies(agent_frames_node rclcpp mavros_msgs flychams_common flychams_api)
 
-# Create executable for drone state node
-add_executable(drone_state_node src/drone_state_node.cpp)
-target_link_libraries(drone_state_node ${PROJECT_NAME})
-ament_target_dependencies(drone_state_node rclcpp mavros_msgs flychams_common flychams_api)
+# Create executable for agent state node
+add_executable(agent_state_node src/agent_state_node.cpp)
+target_link_libraries(agent_state_node ${PROJECT_NAME})
+ament_target_dependencies(agent_state_node rclcpp mavros_msgs flychams_common flychams_api)
 
-# Create executable for drone control node
-add_executable(drone_control_node src/drone_control_node.cpp)
-target_link_libraries(drone_control_node ${PROJECT_NAME})
-ament_target_dependencies(drone_control_node rclcpp mavros_msgs flychams_common flychams_api)
-
-# Create executable for camera frames node
-add_executable(camera_frames_node src/camera_frames_node.cpp)
-target_link_libraries(camera_frames_node ${PROJECT_NAME})
-ament_target_dependencies(camera_frames_node rclcpp flychams_common flychams_api)
+# Create executable for agent control node
+add_executable(agent_control_node src/agent_control_node.cpp)
+target_link_libraries(agent_control_node ${PROJECT_NAME})
+ament_target_dependencies(agent_control_node rclcpp mavros_msgs flychams_common flychams_api)
 
 # Create executable for agent analysis node
 add_executable(agent_analysis_node src/agent_analysis_node.cpp)
@@ -101,7 +104,7 @@ install(TARGETS ${PROJECT_NAME}
   INCLUDES DESTINATION include
 )
 
-install(TARGETS drone_frames_node drone_state_node drone_control_node camera_frames_node agent_analysis_node agent_positioning_node agent_tracking_node agent_stream_node
+install(TARGETS agent_frames_node agent_state_node agent_control_node agent_analysis_node agent_positioning_node agent_tracking_node agent_stream_node
   RUNTIME DESTINATION lib/${PROJECT_NAME}
 )
 

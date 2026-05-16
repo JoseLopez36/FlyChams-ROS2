@@ -4,27 +4,13 @@
     takeoff_altitude: 3.0
     landing_altitude: 0.5
 
-/**/drone_control_node:
+/**/agent_control_node:
   ros__parameters:
     # Update rate (Hz)
     update_rate: 10.0
 
     # Control mode (0: position, 1: velocity)
     control_mode: 0
-
-/**/mavros_node:
-  ros__parameters:
-    # FCU connection parameters
-    fcu_url: udp://:14030@172.17.0.2:14280
-    gcs_url: ""
-    tgt_system: 1
-    tgt_component: 1
-    fcu_protocol: v2.0
-
-/**/camera_frames_node:
-  ros__parameters:
-    # Update rate (Hz)
-    update_rate: 30.0
 
 /**/agent_analysis_node:
   ros__parameters:
@@ -64,18 +50,6 @@
     # Update rate (Hz)
     tracking_rate: 20.0
 
-/**/target_detection_node:
-  ros__parameters:
-    # Update rate (Hz)
-    inference_rate: 10.0
-    # Detector parameters
-    detector_model: yolov11n.pt
-    target_class: person
-    width: 640
-    height: 640
-    # Position estimation parameters
-    z_plane: 0.0
-
 /**/agent_stream_node:
   ros__parameters:
     # Interface parameters
@@ -92,3 +66,12 @@
     stream_start_delay_ms: 500
     output_encoding: jpg
     use_nvidia: true
+
+/**/mavros_node:
+  ros__parameters:
+    # FCU connection parameters
+    fcu_url: udp://:14030@172.17.0.2:14280
+    gcs_url: ""
+    tgt_system: 1
+    tgt_component: 1
+    fcu_protocol: v2.0
