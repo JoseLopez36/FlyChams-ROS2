@@ -84,6 +84,16 @@
       "inactiveText": "⏹  Abort",
       "foxglovePanelTitle": "Abort"
     },
+    "button.Button!landall": {
+      "outputMode": "publisher",
+      "name": "/flychams/coordinator/land_all",
+      "buttonMode": "push",
+      "activeColor": "#f59e0b",
+      "inactiveColor": "#d97706",
+      "activeText": "🛬  Land",
+      "inactiveText": "🛬  Land",
+      "foxglovePanelTitle": "Land All"
+    },
     "button.Button!armall": {
       "outputMode": "publisher",
       "name": "/flychams/coordinator/arm_all",
@@ -1196,9 +1206,13 @@
         {
           "title": "Fleet",
           "layout": {
-            "first": "button.Button!armall",
+            "first": {
+              "first": "button.Button!armall",
+              "second": "button.Button!landall",
+              "direction": "row"
+            },
             "second": "button.Button!rth",
-            "direction": "row",
+            "direction": "column",
             "splitPercentage": 50
           }
         }

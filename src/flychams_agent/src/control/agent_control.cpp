@@ -38,6 +38,12 @@ void DroneControl::onModuleInit()
 	// Initialize command counter
 	command_counter_ = 0;
 
+	// Initialize land all flag
+	land_all_ = false;
+
+	// Initialize return home flag
+	return_home_ = false;
+
 	// Create mavros communication
 	mavros_comm_ = std::make_shared<MavrosCommunication>(agent_id_, node_);
 
@@ -48,6 +54,15 @@ void DroneControl::onModuleInit()
 		std::bind(&DroneControl::localPositionCallback, this, std::placeholders::_1), node_->getSubscriptionOptions());
 	agent_.setpoint_sub = node_->createAgentPositionSetpointSubscriber(agent_id_,
 		std::bind(&DroneControl::setpointPositionCallback, this, std::placeholders::_1), node_->getSubscriptionOptions());
+	arm_all_sub_ = node_->create_subscription<BoolMsg>(
+		"/flychams/coordinator/arm_all", 10,
+		std::bind(&DroneControl::armAllCallback, this, std::placeholders::_1));
+	land_all_sub_ = node_->create_subscription<BoolMsg>(
+		"/flychams/coordinator/land_all", 10,
+		std::bind(&DroneControl::landAllCallback, this, std::placeholders::_1));
+	return_home_sub_ = node_->create_subscription<BoolMsg>(
+		"/flychams/coordinator/return_home", 10,
+		std::bind(&DroneControl::returnHomeCallback, this, std::placeholders::_1));
 
 	// Set update timer
 	last_update_time_ = node_->now();
@@ -60,6 +75,9 @@ void DroneControl::onModuleShutdown()
 	agent_.status_sub.reset();
 	agent_.local_position_sub.reset();
 	agent_.setpoint_sub.reset();
+	arm_all_sub_.reset();
+	land_all_sub_.reset();
+	return_home_sub_.reset();
 	// Destroy mavros communication
 	mavros_comm_.reset();
 	// Destroy update timer
@@ -91,6 +109,40 @@ void DroneControl::setpointPositionCallback(const PointStampedMsg::SharedPtr msg
 	agent_.has_setpoint = true;
 }
 
+void DroneControl::armAllCallback(const BoolMsg::SharedPtr msg)
+{
+	if (return_home_ || land_all_)
+	{
+		RCLCPP_WARN(node_->get_logger(), "Drone control: Arm command ignored for %s: override active", agent_id_.c_str());
+		return;
+	}
+
+	bool requested_arm = msg->data;
+	if (requested_arm)
+	{
+		RCLCPP_INFO(node_->get_logger(), "Drone control: Arm command received for %s", agent_id_.c_str());
+		requestArm();
+	}
+	else
+	{
+		RCLCPP_INFO(node_->get_logger(), "Drone control: Disarm command received for %s", agent_id_.c_str());
+		requestDisarm();
+	}
+}
+
+void DroneControl::landAllCallback(const BoolMsg::SharedPtr msg)
+{
+	land_all_ = true;
+	RCLCPP_INFO(node_->get_logger(), "Drone control: Land all command received for %s", agent_id_.c_str());
+}
+
+void DroneControl::returnHomeCallback(const BoolMsg::SharedPtr msg)
+{
+	return_home_ = true;
+	RCLCPP_INFO(node_->get_logger(), "Drone control: Return home command received for %s", agent_id_.c_str());
+	mavros_comm_->setMode("AUTO.RTL");
+}
+
 // ════════════════════════════════════════════════════════════════════════════
 // UPDATE: Update control
 // ════════════════════════════════════════════════════════════════════════════
@@ -111,6 +163,22 @@ void DroneControl::update()
 	(void)dt;
 
 	bool success = true;
+
+	// Land all override: immediately land regardless of mission state
+	if (land_all_)
+	{
+		if (agent_.status == AgentStatus::ACTIVE)
+			requestLand();
+		command_counter_ = 0;
+		return;
+	}
+
+	// Return home override: hold off control loop while RTL is in progress
+	if (return_home_)
+	{
+		command_counter_ = 0;
+		return;
+	}
 
 	// Mission-level limiting: PAUSED → hover, ABORTED → land
 	if (node_->isMissionAborted())

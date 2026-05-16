@@ -22,7 +22,7 @@ def launch_foxglove_bridge():
                 'address': '0.0.0.0',
                 'tls': False,
                 'topic_whitelist': [
-                    '^/flychams/(?!coordinator/(start_mission|pause_mission|abort_mission|arm_all|return_home)).*',
+                    '^/flychams/(?!coordinator/(start_mission|pause_mission|abort_mission|arm_all|return_home|land_all)).*',
                     '/rosout',
                 ],
                 'client_publish_topic_whitelist': [
@@ -31,6 +31,7 @@ def launch_foxglove_bridge():
                     '/flychams/coordinator/abort_mission',
                     '/flychams/coordinator/arm_all',
                     '/flychams/coordinator/return_home',
+                    '/flychams/coordinator/land_all',
                 ],
                 'send_buffer_limit': 10000000,
                 'num_threads': 4,

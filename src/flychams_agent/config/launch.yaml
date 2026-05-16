@@ -6,7 +6,7 @@
 node_allowlist:
   - agent_frames
   - agent_state
-  # - agent_control
+  - agent_control
   # - agent_analysis
   # - agent_positioning
   # - agent_tracking

@@ -84,6 +84,10 @@ namespace flychams::agent
 		uint8_t command_counter_;
 		// Last update time
 		common::Time last_update_time_;
+		// Land all flag
+		bool land_all_;
+		// Return home flag
+		bool return_home_;
 		// Mavros communication
 		MavrosCommunication::SharedPtr mavros_comm_;
 
@@ -91,6 +95,9 @@ namespace flychams::agent
 		void statusCallback(const common::AgentStatusMsg::SharedPtr msg);
 		void localPositionCallback(const common::PointStampedMsg::SharedPtr msg);
 		void setpointPositionCallback(const common::PointStampedMsg::SharedPtr msg);
+		void armAllCallback(const common::BoolMsg::SharedPtr msg);
+		void landAllCallback(const common::BoolMsg::SharedPtr msg);
+		void returnHomeCallback(const common::BoolMsg::SharedPtr msg);
 
 	private: // Control management
 		void update();
@@ -109,6 +116,10 @@ namespace flychams::agent
 		bool isInsideFlyingBox(const common::PointMsg& point);
 
 	private: // ROS components
+		// Subscribers
+		common::SubscriberPtr<common::BoolMsg> arm_all_sub_;
+		common::SubscriberPtr<common::BoolMsg> land_all_sub_;
+		common::SubscriberPtr<common::BoolMsg> return_home_sub_;
 		// Timer
 		common::TimerPtr update_timer_;
 	};

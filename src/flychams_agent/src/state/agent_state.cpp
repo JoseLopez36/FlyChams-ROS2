@@ -34,23 +34,12 @@ void DroneState::onModuleInit()
     agent_.local_position_pub = node_->createAgentLocalPositionPublisher(agent_id_);
     agent_.global_position_pub = node_->createAgentGlobalPositionPublisher(agent_id_);
 
-    // Subscribe to coordinator command topics
-    arm_all_sub_ = node_->create_subscription<BoolMsg>(
-        "/flychams/coordinator/arm_all", 10,
-        std::bind(&DroneState::armAllCallback, this, std::placeholders::_1));
-    return_home_sub_ = node_->create_subscription<BoolMsg>(
-        "/flychams/coordinator/return_home", 10,
-        std::bind(&DroneState::returnHomeCallback, this, std::placeholders::_1));
-
     // Set update timer
     update_timer_ = node_->createTimer(update_rate_, std::bind(&DroneState::update, this));
 }
 
 void DroneState::onModuleShutdown()
 {
-    // Destroy command subscribers
-    arm_all_sub_.reset();
-    return_home_sub_.reset();
     // Destroy mavros subscribers
     agent_.state_sub.reset();
     agent_.local_odom_sub.reset();
@@ -80,29 +69,6 @@ void DroneState::localOdomCallback(const OdometryMsg::SharedPtr msg)
     // Store odometry data
     agent_.local_odom = *msg;
     agent_.has_local_odom = true;
-}
-
-void DroneState::armAllCallback(const BoolMsg::SharedPtr msg)
-{
-    bool requested_arm = msg->data;
-    bool currently_armed = agent_.state.armed;
-
-    if (requested_arm && !currently_armed)
-    {
-        RCLCPP_INFO(node_->get_logger(), "Arm command received for %s", agent_id_.c_str());
-        armAgent(true);
-    }
-    else if (!requested_arm && currently_armed)
-    {
-        RCLCPP_INFO(node_->get_logger(), "Disarm command received for %s", agent_id_.c_str());
-        armAgent(false);
-    }
-}
-
-void DroneState::returnHomeCallback(const BoolMsg::SharedPtr msg)
-{
-    RCLCPP_INFO(node_->get_logger(), "Return home command received for %s", agent_id_.c_str());
-    returnHome();
 }
 
 // ════════════════════════════════════════════════════════════════════════════
@@ -163,35 +129,6 @@ void DroneState::update()
     // Update local and global position
     updateLocalPosition(agent_.local_odom);
     updateGlobalPosition(agent_.local_odom);
-}
-
-// ════════════════════════════════════════════════════════════════════════════
-// COMMAND HANDLERS
-// ════════════════════════════════════════════════════════════════════════════
-
-void DroneState::armAgent(const bool arm)
-{
-    if (!mavros_comm_->armDisarm(arm))
-    {
-        RCLCPP_ERROR(node_->get_logger(), "Failed to %s %s", arm ? "arm" : "disarm", agent_id_.c_str());
-    }
-    else
-    {
-        RCLCPP_INFO(node_->get_logger(), "%s %s successfully", arm ? "Armed" : "Disarmed", agent_id_.c_str());
-    }
-}
-
-void DroneState::returnHome()
-{
-    // Set mode to AUTO.RTL (Return to Launch)
-    if (!mavros_comm_->setMode("AUTO.RTL"))
-    {
-        RCLCPP_ERROR(node_->get_logger(), "Failed to set RTL mode for %s", agent_id_.c_str());
-    }
-    else
-    {
-        RCLCPP_INFO(node_->get_logger(), "RTL mode set for %s", agent_id_.c_str());
-    }
 }
 
 // ════════════════════════════════════════════════════════════════════════════
