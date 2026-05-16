@@ -1,6 +1,6 @@
 #include "flychams_common/base/base_status_node.hpp"
 
-namespace flychams::core
+namespace flychams::common
 {
     // ════════════════════════════════════════════════════════════════════════════
     // CONSTRUCTOR: Constructor and destructor
@@ -74,4 +74,4 @@ namespace flychams::core
         return mission_status_ == MissionStatus::ABORTED;
     }
 
-} // namespace flychams::core
+} // namespace flychams::common

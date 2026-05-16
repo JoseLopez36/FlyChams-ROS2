@@ -11,7 +11,7 @@
 #include "flychams_common/types/core_types.hpp"
 #include "flychams_common/utils/math_utils.hpp"
 
-namespace flychams::core
+namespace flychams::common
 {
 	/**
 	 * ════════════════════════════════════════════════════════════════
@@ -55,7 +55,7 @@ namespace flychams::core
 
 	private: // Data
 		// Persistence data
-		core::RowVectorXr bonding_coefs_;
+		common::RowVectorXr bonding_coefs_;
 
     public: // Public methods
         void init(const Parameters& params)
@@ -70,7 +70,7 @@ namespace flychams::core
         {
             // Nothing to destroy
         }
-        core::RowVectorXi run(const int& K, const core::Matrix3Xr& tab_P, const core::RowVectorXi& C_prev, const Mode& mode, const float& dt)
+        common::RowVectorXi run(const int& K, const common::Matrix3Xr& tab_P, const common::RowVectorXi& C_prev, const Mode& mode, const float& dt)
         {
 			// Get number of points
 			int n = tab_P.cols();
@@ -89,7 +89,7 @@ namespace flychams::core
 			}
 
 			// Perform clustering with different algorithms, depending on mode
-			core::RowVectorXi C(n);
+			common::RowVectorXi C(n);
 			switch (mode)
 			{
 				case Mode::INITIAL:
@@ -106,8 +106,8 @@ namespace flychams::core
 					C = computeInitialAssignments(K, tab_P);
 
 					// 2. Compute current and previous centroids
-					core::Matrix3Xr centroids = computeCentroids(C, tab_P);
-					core::Matrix3Xr centroids_prev = computeCentroids(C_prev, tab_P);
+					common::Matrix3Xr centroids = computeCentroids(C, tab_P);
+					common::Matrix3Xr centroids_prev = computeCentroids(C_prev, tab_P);
 
 					// 3. Ensure consistency in cluster numbering
 					C = reorderCentroidsConsistently(C, centroids, centroids_prev);
@@ -127,16 +127,16 @@ namespace flychams::core
         }
 
 	private: // Base K-means implementation. Initial assignments
-		core::RowVectorXi computeInitialAssignments(const int& K, const core::Matrix3Xr& tab_P)
+		common::RowVectorXi computeInitialAssignments(const int& K, const common::Matrix3Xr& tab_P)
 		{
 			// Get number of points
 			int n = tab_P.cols();
 
 			// Function that computes the initial assignments for the base K-means algorithm
-			core::RowVectorXi C = core::RowVectorXi::Constant(n, -1);
+			common::RowVectorXi C = common::RowVectorXi::Constant(n, -1);
 
 			// Initialize clusters with the K farthest points
-			core::RowVectorXi farthest = selectFarthestPoints(K, tab_P);
+			common::RowVectorXi farthest = selectFarthestPoints(K, tab_P);
 			for (int k = 0; k < K; k++)
 			{
 				C(farthest(k)) = k;
@@ -144,11 +144,11 @@ namespace flychams::core
 
 			// K-means Iteration
 			bool has_changed = true;
-			core::RowVectorXi C_prev = C;
+			common::RowVectorXi C_prev = C;
 			while (has_changed)
 			{
 				// Compute new centroids
-				core::Matrix3Xr centroids = computeCentroids(C, tab_P);
+				common::Matrix3Xr centroids = computeCentroids(C, tab_P);
 
 				// Store calculated assignments to check for changes
 				C_prev = C;
@@ -165,7 +165,7 @@ namespace flychams::core
 			return C;
 		}
 
-		core::RowVectorXi selectFarthestPoints(const int& K, const core::Matrix3Xr& tab_P)
+		common::RowVectorXi selectFarthestPoints(const int& K, const common::Matrix3Xr& tab_P)
 		{
 			// Function that selects the 'K' farthest points from a given set of points provided by the
 			// columns of 'points'. 
@@ -175,17 +175,17 @@ namespace flychams::core
 			// If 'K' is 1, it simply selects the first point.
 			if (K == 1)
 			{
-				core::RowVectorXi L(1);
+				common::RowVectorXi L(1);
 				L << 0;
 				return L;
 			}
 
 			// Calculate the distance matrix between points
-			core::MatrixXr D = computeDistanceMatrix(tab_P);
+			common::MatrixXr D = computeDistanceMatrix(tab_P);
 
 			// Find the indices of the two most separated points
-			core::RowVectorXr max_vals(n);
-			core::RowVectorXi max_indices(n);
+			common::RowVectorXr max_vals(n);
+			common::RowVectorXi max_indices(n);
 			int max_col;
 			for (int i = 0; i < n; i++)
 			{
@@ -197,7 +197,7 @@ namespace flychams::core
 
 			// Initially, the selected list contains the two most distant points
 			int count = 2;
-			core::RowVectorXi L(count);
+			common::RowVectorXi L(count);
 			L << idx1, idx2;
 			while (count < K)
 			{
@@ -228,7 +228,7 @@ namespace flychams::core
 
 				// Add the farthest point to the list
 				count++;
-				core::RowVectorXi L_new(count);
+				common::RowVectorXi L_new(count);
 				L_new << L, max_min_index;
 				L = L_new;
 			}
@@ -236,14 +236,14 @@ namespace flychams::core
 			return L;
 		}
 
-		core::MatrixXr computeDistanceMatrix(const core::Matrix3Xr& tab_P)
+		common::MatrixXr computeDistanceMatrix(const common::Matrix3Xr& tab_P)
 		{
 			// Function that computes the distance matrix between each pair of points in a set.
 			// Get number of points
 			int n = tab_P.cols();
 
 			// Compute distance matrix
-			core::MatrixXr D = core::MatrixXr::Zero(n, n);
+			common::MatrixXr D = common::MatrixXr::Zero(n, n);
 			float d;
 			for (int i = 0; i < n; i++)
 			{
@@ -258,7 +258,7 @@ namespace flychams::core
 			return D;
 		}
 
-		core::Matrix3Xr computeCentroids(const core::RowVectorXi& C, const core::Matrix3Xr& tab_P)
+		common::Matrix3Xr computeCentroids(const common::RowVectorXi& C, const common::Matrix3Xr& tab_P)
 		{
 			// Function that computes the centroids of the clusters in the given assignments C.
 			// Get number of points and clusters
@@ -266,8 +266,8 @@ namespace flychams::core
 			int K = C.maxCoeff() + 1;
 
 			// Initialize centroids and number of points per cluster
-			core::RowVectorXi nk = core::RowVectorXi::Zero(K);
-			core::Matrix3Xr centroids = core::Matrix3Xr::Zero(3, K);
+			common::RowVectorXi nk = common::RowVectorXi::Zero(K);
+			common::Matrix3Xr centroids = common::Matrix3Xr::Zero(3, K);
 
 			// Sum all points for each cluster
 			for (int i = 0; i < n; i++)
@@ -293,14 +293,14 @@ namespace flychams::core
 			return centroids;
 		}
 
-		core::RowVectorXi assignClusters(const core::Matrix3Xr& centroids, const core::Matrix3Xr& tab_P)
+		common::RowVectorXi assignClusters(const common::Matrix3Xr& centroids, const common::Matrix3Xr& tab_P)
 		{
 			// Get number of points and clusters
 			int n = tab_P.cols();
 			int K = centroids.cols();
 
 			// Initialize assignments
-			core::RowVectorXi C = core::RowVectorXi::Constant(n, -1);
+			common::RowVectorXi C = common::RowVectorXi::Constant(n, -1);
 
 			for (int i = 0; i < n; i++)
 			{
@@ -324,17 +324,17 @@ namespace flychams::core
 		}
 
 	private: // Consistency implementation. Consistent centroids
-		core::RowVectorXi reorderCentroidsConsistently(const core::RowVectorXi& C, const core::Matrix3Xr& centroids, const core::Matrix3Xr& centroids_prev)
+		common::RowVectorXi reorderCentroidsConsistently(const common::RowVectorXi& C, const common::Matrix3Xr& centroids, const common::Matrix3Xr& centroids_prev)
 		{
 			// Get number of points and clusters
 			int n = C.size();
 			int K = centroids.cols();
 
 			// Function that reorders the centroids to ensure consistency in cluster numbering.
-			core::RowVectorXi C_consistent = core::RowVectorXi::Constant(n, -1);
+			common::RowVectorXi C_consistent = common::RowVectorXi::Constant(n, -1);
 
 			// Ensure consistency in cluster numbering
-			core::RowVectorXi associations = associateCentroids(centroids, centroids_prev);
+			common::RowVectorXi associations = associateCentroids(centroids, centroids_prev);
 
 			// Update point assignments based on reordered centroids
 			for (int i = 0; i < n; i++)
@@ -354,17 +354,17 @@ namespace flychams::core
 			return C_consistent;
 		}
 
-		core::RowVectorXi associateCentroids(const core::Matrix3Xr& centroids, const core::Matrix3Xr& centroids_prev)
+		common::RowVectorXi associateCentroids(const common::Matrix3Xr& centroids, const common::Matrix3Xr& centroids_prev)
 		{
 			// Function that associates the centroids to ensure consistency in cluster numbering.
 			// Get number of clusters
 			int K = centroids.cols();
 
 			// Initialize associations
-			core::RowVectorXi associations = core::RowVectorXi::Constant(K, -1);
+			common::RowVectorXi associations = common::RowVectorXi::Constant(K, -1);
 
 			// Calculate the distance matrix between elements of both groups
-			core::MatrixXr D = computeDistanceMatrixTwoGroups(centroids, centroids_prev);
+			common::MatrixXr D = computeDistanceMatrixTwoGroups(centroids, centroids_prev);
 
 			// Hungarian algorithm
 			// Convert the Eigen distance matrix to a vector of vectors for the Hungarian Algorithm
@@ -391,7 +391,7 @@ namespace flychams::core
 			return associations;
 		}
 
-		core::MatrixXr computeDistanceMatrixTwoGroups(const core::Matrix3Xr& centroids, const core::Matrix3Xr& centroids_prev)
+		common::MatrixXr computeDistanceMatrixTwoGroups(const common::Matrix3Xr& centroids, const common::Matrix3Xr& centroids_prev)
 		{
 			// Function that provides the distance matrix between points of two groups.
 			// Unlike 'computeDistanceMatrix()', which calculated distances between all points in a single set
@@ -399,7 +399,7 @@ namespace flychams::core
 			int K = centroids.cols();
 
 			// Initialize distance matrix
-			core::MatrixXr D = core::MatrixXr::Zero(K, K);
+			common::MatrixXr D = common::MatrixXr::Zero(K, K);
 
 			// Calculate squared Euclidean distances
 			for (int i = 0; i < K; i++)
@@ -414,7 +414,7 @@ namespace flychams::core
 		}
 
 	private: // Persistence implementation. Cluster persistence
-		core::RowVectorXi ensureClusterPersistence(const core::RowVectorXi& C, const core::RowVectorXi& C_prev, const core::Matrix3Xr& centroids, const core::Matrix3Xr& tab_P, const float& dt)
+		common::RowVectorXi ensureClusterPersistence(const common::RowVectorXi& C, const common::RowVectorXi& C_prev, const common::Matrix3Xr& centroids, const common::Matrix3Xr& tab_P, const float& dt)
 	    {
 			// Function that ensures the persistence of centroids over time
 			// Get number of points and clusters
@@ -422,7 +422,7 @@ namespace flychams::core
 			int K = centroids.cols();
 
 			// Initialize assignments with input assignments
-			core::RowVectorXi C_persistent = C;
+			common::RowVectorXi C_persistent = C;
 
 			// Check and fix parameters
 			if (params_.ini_bonding_coef > params_.max_bonding_coef)
@@ -468,7 +468,7 @@ namespace flychams::core
 
 					// Calculate where the centroid of the previous cluster would be 
 					// if this point continued to be associated with it
-					core::Vector3r centroid_prev_with_point = calculateCentroidWithInclusion(C_persistent, c_prev, tab_P, i);
+					common::Vector3r centroid_prev_with_point = calculateCentroidWithInclusion(C_persistent, c_prev, tab_P, i);
 
 					// Calculate distances
 					float dist_to_prev_cluster = (tab_P.col(i) - centroid_prev_with_point).norm();
@@ -493,14 +493,14 @@ namespace flychams::core
 			return C_persistent;
 		}
 
-		core::Vector3r calculateCentroidWithInclusion(const core::RowVectorXi& C, const int& c, const core::Matrix3Xr& tab_P, const int& p)
+		common::Vector3r calculateCentroidWithInclusion(const common::RowVectorXi& C, const int& c, const common::Matrix3Xr& tab_P, const int& p)
 		{
 			// Function that calculates the centroid of a cluster including a specific point.
 			// Get number of points
 			int n = tab_P.cols();
 
 			// Sum all points belonging to the cluster
-			core::Vector3r centroid = core::Vector3r::Zero();
+			common::Vector3r centroid = common::Vector3r::Zero();
 			int count = 0;
 			for (int i = 0; i < n; i++)
 			{
@@ -521,4 +521,4 @@ namespace flychams::core
 		}
 	};
 
-} // namespace flychams::core
+} // namespace flychams::common

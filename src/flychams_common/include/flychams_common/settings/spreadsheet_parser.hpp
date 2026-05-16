@@ -21,7 +21,7 @@
 #include "flychams_common/types/config_types.hpp"
 #include "flychams_common/utils/math_utils.hpp"
 
-namespace flychams::core
+namespace flychams::common
 {
 	/**
 	 * ════════════════════════════════════════════════════════════════
@@ -46,19 +46,19 @@ namespace flychams::core
 		 * @param path Path to input spreadsheet file
 		 * @return Mission configuration pointer
 		 */
-		static core::MissionConfigPtr parseSpreadsheet(const std::string& path);
+		static common::MissionConfigPtr parseSpreadsheet(const std::string& path);
 
 	private: // Implementation methods
-		static void parseMission(OpenXLSX::XLWorkbook& book, core::MissionConfigPtr config_ptr);
-		static void parseEnvironment(OpenXLSX::XLWorkbook& book, core::MissionConfigPtr config_ptr);
-		static void parseTargetGroup(OpenXLSX::XLWorkbook& book, core::MissionConfigPtr config_ptr);
-		static void parseAgentTeam(OpenXLSX::XLWorkbook& book, core::MissionConfigPtr config_ptr);
-		static void parseTracking(OpenXLSX::XLWorkbook& book, core::AgentConfigPtr agent_ptr);
-		static void parseMultiCameraSet(OpenXLSX::XLWorkbook& book, core::AgentConfigPtr agent_ptr);
-		static void parseMultiWindowSet(OpenXLSX::XLWorkbook& book, core::AgentConfigPtr agent_ptr);
-		static void parseDroneModel(OpenXLSX::XLWorkbook& book, core::AgentConfigPtr agent_ptr);
-		static void parseCameraModel(OpenXLSX::XLWorkbook& book, core::MultiCameraConfigPtr multi_camera_ptr);
-		static void parseGimbalModel(OpenXLSX::XLWorkbook& book, core::MultiCameraConfigPtr multi_camera_ptr);
+		static void parseMission(OpenXLSX::XLWorkbook& book, common::MissionConfigPtr config_ptr);
+		static void parseEnvironment(OpenXLSX::XLWorkbook& book, common::MissionConfigPtr config_ptr);
+		static void parseTargetGroup(OpenXLSX::XLWorkbook& book, common::MissionConfigPtr config_ptr);
+		static void parseAgentTeam(OpenXLSX::XLWorkbook& book, common::MissionConfigPtr config_ptr);
+		static void parseTracking(OpenXLSX::XLWorkbook& book, common::AgentConfigPtr agent_ptr);
+		static void parseMultiCameraSet(OpenXLSX::XLWorkbook& book, common::AgentConfigPtr agent_ptr);
+		static void parseMultiWindowSet(OpenXLSX::XLWorkbook& book, common::AgentConfigPtr agent_ptr);
+		static void parseDroneModel(OpenXLSX::XLWorkbook& book, common::AgentConfigPtr agent_ptr);
+		static void parseCameraModel(OpenXLSX::XLWorkbook& book, common::MultiCameraConfigPtr multi_camera_ptr);
+		static void parseGimbalModel(OpenXLSX::XLWorkbook& book, common::MultiCameraConfigPtr multi_camera_ptr);
 
 	private: // Helper methods
 		// Check if a cell is empty
@@ -194,4 +194,4 @@ namespace flychams::core
 		}
 	};
 
-} // namespace flychams::core
+} // namespace flychams::common

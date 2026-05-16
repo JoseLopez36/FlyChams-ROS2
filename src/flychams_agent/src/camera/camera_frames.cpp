@@ -1,6 +1,6 @@
 #include "flychams_agent/camera/camera_frames.hpp"
 
-using namespace flychams::core;
+using namespace flychams::common;
 
 namespace flychams::agent
 {
@@ -61,7 +61,7 @@ namespace flychams::agent
     // CALLBACKS: Callback functions
     // ════════════════════════════════════════════════════════════════════════════
 
-    void CameraFrames::observationSetpointsCallback(const core::ObservationSetpointsMsg::SharedPtr msg)
+    void CameraFrames::observationSetpointsCallback(const common::ObservationSetpointsMsg::SharedPtr msg)
     {
         // Update observation setpoints
         agent_.observation_setpoints = *msg;
@@ -72,7 +72,7 @@ namespace flychams::agent
     // FRAMES CREATION: Frames creation
     // ════════════════════════════════════════════════════════════════════════════
 
-    void CameraFrames::createCameraOpticalFrame(const core::ID camera_id)
+    void CameraFrames::createCameraOpticalFrame(const common::ID camera_id)
     {
         // Get frames
         std::string camera_body_frame = node_->getCameraBodyFrame(agent_id_, camera_id);
@@ -109,7 +109,7 @@ namespace flychams::agent
         for (int i = 0; i < agent_.observation_setpoints.n_o; ++i)
         {
             // Filter out units that are not cameras
-            if (agent_.observation_setpoints.types[i] != static_cast<uint8_t>(core::ObservationType::Camera))
+            if (agent_.observation_setpoints.types[i] != static_cast<uint8_t>(common::ObservationType::Camera))
             {
                 continue;
             }
@@ -148,7 +148,7 @@ namespace flychams::agent
     // FRAMES UPDATE: Frames update
     // ════════════════════════════════════════════════════════════════════════════
 
-    void CameraFrames::updateCameraBodyFrame(const core::ID camera_id, const core::PointMsg& position, const core::QuaternionMsg& orientation)
+    void CameraFrames::updateCameraBodyFrame(const common::ID camera_id, const common::PointMsg& position, const common::QuaternionMsg& orientation)
     {
         // Get frames
         std::string world_frame = node_->getGlobalFrame();

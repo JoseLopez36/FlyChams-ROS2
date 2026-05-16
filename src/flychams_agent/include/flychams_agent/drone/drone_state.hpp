@@ -19,10 +19,10 @@ namespace flychams::agent
      * @date 2025-03-26
      * ════════════════════════════════════════════════════════════════
      */
-    class DroneState : public core::BaseModule
+    class DroneState : public common::BaseModule
     {
     public: // Constructor/Destructor
-        DroneState(const core::ID& agent_id, core::BaseNode::SharedPtr node)
+        DroneState(const common::ID& agent_id, common::BaseNode::SharedPtr node)
             : BaseModule(node), agent_id_(agent_id)
         {
             init();
@@ -40,12 +40,12 @@ namespace flychams::agent
             mavros_msgs::msg::State state;
             bool has_state;
             // Subscriber
-            core::SubscriberPtr<mavros_msgs::msg::State> state_sub;
-            core::SubscriberPtr<core::OdometryMsg> local_odom_sub;
+            common::SubscriberPtr<mavros_msgs::msg::State> state_sub;
+            common::SubscriberPtr<common::OdometryMsg> local_odom_sub;
             // Publishers
-            core::PublisherPtr<core::AgentStatusMsg> status_pub;
-            core::PublisherPtr<core::PointStampedMsg> local_position_pub;
-            core::PublisherPtr<core::PointStampedMsg> global_position_pub;
+            common::PublisherPtr<common::AgentStatusMsg> status_pub;
+            common::PublisherPtr<common::PointStampedMsg> local_position_pub;
+            common::PublisherPtr<common::PointStampedMsg> global_position_pub;
             // Constructor
             Agent()
                 : state(), has_state(false), state_sub(), local_odom_sub(),
@@ -55,7 +55,7 @@ namespace flychams::agent
         };
 
     private: // Parameters
-        core::ID agent_id_;
+        common::ID agent_id_;
         // Flight parameters
         float takeoff_altitude_;
         float landing_altitude_;
@@ -68,12 +68,12 @@ namespace flychams::agent
 
     private: // Callbacks
         void stateCallback(const mavros_msgs::msg::State::SharedPtr msg);
-        void localOdomCallback(const core::OdometryMsg::SharedPtr msg);
+        void localOdomCallback(const common::OdometryMsg::SharedPtr msg);
 
     private: // Status management
-        void updateStatus(const mavros_msgs::msg::State& state, const core::OdometryMsg& local_odom);
-        void updateLocalPosition(const core::OdometryMsg& local_odom);
-        void updateGlobalPosition(const core::OdometryMsg& local_odom);
+        void updateStatus(const mavros_msgs::msg::State& state, const common::OdometryMsg& local_odom);
+        void updateLocalPosition(const common::OdometryMsg& local_odom);
+        void updateGlobalPosition(const common::OdometryMsg& local_odom);
     };
 
 } // namespace flychams::agent

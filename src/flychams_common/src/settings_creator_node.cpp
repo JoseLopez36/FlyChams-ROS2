@@ -15,7 +15,7 @@
 #include "flychams_common/utils/math_utils.hpp"
 #include "flychams_common/utils/vision_utils.hpp"
 
-using namespace flychams::core;
+using namespace flychams::common;
 
 /**
  * ════════════════════════════════════════════════════════════════

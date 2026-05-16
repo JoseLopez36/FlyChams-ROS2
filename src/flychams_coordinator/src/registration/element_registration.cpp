@@ -1,6 +1,6 @@
 #include "flychams_coordinator/registration/element_registration.hpp"
 
-using namespace flychams::core;
+using namespace flychams::common;
 using namespace flychams::coordinator;
 
 // ════════════════════════════════════════════════════════════════════════════

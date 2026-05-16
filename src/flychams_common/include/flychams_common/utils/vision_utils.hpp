@@ -10,7 +10,7 @@
 // Core includes
 #include "flychams_common/types/core_types.hpp"
 
-namespace flychams::core
+namespace flychams::common
 {
     class VisionUtils
     {
@@ -26,4 +26,4 @@ namespace flychams::core
         static Vector2r projectPoint(const Vector3r& wP, const Matrix4r& wTc, const Matrix3r& K);
     };
 
-}  // namespace flychams::core
+}  // namespace flychams::common

@@ -3,7 +3,7 @@
 // Base node include
 #include "flychams_common/base/base_status_node.hpp"
 
-namespace flychams::core
+namespace flychams::common
 {
     /**
      * ════════════════════════════════════════════════════════════════
@@ -63,4 +63,4 @@ namespace flychams::core
         void onDiscovery(const RegistrationMsg::SharedPtr msg);
     };
 
-} // namespace flychams::core
+} // namespace flychams::common

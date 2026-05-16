@@ -9,7 +9,7 @@
 // Utilities
 #include "flychams_common/types/core_types.hpp"
 
-namespace flychams::core
+namespace flychams::common
 {
     /**
      * ════════════════════════════════════════════════════════════════
@@ -26,8 +26,8 @@ namespace flychams::core
         struct Parameters
         {
             // Space constraints
-            core::Vector3r x_min;
-            core::Vector3r x_max;
+            common::Vector3r x_min;
+            common::Vector3r x_max;
 
             // Generic solver parameters
             float eps = 1e-1f;
@@ -41,10 +41,10 @@ namespace flychams::core
         struct Data
         {
             // Cost function data
-            core::Matrix3Xr tab_P;
-            core::RowVectorXr tab_r;
-            core::Vector3r x_hat;
-            core::Matrix4r wTcentral;
+            common::Matrix3Xr tab_P;
+            common::RowVectorXr tab_r;
+            common::Vector3r x_hat;
+            common::Matrix4r wTcentral;
 
             // Cost function parameters
             CostFunctions::CostParameters cost_params;
@@ -71,19 +71,19 @@ namespace flychams::core
             data_.cost_params = cost_params;
 
             // Initialize data
-            data_.tab_P = core::Matrix3Xr::Zero(3, data_.cost_params.n_o);
-            data_.tab_r = core::RowVectorXr::Zero(data_.cost_params.n_o);
-            data_.x_hat = core::Vector3r::Zero();
-            data_.wTcentral = core::Matrix4r::Identity();
+            data_.tab_P = common::Matrix3Xr::Zero(3, data_.cost_params.n_o);
+            data_.tab_r = common::RowVectorXr::Zero(data_.cost_params.n_o);
+            data_.x_hat = common::Vector3r::Zero();
+            data_.wTcentral = common::Matrix4r::Identity();
         }
         void destroy()
         {
             // Nothing to destroy
         }
-        core::Vector3r run(const core::Matrix3Xr& tab_P, const core::RowVectorXr& tab_r, const core::Vector3r& x0, const core::Matrix4r& wTcentral, float& J)
+        common::Vector3r run(const common::Matrix3Xr& tab_P, const common::RowVectorXr& tab_r, const common::Vector3r& x0, const common::Matrix4r& wTcentral, float& J)
         {
             // Clip position to constraints
-            core::Vector3r x0_clipped = x0;
+            common::Vector3r x0_clipped = x0;
             x0_clipped(0) = std::min(std::max(x0(0), params_.x_min(0)), params_.x_max(0));
             x0_clipped(1) = std::min(std::max(x0(1), params_.x_min(1)), params_.x_max(1));
             x0_clipped(2) = std::min(std::max(x0(2), params_.x_min(2)), params_.x_max(2));
@@ -91,15 +91,15 @@ namespace flychams::core
             // Update data struct
             data_.tab_P = tab_P;
             data_.tab_r = tab_r;
-            data_.x_hat = core::Vector3r::Zero();
+            data_.x_hat = common::Vector3r::Zero();
             data_.wTcentral = wTcentral;
 
             // First optimization (solve for initial position)
-            core::Vector3r x_opt_1;
+            common::Vector3r x_opt_1;
             float J_1 = preOptimization(x0_clipped, x_opt_1);
 
             // Iterative optimization (solve for optimal position)
-            core::Vector3r x_opt_2;
+            common::Vector3r x_opt_2;
             float J_2 = iterativeOptimization(x_opt_1, x_opt_2);
 
             // Return the optimal position and the cost function value
@@ -108,7 +108,7 @@ namespace flychams::core
         }
 
     private: // Optimization stages
-        float preOptimization(const core::Vector3r& x0, core::Vector3r& x_opt)
+        float preOptimization(const common::Vector3r& x0, common::Vector3r& x_opt)
         {
             float J = 0.0f;
 
@@ -119,12 +119,12 @@ namespace flychams::core
             return J;
         }
 
-        float iterativeOptimization(const core::Vector3r& x0, core::Vector3r& x_opt)
+        float iterativeOptimization(const common::Vector3r& x0, common::Vector3r& x_opt)
         {
             float J = 0.0f;
 
             // Initialize with the previous solution
-            core::Vector3r x_opt_prev = x0;
+            common::Vector3r x_opt_prev = x0;
             x_opt = x_opt_prev;
 
             // Iteratively call the optimization algorithm that implements the convex relaxation (J2)
@@ -148,7 +148,7 @@ namespace flychams::core
         }
 
     private: // Optimization methods
-        float optimize(core::Vector3r& x_opt, bool convex_relaxation)
+        float optimize(common::Vector3r& x_opt, bool convex_relaxation)
         {
             // Check Lipschitz constant (if not provided, it will be computed heuristically)
             float L = params_.lipschitz_constant;
@@ -160,8 +160,8 @@ namespace flychams::core
 
             // Initialize variables
             float f_prev = HUGE_VALF;
-            core::Vector3r x = x_opt;
-            core::Vector3r x_prev = x_opt;
+            common::Vector3r x = x_opt;
+            common::Vector3r x_prev = x_opt;
             float theta = 1.0f;
             float theta_prev = 1.0f;
 
@@ -171,11 +171,11 @@ namespace flychams::core
                 float beta = (theta_prev - 1.0f) / theta;
 
                 // Calculate position for the k-th iteration
-                core::Vector3r y = x + beta * (x - x_prev);
+                common::Vector3r y = x + beta * (x - x_prev);
 
                 // Compute the cost function and gradient with the current position
                 float f;
-                core::Vector3r grad_f;
+                common::Vector3r grad_f;
                 if (convex_relaxation)
                     f = CostFunctions::J2(data_.tab_P, data_.tab_r, y, data_.x_hat, data_.wTcentral, data_.cost_params, grad_f);
                 else
@@ -191,7 +191,7 @@ namespace flychams::core
                 }
 
                 // Accelerated gradient step
-                core::Vector3r x_next = y - (1.0f / L) * grad_f;
+                common::Vector3r x_next = y - (1.0f / L) * grad_f;
 
                 // Limit to the constraints
                 if (x_next.x() < params_.x_min.x()) x_next.x() = params_.x_min.x();
@@ -230,4 +230,4 @@ namespace flychams::core
         }
     };
 
-} // namespace flychams::core
+} // namespace flychams::common

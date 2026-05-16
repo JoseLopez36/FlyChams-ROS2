@@ -1,6 +1,6 @@
 #include "flychams_agent/tracking/agent_tracking.hpp"
 
-using namespace flychams::core;
+using namespace flychams::common;
 
 namespace flychams::agent
 {

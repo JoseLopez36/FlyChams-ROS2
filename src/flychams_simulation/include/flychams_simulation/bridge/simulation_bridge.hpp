@@ -34,10 +34,10 @@ namespace flychams::simulation
      * @date 2025-02-28
      * ════════════════════════════════════════════════════════════════
      */
-    class SimulationBridge : public core::BaseModule
+    class SimulationBridge : public common::BaseModule
     {
     public: // Constructors/Destructors
-        SimulationBridge(core::BaseNode::SharedPtr node)
+        SimulationBridge(common::BaseNode::SharedPtr node)
             : BaseModule(node)
         {
             init();
@@ -65,25 +65,25 @@ namespace flychams::simulation
         bool pauseSimulation();
 
     public: // Tracking control methods
-        bool addTargetGroup(const core::IDs& target_ids, const std::vector<core::TargetType>& target_types, const std::vector<core::PointMsg>& positions, const bool& highlight, const std::vector<core::ColorMsg>& highlight_colors);
-        bool addClusterGroup(const core::IDs& cluster_ids, const std::vector<core::PointMsg>& centers, const std::vector<float>& radii, const bool& highlight, const std::vector<core::ColorMsg>& highlight_colors);
+        bool addTargetGroup(const common::IDs& target_ids, const std::vector<common::TargetType>& target_types, const std::vector<common::PointMsg>& positions, const bool& highlight, const std::vector<common::ColorMsg>& highlight_colors);
+        bool addClusterGroup(const common::IDs& cluster_ids, const std::vector<common::PointMsg>& centers, const std::vector<float>& radii, const bool& highlight, const std::vector<common::ColorMsg>& highlight_colors);
         bool removeAllTargets();
         bool removeAllClusters();
-        void updateTargetGroup(const core::IDs& target_ids, const std::vector<core::PointMsg>& positions);
-        void updateClusterGroup(const core::IDs& cluster_ids, const std::vector<core::PointMsg>& centers, const std::vector<float>& radii);
+        void updateTargetGroup(const common::IDs& target_ids, const std::vector<common::PointMsg>& positions);
+        void updateClusterGroup(const common::IDs& cluster_ids, const std::vector<common::PointMsg>& centers, const std::vector<float>& radii);
 
     private: // ROS components
         // Global commands
-        core::ClientPtr<ResetSrv> reset_client_;
-        core::ClientPtr<RunSrv> run_client_;
-        core::ClientPtr<PauseSrv> pause_client_;
+        common::ClientPtr<ResetSrv> reset_client_;
+        common::ClientPtr<RunSrv> run_client_;
+        common::ClientPtr<PauseSrv> pause_client_;
         // Tracking commands
-        core::ClientPtr<AddTargetGroupSrv> add_target_group_client_;
-        core::ClientPtr<AddClusterGroupSrv> add_cluster_group_client_;
-        core::ClientPtr<RemoveAllTargetsSrv> remove_all_targets_client_;
-        core::ClientPtr<RemoveAllClustersSrv> remove_all_clusters_client_;
-        core::PublisherPtr<UpdateTargetCmdGroupMsg> update_target_cmd_group_pub_;
-        core::PublisherPtr<UpdateClusterCmdGroupMsg> update_cluster_cmd_group_pub_;
+        common::ClientPtr<AddTargetGroupSrv> add_target_group_client_;
+        common::ClientPtr<AddClusterGroupSrv> add_cluster_group_client_;
+        common::ClientPtr<RemoveAllTargetsSrv> remove_all_targets_client_;
+        common::ClientPtr<RemoveAllClustersSrv> remove_all_clusters_client_;
+        common::PublisherPtr<UpdateTargetCmdGroupMsg> update_target_cmd_group_pub_;
+        common::PublisherPtr<UpdateClusterCmdGroupMsg> update_cluster_cmd_group_pub_;
     };
 
 } // namespace flychams::simulation

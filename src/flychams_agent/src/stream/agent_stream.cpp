@@ -1,6 +1,6 @@
 #include "flychams_agent/stream/agent_stream.hpp"
 
-using namespace flychams::core;
+using namespace flychams::common;
 
 namespace flychams::agent
 {
@@ -108,7 +108,7 @@ namespace flychams::agent
     // CALLBACKS: Callback functions
     // ════════════════════════════════════════════════════════════════════════════
 
-    void AgentStream::observationSetpointsCallback(const core::ObservationSetpointsMsg::SharedPtr msg)
+    void AgentStream::observationSetpointsCallback(const common::ObservationSetpointsMsg::SharedPtr msg)
     {
         // Get central stream unit
         std::shared_ptr<StreamUnit> unit = stream_units_[central_camera_id_];
@@ -215,7 +215,7 @@ namespace flychams::agent
     // IMAGE UTILITIES
     // ════════════════════════════════════════════════════════════════════════════
 
-    core::CompressedImageMsg AgentStream::makeCompressedImage(const cv::Mat& image, const std::string& frame_id) const
+    common::CompressedImageMsg AgentStream::makeCompressedImage(const cv::Mat& image, const std::string& frame_id) const
     {
         CompressedImageMsg msg;
         msg.header.stamp = node_->now();

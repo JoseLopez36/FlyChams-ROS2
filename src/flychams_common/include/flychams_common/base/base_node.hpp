@@ -22,7 +22,7 @@
 #include "flychams_common/utils/math_utils.hpp"
 #include "flychams_common/utils/vision_utils.hpp"
 
-namespace flychams::core
+namespace flychams::common
 {
     /**
      * ════════════════════════════════════════════════════════════════
@@ -313,4 +313,4 @@ namespace flychams::core
         bool removeFromSet(std::unordered_set<ID>& set, const ID& id);
     };
 
-} // namespace flychams::core
+} // namespace flychams::common

@@ -28,10 +28,10 @@ namespace flychams::coordinator
 	 * @date 2025-03-21
 	 * ════════════════════════════════════════════════════════════════
 	 */
-	class ElementRegistration : public core::BaseModule
+	class ElementRegistration : public common::BaseModule
 	{
 	public: // Constructor/Destructor
-		ElementRegistration(core::BaseNode::SharedPtr node)
+		ElementRegistration(common::BaseNode::SharedPtr node)
 			: BaseModule(node)
 		{
 			init();
@@ -50,24 +50,24 @@ namespace flychams::coordinator
 		ClusterRegistration::SharedPtr cluster_registration_;
 
 	private: // Elements
-		core::IDs agents_;
-		core::IDs targets_;
-		core::IDs clusters_;
+		common::IDs agents_;
+		common::IDs targets_;
+		common::IDs clusters_;
 
 	private: // Registered elements map
-		std::unordered_map<core::ID, core::ElementType> registered_elements_;
+		std::unordered_map<common::ID, common::ElementType> registered_elements_;
 
 	private: // Registration methods
-		void registerElement(const core::ID& element_id, const core::ElementType& element_type);
-		void unregisterElement(const core::ID& element_id, const core::ElementType& element_type);
+		void registerElement(const common::ID& element_id, const common::ElementType& element_type);
+		void unregisterElement(const common::ID& element_id, const common::ElementType& element_type);
 		void publishRegistration();
 
 	private: // ROS components
 		// Timer
-		core::TimerPtr update_timer_;
+		common::TimerPtr update_timer_;
 		// Publishers
-		core::PublisherPtr<core::RegistrationMsg> registration_pub_;
-		core::PublisherPtr<core::GeoPointStampedMsg> global_origin_pub_;
+		common::PublisherPtr<common::RegistrationMsg> registration_pub_;
+		common::PublisherPtr<common::GeoPointStampedMsg> global_origin_pub_;
 	};
 
 } // namespace flychams::coordinator

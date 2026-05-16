@@ -15,7 +15,7 @@
 // Utilities
 #include "flychams_common/types/core_types.hpp"
 
-namespace flychams::core
+namespace flychams::common
 {
     /**
      * ════════════════════════════════════════════════════════════════
@@ -32,8 +32,8 @@ namespace flychams::core
         struct Parameters
         {
             // Space constraints
-            core::Vector3r x_min;
-            core::Vector3r x_max;
+            common::Vector3r x_min;
+            common::Vector3r x_max;
 
             // Generic solver parameters
             float tol = 1e-5f;
@@ -43,9 +43,9 @@ namespace flychams::core
         struct Data
         {
             // Cost function data
-            core::Matrix3Xr tab_P;
-            core::RowVectorXr tab_r;
-            core::Matrix4r wTcentral;
+            common::Matrix3Xr tab_P;
+            common::RowVectorXr tab_r;
+            common::Matrix4r wTcentral;
 
             // Cost function parameters
             CostFunctions::CostParameters cost_params;
@@ -76,9 +76,9 @@ namespace flychams::core
             data_.cost_params = cost_params;
 
             // Initialize data
-            data_.tab_P = core::Matrix3Xr::Zero(3, data_.cost_params.n_o);
-            data_.tab_r = core::RowVectorXr::Zero(data_.cost_params.n_o);
-            data_.wTcentral = core::Matrix4r::Identity();
+            data_.tab_P = common::Matrix3Xr::Zero(3, data_.cost_params.n_o);
+            data_.tab_r = common::RowVectorXr::Zero(data_.cost_params.n_o);
+            data_.wTcentral = common::Matrix4r::Identity();
 
             // Initialize random number generator
             rng_ = std::mt19937(std::random_device{}());
@@ -88,7 +88,7 @@ namespace flychams::core
         {
             // Nothing to destroy
         }
-        core::Vector3r run(const core::Matrix3Xr& tab_P, const core::RowVectorXr& tab_r, const core::Matrix4r& wTcentral, float& J)
+        common::Vector3r run(const common::Matrix3Xr& tab_P, const common::RowVectorXr& tab_r, const common::Matrix4r& wTcentral, float& J)
         {
             // Update data struct
             data_.tab_P = tab_P;
@@ -96,7 +96,7 @@ namespace flychams::core
             data_.wTcentral = wTcentral;
             
             // Compute the optimal position
-            core::Vector3r x_opt;
+            common::Vector3r x_opt;
             J = optimize(x_opt);
 
             // Return the optimal position and the cost function value
@@ -104,7 +104,7 @@ namespace flychams::core
         }
 
     private: // Optimization methods
-        float optimize(core::Vector3r& x_opt)
+        float optimize(common::Vector3r& x_opt)
         {
             // Calculate lambda, mu and sigma
             int lambda = 4 + floor(3 * log(3));
@@ -112,7 +112,7 @@ namespace flychams::core
             float sigma = 8.0f;
 
             // Calculate weights
-            core::VectorXr weights(mu);
+            common::VectorXr weights(mu);
             for (int i = 0; i < mu; i++)
             {
                 weights(i) = log(mu + 0.5f) - log(i + 1.0f);
@@ -121,23 +121,23 @@ namespace flychams::core
             float mueff = pow(weights.sum(), 2) / weights.array().square().sum();
 
             // Calculate B, C and C
-            core::Matrix3r B = core::Matrix3r::Identity();
-            core::Vector3r D = core::Vector3r::Ones();
-            core::Matrix3r C = B * D.cwiseProduct(D).asDiagonal() * B.transpose();
-            core::Matrix3r invsqrtC = B * D.cwiseInverse().asDiagonal() * B.transpose();
+            common::Matrix3r B = common::Matrix3r::Identity();
+            common::Vector3r D = common::Vector3r::Ones();
+            common::Matrix3r C = B * D.cwiseProduct(D).asDiagonal() * B.transpose();
+            common::Matrix3r invsqrtC = B * D.cwiseInverse().asDiagonal() * B.transpose();
 
             // Initialize x mean to the center of the search space
-            core::Vector3r x_mean = params_.x_min + (params_.x_max - params_.x_min) / 2.0f;
+            common::Vector3r x_mean = params_.x_min + (params_.x_max - params_.x_min) / 2.0f;
 
             // Initialize chi N
             float chi_N = sqrt(3.0f) * (1.0f - 1.0f / (4.0f * 3.0f) + 1.0f / (21.0f * 3.0f * 3.0f));
 
             // Initialize variables
-            core::Matrix3Xr arz(3, lambda);
-            core::Matrix3Xr arx(3, lambda);
-            core::VectorXr arfitness(lambda);
-            core::Vector3r ps = core::Vector3r::Zero();
-            core::Vector3r pc = core::Vector3r::Zero();
+            common::Matrix3Xr arz(3, lambda);
+            common::Matrix3Xr arx(3, lambda);
+            common::VectorXr arfitness(lambda);
+            common::Vector3r ps = common::Vector3r::Zero();
+            common::Vector3r pc = common::Vector3r::Zero();
             float cc = (4.0f + mueff / 3.0f) / (3.0f + 4.0f + 2.0f * mueff / 3.0f);
             float cs = (mueff + 2.0f) / (3.0f + mueff + 5.0f);
             float c1 = 2.0f / (pow(3.0f + 1.3f, 2) + mueff);
@@ -172,14 +172,14 @@ namespace flychams::core
                 std::sort(arindex.begin(), arindex.end(), [&](int a, int b) { return arfitness(a) < arfitness(b); });
 
                 // Store old mean
-                core::Vector3r x_old = x_mean;
+                common::Vector3r x_old = x_mean;
                 x_mean = arx(Eigen::all, arindex).leftCols(mu) * weights;
 
                 ps = (1.0f - cs) * ps + sqrt(cs * (2.0f - cs) * mueff) * invsqrtC * (x_mean - x_old) / sigma;
                 bool h_sig = (ps.norm() / sqrt(1.0f - pow(1.0f - cs, 2.0f * iter / lambda)) / chi_N) < (1.4f + 2.0f / (3.0f + 1.0f));
                 pc = (1.0f - cc) * pc + (h_sig ? 1.0f : 0.0f) * sqrt(cc * (2.0f - cc) * mueff) * (x_mean - x_old) / sigma;
 
-                core::Matrix3r artmp = (1.0f / sigma) * (arx(Eigen::all, arindex).leftCols(mu) - x_old.replicate(1, mu));
+                common::Matrix3r artmp = (1.0f / sigma) * (arx(Eigen::all, arindex).leftCols(mu) - x_old.replicate(1, mu));
                 C = (1.0f - c1 - cmu) * C +
                     c1 * (pc * pc.transpose() + (1.0f - static_cast<float>(h_sig)) * cc * (2.0f - cc) * C) +
                     cmu * artmp * weights.asDiagonal() * artmp.transpose();
@@ -191,7 +191,7 @@ namespace flychams::core
                 {
                     eigeneval = iter;
                     C = (C + C.transpose()) / 2.0f;
-                    Eigen::SelfAdjointEigenSolver<core::Matrix3r> eig(C);
+                    Eigen::SelfAdjointEigenSolver<common::Matrix3r> eig(C);
                     B = eig.eigenvectors();
                     D = eig.eigenvalues().cwiseSqrt();
                     invsqrtC = B * D.cwiseInverse().asDiagonal() * B.transpose();
@@ -219,10 +219,10 @@ namespace flychams::core
             return J;
         }
 
-        core::Vector3r randomNormalVector()
+        common::Vector3r randomNormalVector()
         {
             // Generate a random vector with normal distribution (mean 0, std 1)
-            core::Vector3r r;
+            common::Vector3r r;
             r(0) = normal_dist_(rng_);
             r(1) = normal_dist_(rng_);
             r(2) = normal_dist_(rng_);
@@ -230,4 +230,4 @@ namespace flychams::core
         }
     };
 
-} // namespace flychams::core
+} // namespace flychams::common

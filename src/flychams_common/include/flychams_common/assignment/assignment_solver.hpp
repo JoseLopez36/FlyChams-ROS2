@@ -9,7 +9,7 @@
 // Utilities
 #include "flychams_common/types/core_types.hpp"
 
-namespace flychams::core
+namespace flychams::common
 {
     /**
      * ════════════════════════════════════════════════════════════════
@@ -89,7 +89,7 @@ namespace flychams::core
         }
 
         // Optimization
-        core::RowVectorXi run(const core::Matrix3Xr& tab_x, const core::Matrix3Xr& tab_P, const core::RowVectorXr& tab_r, const core::RowVectorXi& X_prev, const std::vector<core::Matrix4r>& wTcentral_array, std::vector<PositionSolver::SharedPtr>& solvers)
+        common::RowVectorXi run(const common::Matrix3Xr& tab_x, const common::Matrix3Xr& tab_P, const common::RowVectorXr& tab_r, const common::RowVectorXi& X_prev, const std::vector<common::Matrix4r>& wTcentral_array, std::vector<PositionSolver::SharedPtr>& solvers)
         {
             // Run the assignment based on the mode
             switch (mode_)
@@ -105,4 +105,4 @@ namespace flychams::core
         }
     };
 
-} // namespace flychams::core
+} // namespace flychams::common

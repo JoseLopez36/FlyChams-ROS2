@@ -1,6 +1,6 @@
 #include "flychams_common/settings/airsim_settings_creator.hpp"
 
-namespace flychams::core
+namespace flychams::common
 {
     // ════════════════════════════════════════════════════════════════════════════
 	// JSON CREATION: Static methods for creating settings.json file
@@ -530,4 +530,4 @@ namespace flychams::core
         }
     }
 
-} // namespace flychams::core
+} // namespace flychams::common

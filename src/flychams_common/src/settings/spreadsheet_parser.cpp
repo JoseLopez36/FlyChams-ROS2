@@ -1,6 +1,6 @@
 #include "flychams_common/settings/spreadsheet_parser.hpp"
 
-namespace flychams::core
+namespace flychams::common
 {
 	MissionConfigPtr SpreadsheetParser::parseSpreadsheet(const std::string& path)
 	{
@@ -822,4 +822,4 @@ namespace flychams::core
 		}
 	}
 
-} // namespace flychams::core
+} // namespace flychams::common

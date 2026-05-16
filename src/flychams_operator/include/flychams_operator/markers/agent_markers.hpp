@@ -23,10 +23,10 @@ namespace flychams::operator_pkg
      * @date 2025-05-14
      * ════════════════════════════════════════════════════════════════
      */
-    class AgentMarkers : public core::BaseModule
+    class AgentMarkers : public common::BaseModule
     {
     public: // Constructor/Destructor
-        AgentMarkers(const core::ID& agent_id, core::BaseNode::SharedPtr node)
+        AgentMarkers(const common::ID& agent_id, common::BaseNode::SharedPtr node)
             : BaseModule(node), agent_id_(agent_id)
         {
             init();
@@ -41,16 +41,16 @@ namespace flychams::operator_pkg
         struct AgentData
         {
             // Latest position
-            core::PointMsg position;
+            common::PointMsg position;
             bool has_position;
             // Latest status
             uint8_t status;
             bool has_status;
             // Publisher
-            core::PublisherPtr<core::MarkerArrayMsg> markers_pub;
+            common::PublisherPtr<common::MarkerArrayMsg> markers_pub;
             // Subscribers
-            core::SubscriberPtr<core::PointStampedMsg> local_position_sub;
-            core::SubscriberPtr<core::AgentStatusMsg> status_sub;
+            common::SubscriberPtr<common::PointStampedMsg> local_position_sub;
+            common::SubscriberPtr<common::AgentStatusMsg> status_sub;
             // Constructor
             AgentData()
                 : position(), has_position(false), status(0), has_status(false),
@@ -60,21 +60,21 @@ namespace flychams::operator_pkg
         };
 
     private: // Parameters
-        core::ID agent_id_;
+        common::ID agent_id_;
         float update_rate_;
 
     private: // Data
         AgentData agent_;
 
     private: // Callbacks
-        void localPositionCallback(const core::PointStampedMsg::SharedPtr msg);
-        void statusCallback(const core::AgentStatusMsg::SharedPtr msg);
+        void localPositionCallback(const common::PointStampedMsg::SharedPtr msg);
+        void statusCallback(const common::AgentStatusMsg::SharedPtr msg);
 
     private: // Update
         void update();
 
     private: // ROS components
-        core::TimerPtr update_timer_;
+        common::TimerPtr update_timer_;
     };
 
 } // namespace flychams::operator_pkg

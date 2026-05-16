@@ -1,6 +1,6 @@
 #include "flychams_agent/mavros/mavros_utils.hpp"
 
-using namespace flychams::core;
+using namespace flychams::common;
 
 namespace flychams::agent
 {

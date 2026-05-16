@@ -1,6 +1,6 @@
 #include "flychams_coordinator/status/fleet_state.hpp"
 
-using namespace flychams::core;
+using namespace flychams::common;
 
 namespace flychams::coordinator
 {

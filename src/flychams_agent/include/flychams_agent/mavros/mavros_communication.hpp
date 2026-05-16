@@ -27,10 +27,10 @@ namespace flychams::agent
      * @date 2025-12-01
      * ════════════════════════════════════════════════════════════════
      */
-    class MavrosCommunication : public core::BaseModule
+    class MavrosCommunication : public common::BaseModule
     {
     public: // Constructors/Destructors
-        MavrosCommunication(const core::ID& agent_id, core::BaseNode::SharedPtr node)
+        MavrosCommunication(const common::ID& agent_id, common::BaseNode::SharedPtr node)
             : BaseModule(node), agent_id_(agent_id)
         {
             init();
@@ -44,9 +44,9 @@ namespace flychams::agent
         using SharedPtr = std::shared_ptr<MavrosCommunication>;
 
     public: // Vehicle state methods
-        core::SubscriberPtr<mavros_msgs::msg::HomePosition> subscribeHomePosition(const std::function<void(const mavros_msgs::msg::HomePosition::SharedPtr)>& callback, const rclcpp::SubscriptionOptions& options = rclcpp::SubscriptionOptions());
-        core::SubscriberPtr<mavros_msgs::msg::State> subscribeState(const std::function<void(const mavros_msgs::msg::State::SharedPtr)>& callback, const rclcpp::SubscriptionOptions& options = rclcpp::SubscriptionOptions());
-        core::SubscriberPtr<core::OdometryMsg> subscribeLocalOdometry(const std::function<void(const core::OdometryMsg::SharedPtr)>& callback, const rclcpp::SubscriptionOptions& options = rclcpp::SubscriptionOptions());
+        common::SubscriberPtr<mavros_msgs::msg::HomePosition> subscribeHomePosition(const std::function<void(const mavros_msgs::msg::HomePosition::SharedPtr)>& callback, const rclcpp::SubscriptionOptions& options = rclcpp::SubscriptionOptions());
+        common::SubscriberPtr<mavros_msgs::msg::State> subscribeState(const std::function<void(const mavros_msgs::msg::State::SharedPtr)>& callback, const rclcpp::SubscriptionOptions& options = rclcpp::SubscriptionOptions());
+        common::SubscriberPtr<common::OdometryMsg> subscribeLocalOdometry(const std::function<void(const common::OdometryMsg::SharedPtr)>& callback, const rclcpp::SubscriptionOptions& options = rclcpp::SubscriptionOptions());
 
     public: // Vehicle control methods
         bool armDisarm(const bool& arm);
@@ -56,17 +56,17 @@ namespace flychams::agent
         void setLocalPosition(const float& x, const float& y, const float& z);
 
     private: // Parameters
-        core::ID agent_id_;
+        common::ID agent_id_;
 
     private: // Data
         // Service clients
-        core::ClientPtr<mavros_msgs::srv::CommandBool> arming_client_;
-        core::ClientPtr<mavros_msgs::srv::CommandTOL> takeoff_client_;
-        core::ClientPtr<mavros_msgs::srv::CommandTOL> land_client_;
-        core::ClientPtr<mavros_msgs::srv::SetMode> set_mode_client_;
+        common::ClientPtr<mavros_msgs::srv::CommandBool> arming_client_;
+        common::ClientPtr<mavros_msgs::srv::CommandTOL> takeoff_client_;
+        common::ClientPtr<mavros_msgs::srv::CommandTOL> land_client_;
+        common::ClientPtr<mavros_msgs::srv::SetMode> set_mode_client_;
 
         // Publishers
-        core::PublisherPtr<core::PoseStampedMsg> local_pos_pub_;
+        common::PublisherPtr<common::PoseStampedMsg> local_pos_pub_;
     };
 
 } // namespace flychams::agent

@@ -3,7 +3,7 @@
 // Base node include
 #include "flychams_common/base/base_status_node.hpp"
 
-namespace flychams::core
+namespace flychams::common
 {
     /**
      * ════════════════════════════════════════════════════════════════
@@ -39,4 +39,4 @@ namespace flychams::core
         BaseStatusNode::SharedPtr node_;
     };
 
-} // namespace flychams::core
+} // namespace flychams::common

@@ -16,10 +16,10 @@ namespace flychams::agent
      * @date 2025-12-09
      * ════════════════════════════════════════════════════════════════
      */
-    class CameraFrames : public core::BaseModule
+    class CameraFrames : public common::BaseModule
     {
     public: // Constructor/Destructor
-        CameraFrames(const core::ID& agent_id, core::BaseNode::SharedPtr node)
+        CameraFrames(const common::ID& agent_id, common::BaseNode::SharedPtr node)
             : BaseModule(node), agent_id_(agent_id)
         {
             init();
@@ -34,9 +34,9 @@ namespace flychams::agent
         struct Agent
         {
             // Subscriber for observation setpoints
-            core::SubscriberPtr<core::ObservationSetpointsMsg> observation_setpoints_sub;
+            common::SubscriberPtr<common::ObservationSetpointsMsg> observation_setpoints_sub;
             // Data
-            core::ObservationSetpointsMsg observation_setpoints;
+            common::ObservationSetpointsMsg observation_setpoints;
             bool has_observation_setpoints;
             // Constructor
             Agent()
@@ -46,7 +46,7 @@ namespace flychams::agent
         };
 
     private: // Parameters
-        core::ID agent_id_;
+        common::ID agent_id_;
         float update_rate_;
 
     private: // Data
@@ -54,20 +54,20 @@ namespace flychams::agent
         Agent agent_;
 
     private: // Callbacks
-        void observationSetpointsCallback(const core::ObservationSetpointsMsg::SharedPtr msg);
+        void observationSetpointsCallback(const common::ObservationSetpointsMsg::SharedPtr msg);
 
     private: // Frames creation
-        void createCameraOpticalFrame(const core::ID camera_id);
+        void createCameraOpticalFrame(const common::ID camera_id);
 
     private: // Frames management
         void update();
 
     private: // Frames update methods
-        void updateCameraBodyFrame(const core::ID camera_id, const core::PointMsg& position, const core::QuaternionMsg& orientation);
+        void updateCameraBodyFrame(const common::ID camera_id, const common::PointMsg& position, const common::QuaternionMsg& orientation);
 
     private: // ROS components
         // Timer
-        core::TimerPtr update_timer_;
+        common::TimerPtr update_timer_;
     };
 
 } // namespace flychams::agent

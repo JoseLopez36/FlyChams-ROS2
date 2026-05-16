@@ -2,7 +2,7 @@
 
 using namespace airsim_interfaces::msg;
 using namespace airsim_interfaces::srv;
-using namespace flychams::core;
+using namespace flychams::common;
 
 namespace flychams::simulation
 {

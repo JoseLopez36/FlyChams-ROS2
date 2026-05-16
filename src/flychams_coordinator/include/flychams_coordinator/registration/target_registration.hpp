@@ -16,10 +16,10 @@ namespace flychams::coordinator
 	 * @date 2025-03-21
 	 * ════════════════════════════════════════════════════════════════
 	 */
-	class TargetRegistration : public core::BaseModule
+	class TargetRegistration : public common::BaseModule
 	{
 	public: // Constructor/Destructor
-		TargetRegistration(core::BaseNode::SharedPtr node)
+		TargetRegistration(common::BaseNode::SharedPtr node)
 			: BaseModule(node)
 		{
 			init();
@@ -33,10 +33,10 @@ namespace flychams::coordinator
 		using SharedPtr = std::shared_ptr<TargetRegistration>;
 
 	private: // Data
-		core::IDs targets_;
+		common::IDs targets_;
 
 	public: // Methods
-		const core::IDs& getTargets() const { return targets_; }
+		const common::IDs& getTargets() const { return targets_; }
 	};
 
 } // namespace flychams::coordinator

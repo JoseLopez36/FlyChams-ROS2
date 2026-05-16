@@ -1,6 +1,6 @@
 #include "flychams_simulation/target/target_control.hpp"
 
-using namespace flychams::core;
+using namespace flychams::common;
 
 namespace flychams::simulation
 {

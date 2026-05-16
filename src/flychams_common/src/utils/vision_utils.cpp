@@ -1,6 +1,6 @@
 #include "flychams_common/utils/vision_utils.hpp"
 
-namespace flychams::core
+namespace flychams::common
 {
     float VisionUtils::computeFov(float focal, float sensor_width)
     {
@@ -36,4 +36,4 @@ namespace flychams::core
         return Vector2r(u, v);
     }
 
-}  // namespace flychams::core
+}  // namespace flychams::common

@@ -19,10 +19,10 @@ namespace flychams::agent
      * @date 2025-03-28
      * ════════════════════════════════════════════════════════════════
      */
-    class AgentPositioning : public core::BaseStatusModule
+    class AgentPositioning : public common::BaseStatusModule
     {
     public: // Constructor/Destructor
-        AgentPositioning(const core::ID& agent_id, core::BaseStatusNode::SharedPtr node)
+        AgentPositioning(const common::ID& agent_id, common::BaseStatusNode::SharedPtr node)
             : BaseStatusModule(node), agent_id_(agent_id)
         {
             init();
@@ -37,22 +37,22 @@ namespace flychams::agent
         struct Agent
         {
             // Status data
-            core::AgentStatus status;
+            common::AgentStatus status;
             bool has_status;
             // Position data
-            core::PointMsg position;
+            common::PointMsg position;
             bool has_position;
             // Clusters data
-            core::AgentClustersMsg clusters;
+            common::AgentClustersMsg clusters;
             bool has_clusters;
             // Setpoint message
-            core::PointStampedMsg setpoint;
+            common::PointStampedMsg setpoint;
             // Subscribers
-            core::SubscriberPtr<core::AgentStatusMsg> status_sub;
-            core::SubscriberPtr<core::PointStampedMsg> position_sub;
-            core::SubscriberPtr<core::AgentClustersMsg> clusters_sub;
+            common::SubscriberPtr<common::AgentStatusMsg> status_sub;
+            common::SubscriberPtr<common::PointStampedMsg> position_sub;
+            common::SubscriberPtr<common::AgentClustersMsg> clusters_sub;
             // Publisher
-            core::PublisherPtr<core::PointStampedMsg> setpoint_pub;
+            common::PublisherPtr<common::PointStampedMsg> setpoint_pub;
             // Constructor
             Agent()
                 : status(), has_status(false), position(), has_position(false), clusters(),
@@ -63,11 +63,11 @@ namespace flychams::agent
         };
 
     private: // Parameters
-        core::ID agent_id_;
+        common::ID agent_id_;
         float update_rate_;
         // Position solver parameters
-        core::PositionSolver::SolverMode solver_mode_;
-        core::PositionSolver::Parameters solver_params_;
+        common::PositionSolver::SolverMode solver_mode_;
+        common::PositionSolver::Parameters solver_params_;
         // Transform parameters
         std::string world_frame_;
         std::string central_optical_frame_;
@@ -76,23 +76,23 @@ namespace flychams::agent
         // Agent
         Agent agent_;
         // Position solver
-        core::PositionSolver::SharedPtr solver_;
+        common::PositionSolver::SharedPtr solver_;
 
     private: // Callbacks
-        void statusCallback(const core::AgentStatusMsg::SharedPtr msg);
-        void positionCallback(const core::PointStampedMsg::SharedPtr msg);
-        void clustersCallback(const core::AgentClustersMsg::SharedPtr msg);
+        void statusCallback(const common::AgentStatusMsg::SharedPtr msg);
+        void positionCallback(const common::PointStampedMsg::SharedPtr msg);
+        void clustersCallback(const common::AgentClustersMsg::SharedPtr msg);
 
     private: // Positioning management
         void update();
 
     private: // Positioning methods
-        core::PositionSolver::SharedPtr createSolver(const std::string& agent_id, const core::PositionSolver::Parameters& solver_params, const core::PositionSolver::SolverMode& solver_mode);
-        std::vector<core::CostFunctions::UnitCostParameters> createUnitParameters(const core::TrackingParameters& tracking_params);
+        common::PositionSolver::SharedPtr createSolver(const std::string& agent_id, const common::PositionSolver::Parameters& solver_params, const common::PositionSolver::SolverMode& solver_mode);
+        std::vector<common::CostFunctions::UnitCostParameters> createUnitParameters(const common::TrackingParameters& tracking_params);
 
     private: // ROS components
         // Timer
-        core::TimerPtr update_timer_;
+        common::TimerPtr update_timer_;
     };
 
 } // namespace flychams::agent

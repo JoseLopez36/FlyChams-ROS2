@@ -14,7 +14,7 @@
 #include "flychams_common/utils/math_utils.hpp"
 #include "flychams_common/utils/vision_utils.hpp"
 
-namespace flychams::core
+namespace flychams::common
 {
     /**
      * ════════════════════════════════════════════════════════════════
@@ -33,17 +33,17 @@ namespace flychams::core
 		 * @param path Path to output JSON file
 		 * @return true if successful, false otherwise
 		 */
-        static bool createAirsimSettings(const core::MissionConfigPtr& config_ptr, const std::string& path);
+        static bool createAirsimSettings(const common::MissionConfigPtr& config_ptr, const std::string& path);
 
     private: // Implementation methods
-        static void writeGeneralSection(const core::MissionConfigPtr& config_ptr, nlohmann::ordered_json& settings);
-        static void writeQualitySettingsSection(const core::MissionConfigPtr& config_ptr, nlohmann::ordered_json& quality_settings);
-        static void writeVehiclesSection(const core::MissionConfigPtr& config_ptr, nlohmann::ordered_json& vehicles);
-        static void writeSensorsSection(const core::ID& agent_id, const core::MissionConfigPtr& config_ptr, nlohmann::ordered_json& sensors);
-        static void writeInternalCamerasSection(const core::ID& agent_id, const core::MissionConfigPtr& config_ptr, nlohmann::ordered_json& cameras);
-        static void writeExternalCamerasSection(const core::MissionConfigPtr& config_ptr, nlohmann::ordered_json& cameras);
-        static void writeSubWindowsSection(const core::MissionConfigPtr& config_ptr, nlohmann::ordered_json& subwindows);
-        static void writeStreamsSection(const core::MissionConfigPtr& config_ptr, nlohmann::ordered_json& streams);
+        static void writeGeneralSection(const common::MissionConfigPtr& config_ptr, nlohmann::ordered_json& settings);
+        static void writeQualitySettingsSection(const common::MissionConfigPtr& config_ptr, nlohmann::ordered_json& quality_settings);
+        static void writeVehiclesSection(const common::MissionConfigPtr& config_ptr, nlohmann::ordered_json& vehicles);
+        static void writeSensorsSection(const common::ID& agent_id, const common::MissionConfigPtr& config_ptr, nlohmann::ordered_json& sensors);
+        static void writeInternalCamerasSection(const common::ID& agent_id, const common::MissionConfigPtr& config_ptr, nlohmann::ordered_json& cameras);
+        static void writeExternalCamerasSection(const common::MissionConfigPtr& config_ptr, nlohmann::ordered_json& cameras);
+        static void writeSubWindowsSection(const common::MissionConfigPtr& config_ptr, nlohmann::ordered_json& subwindows);
+        static void writeStreamsSection(const common::MissionConfigPtr& config_ptr, nlohmann::ordered_json& streams);
     };
 
-} // namespace flychams::core
+} // namespace flychams::common

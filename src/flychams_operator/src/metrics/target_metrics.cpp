@@ -1,6 +1,6 @@
 #include "flychams_operator/metrics/target_metrics.hpp"
 
-using namespace flychams::core;
+using namespace flychams::common;
 
 namespace flychams::operator_pkg
 {

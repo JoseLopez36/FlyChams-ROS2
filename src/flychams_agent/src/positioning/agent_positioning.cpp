@@ -1,6 +1,6 @@
 #include "flychams_agent/positioning/agent_positioning.hpp"
 
-using namespace flychams::core;
+using namespace flychams::common;
 
 namespace flychams::agent
 {
@@ -41,7 +41,7 @@ namespace flychams::agent
 
         // Get relevant transform frames
         world_frame_ = node_->getGlobalFrame();
-        const core::TrackingParameters& tracking_params = node_->getSettings()->getTrackingParameters(agent_id_);
+        const common::TrackingParameters& tracking_params = node_->getSettings()->getTrackingParameters(agent_id_);
         central_optical_frame_ = node_->getCameraOpticalFrame(agent_id_, tracking_params.observation_units_params[0].id);
 
         // Create and initialize solver

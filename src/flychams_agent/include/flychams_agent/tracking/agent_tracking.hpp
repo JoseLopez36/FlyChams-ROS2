@@ -19,10 +19,10 @@ namespace flychams::agent
      * @date 2025-01-29
      * ════════════════════════════════════════════════════════════════
      */
-    class AgentTracking : public core::BaseStatusModule
+    class AgentTracking : public common::BaseStatusModule
     {
     public: // Constructor/Destructor
-        AgentTracking(const core::ID& agent_id, core::BaseStatusNode::SharedPtr node)
+        AgentTracking(const common::ID& agent_id, common::BaseStatusNode::SharedPtr node)
             : BaseStatusModule(node), agent_id_(agent_id)
         {
             init();
@@ -37,18 +37,18 @@ namespace flychams::agent
         struct Agent
         {
             // Status data
-            core::AgentStatus status;
+            common::AgentStatus status;
             bool has_status;
             // Clusters data
-            core::AgentClustersMsg clusters;
+            common::AgentClustersMsg clusters;
             bool has_clusters;
             // Observation setpoint message
-            core::ObservationSetpointsMsg observation_setpoints;
+            common::ObservationSetpointsMsg observation_setpoints;
             // Subscribers
-            core::SubscriberPtr<core::AgentStatusMsg> status_sub;
-            core::SubscriberPtr<core::AgentClustersMsg> clusters_sub;
+            common::SubscriberPtr<common::AgentStatusMsg> status_sub;
+            common::SubscriberPtr<common::AgentClustersMsg> clusters_sub;
             // Publisher
-            core::PublisherPtr<core::ObservationSetpointsMsg> observation_setpoints_pub;
+            common::PublisherPtr<common::ObservationSetpointsMsg> observation_setpoints_pub;
             // Constructor
             Agent()
                 : status(), has_status(false), clusters(), has_clusters(false), observation_setpoints(),
@@ -58,10 +58,10 @@ namespace flychams::agent
         };
 
     private: // Parameters
-        core::ID agent_id_;
+        common::ID agent_id_;
         float update_rate_;
         // Tracking parameters
-        core::TrackingParameters tracking_params_;
+        common::TrackingParameters tracking_params_;
         // Transform parameters
         std::string world_frame_;
         std::vector<std::string> optical_frames_;
@@ -71,23 +71,23 @@ namespace flychams::agent
         // Agent
         Agent agent_;
         // Solvers
-        std::vector<core::ObservationSolver::SharedPtr> solvers_;
+        std::vector<common::ObservationSolver::SharedPtr> solvers_;
 
     private: // Callbacks
-        void statusCallback(const core::AgentStatusMsg::SharedPtr msg);
-        void positionCallback(const core::PointStampedMsg::SharedPtr msg);
-        void clustersCallback(const core::AgentClustersMsg::SharedPtr msg);
+        void statusCallback(const common::AgentStatusMsg::SharedPtr msg);
+        void positionCallback(const common::PointStampedMsg::SharedPtr msg);
+        void clustersCallback(const common::AgentClustersMsg::SharedPtr msg);
 
     private: // Tracking management
         void update();
 
     private: // Tracking methods
-        std::tuple<float, core::Vector3r> updateCamera(const core::Vector3r& P, const float& r, const core::Matrix4r& T, core::ObservationSolver::SharedPtr solver);
-        std::tuple<float, core::Crop> updateWindow(const core::Vector3r& P, const float& r, const core::Matrix4r& T, core::ObservationSolver::SharedPtr solver);
+        std::tuple<float, common::Vector3r> updateCamera(const common::Vector3r& P, const float& r, const common::Matrix4r& T, common::ObservationSolver::SharedPtr solver);
+        std::tuple<float, common::Crop> updateWindow(const common::Vector3r& P, const float& r, const common::Matrix4r& T, common::ObservationSolver::SharedPtr solver);
 
     private: // ROS components
         // Timer
-        core::TimerPtr update_timer_;
+        common::TimerPtr update_timer_;
     };
 
 } // namespace flychams::agent

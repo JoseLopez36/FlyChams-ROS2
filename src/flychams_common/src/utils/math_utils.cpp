@@ -1,6 +1,6 @@
 #include "flychams_common/utils/math_utils.hpp"
 
-namespace flychams::core
+namespace flychams::common
 {
     // ════════════════════════════════════════════════════════════════════════════
     // ANGLE: Angle utilities
@@ -54,4 +54,4 @@ namespace flychams::core
         return Quaternionr(matrix);
     }
 
-}  // namespace flychams::core
+}  // namespace flychams::common

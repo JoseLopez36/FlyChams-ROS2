@@ -8,7 +8,7 @@
 // Base node include
 #include "flychams_common/base/base_discoverer_node.hpp"
 
-using namespace flychams::core;
+using namespace flychams::common;
 
 /**
  * ════════════════════════════════════════════════════════════════

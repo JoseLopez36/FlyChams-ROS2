@@ -68,7 +68,7 @@
 #include "flychams_api/msg/target_metrics.hpp"
 #include "flychams_api/msg/cluster_metrics.hpp"
 
-namespace flychams::core
+namespace flychams::common
 {
     /**
      * ════════════════════════════════════════════════════════════════
@@ -182,4 +182,4 @@ namespace flychams::core
     using TargetMetricsMsg = flychams_api::msg::TargetMetrics;
     using ClusterMetricsMsg = flychams_api::msg::ClusterMetrics;
 
-} // namespace flychams::core
+} // namespace flychams::common

@@ -1,6 +1,6 @@
 #include "flychams_common/settings/mission_settings_parser.hpp"
 
-namespace flychams::core
+namespace flychams::common
 {
 	void MissionSettingsParser::parseMissionParameters(const NodePtr& node, const std::string& prefix, MissionConfigPtr& config_ptr)
 	{
@@ -502,4 +502,4 @@ namespace flychams::core
 		node->get_parameter<std::string>("agent_frames.camera_optical", config_ptr->frames.camera_optical);
 	}
 
-} // namespace flychams::core
+} // namespace flychams::common

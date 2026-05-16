@@ -25,10 +25,10 @@ namespace flychams::simulation
      * @date 2025-03-27
      * ════════════════════════════════════════════════════════════════
      */
-    class TargetControl : public core::BaseModule
+    class TargetControl : public common::BaseModule
     {
     public: // Constructor/Destructor
-        TargetControl(core::BaseNode::SharedPtr node)
+        TargetControl(common::BaseNode::SharedPtr node)
             : BaseModule(node)
         {
             init();
@@ -43,10 +43,10 @@ namespace flychams::simulation
         struct Target
         {
             // Position
-            core::PointMsg position;
+            common::PointMsg position;
             bool has_position;
             // Subscriber
-            core::SubscriberPtr<core::PointStampedMsg> position_sub;
+            common::SubscriberPtr<common::PointStampedMsg> position_sub;
             // Constructor
             Target()
                 : position(), has_position(false), position_sub()
@@ -56,11 +56,11 @@ namespace flychams::simulation
         struct Cluster
         {
             // Geometry
-            core::PointMsg position;
+            common::PointMsg position;
             float radius;
             bool has_geometry;
             // Subscriber
-            core::SubscriberPtr<core::ClusterGeometryMsg> geometry_sub;
+            common::SubscriberPtr<common::ClusterGeometryMsg> geometry_sub;
             // Constructor
             Cluster()
                 : position(), radius(), has_geometry(false), geometry_sub()
@@ -75,23 +75,23 @@ namespace flychams::simulation
 
     private: // Data
         // Targets
-        std::unordered_map<core::ID, Target> targets_;
+        std::unordered_map<common::ID, Target> targets_;
         // Clusters
-        std::unordered_map<core::ID, Cluster> clusters_;
+        std::unordered_map<common::ID, Cluster> clusters_;
         // Other
         int spawn_index_;
         // Simulation tools
         SimulationBridge::SharedPtr simulation_tools_;
 
     public: // Public methods
-        void addCluster(const core::ID& cluster_id);
-        void addTarget(const core::ID& target_id);
-        void removeCluster(const core::ID& cluster_id);
-        void removeTarget(const core::ID& target_id);
+        void addCluster(const common::ID& cluster_id);
+        void addTarget(const common::ID& target_id);
+        void removeCluster(const common::ID& cluster_id);
+        void removeTarget(const common::ID& target_id);
 
     private: // Callbacks
-        void targetPositionCallback(const core::ID& target_id, const core::PointStampedMsg::SharedPtr msg);
-        void clusterGeometryCallback(const core::ID& cluster_id, const core::ClusterGeometryMsg::SharedPtr msg);
+        void targetPositionCallback(const common::ID& target_id, const common::PointStampedMsg::SharedPtr msg);
+        void clusterGeometryCallback(const common::ID& cluster_id, const common::ClusterGeometryMsg::SharedPtr msg);
 
     private: // Control management
         void update();
@@ -99,14 +99,14 @@ namespace flychams::simulation
     private: // Control methods
         void destroyTargets();
         void destroyClusters();
-        void spawnTarget(const core::ID& target_id, const core::PointMsg& initial_position, const core::TargetType& target_type);
-        void spawnCluster(const core::ID& cluster_id, const core::PointMsg& initial_center, const float& initial_radius);
+        void spawnTarget(const common::ID& target_id, const common::PointMsg& initial_position, const common::TargetType& target_type);
+        void spawnCluster(const common::ID& cluster_id, const common::PointMsg& initial_center, const float& initial_radius);
         void updateTargets();
         void updateClusters();
 
     private:
         // Timer
-        core::TimerPtr update_timer_;
+        common::TimerPtr update_timer_;
     };
 
 } // namespace flychams::simulation

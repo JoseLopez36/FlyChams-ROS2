@@ -1,6 +1,6 @@
 #include "flychams_coordinator/assignment/agent_assignment.hpp"
 
-using namespace flychams::core;
+using namespace flychams::common;
 
 namespace flychams::coordinator
 {

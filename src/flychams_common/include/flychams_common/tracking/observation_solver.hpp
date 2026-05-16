@@ -8,7 +8,7 @@
 #include "flychams_common/types/core_types.hpp"
 #include "flychams_common/utils/math_utils.hpp"
 
-namespace flychams::core
+namespace flychams::common
 {
     /**
      * ════════════════════════════════════════════════════════════════
@@ -21,15 +21,15 @@ namespace flychams::core
     class ObservationSolver
     {
     public: // Constructor
-        ObservationSolver(const core::ObservationUnitParameters& unit_params)
+        ObservationSolver(const common::ObservationUnitParameters& unit_params)
             : unit_params_(unit_params)
         {
             // Create solvers based on unit type
-            if (unit_params.type == core::ObservationType::Camera)
+            if (unit_params.type == common::ObservationType::Camera)
             {
                 camera_solver_ = std::make_shared<CameraSolver>();
             }
-            else if (unit_params.type == core::ObservationType::Window)
+            else if (unit_params.type == common::ObservationType::Window)
             {
                 window_solver_ = std::make_shared<WindowSolver>();
             }
@@ -43,7 +43,7 @@ namespace flychams::core
         using SharedPtr = std::shared_ptr<ObservationSolver>;
 
     private: // Parameters
-        core::ObservationUnitParameters unit_params_;
+        common::ObservationUnitParameters unit_params_;
 
     private: // Data
         // Solver used for Camera type
@@ -56,18 +56,18 @@ namespace flychams::core
         void reset()
         {
             // Reset solvers based on unit type
-            if (unit_params_.type == core::ObservationType::Camera)
+            if (unit_params_.type == common::ObservationType::Camera)
             {
                 camera_solver_->reset();
             }
-            else if (unit_params_.type == core::ObservationType::Window)
+            else if (unit_params_.type == common::ObservationType::Window)
             {
                 window_solver_->reset();
             }
         }
 
         // Runtime methods
-        std::tuple<float, core::Vector3r> runCamera(const core::Vector3r& z, const float& r, const core::Matrix4r& T)
+        std::tuple<float, common::Vector3r> runCamera(const common::Vector3r& z, const float& r, const common::Matrix4r& T)
         {
             // Args:
             // z: Target position in world frame (m)
@@ -78,7 +78,7 @@ namespace flychams::core
             return camera_solver_->run(z, r, T, unit_params_);
         }
 
-        std::tuple<float, core::Crop> runWindow(const core::Vector3r& z, const float& r, const core::Matrix4r& T)
+        std::tuple<float, common::Crop> runWindow(const common::Vector3r& z, const float& r, const common::Matrix4r& T)
         {
             // Args:
             // z: Target position in world frame (m)
@@ -90,4 +90,4 @@ namespace flychams::core
         }
     };
 
-} // namespace flychams::core
+} // namespace flychams::common

@@ -22,10 +22,10 @@ namespace flychams::operator_pkg
      * @date 2025-05-14
      * ════════════════════════════════════════════════════════════════
      */
-    class TargetMetrics : public core::BaseModule
+    class TargetMetrics : public common::BaseModule
     {
     public: // Constructor/Destructor
-        TargetMetrics(const core::ID& target_id, core::BaseNode::SharedPtr node)
+        TargetMetrics(const common::ID& target_id, common::BaseNode::SharedPtr node)
             : BaseModule(node), target_id_(target_id)
         {
             init();
@@ -40,12 +40,12 @@ namespace flychams::operator_pkg
         struct TargetData
         {
             // Latest position
-            core::PointMsg position;
+            common::PointMsg position;
             bool has_position;
             // Publisher
-            core::PublisherPtr<core::TargetMetricsMsg> metrics_pub;
+            common::PublisherPtr<common::TargetMetricsMsg> metrics_pub;
             // Subscribers
-            core::SubscriberPtr<core::PointStampedMsg> position_sub;
+            common::SubscriberPtr<common::PointStampedMsg> position_sub;
             // Constructor
             TargetData()
                 : position(), has_position(false), metrics_pub(), position_sub()
@@ -54,26 +54,26 @@ namespace flychams::operator_pkg
         };
 
     private: // Parameters
-        core::ID target_id_;
+        common::ID target_id_;
         float update_rate_;
 
     private: // Accumulated data
         TargetData target_;
-        core::PointMsg last_position_;
+        common::PointMsg last_position_;
         float distance_traveled_;
         float total_speed_;
         int speed_samples_;
-        core::Time last_update_time_;
+        common::Time last_update_time_;
         float time_elapsed_;
 
     private: // Callbacks
-        void positionCallback(const core::PointStampedMsg::SharedPtr msg);
+        void positionCallback(const common::PointStampedMsg::SharedPtr msg);
 
     private: // Update
         void update();
 
     private: // ROS components
-        core::TimerPtr update_timer_;
+        common::TimerPtr update_timer_;
     };
 
 } // namespace flychams::operator_pkg

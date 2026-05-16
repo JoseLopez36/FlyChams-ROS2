@@ -1,6 +1,6 @@
 #include "flychams_coordinator/registration/agent_registration.hpp"
 
-using namespace flychams::core;
+using namespace flychams::common;
 
 namespace flychams::coordinator
 {

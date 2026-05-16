@@ -3,7 +3,7 @@
 // Base node include
 #include "flychams_common/base/base_node.hpp"
 
-namespace flychams::core
+namespace flychams::common
 {
     /**
      * ════════════════════════════════════════════════════════════════
@@ -39,4 +39,4 @@ namespace flychams::core
         BaseNode::SharedPtr node_;
     };
 
-} // namespace flychams::core
+} // namespace flychams::common

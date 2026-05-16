@@ -15,7 +15,7 @@
 // Utilities
 #include "flychams_common/types/core_types.hpp"
 
-namespace flychams::core
+namespace flychams::common
 {
     /**
      * ════════════════════════════════════════════════════════════════
@@ -47,8 +47,8 @@ namespace flychams::core
             CostFunctions::CostParameters cost_params;
 
             // Space constraints
-            core::Vector3r x_min;
-            core::Vector3r x_max;
+            common::Vector3r x_min;
+            common::Vector3r x_max;
 
             // Generic solver parameters
             float tol = 1e-6f;
@@ -276,7 +276,7 @@ namespace flychams::core
         int getUnitCount() const { return params_.cost_params.n_o; }
 
         // Optimization
-        core::Vector3r run(const core::Matrix3Xr& tab_P, const core::RowVectorXr& tab_r, const core::Vector3r& x0, const core::Matrix4r& wTcentral, float& J)
+        common::Vector3r run(const common::Matrix3Xr& tab_P, const common::RowVectorXr& tab_r, const common::Vector3r& x0, const common::Matrix4r& wTcentral, float& J)
         {
             // Run the optimization based on the mode
             switch (mode_)
@@ -322,4 +322,4 @@ namespace flychams::core
         }
     };
 
-} // namespace flychams::core
+} // namespace flychams::common

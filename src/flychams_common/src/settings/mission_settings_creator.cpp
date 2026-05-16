@@ -1,6 +1,6 @@
 #include "flychams_common/settings/mission_settings_creator.hpp"
 
-namespace flychams::core
+namespace flychams::common
 {
 	// ════════════════════════════════════════════════════════════════════════════
 	// YAML CREATION: Static methods for creating mission.yaml file
@@ -388,4 +388,4 @@ namespace flychams::core
 		yaml << prefix << "load_factor: " << std::fixed << std::setprecision(3) << drone.load_factor << "\n";
 	}
 
-} // namespace flychams::core
+} // namespace flychams::common

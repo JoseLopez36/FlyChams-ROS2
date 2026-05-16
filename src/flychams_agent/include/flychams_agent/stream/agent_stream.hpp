@@ -26,10 +26,10 @@ namespace flychams::agent
      * @date 2026-03-06
      * ════════════════════════════════════════════════════════════════
      */
-    class AgentStream : public core::BaseModule
+    class AgentStream : public common::BaseModule
     {
     public: // Constructor/Destructor
-        AgentStream(const core::ID& agent_id, core::BaseNode::SharedPtr node)
+        AgentStream(const common::ID& agent_id, common::BaseNode::SharedPtr node)
             : BaseModule(node), agent_id_(agent_id)
         {
             init();
@@ -44,20 +44,20 @@ namespace flychams::agent
         struct StreamUnit
         {
             // Unit configuration
-            core::MultiCameraConfigPtr config;
+            common::MultiCameraConfigPtr config;
             std::string pipeline;
             std::string frame_id;
             int output_width;
             int output_height;
             bool enable_crops;
             // Crop data
-            std::vector<core::CropMsg> crops;
+            std::vector<common::CropMsg> crops;
             int crop_output_width;
             int crop_output_height;
             std::mutex crops_mutex;
             // Publisher
-            core::PublisherPtr<core::CompressedImageMsg> image_pub;
-            std::vector<core::PublisherPtr<core::CompressedImageMsg>> crop_pubs;
+            common::PublisherPtr<common::CompressedImageMsg> image_pub;
+            std::vector<common::PublisherPtr<common::CompressedImageMsg>> crop_pubs;
             // Runtime
             std::atomic_bool running;
             std::thread thread;
@@ -71,8 +71,8 @@ namespace flychams::agent
         };
         
     private: // Parameters
-        core::ID agent_id_;
-        core::ID central_camera_id_;
+        common::ID agent_id_;
+        common::ID central_camera_id_;
         // Interface parameters
         int central_view_width;
         int central_view_height;
@@ -88,20 +88,20 @@ namespace flychams::agent
 
     private: // Data
         // Stream units
-        std::unordered_map<core::ID, std::shared_ptr<StreamUnit>> stream_units_;
+        std::unordered_map<common::ID, std::shared_ptr<StreamUnit>> stream_units_;
 
     private: // Callbacks
-        void observationSetpointsCallback(const core::ObservationSetpointsMsg::SharedPtr msg);
+        void observationSetpointsCallback(const common::ObservationSetpointsMsg::SharedPtr msg);
 
     private: // Stream management
         void streamPipeline(const std::shared_ptr<StreamUnit>& unit);
 
     private: // Image utilities
-        core::CompressedImageMsg makeCompressedImage(const cv::Mat& image, const std::string& frame_id) const;
+        common::CompressedImageMsg makeCompressedImage(const cv::Mat& image, const std::string& frame_id) const;
 
     private: // ROS components
         // Subscriber
-        core::SubscriberPtr<core::ObservationSetpointsMsg> observation_setpoints_sub_;
+        common::SubscriberPtr<common::ObservationSetpointsMsg> observation_setpoints_sub_;
     };
 
 } // namespace flychams::agent

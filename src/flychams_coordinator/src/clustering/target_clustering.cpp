@@ -1,6 +1,6 @@
 #include "flychams_coordinator/clustering/target_clustering.hpp"
 
-using namespace flychams::core;
+using namespace flychams::common;
 
 namespace flychams::coordinator
 {

@@ -1,7 +1,7 @@
 #include "flychams_simulation/bridge/agent_bridge.hpp"
 
 using namespace airsim_interfaces::msg;
-using namespace flychams::core;
+using namespace flychams::common;
 
 namespace flychams::simulation
 {
@@ -82,7 +82,7 @@ namespace flychams::simulation
         for (int i = 0; i < agent_.observation_setpoints.n_o; ++i)
         {
             // Filter out units that are not cameras
-			if (agent_.observation_setpoints.types[i] != static_cast<uint8_t>(core::ObservationType::Camera))
+			if (agent_.observation_setpoints.types[i] != static_cast<uint8_t>(common::ObservationType::Camera))
 			{
 				continue;
 			}
@@ -119,13 +119,13 @@ namespace flychams::simulation
         for (int i = 0; i < agent_.observation_setpoints.n_o; ++i)
         {
             // Filter out units that are not cameras
-			if (agent_.observation_setpoints.types[i] != static_cast<uint8_t>(core::ObservationType::Camera))
+			if (agent_.observation_setpoints.types[i] != static_cast<uint8_t>(common::ObservationType::Camera))
 			{
 				continue;
 			}
 
             // Get camera ID
-            const core::ID& camera_id = agent_.observation_setpoints.ids[i];
+            const common::ID& camera_id = agent_.observation_setpoints.ids[i];
 
             // Add camera name
             msg.camera_names.push_back(camera_id);

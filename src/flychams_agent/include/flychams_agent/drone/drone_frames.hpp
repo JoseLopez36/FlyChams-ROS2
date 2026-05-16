@@ -20,10 +20,10 @@ namespace flychams::agent
      * @date 2025-03-26
      * ════════════════════════════════════════════════════════════════
      */
-    class DroneFrames : public core::BaseModule
+    class DroneFrames : public common::BaseModule
     {
     public: // Constructor/Destructor
-        DroneFrames(const core::ID& agent_id, core::BaseNode::SharedPtr node)
+        DroneFrames(const common::ID& agent_id, common::BaseNode::SharedPtr node)
             : BaseModule(node), agent_id_(agent_id)
         {
             init();
@@ -38,15 +38,15 @@ namespace flychams::agent
         struct Agent
         {
             // Global origin data
-            core::GeoPointMsg global_origin;
+            common::GeoPointMsg global_origin;
             bool has_global_origin;
             // Home position data
-            core::GeoPointMsg home_position;
+            common::GeoPointMsg home_position;
             bool has_home_position;
             // Subscriber
-            core::SubscriberPtr<core::GeoPointStampedMsg> global_origin_sub;
-            core::SubscriberPtr<mavros_msgs::msg::HomePosition> home_position_sub;
-            core::SubscriberPtr<core::OdometryMsg> local_odom_sub;
+            common::SubscriberPtr<common::GeoPointStampedMsg> global_origin_sub;
+            common::SubscriberPtr<mavros_msgs::msg::HomePosition> home_position_sub;
+            common::SubscriberPtr<common::OdometryMsg> local_odom_sub;
             // Constructor
             Agent()
                 : global_origin(), has_global_origin(false), home_position(), has_home_position(false),
@@ -56,7 +56,7 @@ namespace flychams::agent
         };
 
     private: // Parameters
-        core::ID agent_id_;
+        common::ID agent_id_;
         float update_rate_;
 
     private: // Data
@@ -66,15 +66,15 @@ namespace flychams::agent
         MavrosCommunication::SharedPtr mavros_comm_;
 
     private: // Callbacks
-        void globalOriginCallback(const core::GeoPointStampedMsg::SharedPtr msg);
+        void globalOriginCallback(const common::GeoPointStampedMsg::SharedPtr msg);
         void homePositionCallback(const mavros_msgs::msg::HomePosition::SharedPtr msg);
-        void localOdomCallback(const core::OdometryMsg::SharedPtr msg);
+        void localOdomCallback(const common::OdometryMsg::SharedPtr msg);
 
     private: // Frames creation
-        void createLocalFrame(const core::GeoPointMsg& home_geopoint, const core::GeoPointMsg& origin_geopoint);
+        void createLocalFrame(const common::GeoPointMsg& home_geopoint, const common::GeoPointMsg& origin_geopoint);
 
     private: // Frames update
-        void updateBodyFrame(const core::PointMsg& position, const core::QuaternionMsg& orientation);
+        void updateBodyFrame(const common::PointMsg& position, const common::QuaternionMsg& orientation);
     };
 
 } // namespace flychams::agent

@@ -6,7 +6,7 @@
 // Utilities
 #include "flychams_common/types/core_types.hpp"
 
-namespace flychams::core
+namespace flychams::common
 {
     /**
      * ════════════════════════════════════════════════════════════════
@@ -23,8 +23,8 @@ namespace flychams::core
         struct Parameters
         {
             // Space constraints
-            core::Vector3r x_min;
-            core::Vector3r x_max;
+            common::Vector3r x_min;
+            common::Vector3r x_max;
 
             // Generic solver parameters
             float tol = 1e-5f;
@@ -41,25 +41,25 @@ namespace flychams::core
         // Data
         struct Particle
         {
-            core::Vector3r position;
-            core::Vector3r best_position;
-            core::Vector3r velocity;
+            common::Vector3r position;
+            common::Vector3r best_position;
+            common::Vector3r velocity;
             float best_score;
 
             Particle()
             {
-                position = core::Vector3r::Zero();
-                best_position = core::Vector3r::Zero();
-                velocity = core::Vector3r::Zero();
+                position = common::Vector3r::Zero();
+                best_position = common::Vector3r::Zero();
+                velocity = common::Vector3r::Zero();
                 best_score = HUGE_VALF;
             }
         };
         struct Data
         {
             // Cost function data
-            core::Matrix3Xr tab_P;
-            core::RowVectorXr tab_r;
-            core::Matrix4r wTcentral;
+            common::Matrix3Xr tab_P;
+            common::RowVectorXr tab_r;
+            common::Matrix4r wTcentral;
 
             // Cost function parameters
             CostFunctions::CostParameters cost_params;
@@ -89,9 +89,9 @@ namespace flychams::core
             data_.cost_params = cost_params;
 
             // Initialize data
-            data_.tab_P = core::Matrix3Xr::Zero(3, data_.cost_params.n_o);
-            data_.tab_r = core::RowVectorXr::Zero(data_.cost_params.n_o);
-            data_.wTcentral = core::Matrix4r::Identity();
+            data_.tab_P = common::Matrix3Xr::Zero(3, data_.cost_params.n_o);
+            data_.tab_r = common::RowVectorXr::Zero(data_.cost_params.n_o);
+            data_.wTcentral = common::Matrix4r::Identity();
 
             // Initialize particles
             particles_.resize(params_.num_particles);
@@ -101,7 +101,7 @@ namespace flychams::core
             // Destroy particles
             particles_.clear();
         }
-        core::Vector3r run(const core::Matrix3Xr& tab_P, const core::RowVectorXr& tab_r, const core::Matrix4r& wTcentral, float& J)
+        common::Vector3r run(const common::Matrix3Xr& tab_P, const common::RowVectorXr& tab_r, const common::Matrix4r& wTcentral, float& J)
         {
             // Update data struct
             data_.tab_P = tab_P;
@@ -109,7 +109,7 @@ namespace flychams::core
             data_.wTcentral = wTcentral;
             
             // Compute the optimal position
-            core::Vector3r x_opt;
+            common::Vector3r x_opt;
             J = optimize(x_opt);
 
             // Return the optimal position and the cost function value
@@ -117,24 +117,24 @@ namespace flychams::core
         }
 
     private: // Optimization methods
-        float optimize(core::Vector3r& x_opt)
+        float optimize(common::Vector3r& x_opt)
         {
             // Prepare variables
             float global_best_score = HUGE_VALF;                                // Global best score
-            core::Vector3r global_best_position = core::Vector3r::Zero();       // Global best position
-            core::Vector3r global_best_position_prev = core::Vector3r::Zero();  // Previous global best position
+            common::Vector3r global_best_position = common::Vector3r::Zero();       // Global best position
+            common::Vector3r global_best_position_prev = common::Vector3r::Zero();  // Previous global best position
             int stagnant_generations = 0;                                       // Stagnation counter (generations without improvement)
 
             // Initialize particles
             for (int k = 0; k < params_.num_particles; k++)
             {
                 // Generate random position
-                core::Vector3r r = randomVector();
+                common::Vector3r r = randomVector();
 
                 // Initialize particle position and best score
                 particles_[k].position = params_.x_min + ((params_.x_max - params_.x_min).array() * r.array()).matrix();
                 particles_[k].best_position = particles_[k].position;
-                particles_[k].velocity = core::Vector3r::Zero();
+                particles_[k].velocity = common::Vector3r::Zero();
                 particles_[k].best_score = CostFunctions::J0(data_.tab_P, data_.tab_r, particles_[k].position, data_.wTcentral, data_.cost_params);
             }
 
@@ -209,13 +209,13 @@ namespace flychams::core
             return static_cast<float>(std::rand()) / static_cast<float>(RAND_MAX);
         }
 
-        core::Vector3r randomVector()
+        common::Vector3r randomVector()
         {
             // Generate a random vector with values in [0, 1]
-            core::Vector3r r = core::Vector3r::Random();
+            common::Vector3r r = common::Vector3r::Random();
             r = r.array().abs();
             return r;
         }
     };
 
-} // namespace flychams::core
+} // namespace flychams::common

@@ -12,7 +12,7 @@
 #include "flychams_common/utils/math_utils.hpp"
 #include "flychams_common/utils/vision_utils.hpp"
 
-namespace flychams::core
+namespace flychams::common
 {
     /**
      * ════════════════════════════════════════════════════════════════
@@ -152,4 +152,4 @@ namespace flychams::core
         NodePtr node_;
     };
 
-} // namespace flychams::core
+} // namespace flychams::common

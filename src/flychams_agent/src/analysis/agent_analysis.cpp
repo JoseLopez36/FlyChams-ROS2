@@ -1,6 +1,6 @@
 #include "flychams_agent/analysis/agent_analysis.hpp"
 
-using namespace flychams::core;
+using namespace flychams::common;
 
 namespace flychams::agent
 {
@@ -163,7 +163,7 @@ namespace flychams::agent
     // ANALYSIS: Analysis methods
     // ════════════════════════════════════════════════════════════════════════════
 
-    std::pair<core::PointMsg, float> AgentAnalysis::computeCentralCluster(const std::vector<core::PointMsg>& centers, const std::vector<float>& radii)
+    std::pair<common::PointMsg, float> AgentAnalysis::computeCentralCluster(const std::vector<common::PointMsg>& centers, const std::vector<float>& radii)
     {
         // Get number of tracking units
         int n = centers.size() - 1;
@@ -180,7 +180,7 @@ namespace flychams::agent
         }
 
         // Compute mean of all available clusters
-        core::Vector3r z_mean = core::Vector3r::Zero();
+        common::Vector3r z_mean = common::Vector3r::Zero();
         for (int i = 0; i < n; i++)
         {
             z_mean += tab_P.col(i);

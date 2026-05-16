@@ -1,6 +1,6 @@
 #include "flychams_common/settings/settings_tools.hpp"
 
-namespace flychams::core
+namespace flychams::common
 {
     SettingsTools::SettingsTools(NodePtr node)
         : node_(node)
@@ -573,4 +573,4 @@ namespace flychams::core
         RCLCPP_INFO(node_->get_logger(), "\n═══════════════════════════════════════════════════════════════");
     }
 
-} // namespace flychams::core
+} // namespace flychams::common

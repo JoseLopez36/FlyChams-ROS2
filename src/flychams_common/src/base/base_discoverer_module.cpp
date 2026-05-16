@@ -1,6 +1,6 @@
 #include "flychams_common/base/base_discoverer_module.hpp"
 
-namespace flychams::core
+namespace flychams::common
 {
     // ════════════════════════════════════════════════════════════════════════════
     // CONSTRUCTOR: Constructor
@@ -31,4 +31,4 @@ namespace flychams::core
         node_.reset();
     }
 
-} // namespace flychams::core
+} // namespace flychams::common

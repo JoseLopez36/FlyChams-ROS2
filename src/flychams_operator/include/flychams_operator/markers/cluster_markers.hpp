@@ -23,10 +23,10 @@ namespace flychams::operator_pkg
      * @date 2025-05-14
      * ════════════════════════════════════════════════════════════════
      */
-    class ClusterMarkers : public core::BaseModule
+    class ClusterMarkers : public common::BaseModule
     {
     public: // Constructor/Destructor
-        ClusterMarkers(const core::ID& cluster_id, core::BaseNode::SharedPtr node)
+        ClusterMarkers(const common::ID& cluster_id, common::BaseNode::SharedPtr node)
             : BaseModule(node), cluster_id_(cluster_id)
         {
             init();
@@ -41,13 +41,13 @@ namespace flychams::operator_pkg
         struct ClusterData
         {
             // Latest geometry
-            core::PointMsg center;
+            common::PointMsg center;
             float radius;
             bool has_geometry;
             // Publisher
-            core::PublisherPtr<core::MarkerArrayMsg> markers_pub;
+            common::PublisherPtr<common::MarkerArrayMsg> markers_pub;
             // Subscribers
-            core::SubscriberPtr<core::ClusterGeometryMsg> geometry_sub;
+            common::SubscriberPtr<common::ClusterGeometryMsg> geometry_sub;
             // Constructor
             ClusterData()
                 : center(), radius(0.0f), has_geometry(false), markers_pub(), geometry_sub()
@@ -56,20 +56,20 @@ namespace flychams::operator_pkg
         };
 
     private: // Parameters
-        core::ID cluster_id_;
+        common::ID cluster_id_;
         float update_rate_;
 
     private: // Data
         ClusterData cluster_;
 
     private: // Callbacks
-        void clusterGeometryCallback(const core::ClusterGeometryMsg::SharedPtr msg);
+        void clusterGeometryCallback(const common::ClusterGeometryMsg::SharedPtr msg);
 
     private: // Update
         void update();
 
     private: // ROS components
-        core::TimerPtr update_timer_;
+        common::TimerPtr update_timer_;
     };
 
 } // namespace flychams::operator_pkg

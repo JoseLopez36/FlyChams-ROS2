@@ -1,6 +1,6 @@
 #include "flychams_simulation/target/target_state.hpp"
 
-using namespace flychams::core;
+using namespace flychams::common;
 
 namespace flychams::simulation
 {

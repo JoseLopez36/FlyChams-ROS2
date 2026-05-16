@@ -27,10 +27,10 @@ namespace flychams::simulation
      * @date 2025-05-14
      * ════════════════════════════════════════════════════════════════
      */
-    class AgentBridge : public core::BaseModule
+    class AgentBridge : public common::BaseModule
     {
     public: // Constructor/Destructor
-        AgentBridge(const core::ID& agent_id, core::BaseNode::SharedPtr node)
+        AgentBridge(const common::ID& agent_id, common::BaseNode::SharedPtr node)
             : BaseModule(node), agent_id_(agent_id)
         {
             init();
@@ -47,13 +47,13 @@ namespace flychams::simulation
         struct Agent
         {
             // Observation setpoints subscriber
-            core::SubscriberPtr<core::ObservationSetpointsMsg> observation_setpoints_sub;
+            common::SubscriberPtr<common::ObservationSetpointsMsg> observation_setpoints_sub;
             // Camera FOV command publisher
-            core::PublisherPtr<airsim_interfaces::msg::CameraFovCmd> camera_fov_cmd_pub;
+            common::PublisherPtr<airsim_interfaces::msg::CameraFovCmd> camera_fov_cmd_pub;
             // Gimbal angle command publisher
-            core::PublisherPtr<airsim_interfaces::msg::GimbalAngleCmd> gimbal_angle_cmd_pub;
+            common::PublisherPtr<airsim_interfaces::msg::GimbalAngleCmd> gimbal_angle_cmd_pub;
             // Latest observation setpoints
-            core::ObservationSetpointsMsg observation_setpoints;
+            common::ObservationSetpointsMsg observation_setpoints;
             bool has_observation_setpoints;
             // Constructor
             Agent()
@@ -63,7 +63,7 @@ namespace flychams::simulation
         };
 
     private: // Parameters
-        core::ID agent_id_;
+        common::ID agent_id_;
         float update_rate_;
 
     private: // Data
@@ -71,7 +71,7 @@ namespace flychams::simulation
         Agent agent_;
 
     private: // Callbacks
-        void observationSetpointsCallback(const core::ObservationSetpointsMsg::SharedPtr msg);
+        void observationSetpointsCallback(const common::ObservationSetpointsMsg::SharedPtr msg);
 
     private: // Bridge management
         void update();
@@ -80,7 +80,7 @@ namespace flychams::simulation
 
     private: // ROS components
         // Timer
-        core::TimerPtr update_timer_;
+        common::TimerPtr update_timer_;
     };
 
 } // namespace flychams::simulation

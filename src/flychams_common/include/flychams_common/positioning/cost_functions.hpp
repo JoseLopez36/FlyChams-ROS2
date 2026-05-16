@@ -5,7 +5,7 @@
 #include "flychams_common/utils/math_utils.hpp"
 #include "flychams_common/utils/vision_utils.hpp"
 
-namespace flychams::core
+namespace flychams::common
 {
     /**
      * ════════════════════════════════════════════════════════════════
@@ -21,7 +21,7 @@ namespace flychams::core
         struct UnitCostParameters // Parameters for the cost of a single observation unit
         {
             // Unit parameters
-            core::ObservationUnitParameters params;
+            common::ObservationUnitParameters params;
 
             // Cost function weights for this unit
             // Psi
@@ -43,7 +43,7 @@ namespace flychams::core
         };
 
     public: // Cost functions without gradient calculation
-        static float J0(const core::Matrix3Xr& tab_P, const core::RowVectorXr& tab_r, const core::Vector3r& x, const core::Matrix4r& wTcentral, const CostParameters& cost_params)
+        static float J0(const common::Matrix3Xr& tab_P, const common::RowVectorXr& tab_r, const common::Vector3r& x, const common::Matrix4r& wTcentral, const CostParameters& cost_params)
         {
             // Compute the value of the optimization index based on nested intervals 
             // (original cost function, with non-convex term) based on unit type
@@ -58,11 +58,11 @@ namespace flychams::core
                 // Compute the value of the index based on unit type
                 switch (unit.params.type)
                 {
-                case core::ObservationType::Camera:
+                case common::ObservationType::Camera:
                     J += CostFunctions::cameraJ0(z, r, x, unit);
                     break;
 
-                case core::ObservationType::Window:
+                case common::ObservationType::Window:
                     J += CostFunctions::windowJ0(z, r, x, wTcentral, unit);
                     break;
 
@@ -75,7 +75,7 @@ namespace flychams::core
             return J;
         }
 
-        static float J1(const core::Matrix3Xr& tab_P, const core::RowVectorXr& tab_r, const core::Vector3r& x, const core::Matrix4r& wTcentral, const CostParameters& cost_params)
+        static float J1(const common::Matrix3Xr& tab_P, const common::RowVectorXr& tab_r, const common::Vector3r& x, const common::Matrix4r& wTcentral, const CostParameters& cost_params)
         {
             // Compute the value of the optimization index based on nested intervals 
             // (without non-convex term) based on unit type
@@ -90,11 +90,11 @@ namespace flychams::core
                 // Compute the value of the index based on unit type
                 switch (unit.params.type)
                 {
-                case core::ObservationType::Camera:
+                case common::ObservationType::Camera:
                     J += CostFunctions::cameraJ1(z, r, x, unit);
                     break;
 
-                case core::ObservationType::Window:
+                case common::ObservationType::Window:
                     J += CostFunctions::windowJ1(z, r, x, wTcentral, unit);
                     break;
 
@@ -107,7 +107,7 @@ namespace flychams::core
             return J;
         }
 
-        static float J2(const core::Matrix3Xr& tab_P, const core::RowVectorXr& tab_r, const core::Vector3r& x, const core::Vector3r& x_hat, const core::Matrix4r& wTcentral, const CostParameters& cost_params)
+        static float J2(const common::Matrix3Xr& tab_P, const common::RowVectorXr& tab_r, const common::Vector3r& x, const common::Vector3r& x_hat, const common::Matrix4r& wTcentral, const CostParameters& cost_params)
         {
             // Compute the value of the optimization index based on nested intervals 
             // (with convex relaxation of the non-convex term) based on unit type
@@ -122,11 +122,11 @@ namespace flychams::core
                 // Compute the value of the index based on unit type
                 switch (unit.params.type)
                 {
-                case core::ObservationType::Camera:
+                case common::ObservationType::Camera:
                     J += CostFunctions::cameraJ2(z, r, x, x_hat, unit);
                     break;
 
-                case core::ObservationType::Window:
+                case common::ObservationType::Window:
                     J += CostFunctions::windowJ2(z, r, x, x_hat, wTcentral, unit);
                     break;
 
@@ -140,10 +140,10 @@ namespace flychams::core
         }
 
     public: // Cost functions with gradient calculation
-        static float J1(const core::Matrix3Xr& tab_P, const core::RowVectorXr& tab_r, const core::Vector3r& x, const core::Matrix4r& wTcentral, const CostParameters& cost_params, core::Vector3r& grad)
+        static float J1(const common::Matrix3Xr& tab_P, const common::RowVectorXr& tab_r, const common::Vector3r& x, const common::Matrix4r& wTcentral, const CostParameters& cost_params, common::Vector3r& grad)
         {
             // Initialize the gradient
-            grad = core::Vector3r::Zero();
+            grad = common::Vector3r::Zero();
 
             // Compute the value of the optimization index based on nested intervals 
             // (without non-convex term) based on unit type
@@ -156,14 +156,14 @@ namespace flychams::core
                 const auto& unit = cost_params.units[i];
 
                 // Compute the value of the index based on unit type
-                core::Vector3r grad_i;
+                common::Vector3r grad_i;
                 switch (unit.params.type)
                 {
-                case core::ObservationType::Camera:
+                case common::ObservationType::Camera:
                     J += CostFunctions::cameraJ1(z, r, x, unit, grad_i);
                     break;
 
-                case core::ObservationType::Window:
+                case common::ObservationType::Window:
                     J += CostFunctions::windowJ1(z, r, x, wTcentral, unit, grad_i);
                     break;
 
@@ -179,10 +179,10 @@ namespace flychams::core
             return J;
         }
 
-        static float J2(const core::Matrix3Xr& tab_P, const core::RowVectorXr& tab_r, const core::Vector3r& x, const core::Vector3r& x_hat, const core::Matrix4r& wTcentral, const CostParameters& cost_params, core::Vector3r& grad)
+        static float J2(const common::Matrix3Xr& tab_P, const common::RowVectorXr& tab_r, const common::Vector3r& x, const common::Vector3r& x_hat, const common::Matrix4r& wTcentral, const CostParameters& cost_params, common::Vector3r& grad)
         {
             // Initialize the gradient
-            grad = core::Vector3r::Zero();
+            grad = common::Vector3r::Zero();
 
             // Compute the value of the optimization index based on nested intervals 
             // (with convex relaxation of the non-convex term) based on unit type
@@ -195,14 +195,14 @@ namespace flychams::core
                 const auto& unit = cost_params.units[i];
 
                 // Compute the value of the index based on unit type
-                core::Vector3r grad_i;
+                common::Vector3r grad_i;
                 switch (unit.params.type)
                 {
-                case core::ObservationType::Camera:
+                case common::ObservationType::Camera:
                     J += CostFunctions::cameraJ2(z, r, x, x_hat, unit, grad_i);
                     break;
 
-                case core::ObservationType::Window:
+                case common::ObservationType::Window:
                     J += CostFunctions::windowJ2(z, r, x, x_hat, wTcentral, unit, grad_i);
                     break;
 
@@ -219,7 +219,7 @@ namespace flychams::core
         }
 
     public: // Cost for single observation unit without gradient calculation
-        static float cameraJ0(const core::Vector3r& z, const float& r, const core::Vector3r& x, const UnitCostParameters& unit)
+        static float cameraJ0(const common::Vector3r& z, const float& r, const common::Vector3r& x, const UnitCostParameters& unit)
         {
             // Original cost function with non-convex term
             // Not valid for non-global optimization (e.g. Ellipsoid method, Nelder-Mead Simplex...)
@@ -252,7 +252,7 @@ namespace flychams::core
             const float d_ref = r * f_ref / s_ref;
 
             // Calculate what would be the ideal reference position in the case of a single target (perfect verticallity)
-            core::Vector3r p_ref = z;
+            common::Vector3r p_ref = z;
             p_ref(2) += d_ref;
 
             // Determine the nested intervals
@@ -274,13 +274,13 @@ namespace flychams::core
                 sigma2 * pow(max(0.0f, L2 - d), 2);
             const float gamma_i =
                 mu * (x - p_ref).transpose() * (x - p_ref) +
-                nu * pow((d - (x - z).transpose() * core::Vector3r(0.0f, 0.0f, 1.0f)), 2);
+                nu * pow((d - (x - z).transpose() * common::Vector3r(0.0f, 0.0f, 1.0f)), 2);
 
             // Return the value of Ji
             return psi_i + lambda_i + gamma_i;
         }
 
-        static float cameraJ1(const core::Vector3r& z, const float& r, const core::Vector3r& x, const UnitCostParameters& unit)
+        static float cameraJ1(const common::Vector3r& z, const float& r, const common::Vector3r& x, const UnitCostParameters& unit)
         {
             // Cost function without non-convex term
             // Args:
@@ -309,7 +309,7 @@ namespace flychams::core
             const float d_ref = r * f_ref / s_ref;
 
             // Calculate what would be the ideal reference position in the case of a single target (perfect verticallity)
-            core::Vector3r p_ref = z;
+            common::Vector3r p_ref = z;
             p_ref(2) += d_ref;
 
             // Determine the nested intervals
@@ -328,13 +328,13 @@ namespace flychams::core
             // const float lambda_i = 0.0f; // Non-convex term is not considered
             const float gamma_i =
                 mu * (x - p_ref).transpose() * (x - p_ref) +
-                nu * pow((d - (x - z).transpose() * core::Vector3r(0.0f, 0.0f, 1.0f)), 2);
+                nu * pow((d - (x - z).transpose() * common::Vector3r(0.0f, 0.0f, 1.0f)), 2);
 
             // Return the value of Ji
             return psi_i + gamma_i;
         }
 
-        static float cameraJ2(const core::Vector3r& z, const float& r, const core::Vector3r& x, const core::Vector3r& x_hat, const UnitCostParameters& unit)
+        static float cameraJ2(const common::Vector3r& z, const float& r, const common::Vector3r& x, const common::Vector3r& x_hat, const UnitCostParameters& unit)
         {
             // Cost function with convex relaxation of the non-convex term
             // Args:
@@ -368,9 +368,9 @@ namespace flychams::core
             const float d = (x - z).norm();
 
             // Vector indicating the direction to project
-            const core::Vector3r v = x_hat - z;
+            const common::Vector3r v = x_hat - z;
             const float v_norm = v.norm();
-            core::Vector3r eta = core::Vector3r::Zero();
+            common::Vector3r eta = common::Vector3r::Zero();
             if (v_norm > eps_dist)
                 eta = v / v_norm;
 
@@ -381,7 +381,7 @@ namespace flychams::core
             const float d_ref = r * f_ref / s_ref;
 
             // Calculate what would be the ideal reference position in the case of a single target (perfect verticallity)
-            core::Vector3r p_ref = z;
+            common::Vector3r p_ref = z;
             p_ref(2) += d_ref;
 
             // Determine the nested intervals
@@ -403,13 +403,13 @@ namespace flychams::core
                 sigma2 * pow(max(0.0f, L2 - d_proj), 2);
             const float gamma_i =
                 mu * (x - p_ref).transpose() * (x - p_ref) +
-                nu * pow((d - (x - z).transpose() * core::Vector3r(0.0f, 0.0f, 1.0f)), 2);
+                nu * pow((d - (x - z).transpose() * common::Vector3r(0.0f, 0.0f, 1.0f)), 2);
 
             // Return the value of Ji
             return psi_i + lambda_i + gamma_i;
         }
 
-        static float windowJ0(const core::Vector3r& z, const float& r, const core::Vector3r& x, const core::Matrix4r& T, const UnitCostParameters& unit)
+        static float windowJ0(const common::Vector3r& z, const float& r, const common::Vector3r& x, const common::Matrix4r& T, const UnitCostParameters& unit)
         {
             // Original cost function with non-convex term
             // Not valid for non-global optimization (e.g. Ellipsoid method, Nelder-Mead Simplex...)
@@ -443,7 +443,7 @@ namespace flychams::core
             const auto& nu = unit.nu;
 
             // Project target position onto central camera
-            core::Vector2r p = core::VisionUtils::projectPoint(z, T, K);
+            common::Vector2r p = common::VisionUtils::projectPoint(z, T, K);
 
             // Calculate the correction factor for uncentered targets
             float u_pix = full_width / 2.0f;
@@ -458,7 +458,7 @@ namespace flychams::core
             const float d_ref = (r * lambda_ref * xi) / s_ref;
 
             // Calculate what would be the ideal reference position in the case of a single target (perfect verticallity)
-            core::Vector3r p_ref = z;
+            common::Vector3r p_ref = z;
             p_ref(2) += d_ref;
 
             // Determine the nested intervals
@@ -480,13 +480,13 @@ namespace flychams::core
                 sigma2 * pow(max(0.0f, L2 - d), 2);
             const float gamma_i =
                 mu * (x - p_ref).transpose() * (x - p_ref) +
-                nu * pow((d - (x - z).transpose() * core::Vector3r(0.0f, 0.0f, 1.0f)), 2);
+                nu * pow((d - (x - z).transpose() * common::Vector3r(0.0f, 0.0f, 1.0f)), 2);
 
             // Return the value of Ji
             return psi_i + lambda_i + gamma_i;
         }
 
-        static float windowJ1(const core::Vector3r& z, const float& r, const core::Vector3r& x, const core::Matrix4r& T, const UnitCostParameters& unit)
+        static float windowJ1(const common::Vector3r& z, const float& r, const common::Vector3r& x, const common::Matrix4r& T, const UnitCostParameters& unit)
         {
             // Cost function without non-convex term
             // Args:
@@ -516,7 +516,7 @@ namespace flychams::core
             const auto& nu = unit.nu;
 
             // Project target position onto central camera
-            core::Vector2r p = core::VisionUtils::projectPoint(z, T, K);
+            common::Vector2r p = common::VisionUtils::projectPoint(z, T, K);
 
             // Calculate the correction factor for uncentered targets
             float u_pix = full_width / 2.0f;
@@ -531,7 +531,7 @@ namespace flychams::core
             const float d_ref = (r * lambda_ref * xi) / s_ref;
 
             // Calculate what would be the ideal reference position in the case of a single target (perfect verticallity)
-            core::Vector3r p_ref = z;
+            common::Vector3r p_ref = z;
             p_ref(2) += d_ref;
 
             // Determine the nested intervals
@@ -550,13 +550,13 @@ namespace flychams::core
             // const float lambda_i = 0.0f; // Non-convex term is not considered
             const float gamma_i =
                 mu * (x - p_ref).transpose() * (x - p_ref) +
-                nu * pow((d - (x - z).transpose() * core::Vector3r(0.0f, 0.0f, 1.0f)), 2);
+                nu * pow((d - (x - z).transpose() * common::Vector3r(0.0f, 0.0f, 1.0f)), 2);
 
             // Return the value of Ji
             return psi_i + gamma_i;
         }
 
-        static float windowJ2(const core::Vector3r& z, const float& r, const core::Vector3r& x, const core::Vector3r& x_hat, const core::Matrix4r& T, const UnitCostParameters& unit)
+        static float windowJ2(const common::Vector3r& z, const float& r, const common::Vector3r& x, const common::Vector3r& x_hat, const common::Matrix4r& T, const UnitCostParameters& unit)
         {
             // Cost function with convex relaxation of the non-convex term
             // Args:
@@ -594,7 +594,7 @@ namespace flychams::core
             const auto& nu = unit.nu;
 
             // Project target position onto central camera
-            core::Vector2r p = core::VisionUtils::projectPoint(z, T, K);
+            common::Vector2r p = common::VisionUtils::projectPoint(z, T, K);
 
             // Calculate the correction factor for uncentered targets
             float u_pix = full_width / 2.0f;
@@ -606,9 +606,9 @@ namespace flychams::core
             const float d = (x - z).norm();
 
             // Vector indicating the direction to project
-            const core::Vector3r v = x_hat - z;
+            const common::Vector3r v = x_hat - z;
             const float v_norm = v.norm();
-            core::Vector3r eta = core::Vector3r::Zero();
+            common::Vector3r eta = common::Vector3r::Zero();
             if (v_norm > eps_dist)
                 eta = v / v_norm;
 
@@ -619,7 +619,7 @@ namespace flychams::core
             const float d_ref = (r * lambda_ref * xi) / s_ref;
 
             // Calculate what would be the ideal reference position in the case of a single target (perfect verticallity)
-            core::Vector3r p_ref = z;
+            common::Vector3r p_ref = z;
             p_ref(2) += d_ref;
 
             // Determine the nested intervals
@@ -641,14 +641,14 @@ namespace flychams::core
                 sigma2 * pow(max(0.0f, L2 - d_proj), 2);
             const float gamma_i =
                 mu * (x - p_ref).transpose() * (x - p_ref) +
-                nu * pow((d - (x - z).transpose() * core::Vector3r(0.0f, 0.0f, 1.0f)), 2);
+                nu * pow((d - (x - z).transpose() * common::Vector3r(0.0f, 0.0f, 1.0f)), 2);
 
             // Return the value of Ji
             return psi_i + lambda_i + gamma_i;
         }
 
     public: // Cost for single tracking unit with gradient calculation
-        static float cameraJ1(const core::Vector3r& z, const float& r, const core::Vector3r& x, const UnitCostParameters& unit, core::Vector3r& grad)
+        static float cameraJ1(const common::Vector3r& z, const float& r, const common::Vector3r& x, const UnitCostParameters& unit, common::Vector3r& grad)
         {
             // Cost function without non-convex term
             // Args:
@@ -672,15 +672,15 @@ namespace flychams::core
             const auto& nu = unit.nu;
 
             // Initialize the gradient
-            grad = core::Vector3r::Zero();
+            grad = common::Vector3r::Zero();
 
             // Target position and distance to its camera (approximated by distance to the vehicle)
             const float d = (x - z).norm();
 
             // Vector indicating the direction to project
-            const core::Vector3r v_rho = x - z;
+            const common::Vector3r v_rho = x - z;
             const float v_rho_norm = v_rho.norm();
-            core::Vector3r rho = core::Vector3r::Zero();
+            common::Vector3r rho = common::Vector3r::Zero();
             if (v_rho_norm > 0.001f)
                 rho = v_rho / v_rho_norm;
 
@@ -688,7 +688,7 @@ namespace flychams::core
             const float d_ref = r * f_ref / s_ref;
 
             // Calculate what would be the ideal reference position in the case of a single target (perfect verticallity)
-            core::Vector3r p_ref = z;
+            common::Vector3r p_ref = z;
             p_ref(2) += d_ref;
 
             // Determine the nested intervals
@@ -707,7 +707,7 @@ namespace flychams::core
             // const float lambda_i = 0.0f; // Non-convex term is not considered
             const float gamma_i =
                 mu * (x - p_ref).transpose() * (x - p_ref) +
-                nu * pow((d - (x - z).transpose() * core::Vector3r(0.0f, 0.0f, 1.0f)), 2);
+                nu * pow((d - (x - z).transpose() * common::Vector3r(0.0f, 0.0f, 1.0f)), 2);
 
             // Compute the gradient of the cost function
             // Psi gradient
@@ -716,7 +716,7 @@ namespace flychams::core
                     tau1 * max(0.0f, d - U1) * heaviside(d, U1) +
                     tau2 * max(0.0f, d - U2) * heaviside(d, U2));
             // Gamma gradient
-            core::Vector3r grad_gamma;
+            common::Vector3r grad_gamma;
             grad_gamma(0) = 2.0f * (x(0) - p_ref(0)) + 2.0f * (d - (x(2) - z(2))) * (x(0) - z(0)) / d;
             grad_gamma(1) = 2.0f * (x(1) - p_ref(1)) + 2.0f * (d - (x(2) - z(2))) * (x(1) - z(1)) / d;
             grad_gamma(2) = 2.0f * (x(2) - p_ref(2)) + 2.0f * (d - (x(2) - z(2))) * ((x(2) - z(2)) / d - 1.0f);
@@ -727,7 +727,7 @@ namespace flychams::core
             return psi_i + gamma_i;
         }
 
-        static float cameraJ2(const core::Vector3r& z, const float& r, const core::Vector3r& x, const core::Vector3r& x_hat, const UnitCostParameters& unit, core::Vector3r& grad)
+        static float cameraJ2(const common::Vector3r& z, const float& r, const common::Vector3r& x, const common::Vector3r& x_hat, const UnitCostParameters& unit, common::Vector3r& grad)
         {
             // Cost function with convex relaxation of the non-convex term
             // Args:
@@ -759,21 +759,21 @@ namespace flychams::core
             const auto& nu = unit.nu;
 
             // Initialize the gradient
-            grad = core::Vector3r::Zero();
+            grad = common::Vector3r::Zero();
 
             // Target position and distance to its camera (approximated by distance to the vehicle)
             const float d = (x - z).norm();
 
             // Vector indicating the direction to project
-            const core::Vector3r v = x_hat - z;
+            const common::Vector3r v = x_hat - z;
             const float v_norm = v.norm();
-            core::Vector3r eta = core::Vector3r::Zero();
+            common::Vector3r eta = common::Vector3r::Zero();
             if (v_norm > eps_dist)
                 eta = v / v_norm;
 
-            const core::Vector3r v_rho = x - z;
+            const common::Vector3r v_rho = x - z;
             const float v_rho_norm = v_rho.norm();
-            core::Vector3r rho = core::Vector3r::Zero();
+            common::Vector3r rho = common::Vector3r::Zero();
             if (v_rho_norm > 0.001f)
                 rho = v_rho / v_rho_norm;
 
@@ -784,7 +784,7 @@ namespace flychams::core
             const float d_ref = r * f_ref / s_ref;
 
             // Calculate what would be the ideal reference position in the case of a single target (perfect verticallity)
-            core::Vector3r p_ref = z;
+            common::Vector3r p_ref = z;
             p_ref(2) += d_ref;
 
             // Determine the nested intervals
@@ -806,7 +806,7 @@ namespace flychams::core
                 sigma2 * pow(max(0.0f, L2 - d_proj), 2);
             const float gamma_i =
                 mu * (x - p_ref).transpose() * (x - p_ref) +
-                nu * pow((d - (x - z).transpose() * core::Vector3r(0.0f, 0.0f, 1.0f)), 2);
+                nu * pow((d - (x - z).transpose() * common::Vector3r(0.0f, 0.0f, 1.0f)), 2);
 
             // Compute the gradient of the cost function
             // Psi gradient
@@ -820,7 +820,7 @@ namespace flychams::core
                     sigma1 * max(0.0f, L1 - d_proj) * heaviside(L1, d_proj) +
                     sigma2 * max(0.0f, L2 - d_proj) * heaviside(L2, d_proj));
             // Gamma gradient
-            core::Vector3r grad_gamma;
+            common::Vector3r grad_gamma;
             grad_gamma(0) = 2.0f * (x(0) - p_ref(0)) + 2.0f * (d - (x(2) - z(2))) * (x(0) - z(0)) / d;
             grad_gamma(1) = 2.0f * (x(1) - p_ref(1)) + 2.0f * (d - (x(2) - z(2))) * (x(1) - z(1)) / d;
             grad_gamma(2) = 2.0f * (x(2) - p_ref(2)) + 2.0f * (d - (x(2) - z(2))) * ((x(2) - z(2)) / d - 1.0f);
@@ -831,7 +831,7 @@ namespace flychams::core
             return psi_i + lambda_i + gamma_i;
         }
 
-        static float windowJ1(const core::Vector3r& z, const float& r, const core::Vector3r& x, const core::Matrix4r& T, const UnitCostParameters& unit, core::Vector3r& grad)
+        static float windowJ1(const common::Vector3r& z, const float& r, const common::Vector3r& x, const common::Matrix4r& T, const UnitCostParameters& unit, common::Vector3r& grad)
         {
             // Cost function without non-convex term
             // Args:
@@ -862,10 +862,10 @@ namespace flychams::core
             const auto& nu = unit.nu;
 
             // Initialize the gradient
-            grad = core::Vector3r::Zero();
+            grad = common::Vector3r::Zero();
 
             // Project target position onto central camera
-            core::Vector2r p = core::VisionUtils::projectPoint(z, T, K);
+            common::Vector2r p = common::VisionUtils::projectPoint(z, T, K);
 
             // Calculate the correction factor for uncentered targets
             float u_pix = full_width / 2.0f;
@@ -877,9 +877,9 @@ namespace flychams::core
             const float d = (x - z).norm();
 
             // Vector indicating the direction to project
-            const core::Vector3r v_rho = x - z;
+            const common::Vector3r v_rho = x - z;
             const float v_rho_norm = v_rho.norm();
-            core::Vector3r rho = core::Vector3r::Zero();
+            common::Vector3r rho = common::Vector3r::Zero();
             if (v_rho_norm > 0.001f)
                 rho = v_rho / v_rho_norm;
 
@@ -887,7 +887,7 @@ namespace flychams::core
             const float d_ref = (r * lambda_ref * xi) / s_ref;
 
             // Calculate what would be the ideal reference position in the case of a single target (perfect verticallity)
-            core::Vector3r p_ref = z;
+            common::Vector3r p_ref = z;
             p_ref(2) += d_ref;
 
             // Determine the nested intervals
@@ -906,7 +906,7 @@ namespace flychams::core
             // const float lambda_i = 0.0f; // Non-convex term is not considered
             const float gamma_i =
                 mu * (x - p_ref).transpose() * (x - p_ref) +
-                nu * pow((d - (x - z).transpose() * core::Vector3r(0.0f, 0.0f, 1.0f)), 2);
+                nu * pow((d - (x - z).transpose() * common::Vector3r(0.0f, 0.0f, 1.0f)), 2);
 
             // Compute the gradient of the cost function
             // Psi gradient
@@ -915,7 +915,7 @@ namespace flychams::core
                     tau1 * max(0.0f, d - U1) * heaviside(d, U1) +
                     tau2 * max(0.0f, d - U2) * heaviside(d, U2));
             // Gamma gradient
-            core::Vector3r grad_gamma;
+            common::Vector3r grad_gamma;
             grad_gamma(0) = 2.0f * (x(0) - p_ref(0)) + 2.0f * (d - (x(2) - z(2))) * (x(0) - z(0)) / d;
             grad_gamma(1) = 2.0f * (x(1) - p_ref(1)) + 2.0f * (d - (x(2) - z(2))) * (x(1) - z(1)) / d;
             grad_gamma(2) = 2.0f * (x(2) - p_ref(2)) + 2.0f * (d - (x(2) - z(2))) * ((x(2) - z(2)) / d - 1.0f);
@@ -926,7 +926,7 @@ namespace flychams::core
             return psi_i + gamma_i;
         }
 
-        static float windowJ2(const core::Vector3r& z, const float& r, const core::Vector3r& x, const core::Vector3r& x_hat, const core::Matrix4r& T, const UnitCostParameters& unit, core::Vector3r& grad)
+        static float windowJ2(const common::Vector3r& z, const float& r, const common::Vector3r& x, const common::Vector3r& x_hat, const common::Matrix4r& T, const UnitCostParameters& unit, common::Vector3r& grad)
         {
             // Cost function with convex relaxation of the non-convex term
             // Args:
@@ -965,10 +965,10 @@ namespace flychams::core
             const auto& nu = unit.nu;
 
             // Initialize the gradient
-            grad = core::Vector3r::Zero();
+            grad = common::Vector3r::Zero();
 
             // Project target position onto central camera
-            core::Vector2r p = core::VisionUtils::projectPoint(z, T, K);
+            common::Vector2r p = common::VisionUtils::projectPoint(z, T, K);
 
             // Calculate the correction factor for uncentered targets
             float u_pix = full_width / 2.0f;
@@ -980,15 +980,15 @@ namespace flychams::core
             const float d = (x - z).norm();
 
             // Vector indicating the direction to project
-            const core::Vector3r v = x_hat - z;
+            const common::Vector3r v = x_hat - z;
             const float v_norm = v.norm();
-            core::Vector3r eta = core::Vector3r::Zero();
+            common::Vector3r eta = common::Vector3r::Zero();
             if (v_norm > eps_dist)
                 eta = v / v_norm;
 
-            const core::Vector3r v_rho = x - z;
+            const common::Vector3r v_rho = x - z;
             const float v_rho_norm = v_rho.norm();
-            core::Vector3r rho = core::Vector3r::Zero();
+            common::Vector3r rho = common::Vector3r::Zero();
             if (v_rho_norm > 0.001f)
                 rho = v_rho / v_rho_norm;
 
@@ -999,7 +999,7 @@ namespace flychams::core
             const float d_ref = (r * lambda_ref * xi) / s_ref;
 
             // Calculate what would be the ideal reference position in the case of a single target (perfect verticallity)
-            core::Vector3r p_ref = z;
+            common::Vector3r p_ref = z;
             p_ref(2) += d_ref;
 
             // Determine the nested intervals
@@ -1021,7 +1021,7 @@ namespace flychams::core
                 sigma2 * pow(max(0.0f, L2 - d_proj), 2);
             const float gamma_i =
                 mu * (x - p_ref).transpose() * (x - p_ref) +
-                nu * pow((d - (x - z).transpose() * core::Vector3r(0.0f, 0.0f, 1.0f)), 2);
+                nu * pow((d - (x - z).transpose() * common::Vector3r(0.0f, 0.0f, 1.0f)), 2);
 
             // Compute the gradient of the cost function
             // Psi gradient
@@ -1035,7 +1035,7 @@ namespace flychams::core
                     sigma1 * max(0.0f, L1 - d_proj) * heaviside(L1, d_proj) +
                     sigma2 * max(0.0f, L2 - d_proj) * heaviside(L2, d_proj));
             // Gamma gradient
-            core::Vector3r grad_gamma;
+            common::Vector3r grad_gamma;
             grad_gamma(0) = 2.0f * (x(0) - p_ref(0)) + 2.0f * (d - (x(2) - z(2))) * (x(0) - z(0)) / d;
             grad_gamma(1) = 2.0f * (x(1) - p_ref(1)) + 2.0f * (d - (x(2) - z(2))) * (x(1) - z(1)) / d;
             grad_gamma(2) = 2.0f * (x(2) - p_ref(2)) + 2.0f * (d - (x(2) - z(2))) * ((x(2) - z(2)) / d - 1.0f);
@@ -1063,4 +1063,4 @@ namespace flychams::core
         }
     };
 
-} // namespace flychams::core
+} // namespace flychams::common

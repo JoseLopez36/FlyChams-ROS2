@@ -23,10 +23,10 @@ namespace flychams::operator_pkg
      * @date 2025-05-14
      * ════════════════════════════════════════════════════════════════
      */
-    class AgentMetrics : public core::BaseModule
+    class AgentMetrics : public common::BaseModule
     {
     public: // Constructor/Destructor
-        AgentMetrics(const core::ID& agent_id, core::BaseNode::SharedPtr node)
+        AgentMetrics(const common::ID& agent_id, common::BaseNode::SharedPtr node)
             : BaseModule(node), agent_id_(agent_id)
         {
             init();
@@ -41,20 +41,20 @@ namespace flychams::operator_pkg
         struct AgentData
         {
             // Latest position
-            core::PointMsg position;
+            common::PointMsg position;
             bool has_position;
             // Latest setpoint
-            core::PointMsg setpoint;
+            common::PointMsg setpoint;
             bool has_setpoint;
             // Latest zoom factors (from observation setpoints)
             std::vector<float> zoom_factors;
             bool has_observation_setpoints;
             // Publisher
-            core::PublisherPtr<core::AgentMetricsMsg> metrics_pub;
+            common::PublisherPtr<common::AgentMetricsMsg> metrics_pub;
             // Subscribers
-            core::SubscriberPtr<core::PointStampedMsg> local_position_sub;
-            core::SubscriberPtr<core::PointStampedMsg> position_setpoint_sub;
-            core::SubscriberPtr<core::ObservationSetpointsMsg> observation_setpoints_sub;
+            common::SubscriberPtr<common::PointStampedMsg> local_position_sub;
+            common::SubscriberPtr<common::PointStampedMsg> position_setpoint_sub;
+            common::SubscriberPtr<common::ObservationSetpointsMsg> observation_setpoints_sub;
             // Constructor
             AgentData()
                 : position(), has_position(false), setpoint(), has_setpoint(false),
@@ -66,29 +66,29 @@ namespace flychams::operator_pkg
         };
 
     private: // Parameters
-        core::ID agent_id_;
+        common::ID agent_id_;
         float update_rate_;
 
     private: // Accumulated data
         AgentData agent_;
-        core::PointMsg last_position_;
+        common::PointMsg last_position_;
         float distance_traveled_;
         float total_speed_;
         int speed_samples_;
-        core::Time last_update_time_;
+        common::Time last_update_time_;
         float time_elapsed_;
-        core::Time mission_start_time_;
+        common::Time mission_start_time_;
 
     private: // Callbacks
-        void localPositionCallback(const core::PointStampedMsg::SharedPtr msg);
-        void positionSetpointCallback(const core::PointStampedMsg::SharedPtr msg);
-        void observationSetpointsCallback(const core::ObservationSetpointsMsg::SharedPtr msg);
+        void localPositionCallback(const common::PointStampedMsg::SharedPtr msg);
+        void positionSetpointCallback(const common::PointStampedMsg::SharedPtr msg);
+        void observationSetpointsCallback(const common::ObservationSetpointsMsg::SharedPtr msg);
 
     private: // Update
         void update();
 
     private: // ROS components
-        core::TimerPtr update_timer_;
+        common::TimerPtr update_timer_;
     };
 
 } // namespace flychams::operator_pkg

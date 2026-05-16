@@ -1,6 +1,6 @@
 #include "flychams_agent/drone/drone_state.hpp"
 
-using namespace flychams::core;
+using namespace flychams::common;
 
 namespace flychams::agent
 {
@@ -57,7 +57,7 @@ namespace flychams::agent
         agent_.has_state = true;
     }
 
-    void DroneState::localOdomCallback(const core::OdometryMsg::SharedPtr msg)
+    void DroneState::localOdomCallback(const common::OdometryMsg::SharedPtr msg)
     {
         // Check if we have a valid state
         if (!agent_.has_state)

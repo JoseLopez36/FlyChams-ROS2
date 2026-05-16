@@ -25,10 +25,10 @@ namespace flychams::coordinator
 	 * @date 2025-02-26
 	 * ════════════════════════════════════════════════════════════════
 	 */
-	class TargetClustering : public core::BaseDiscovererModule
+	class TargetClustering : public common::BaseDiscovererModule
 	{
 	public: // Constructor/Destructor
-		TargetClustering(core::BaseDiscovererNode::SharedPtr node)
+		TargetClustering(common::BaseDiscovererNode::SharedPtr node)
 			: BaseDiscovererModule(node)
 		{
 			init();
@@ -43,7 +43,7 @@ namespace flychams::coordinator
 		struct Cluster
 		{
 			// Publisher
-			core::PublisherPtr<core::ClusterAssignmentMsg> assignment_pub;
+			common::PublisherPtr<common::ClusterAssignmentMsg> assignment_pub;
 			// Constructor
 			Cluster()
 				: assignment_pub()
@@ -53,10 +53,10 @@ namespace flychams::coordinator
 		struct Target
 		{
 			// Position data
-			core::PointMsg position;
+			common::PointMsg position;
 			bool has_position;
 			// Subscriber
-			core::SubscriberPtr<core::PointStampedMsg> position_sub;
+			common::SubscriberPtr<common::PointStampedMsg> position_sub;
 			// Constructor
 			Target()
 				: position(), has_position(false), position_sub()
@@ -71,34 +71,34 @@ namespace flychams::coordinator
 
 	private: // Data
 		// Clusters
-		std::unordered_map<core::ID, Cluster> clusters_;
-		std::set<core::ID> C_;
+		std::unordered_map<common::ID, Cluster> clusters_;
+		std::set<common::ID> C_;
 		// Targets
-		std::unordered_map<core::ID, Target> targets_;
-		std::set<core::ID> T_;
+		std::unordered_map<common::ID, Target> targets_;
+		std::set<common::ID> T_;
 		// K-Means clustering data
-		core::RowVectorXi assignments_prev_;
+		common::RowVectorXi assignments_prev_;
 		bool is_first_run_;
 		// K-Means clustering solver
-		core::KMeansMod::SharedPtr k_means_solver_;
+		common::KMeansMod::SharedPtr k_means_solver_;
 		// Time step
-		core::Time last_update_time_;
+		common::Time last_update_time_;
 
 	public: // Public methods
-		void addCluster(const core::ID& cluster_id);
-		void addTarget(const core::ID& target_id);
-		void removeCluster(const core::ID& cluster_id);
-		void removeTarget(const core::ID& target_id);
+		void addCluster(const common::ID& cluster_id);
+		void addTarget(const common::ID& target_id);
+		void removeCluster(const common::ID& cluster_id);
+		void removeTarget(const common::ID& target_id);
 
 	private: // Callbacks
-		void targetPositionCallback(const core::ID& target_id, const core::PointStampedMsg::SharedPtr msg);
+		void targetPositionCallback(const common::ID& target_id, const common::PointStampedMsg::SharedPtr msg);
 
 	private: // Clustering management
 		void update();
 
 	private: // ROS components
 		// Timer
-		core::TimerPtr update_timer_;
+		common::TimerPtr update_timer_;
 	};
 
 } // namespace flychams::coordinator

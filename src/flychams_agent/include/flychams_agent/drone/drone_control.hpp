@@ -19,10 +19,10 @@ namespace flychams::agent
 	 * @date 2025-01-29
 	 * ════════════════════════════════════════════════════════════════
 	 */
-	class DroneControl : public core::BaseStatusModule
+	class DroneControl : public common::BaseStatusModule
 	{
 	public: // Constructor/Destructor
-		DroneControl(const core::ID& agent_id, core::BaseStatusNode::SharedPtr node)
+		DroneControl(const common::ID& agent_id, common::BaseStatusNode::SharedPtr node)
 			: BaseStatusModule(node), agent_id_(agent_id)
 		{
 			init();
@@ -48,18 +48,18 @@ namespace flychams::agent
 		struct Agent
 		{
 			// Status data
-			core::AgentStatus status;
+			common::AgentStatus status;
 			bool has_status;
 			// Position data
-			core::PointStampedMsg local_position;
+			common::PointStampedMsg local_position;
 			bool has_local_position;
 			// Setpoint data
-			core::PointStampedMsg setpoint;
+			common::PointStampedMsg setpoint;
 			bool has_setpoint;
 			// Subscribers
-			core::SubscriberPtr<core::AgentStatusMsg> status_sub;
-			core::SubscriberPtr<core::PointStampedMsg> local_position_sub;
-			core::SubscriberPtr<core::PointStampedMsg> setpoint_sub;
+			common::SubscriberPtr<common::AgentStatusMsg> status_sub;
+			common::SubscriberPtr<common::PointStampedMsg> local_position_sub;
+			common::SubscriberPtr<common::PointStampedMsg> setpoint_sub;
 			// Constructor
 			Agent()
 				: status(), has_status(false), local_position(), has_local_position(false), setpoint(),
@@ -69,7 +69,7 @@ namespace flychams::agent
 		};
 
 	private: // Parameters
-		core::ID agent_id_;
+		common::ID agent_id_;
 		float update_rate_;
 		// Control mode
 		ControlMode control_mode_;
@@ -83,14 +83,14 @@ namespace flychams::agent
 		// Command counter
 		uint8_t command_counter_;
 		// Last update time
-		core::Time last_update_time_;
+		common::Time last_update_time_;
 		// Mavros communication
 		MavrosCommunication::SharedPtr mavros_comm_;
 
 	private: // Callbacks
-		void statusCallback(const core::AgentStatusMsg::SharedPtr msg);
-		void localPositionCallback(const core::PointStampedMsg::SharedPtr msg);
-		void setpointPositionCallback(const core::PointStampedMsg::SharedPtr msg);
+		void statusCallback(const common::AgentStatusMsg::SharedPtr msg);
+		void localPositionCallback(const common::PointStampedMsg::SharedPtr msg);
+		void setpointPositionCallback(const common::PointStampedMsg::SharedPtr msg);
 
 	private: // Control management
 		void update();
@@ -105,11 +105,11 @@ namespace flychams::agent
 		bool requestLand();
 
 	private: // Helper methods
-		bool isInsideFlyingBox(const core::PointMsg& point);
+		bool isInsideFlyingBox(const common::PointMsg& point);
 
 	private: // ROS components
 		// Timer
-		core::TimerPtr update_timer_;
+		common::TimerPtr update_timer_;
 	};
 
 } // namespace flychams::agent

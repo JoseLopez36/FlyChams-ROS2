@@ -4,7 +4,7 @@
 #include "flychams_common/types/core_types.hpp"
 #include "flychams_common/utils/math_utils.hpp"
 
-namespace flychams::core
+namespace flychams::common
 {
     /**
      * ════════════════════════════════════════════════════════════════
@@ -27,7 +27,7 @@ namespace flychams::core
 
     private: // Data
         float focal_prev_;
-        core::Vector3r rpy_prev_;
+        common::Vector3r rpy_prev_;
         bool is_first_update_;
 
     public: // Public methods
@@ -41,7 +41,7 @@ namespace flychams::core
         }
 
         // Runtime methods
-        std::tuple<float, core::Vector3r> run(const core::Vector3r& z, const float& r, const core::Matrix4r& T, const core::ObservationUnitParameters& unit_params)
+        std::tuple<float, common::Vector3r> run(const common::Vector3r& z, const float& r, const common::Matrix4r& T, const common::ObservationUnitParameters& unit_params)
         {
             // Args:
             // z: Target position in world frame (m)
@@ -50,8 +50,8 @@ namespace flychams::core
             // unit_params: Observation unit parameters
 
             // Extract camera position and orientation
-            const core::Vector3r x = T.block<3, 1>(0, 3);
-            const core::Matrix3r R = T.block<3, 3>(0, 0);
+            const common::Vector3r x = T.block<3, 1>(0, 3);
+            const common::Matrix3r R = T.block<3, 3>(0, 0);
 
             // Compute focal length
             const auto focal = computeCameraFocal(z, r, x, unit_params);
@@ -60,10 +60,10 @@ namespace flychams::core
             focal_prev_ = focal;
 
             // Compute camera orientation
-            core::Vector3r rpy;
+            common::Vector3r rpy;
             if (is_first_update_)
             {
-                rpy = computeCameraOrientation(z, x, R, core::Vector3r(), true);
+                rpy = computeCameraOrientation(z, x, R, common::Vector3r(), true);
                 is_first_update_ = false;
             }
             else
@@ -79,7 +79,7 @@ namespace flychams::core
         }
 
     private: // Implementation
-        float computeCameraFocal(const core::Vector3r& z, const float& r, const core::Vector3r& x, const core::ObservationUnitParameters& unit_params)
+        float computeCameraFocal(const common::Vector3r& z, const float& r, const common::Vector3r& x, const common::ObservationUnitParameters& unit_params)
         {
             // Args:
             // z: Target position in world frame (m)
@@ -105,7 +105,7 @@ namespace flychams::core
             return f;
         }
 
-        core::Vector3r computeCameraOrientation(const core::Vector3r& z, const core::Vector3r& x, const core::Matrix3r& wRc, const core::Vector3r& prev_rpy, const bool& is_first_update)
+        common::Vector3r computeCameraOrientation(const common::Vector3r& z, const common::Vector3r& x, const common::Matrix3r& wRc, const common::Vector3r& prev_rpy, const bool& is_first_update)
         {
             // Args:
             // z: Target position in world frame (m)
@@ -114,14 +114,14 @@ namespace flychams::core
             // prev_rpy: Previous orientation in RPY format (rad)
             // is_first_update: Whether it is the first update
 
-            core::Vector3r rpy = core::Vector3r::Zero(); // roll, pitch, yaw
+            common::Vector3r rpy = common::Vector3r::Zero(); // roll, pitch, yaw
 
             // Determine aiming mode
             const AimingMode mode = is_first_update ? AimingMode::INITIAL : AimingMode::CONTINUOUS;
 
             // Compute direction vector
-            const core::Vector3r t = z - x;
-            const core::Vector3r v = t.normalized();
+            const common::Vector3r t = z - x;
+            const common::Vector3r v = t.normalized();
 
             // Handle vertical downward case
             if (std::abs(v.z() - 1.0f) < 1e-6f)
@@ -142,7 +142,7 @@ namespace flychams::core
             switch (mode)
             {
             case AimingMode::INITIAL:
-                return core::Vector3r(0.0f, pitch1, yaw1);
+                return common::Vector3r(0.0f, pitch1, yaw1);
 
             case AimingMode::CONTINUOUS:
             {
@@ -154,7 +154,7 @@ namespace flychams::core
             }
         }
 
-        std::pair<float, float> calculateCameraBaseSolution(const core::Vector3r& v)
+        std::pair<float, float> calculateCameraBaseSolution(const common::Vector3r& v)
         {
             return {
                 std::atan2(v.x(), -v.y()),    // Yaw (Z-axis rotation)
@@ -162,7 +162,7 @@ namespace flychams::core
             };
         }
 
-        std::pair<float, float> calculateCameraInvertedSolution(const core::Vector3r& v)
+        std::pair<float, float> calculateCameraInvertedSolution(const common::Vector3r& v)
         {
             return {
                 std::atan2(-v.x(), v.y()),    // Yaw (Z-axis rotation)
@@ -170,20 +170,20 @@ namespace flychams::core
             };
         }
 
-        core::Vector3r calculateCameraContinuousSolution(const float& yaw1, const float& pitch1, const float& yaw2, const float& pitch2, const core::Vector3r& prev_rpy)
+        common::Vector3r calculateCameraContinuousSolution(const float& yaw1, const float& pitch1, const float& yaw2, const float& pitch2, const common::Vector3r& prev_rpy)
         {
             // Normalize angles to [-pi, pi]
-            const float prev_yaw = core::MathUtils::normalizeAngle(prev_rpy(2));
-            const float norm_yaw1 = core::MathUtils::normalizeAngle(yaw1);
-            const float norm_yaw2 = core::MathUtils::normalizeAngle(yaw2);
+            const float prev_yaw = common::MathUtils::normalizeAngle(prev_rpy(2));
+            const float norm_yaw1 = common::MathUtils::normalizeAngle(yaw1);
+            const float norm_yaw2 = common::MathUtils::normalizeAngle(yaw2);
 
             // Calculate angular distances
-            const float dist1 = std::abs(core::MathUtils::normalizeAngle(norm_yaw1 - prev_yaw));
-            const float dist2 = std::abs(core::MathUtils::normalizeAngle(norm_yaw2 - prev_yaw));
+            const float dist1 = std::abs(common::MathUtils::normalizeAngle(norm_yaw1 - prev_yaw));
+            const float dist2 = std::abs(common::MathUtils::normalizeAngle(norm_yaw2 - prev_yaw));
 
             // Choose closest yaw solution
-            return (dist1 <= dist2) ? core::Vector3r(0.0f, pitch1, norm_yaw1) : core::Vector3r(0.0f, pitch2, norm_yaw2);
+            return (dist1 <= dist2) ? common::Vector3r(0.0f, pitch1, norm_yaw1) : common::Vector3r(0.0f, pitch2, norm_yaw2);
         }
     };
 
-} // namespace flychams::core
+} // namespace flychams::common

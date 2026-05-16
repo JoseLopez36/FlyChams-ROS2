@@ -9,7 +9,7 @@
 #include "flychams_common/utils/math_utils.hpp"
 #include "flychams_common/utils/vision_utils.hpp"
 
-namespace flychams::core
+namespace flychams::common
 {
 	/**
 	 * ════════════════════════════════════════════════════════════════
@@ -40,4 +40,4 @@ namespace flychams::core
 		static void parseFrameParameters(const NodePtr& node, MissionConfigPtr& config_ptr);
 	};
 
-} // namespace flychams::core
+} // namespace flychams::common

@@ -7,7 +7,7 @@
 // Core includes
 #include "flychams_common/types/core_types.hpp"
 
-namespace flychams::core
+namespace flychams::common
 {
     class MathUtils
     {
@@ -60,4 +60,4 @@ namespace flychams::core
         static Quaternionr quatFromMatrix(const Matrix3r& matrix);
     };
 
-}  // namespace flychams::core
+}  // namespace flychams::common

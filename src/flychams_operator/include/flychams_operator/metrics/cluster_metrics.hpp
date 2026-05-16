@@ -22,10 +22,10 @@ namespace flychams::operator_pkg
      * @date 2025-05-14
      * ════════════════════════════════════════════════════════════════
      */
-    class ClusterMetrics : public core::BaseModule
+    class ClusterMetrics : public common::BaseModule
     {
     public: // Constructor/Destructor
-        ClusterMetrics(const core::ID& cluster_id, core::BaseNode::SharedPtr node)
+        ClusterMetrics(const common::ID& cluster_id, common::BaseNode::SharedPtr node)
             : BaseModule(node), cluster_id_(cluster_id)
         {
             init();
@@ -40,13 +40,13 @@ namespace flychams::operator_pkg
         struct ClusterData
         {
             // Latest centroid
-            core::PointMsg center;
+            common::PointMsg center;
             float radius;
             bool has_geometry;
             // Publisher
-            core::PublisherPtr<core::ClusterMetricsMsg> metrics_pub;
+            common::PublisherPtr<common::ClusterMetricsMsg> metrics_pub;
             // Subscribers
-            core::SubscriberPtr<core::ClusterGeometryMsg> geometry_sub;
+            common::SubscriberPtr<common::ClusterGeometryMsg> geometry_sub;
             // Constructor
             ClusterData()
                 : center(), radius(0.0f), has_geometry(false), metrics_pub(), geometry_sub()
@@ -55,26 +55,26 @@ namespace flychams::operator_pkg
         };
 
     private: // Parameters
-        core::ID cluster_id_;
+        common::ID cluster_id_;
         float update_rate_;
 
     private: // Accumulated data
         ClusterData cluster_;
-        core::PointMsg last_center_;
+        common::PointMsg last_center_;
         float distance_traveled_;
         float total_speed_;
         int speed_samples_;
-        core::Time last_update_time_;
+        common::Time last_update_time_;
         float time_elapsed_;
 
     private: // Callbacks
-        void clusterGeometryCallback(const core::ClusterGeometryMsg::SharedPtr msg);
+        void clusterGeometryCallback(const common::ClusterGeometryMsg::SharedPtr msg);
 
     private: // Update
         void update();
 
     private: // ROS components
-        core::TimerPtr update_timer_;
+        common::TimerPtr update_timer_;
     };
 
 } // namespace flychams::operator_pkg

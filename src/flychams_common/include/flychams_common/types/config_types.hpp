@@ -9,7 +9,7 @@
 // Core includes
 #include "flychams_common/types/core_types.hpp"
 
-namespace flychams::core
+namespace flychams::common
 {
     /**
      * ════════════════════════════════════════════════════════════════
@@ -315,4 +315,4 @@ namespace flychams::core
     };
     using MissionConfigPtr = std::shared_ptr<MissionConfig>;
 
-} // namespace flychams::core
+} // namespace flychams::common

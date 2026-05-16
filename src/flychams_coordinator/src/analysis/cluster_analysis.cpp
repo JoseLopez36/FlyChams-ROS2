@@ -1,6 +1,6 @@
 #include "flychams_coordinator/analysis/cluster_analysis.hpp"
 
-using namespace flychams::core;
+using namespace flychams::common;
 
 namespace flychams::coordinator
 {
@@ -83,14 +83,14 @@ namespace flychams::coordinator
 	// CALLBACKS: Callback functions
 	// ════════════════════════════════════════════════════════════════════════════
 
-	void ClusterAnalysis::clusterAssignmentCallback(const core::ID& cluster_id, const core::ClusterAssignmentMsg::SharedPtr msg)
+	void ClusterAnalysis::clusterAssignmentCallback(const common::ID& cluster_id, const common::ClusterAssignmentMsg::SharedPtr msg)
 	{
 		// Update cluster assignment
 		clusters_[cluster_id].assignment = msg->target_ids;
 		clusters_[cluster_id].has_assignment = true;
 	}
 
-	void ClusterAnalysis::targetPositionCallback(const core::ID& target_id, const core::PointStampedMsg::SharedPtr msg)
+	void ClusterAnalysis::targetPositionCallback(const common::ID& target_id, const common::PointStampedMsg::SharedPtr msg)
 	{
 		// Update target position
 		targets_[target_id].position = msg->point;
@@ -153,7 +153,7 @@ namespace flychams::coordinator
 	// ANALYSIS: Analysis methods
 	// ════════════════════════════════════════════════════════════════════════════
 
-	std::pair<core::Vector2r, float> ClusterAnalysis::calculateEnclosingCircle(const core::Matrix3Xr& tab_P, const float& min_radius, const float& margin_radius)
+	std::pair<common::Vector2r, float> ClusterAnalysis::calculateEnclosingCircle(const common::Matrix3Xr& tab_P, const float& min_radius, const float& margin_radius)
 	{
 		// Get number of points
 		int n = tab_P.cols();

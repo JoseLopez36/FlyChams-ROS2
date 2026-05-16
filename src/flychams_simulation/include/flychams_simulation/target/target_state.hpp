@@ -25,10 +25,10 @@ namespace flychams::simulation
      * @date 2025-03-27
      * ════════════════════════════════════════════════════════════════
      */
-    class TargetState : public core::BaseModule
+    class TargetState : public common::BaseModule
     {
     public: // Constructor/Destructor
-        TargetState(const core::ID& target_id, core::BaseNode::SharedPtr node)
+        TargetState(const common::ID& target_id, common::BaseNode::SharedPtr node)
             : BaseModule(node), target_id_(target_id)
         {
             init();
@@ -52,9 +52,9 @@ namespace flychams::simulation
         struct Target
         {
             // Position message
-            core::PointStampedMsg position;
+            common::PointStampedMsg position;
             // Publisher
-            core::PublisherPtr<core::PointStampedMsg> position_pub;
+            common::PublisherPtr<common::PointStampedMsg> position_pub;
             // Constructor
             Target()
                 : position(), position_pub()
@@ -63,7 +63,7 @@ namespace flychams::simulation
         };
 
     private: // Parameters
-        core::ID target_id_;
+        common::ID target_id_;
         float update_rate_;
         float cmd_timeout_;
 
@@ -74,14 +74,14 @@ namespace flychams::simulation
         Target target_;
         // Time step
         float time_elapsed_;
-        core::Time last_update_time_;
+        common::Time last_update_time_;
 
     private: // State management
         void update();
 
     private:
         // Timer
-        core::TimerPtr update_timer_;
+        common::TimerPtr update_timer_;
     };
 
 } // namespace flychams::simulation

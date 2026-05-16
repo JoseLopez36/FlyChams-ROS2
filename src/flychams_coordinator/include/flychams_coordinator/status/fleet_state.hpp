@@ -26,10 +26,10 @@ namespace flychams::coordinator
      * @date 2025-05-14
      * ════════════════════════════════════════════════════════════════
      */
-    class FleetState : public core::BaseDiscovererModule
+    class FleetState : public common::BaseDiscovererModule
     {
     public: // Constructor/Destructor
-        FleetState(core::BaseDiscovererNode::SharedPtr node)
+        FleetState(common::BaseDiscovererNode::SharedPtr node)
             : BaseDiscovererModule(node)
         {
             init();
@@ -44,52 +44,52 @@ namespace flychams::coordinator
         struct Agent
         {
             // Status data
-            core::AgentStatus status;
+            common::AgentStatus status;
             bool has_status;
             // Subscriber
-            core::SubscriberPtr<core::AgentStatusMsg> status_sub;
+            common::SubscriberPtr<common::AgentStatusMsg> status_sub;
             // Constructor
             Agent()
-                : status(core::AgentStatus::IDLE), has_status(false), status_sub()
+                : status(common::AgentStatus::IDLE), has_status(false), status_sub()
             {
             }
         };
 
     public: // Dynamic element management
-        void addAgent(const core::ID& agent_id);
-        void removeAgent(const core::ID& agent_id);
+        void addAgent(const common::ID& agent_id);
+        void removeAgent(const common::ID& agent_id);
 
     private: // Callbacks
-        void agentStatusCallback(const core::ID& agent_id, const core::AgentStatusMsg::SharedPtr msg);
-        void missionCmdCallback(const core::StringMsg::SharedPtr msg);
+        void agentStatusCallback(const common::ID& agent_id, const common::AgentStatusMsg::SharedPtr msg);
+        void missionCmdCallback(const common::StringMsg::SharedPtr msg);
 
     private: // Update loop
         void update();
 
     private: // State machine helpers
-        void transitionMission(core::MissionStatus new_status);
-        core::FleetStatus computeFleetStatus() const;
+        void transitionMission(common::MissionStatus new_status);
+        common::FleetStatus computeFleetStatus() const;
 
     private: // Parameters
         float update_rate_;
 
     private: // Data
         // Agents
-        std::unordered_map<core::ID, Agent> agents_;
+        std::unordered_map<common::ID, Agent> agents_;
         // Mission state
-        core::MissionStatus mission_status_;
+        common::MissionStatus mission_status_;
         float mission_time_;
-        core::Time mission_start_time_;
-        std::vector<core::ID> active_agents_;
+        common::Time mission_start_time_;
+        std::vector<common::ID> active_agents_;
 
     private: // ROS components
         // Subscribers
-        core::SubscriberPtr<core::StringMsg> mission_cmd_sub_;
+        common::SubscriberPtr<common::StringMsg> mission_cmd_sub_;
         // Publishers
-        core::PublisherPtr<core::FleetStatusMsg> fleet_status_pub_;
-        core::PublisherPtr<core::MissionStatusMsg> mission_status_pub_;
+        common::PublisherPtr<common::FleetStatusMsg> fleet_status_pub_;
+        common::PublisherPtr<common::MissionStatusMsg> mission_status_pub_;
         // Timer
-        core::TimerPtr update_timer_;
+        common::TimerPtr update_timer_;
     };
 
 } // namespace flychams::coordinator

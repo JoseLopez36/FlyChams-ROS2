@@ -12,7 +12,7 @@
 // Utilities
 #include "flychams_common/types/core_types.hpp"
 
-namespace flychams::core
+namespace flychams::common
 {
     /**
      * ════════════════════════════════════════════════════════════════
@@ -38,15 +38,15 @@ namespace flychams::core
         struct Agent
         {
             int k;
-            core::Vector3r x;       // Current position
-            core::RowVectorXi X;    // Current assignment
-            core::VectorXr J_hist;  // Assignment cost history
-            core::MatrixXi X_hist;  // Assignment history
+            common::Vector3r x;       // Current position
+            common::RowVectorXi X;    // Current assignment
+            common::VectorXr J_hist;  // Assignment cost history
+            common::MatrixXi X_hist;  // Assignment history
         };
         struct Cluster
         {
             int i;
-            core::Vector3r C;
+            common::Vector3r C;
             float r;
         };
 
@@ -63,13 +63,13 @@ namespace flychams::core
         {
             // Nothing to destroy
         }
-        core::RowVectorXi run(const core::Matrix3Xr& tab_x, const core::Matrix3Xr& tab_P, const core::RowVectorXr& tab_r,
-            const core::RowVectorXi& X_prev, const std::vector<core::Matrix4r>& wTcentral_array, 
+        common::RowVectorXi run(const common::Matrix3Xr& tab_x, const common::Matrix3Xr& tab_P, const common::RowVectorXr& tab_r,
+            const common::RowVectorXi& X_prev, const std::vector<common::Matrix4r>& wTcentral_array, 
             std::vector<PositionSolver::SharedPtr>& solvers)
         {
             // Get number of agents and tracking units
             int m = tab_x.cols();
-            core::RowVectorXi nk = core::RowVectorXi::Zero(m);
+            common::RowVectorXi nk = common::RowVectorXi::Zero(m);
             for (int k = 0; k < m; k++)
             {
                 nk(k) = solvers[k]->getUnitCount() - 1;
@@ -88,8 +88,8 @@ namespace flychams::core
                     A[k].X(u) = X_prev(t);
                     t++;
                 }
-                A[k].J_hist = core::VectorXr::Zero(0);
-                A[k].X_hist = core::MatrixXi::Zero(0, nk(k));
+                A[k].J_hist = common::VectorXr::Zero(0);
+                A[k].X_hist = common::MatrixXi::Zero(0, nk(k));
             }
 
             // Create cluster vector
@@ -104,7 +104,7 @@ namespace flychams::core
 
             // Compute minimum global cost using recursive function
             float J = 0.0f, J_min = HUGE_VALF;
-            core::RowVectorXi X = core::RowVectorXi::Zero(0), X_min = core::RowVectorXi::Zero(0);
+            common::RowVectorXi X = common::RowVectorXi::Zero(0), X_min = common::RowVectorXi::Zero(0);
             globalCost(A, T, J, X, J_min, X_min, nk, wTcentral_array, solvers);
 
             // Return assignment vector
@@ -113,9 +113,9 @@ namespace flychams::core
 
     private: // Recursive cost calculation. Branch and bound
         void globalCost(std::vector<Agent>& A, const std::vector<Cluster>& T,
-            const float& J, const core::RowVectorXi& X,
-            float& J_min, core::RowVectorXi& X_min,
-            const core::RowVectorXi& nk, const std::vector<core::Matrix4r>& wTcentral_array, 
+            const float& J, const common::RowVectorXi& X,
+            float& J_min, common::RowVectorXi& X_min,
+            const common::RowVectorXi& nk, const std::vector<common::Matrix4r>& wTcentral_array, 
             std::vector<PositionSolver::SharedPtr>& solvers)
         {
             //std::cout << "---------------> Global cost: " << J << std::endl;
@@ -148,13 +148,13 @@ namespace flychams::core
                 int k = Ak.k;
 
                 // Calculate all possible permutations with available clusters
-                core::RowVectorXi T_array(n);
+                common::RowVectorXi T_array(n);
                 for (int i = 0; i < n; i++)
                 {
                     T_array(i) = T[i].i;
                 }
                 //std::cout << "Calculating permutations for: " << T_array << " taking " << nk(k) << " clusters" << std::endl;
-                const core::MatrixXi P = calculatePermutations(T_array, nk(k));
+                const common::MatrixXi P = calculatePermutations(T_array, nk(k));
                 int n_perms = P.rows();
                 //std::cout << "Calculated " << n_perms << " permutations:" << std::endl;
                 //std::cout << P << std::endl;
@@ -179,7 +179,7 @@ namespace flychams::core
 
                     // Calculate agent cost with current permutation
                     float Jk;
-                    core::RowVectorXi Xk;
+                    common::RowVectorXi Xk;
                     //std::cout << "Calculating agent cost for agent " << k << std::endl;
                     agentCost(Ak, Tk, Jk, Xk, nk(k), wTcentral_array[k], solvers[k]);
                     //std::cout << "Agent cost: " << Jk << std::endl;
@@ -224,7 +224,7 @@ namespace flychams::core
                         }
 
                         // Concatenate assignment vectors
-                        core::RowVectorXi Xn;
+                        common::RowVectorXi Xn;
                         if (X.size() > 0)
                         {
                             Xn.resize(X.size() + nk(k));
@@ -247,9 +247,9 @@ namespace flychams::core
         }
 
         void agentCost(Agent& Ak, const std::vector<Cluster>& Tk,
-            float& Jk, core::RowVectorXi& Xk,
+            float& Jk, common::RowVectorXi& Xk,
             const int& nk,
-            const core::Matrix4r& wTcentral,
+            const common::Matrix4r& wTcentral,
             PositionSolver::SharedPtr solver)
         {
             // Check if solver is valid
@@ -264,11 +264,11 @@ namespace flychams::core
             const float& Ws = params_.switch_weight;
 
             // Current position and assignment
-            const core::Vector3r& x = Ak.x;
-            const core::RowVectorXi& X_prev = Ak.X;
+            const common::Vector3r& x = Ak.x;
+            const common::RowVectorXi& X_prev = Ak.X;
 
             // Get target array
-            core::RowVectorXi Tk_array(nk);
+            common::RowVectorXi Tk_array(nk);
             for (int i = 0; i < nk; i++)
             {
                 Tk_array(i) = Tk[i].i;
@@ -278,7 +278,7 @@ namespace flychams::core
             // by searching if it is in the list of calculated assignments
             bool calculated = false;
             float J_calculated = 0.0f;
-            core::RowVectorXi X_calculated;
+            common::RowVectorXi X_calculated;
 
             if (Ak.X_hist.rows() > 0)
             {
@@ -316,8 +316,8 @@ namespace flychams::core
             // If the assignment has not been calculated previously:
             // Calculate observation cost
             // Get cluster centers and radii matrices for all units (accounting for the central unit)
-            core::Matrix3Xr tab_P = core::Matrix3Xr::Zero(3, nk);
-            core::RowVectorXr tab_r = core::RowVectorXr::Zero(nk);
+            common::Matrix3Xr tab_P = common::Matrix3Xr::Zero(3, nk);
+            common::RowVectorXr tab_r = common::RowVectorXr::Zero(nk);
             // Tracking units
             for (int t = 0; t < nk; t++)
             {
@@ -327,15 +327,15 @@ namespace flychams::core
             // Central unit (mean of all selected clusters and maximum radius)
             const auto& [central_P, central_r] = computeCentralCluster(tab_P, tab_r);
             // Create new matrices with central unit
-            core::Matrix3Xr tab_P_central = core::Matrix3Xr::Zero(3, nk + 1);
-            core::RowVectorXr tab_r_central = core::RowVectorXr::Zero(nk + 1);
+            common::Matrix3Xr tab_P_central = common::Matrix3Xr::Zero(3, nk + 1);
+            common::RowVectorXr tab_r_central = common::RowVectorXr::Zero(nk + 1);
             tab_P_central.col(0) = central_P;
             tab_P_central.block(0, 1, 3, nk) = tab_P;
             tab_r_central(0) = central_r;
             tab_r_central.tail(nk) = tab_r;
             // Run solver to get optimal position
             float Jo;
-            core::Vector3r x_opt = solver->run(tab_P_central, tab_r_central, x, wTcentral, Jo);
+            common::Vector3r x_opt = solver->run(tab_P_central, tab_r_central, x, wTcentral, Jo);
 
             // Calculate distance cost
             float Jd = (x - x_opt).norm();
@@ -364,8 +364,8 @@ namespace flychams::core
             }
             else // Append to existing history
             {
-                core::MatrixXi X_hist_new(n_hist + 1, nk);
-                core::VectorXr J_hist_new(n_hist + 1);
+                common::MatrixXi X_hist_new(n_hist + 1, nk);
+                common::VectorXr J_hist_new(n_hist + 1);
 
                 // Copy existing data
                 X_hist_new.topRows(n_hist) = Ak.X_hist;
@@ -382,7 +382,7 @@ namespace flychams::core
         }
 
     private: // Utility methods
-        core::MatrixXi calculatePermutations(const core::RowVectorXi& V, const int& n)
+        common::MatrixXi calculatePermutations(const common::RowVectorXi& V, const int& n)
         {
             const int m = V.size();
 
@@ -398,7 +398,7 @@ namespace flychams::core
                 K *= i;
 
             // Initialize matrix to store permutations (K combinations of n)
-            core::MatrixXi P(K, n);
+            common::MatrixXi P(K, n);
 
             // For cases where n = m:
             if (n == m)
@@ -454,13 +454,13 @@ namespace flychams::core
             return P;
         }
 
-        std::pair<core::Vector3r, float> computeCentralCluster(const core::Matrix3Xr& tab_P, const core::RowVectorXr& tab_r)
+        std::pair<common::Vector3r, float> computeCentralCluster(const common::Matrix3Xr& tab_P, const common::RowVectorXr& tab_r)
         {
             // Get number of tracking units
             int n = tab_P.cols();
 
             // Compute mean of all available clusters
-            core::Vector3r z_mean = core::Vector3r::Zero();
+            common::Vector3r z_mean = common::Vector3r::Zero();
             for (int i = 0; i < n; i++)
             {
                 z_mean += tab_P.col(i);
@@ -479,4 +479,4 @@ namespace flychams::core
         }
     };
 
-} // namespace flychams::core
+} // namespace flychams::common

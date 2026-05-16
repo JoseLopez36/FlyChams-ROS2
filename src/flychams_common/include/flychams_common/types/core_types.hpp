@@ -12,7 +12,7 @@
 #include <Eigen/Core>
 #include <Eigen/Geometry>
 
-namespace flychams::core
+namespace flychams::common
 {
     /**
      * ════════════════════════════════════════════════════════════════
@@ -468,4 +468,4 @@ namespace flychams::core
         bool is_out_of_bounds;
     };
 
-} // namespace flychams::core 
+} // namespace flychams::common 

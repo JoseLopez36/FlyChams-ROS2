@@ -5,7 +5,7 @@
 #include "flychams_common/utils/math_utils.hpp"
 #include "flychams_common/utils/vision_utils.hpp"
 
-namespace flychams::core
+namespace flychams::common
 {
     /**
      * ════════════════════════════════════════════════════════════════
@@ -28,7 +28,7 @@ namespace flychams::core
         }
 
         // Runtime methods
-        std::tuple<float, core::Crop> run(const core::Vector3r& z, const float& r, const core::Matrix4r& T, const core::ObservationUnitParameters& unit_params)
+        std::tuple<float, common::Crop> run(const common::Vector3r& z, const float& r, const common::Matrix4r& T, const common::ObservationUnitParameters& unit_params)
         {
             // Args:
             // z: Target position in world frame (m)
@@ -37,16 +37,16 @@ namespace flychams::core
             // unit_params: Observation unit parameters
 
             // Extract camera position
-            const core::Vector3r x = T.block<3, 1>(0, 3);
+            const common::Vector3r x = T.block<3, 1>(0, 3);
 
             // Project target position onto central camera
-            core::Vector2r p = core::VisionUtils::projectPoint(z, T, unit_params.camera_params.K);
+            common::Vector2r p = common::VisionUtils::projectPoint(z, T, unit_params.camera_params.K);
 
             // Compute window size
             const auto [size, lambda] = computeWindowSize(z, r, x, p, unit_params);
 
             // Compute window corner
-            const core::Vector2i corner = computeWindowCorner(p, size);
+            const common::Vector2i corner = computeWindowCorner(p, size);
 
             // Check if crop is out of bounds (i.e. if the crop is completely outside the image)
             bool is_out_of_bounds =
@@ -56,7 +56,7 @@ namespace flychams::core
                 (corner(1) >= unit_params.window_params.full_height);       // Completely below
 
             // Make crop struct
-            core::Crop crop;
+            common::Crop crop;
             crop.x = corner.x();
             crop.y = corner.y();
             crop.w = size.x();
@@ -68,7 +68,7 @@ namespace flychams::core
         }
 
     private: // Implementation
-        std::tuple<core::Vector2i, float> computeWindowSize(const core::Vector3r& z, const float& r, const core::Vector3r& x, const core::Vector2r& p, const core::ObservationUnitParameters& unit_params)
+        std::tuple<common::Vector2i, float> computeWindowSize(const common::Vector3r& z, const float& r, const common::Vector3r& x, const common::Vector2r& p, const common::ObservationUnitParameters& unit_params)
         {
             // Args:
             // z: Target position in world frame (m)
@@ -105,7 +105,7 @@ namespace flychams::core
             lambda = std::max(std::min(lambda, lambda_max), lambda_min);
 
             // Compute window size using the resolution factor
-            core::Vector2i size(0, 0);
+            common::Vector2i size(0, 0);
             size(0) = static_cast<int>(std::round(static_cast<float>(tracking_width) / lambda));
             size(1) = static_cast<int>(std::round(static_cast<float>(tracking_height) / lambda));
 
@@ -113,7 +113,7 @@ namespace flychams::core
             return std::make_tuple(size, lambda);
         }
 
-        core::Vector2i computeWindowCorner(const core::Vector2r& p, const core::Vector2i& size)
+        common::Vector2i computeWindowCorner(const common::Vector2r& p, const common::Vector2i& size)
         {
             // Args:
             // p: Projected point on central camera (pix)
@@ -130,4 +130,4 @@ namespace flychams::core
         }
     };
 
-} // namespace flychams::core
+} // namespace flychams::common

@@ -1,6 +1,6 @@
 #include "flychams_agent/drone/drone_control.hpp"
 
-using namespace flychams::core;
+using namespace flychams::common;
 
 namespace flychams::agent
 {
