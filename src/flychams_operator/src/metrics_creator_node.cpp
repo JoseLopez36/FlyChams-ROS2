@@ -1,11 +1,11 @@
 #include "rclcpp/rclcpp.hpp"
 
-// Metrics includes
+// Module include
 #include "flychams_operator/metrics/agent_metrics.hpp"
 #include "flychams_operator/metrics/target_metrics.hpp"
 #include "flychams_operator/metrics/cluster_metrics.hpp"
 
-// Core includes
+// Base node include
 #include "flychams_common/base/base_discoverer_node.hpp"
 
 using namespace flychams::core;
@@ -26,23 +26,23 @@ using namespace flychams::core;
  * @date 2025-05-14
  * ════════════════════════════════════════════════════════════════
  */
-class MetricsNode : public BaseDiscovererNode
+class MetricsCreatorNode : public BaseDiscovererNode
 {
 public: // Constructor/Destructor
-    MetricsNode(const std::string& node_name, const rclcpp::NodeOptions& options)
+    MetricsCreatorNode(const std::string& node_name, const rclcpp::NodeOptions& options)
         : BaseDiscovererNode(node_name, options)
     {
         // Nothing to do
     }
 
-    void onInit() override
+    void onDiscoveryInit() override
     {
         agent_metrics_.clear();
         target_metrics_.clear();
         cluster_metrics_.clear();
     }
 
-    void onShutdown() override
+    void onDiscoveryShutdown() override
     {
         agent_metrics_.clear();
         target_metrics_.clear();
@@ -52,9 +52,8 @@ public: // Constructor/Destructor
 private: // Element management
     void onAddAgent(const ID& agent_id) override
     {
-        auto cb_group = node_->create_callback_group(rclcpp::CallbackGroupType::MutuallyExclusive);
-        auto module = std::make_shared<flychams::operator_pkg::AgentMetrics>(agent_id, node_, settings_tools_, topic_tools_, transform_tools_, cb_group);
-        agent_metrics_.insert(std::make_pair(agent_id, module));
+        auto agent_metric = std::make_shared<flychams::operator_pkg::AgentMetrics>(agent_id, sharedFromThis());
+        agent_metrics_.insert(std::make_pair(agent_id, agent_metric));
         RCLCPP_INFO(node_->get_logger(), "Metrics node: agent metrics created for %s", agent_id.c_str());
     }
 
@@ -66,9 +65,8 @@ private: // Element management
 
     void onAddTarget(const ID& target_id) override
     {
-        auto cb_group = node_->create_callback_group(rclcpp::CallbackGroupType::MutuallyExclusive);
-        auto module = std::make_shared<flychams::operator_pkg::TargetMetrics>(target_id, node_, settings_tools_, topic_tools_, transform_tools_, cb_group);
-        target_metrics_.insert(std::make_pair(target_id, module));
+        auto target_metric = std::make_shared<flychams::operator_pkg::TargetMetrics>(target_id, sharedFromThis());
+        target_metrics_.insert(std::make_pair(target_id, target_metric));
         RCLCPP_INFO(node_->get_logger(), "Metrics node: target metrics created for %s", target_id.c_str());
     }
 
@@ -80,9 +78,8 @@ private: // Element management
 
     void onAddCluster(const ID& cluster_id) override
     {
-        auto cb_group = node_->create_callback_group(rclcpp::CallbackGroupType::MutuallyExclusive);
-        auto module = std::make_shared<flychams::operator_pkg::ClusterMetrics>(cluster_id, node_, settings_tools_, topic_tools_, transform_tools_, cb_group);
-        cluster_metrics_.insert(std::make_pair(cluster_id, module));
+        auto cluster_metric = std::make_shared<flychams::operator_pkg::ClusterMetrics>(cluster_id, sharedFromThis());
+        cluster_metrics_.insert(std::make_pair(cluster_id, cluster_metric));
         RCLCPP_INFO(node_->get_logger(), "Metrics node: cluster metrics created for %s", cluster_id.c_str());
     }
 
@@ -107,7 +104,7 @@ int main(int argc, char** argv)
     options.allow_undeclared_parameters(true);
     options.automatically_declare_parameters_from_overrides(true);
     // Create and initialize node
-    auto node = std::make_shared<MetricsNode>("metrics_node", options);
+    auto node = std::make_shared<MetricsCreatorNode>("metrics_creator_node", options);
     node->init();
     // Create executor and add node
     rclcpp::executors::MultiThreadedExecutor executor;

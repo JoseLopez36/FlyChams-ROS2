@@ -1,7 +1,5 @@
 #include "flychams_operator/metrics/target_metrics.hpp"
 
-#include "flychams_common/utils/ros_utils.hpp"
-
 using namespace flychams::core;
 
 namespace flychams::operator_pkg
@@ -10,10 +8,10 @@ namespace flychams::operator_pkg
     // INIT / SHUTDOWN
     // ════════════════════════════════════════════════════════════════════════════
 
-    void TargetMetrics::onInit()
+    void TargetMetrics::onModuleInit()
     {
         // Get parameters
-        update_rate_ = RosUtils::getParameterOr<float>(node_, "update_rate", 10.0f);
+        update_rate_ = node_->getParameterOr<float>("update_rate", 10.0f);
 
         // Initialize data
         target_ = TargetData();
@@ -21,25 +19,21 @@ namespace flychams::operator_pkg
         total_speed_ = 0.0f;
         speed_samples_ = 0;
         time_elapsed_ = 0.0f;
-        last_update_time_ = RosUtils::now(node_);
+        last_update_time_ = node_->now();
 
         // Publishers
-        target_.metrics_pub = topic_tools_->createTargetMetricsPublisher(target_id_);
+        target_.metrics_pub = node_->createTargetMetricsPublisher(target_id_);
 
         // Subscribers
-        target_.position_sub = topic_tools_->createTargetPositionSubscriber(target_id_,
+        target_.position_sub = node_->createTargetPositionSubscriber(target_id_,
             std::bind(&TargetMetrics::positionCallback, this, std::placeholders::_1),
-            sub_options_with_module_cb_group_);
+            node_->getSubscriptionOptions());
 
         // Update timer
-        update_timer_ = rclcpp::create_timer(node_,
-            node_->get_clock(),
-            std::chrono::duration<float>(1.0f / update_rate_),
-            std::bind(&TargetMetrics::update, this),
-            module_cb_group_);
+        update_timer_ = node_->createTimer(update_rate_, std::bind(&TargetMetrics::update, this));
     }
 
-    void TargetMetrics::onShutdown()
+    void TargetMetrics::onModuleShutdown()
     {
         target_.metrics_pub.reset();
         target_.position_sub.reset();
@@ -79,7 +73,7 @@ namespace flychams::operator_pkg
         }
 
         // Compute dt
-        auto now = RosUtils::now(node_);
+        auto now = node_->now();
         float dt = static_cast<float>((now - last_update_time_).seconds());
         last_update_time_ = now;
         time_elapsed_ += dt;
@@ -98,7 +92,7 @@ namespace flychams::operator_pkg
 
         // Build and publish message
         TargetMetricsMsg msg;
-        msg.header = RosUtils::createHeader(node_, transform_tools_->getGlobalFrame());
+        msg.header = node_->createHeader(node_->getGlobalFrame());
         msg.position = target_.position;
         msg.distance_traveled = distance_traveled_;
         msg.speed = speed;

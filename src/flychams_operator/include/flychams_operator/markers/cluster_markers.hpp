@@ -3,6 +3,9 @@
 // Base module include
 #include "flychams_common/base/base_module.hpp"
 
+// Base node include
+#include "flychams_common/base/base_node.hpp"
+
 namespace flychams::operator_pkg
 {
     /**
@@ -23,15 +26,15 @@ namespace flychams::operator_pkg
     class ClusterMarkers : public core::BaseModule
     {
     public: // Constructor/Destructor
-        ClusterMarkers(const core::ID& cluster_id, core::NodePtr node, core::SettingsTools::SharedPtr settings_tools, core::TopicTools::SharedPtr topic_tools, core::TransformTools::SharedPtr transform_tools, core::CallbackGroupPtr module_cb_group)
-            : BaseModule(node, settings_tools, topic_tools, transform_tools, module_cb_group), cluster_id_(cluster_id)
+        ClusterMarkers(const core::ID& cluster_id, core::BaseNode::SharedPtr node)
+            : BaseModule(node), cluster_id_(cluster_id)
         {
             init();
         }
 
     protected: // Overrides
-        void onInit() override;
-        void onShutdown() override;
+        void onModuleInit() override;
+        void onModuleShutdown() override;
 
     public: // Types
         using SharedPtr = std::shared_ptr<ClusterMarkers>;

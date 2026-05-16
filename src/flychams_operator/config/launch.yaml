@@ -4,10 +4,10 @@
 
 # Node allowlist: Only launch these nodes
 node_allowlist:
-  - metrics
-  - markers
+  - metrics_creator
+  - markers_generator
 
 # Per-node log level overrides
 node_log_levels:
-  metrics: "info"
-  markers: "info"
+  metrics_creator: "info"
+  markers_generator: "info"

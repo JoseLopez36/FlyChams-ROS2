@@ -1,9 +1,9 @@
-/**/metrics_node:
+/**/metrics_creator_node:
   ros__parameters:
     # Update rate (Hz)
     update_rate: 10.0
 
-/**/markers_node:
+/**/markers_generator_node:
   ros__parameters:
     # Update rate (Hz)
     update_rate: 10.0

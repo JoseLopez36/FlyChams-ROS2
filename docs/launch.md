@@ -45,8 +45,8 @@ Each script sources `install/setup.bash` inside the container before invoking `r
 
 `operator.launch.py` starts the full operator stack inside the `flychams-operator` container:
 
-- **`metrics_node`** — aggregates per-agent, per-target and per-cluster metrics and publishes them as `AgentMetrics`, `TargetMetrics`, `ClusterMetrics` and `MissionMetrics` messages.
-- **`markers_node`** — publishes `visualization_msgs/MarkerArray` per agent, target and cluster for 3D visualization in Foxglove.
+- **`metrics_creator_node`** — aggregates per-agent, per-target and per-cluster metrics and publishes them as `AgentMetrics`, `TargetMetrics`, `ClusterMetrics` and `MissionMetrics` messages.
+- **`markers_generator_node`** — publishes `visualization_msgs/MarkerArray` per agent, target and cluster for 3D visualization in Foxglove.
 - **`foxglove_bridge`** — exposes all ROS2 topics over a WebSocket so [Foxglove Studio](https://foxglove.dev/studio) can connect remotely or locally.
 
 ### Build

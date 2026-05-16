@@ -1,7 +1,5 @@
 #include "flychams_operator/markers/cluster_markers.hpp"
 
-#include "flychams_common/utils/ros_utils.hpp"
-
 using namespace flychams::core;
 
 namespace flychams::operator_pkg
@@ -10,31 +8,27 @@ namespace flychams::operator_pkg
     // INIT / SHUTDOWN
     // ════════════════════════════════════════════════════════════════════════════
 
-    void ClusterMarkers::onInit()
+    void ClusterMarkers::onModuleInit()
     {
         // Get parameters
-        update_rate_ = RosUtils::getParameterOr<float>(node_, "update_rate", 10.0f);
+        update_rate_ = node_->getParameterOr<float>("update_rate", 10.0f);
 
         // Initialize data
         cluster_ = ClusterData();
 
         // Publishers
-        cluster_.markers_pub = topic_tools_->createClusterMarkersPublisher(cluster_id_);
+        cluster_.markers_pub = node_->createClusterMarkersPublisher(cluster_id_);
 
         // Subscribers
-        cluster_.geometry_sub = topic_tools_->createClusterGeometrySubscriber(cluster_id_,
+        cluster_.geometry_sub = node_->createClusterGeometrySubscriber(cluster_id_,
             std::bind(&ClusterMarkers::clusterGeometryCallback, this, std::placeholders::_1),
-            sub_options_with_module_cb_group_);
+            node_->getSubscriptionOptions());
 
         // Update timer
-        update_timer_ = rclcpp::create_timer(node_,
-            node_->get_clock(),
-            std::chrono::duration<float>(1.0f / update_rate_),
-            std::bind(&ClusterMarkers::update, this),
-            module_cb_group_);
+        update_timer_ = node_->createTimer(update_rate_, std::bind(&ClusterMarkers::update, this));
     }
 
-    void ClusterMarkers::onShutdown()
+    void ClusterMarkers::onModuleShutdown()
     {
         cluster_.markers_pub.reset();
         cluster_.geometry_sub.reset();
@@ -63,8 +57,8 @@ namespace flychams::operator_pkg
             return;
         }
 
-        const std::string& frame = transform_tools_->getGlobalFrame();
-        auto stamp = RosUtils::now(node_);
+        const std::string& frame = node_->getGlobalFrame();
+        auto stamp = node_->now();
         const float r = cluster_.radius > 0.0f ? cluster_.radius : 1.0f;
 
         MarkerArrayMsg array;

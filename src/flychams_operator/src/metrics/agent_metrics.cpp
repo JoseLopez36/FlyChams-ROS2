@@ -1,8 +1,5 @@
 #include "flychams_operator/metrics/agent_metrics.hpp"
 
-#include "flychams_common/utils/ros_utils.hpp"
-#include "flychams_common/utils/math_utils.hpp"
-
 using namespace flychams::core;
 
 namespace flychams::operator_pkg
@@ -11,10 +8,10 @@ namespace flychams::operator_pkg
     // INIT / SHUTDOWN
     // ════════════════════════════════════════════════════════════════════════════
 
-    void AgentMetrics::onInit()
+    void AgentMetrics::onModuleInit()
     {
         // Get parameters
-        update_rate_ = RosUtils::getParameterOr<float>(node_, "update_rate", 10.0f);
+        update_rate_ = node_->getParameterOr<float>("update_rate", 10.0f);
 
         // Initialize data
         agent_ = AgentData();
@@ -22,34 +19,30 @@ namespace flychams::operator_pkg
         total_speed_ = 0.0f;
         speed_samples_ = 0;
         time_elapsed_ = 0.0f;
-        last_update_time_ = RosUtils::now(node_);
-        mission_start_time_ = RosUtils::now(node_);
+        last_update_time_ = node_->now();
+        mission_start_time_ = node_->now();
 
         // Publishers
-        agent_.metrics_pub = topic_tools_->createAgentMetricsPublisher(agent_id_);
+        agent_.metrics_pub = node_->createAgentMetricsPublisher(agent_id_);
 
         // Subscribers
-        agent_.local_position_sub = topic_tools_->createAgentLocalPositionSubscriber(agent_id_,
+        agent_.local_position_sub = node_->createAgentLocalPositionSubscriber(agent_id_,
             std::bind(&AgentMetrics::localPositionCallback, this, std::placeholders::_1),
-            sub_options_with_module_cb_group_);
+            node_->getSubscriptionOptions());
 
-        agent_.position_setpoint_sub = topic_tools_->createAgentPositionSetpointSubscriber(agent_id_,
+        agent_.position_setpoint_sub = node_->createAgentPositionSetpointSubscriber(agent_id_,
             std::bind(&AgentMetrics::positionSetpointCallback, this, std::placeholders::_1),
-            sub_options_with_module_cb_group_);
+            node_->getSubscriptionOptions());
 
-        agent_.observation_setpoints_sub = topic_tools_->createObservationSetpointsSubscriber(agent_id_,
+        agent_.observation_setpoints_sub = node_->createObservationSetpointsSubscriber(agent_id_,
             std::bind(&AgentMetrics::observationSetpointsCallback, this, std::placeholders::_1),
-            sub_options_with_module_cb_group_);
+            node_->getSubscriptionOptions());
 
         // Update timer
-        update_timer_ = rclcpp::create_timer(node_,
-            node_->get_clock(),
-            std::chrono::duration<float>(1.0f / update_rate_),
-            std::bind(&AgentMetrics::update, this),
-            module_cb_group_);
+        update_timer_ = node_->createTimer(update_rate_, std::bind(&AgentMetrics::update, this));
     }
 
-    void AgentMetrics::onShutdown()
+    void AgentMetrics::onModuleShutdown()
     {
         agent_.metrics_pub.reset();
         agent_.local_position_sub.reset();
@@ -104,7 +97,7 @@ namespace flychams::operator_pkg
         }
 
         // Compute dt
-        auto now = RosUtils::now(node_);
+        auto now = node_->now();
         float dt = static_cast<float>((now - last_update_time_).seconds());
         last_update_time_ = now;
         time_elapsed_ = static_cast<float>((now - mission_start_time_).seconds());
@@ -133,7 +126,7 @@ namespace flychams::operator_pkg
 
         // Build and publish message
         AgentMetricsMsg msg;
-        msg.header = RosUtils::createHeader(node_, transform_tools_->getGlobalFrame());
+        msg.header = node_->createHeader(node_->getGlobalFrame());
         msg.position = agent_.position;
         msg.setpoint = agent_.has_setpoint ? agent_.setpoint : agent_.position;
         msg.zoom_factors = agent_.has_observation_setpoints ? agent_.zoom_factors : std::vector<float>{};

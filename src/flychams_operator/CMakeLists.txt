@@ -38,14 +38,14 @@ target_link_libraries(${PROJECT_NAME}
 )
 
 # Create executable for metrics node
-add_executable(metrics_node src/metrics_node.cpp)
-target_link_libraries(metrics_node ${PROJECT_NAME})
-ament_target_dependencies(metrics_node rclcpp flychams_common flychams_api)
+add_executable(metrics_creator_node src/metrics_creator_node.cpp)
+target_link_libraries(metrics_creator_node ${PROJECT_NAME})
+ament_target_dependencies(metrics_creator_node rclcpp flychams_common flychams_api)
 
 # Create executable for markers node
-add_executable(markers_node src/markers_node.cpp)
-target_link_libraries(markers_node ${PROJECT_NAME})
-ament_target_dependencies(markers_node rclcpp visualization_msgs flychams_common flychams_api)
+add_executable(markers_generator_node src/markers_generator_node.cpp)
+target_link_libraries(markers_generator_node ${PROJECT_NAME})
+ament_target_dependencies(markers_generator_node rclcpp visualization_msgs flychams_common flychams_api)
 
 # Install targets and headers
 install(TARGETS ${PROJECT_NAME}
@@ -56,7 +56,7 @@ install(TARGETS ${PROJECT_NAME}
   INCLUDES DESTINATION include
 )
 
-install(TARGETS metrics_node markers_node
+install(TARGETS metrics_creator_node markers_generator_node
   RUNTIME DESTINATION lib/${PROJECT_NAME}
 )
 

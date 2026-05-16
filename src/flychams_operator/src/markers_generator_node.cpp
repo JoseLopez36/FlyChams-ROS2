@@ -1,11 +1,11 @@
 #include "rclcpp/rclcpp.hpp"
 
-// Markers includes
+// Module include
 #include "flychams_operator/markers/agent_markers.hpp"
 #include "flychams_operator/markers/target_markers.hpp"
 #include "flychams_operator/markers/cluster_markers.hpp"
 
-// Core includes
+// Base node include
 #include "flychams_common/base/base_discoverer_node.hpp"
 
 using namespace flychams::core;
@@ -26,23 +26,23 @@ using namespace flychams::core;
  * @date 2025-05-14
  * ════════════════════════════════════════════════════════════════
  */
-class MarkersNode : public BaseDiscovererNode
+class MarkersGeneratorNode : public BaseDiscovererNode
 {
 public: // Constructor/Destructor
-    MarkersNode(const std::string& node_name, const rclcpp::NodeOptions& options)
+    MarkersGeneratorNode(const std::string& node_name, const rclcpp::NodeOptions& options)
         : BaseDiscovererNode(node_name, options)
     {
         // Nothing to do
     }
 
-    void onInit() override
+    void onDiscoveryInit() override
     {
         agent_markers_.clear();
         target_markers_.clear();
         cluster_markers_.clear();
     }
 
-    void onShutdown() override
+    void onDiscoveryShutdown() override
     {
         agent_markers_.clear();
         target_markers_.clear();
@@ -52,9 +52,8 @@ public: // Constructor/Destructor
 private: // Element management
     void onAddAgent(const ID& agent_id) override
     {
-        auto cb_group = node_->create_callback_group(rclcpp::CallbackGroupType::MutuallyExclusive);
-        auto module = std::make_shared<flychams::operator_pkg::AgentMarkers>(agent_id, node_, settings_tools_, topic_tools_, transform_tools_, cb_group);
-        agent_markers_.insert(std::make_pair(agent_id, module));
+        auto agent_marker = std::make_shared<flychams::operator_pkg::AgentMarkers>(agent_id, sharedFromThis());
+        agent_markers_.insert(std::make_pair(agent_id, agent_marker));
         RCLCPP_INFO(node_->get_logger(), "Markers node: agent markers created for %s", agent_id.c_str());
     }
 
@@ -66,9 +65,8 @@ private: // Element management
 
     void onAddTarget(const ID& target_id) override
     {
-        auto cb_group = node_->create_callback_group(rclcpp::CallbackGroupType::MutuallyExclusive);
-        auto module = std::make_shared<flychams::operator_pkg::TargetMarkers>(target_id, node_, settings_tools_, topic_tools_, transform_tools_, cb_group);
-        target_markers_.insert(std::make_pair(target_id, module));
+        auto target_marker = std::make_shared<flychams::operator_pkg::TargetMarkers>(target_id, sharedFromThis());
+        target_markers_.insert(std::make_pair(target_id, target_marker));
         RCLCPP_INFO(node_->get_logger(), "Markers node: target markers created for %s", target_id.c_str());
     }
 
@@ -80,9 +78,8 @@ private: // Element management
 
     void onAddCluster(const ID& cluster_id) override
     {
-        auto cb_group = node_->create_callback_group(rclcpp::CallbackGroupType::MutuallyExclusive);
-        auto module = std::make_shared<flychams::operator_pkg::ClusterMarkers>(cluster_id, node_, settings_tools_, topic_tools_, transform_tools_, cb_group);
-        cluster_markers_.insert(std::make_pair(cluster_id, module));
+        auto cluster_marker = std::make_shared<flychams::operator_pkg::ClusterMarkers>(cluster_id, sharedFromThis());
+        cluster_markers_.insert(std::make_pair(cluster_id, cluster_marker));
         RCLCPP_INFO(node_->get_logger(), "Markers node: cluster markers created for %s", cluster_id.c_str());
     }
 
@@ -107,7 +104,7 @@ int main(int argc, char** argv)
     options.allow_undeclared_parameters(true);
     options.automatically_declare_parameters_from_overrides(true);
     // Create and initialize node
-    auto node = std::make_shared<MarkersNode>("markers_node", options);
+    auto node = std::make_shared<MarkersGeneratorNode>("markers_generator_node", options);
     node->init();
     // Create executor and add node
     rclcpp::executors::MultiThreadedExecutor executor;

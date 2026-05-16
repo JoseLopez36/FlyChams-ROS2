@@ -24,7 +24,7 @@ scripts/launch_operator.sh
 DETACH=true FOXGLOVE_PORT=8765 scripts/launch_operator.sh
 ```
 
-This starts `metrics_node`, `markers_node`, and `foxglove_bridge` via `operator.launch.py`.
+This starts `metrics_creator_node`, `markers_generator_node`, and `foxglove_bridge` via `operator.launch.py`.
 
 ### 3. Connect Foxglove Studio
 

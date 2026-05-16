@@ -63,13 +63,13 @@ def generate_launch_description():
 
     # Define node configurations
     node_configs = {
-        'metrics': {
-            'executable': 'metrics_node',
-            'name': 'metrics_node'
+        'metrics_creator': {
+            'executable': 'metrics_creator_node',
+            'name': 'metrics_creator_node'
         },
-        'markers': {
-            'executable': 'markers_node',
-            'name': 'markers_node'
+        'markers_generator': {
+            'executable': 'markers_generator_node',
+            'name': 'markers_generator_node'
         }
     }
 
