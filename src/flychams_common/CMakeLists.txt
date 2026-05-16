@@ -36,19 +36,23 @@ include_directories(
 
 # Declare the library
 add_library(${PROJECT_NAME} SHARED
+  # Settings
   src/settings/spreadsheet_parser.cpp
   src/settings/mission_settings_parser.cpp
   src/settings/airsim_settings_creator.cpp
   src/settings/mission_settings_creator.cpp
   src/settings/settings_tools.cpp
+  # Utils
   src/utils/math_utils.cpp
-  src/utils/vision_utils.cpp
+  src/utils/vision_utils.cpp  
+  # Base
   src/base/base_node.cpp
   src/base/base_status_node.cpp
   src/base/base_discoverer_node.cpp
   src/base/base_module.cpp
   src/base/base_status_module.cpp
   src/base/base_discoverer_module.cpp
+  # External
   external/hungarian-algorithm-cpp/Hungarian.cpp
 )
 
