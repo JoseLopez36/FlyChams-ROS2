@@ -21,8 +21,7 @@ echo "Starting simulation container: $CONTAINER_NAME"
 docker run ${RUN_FLAGS} \
     --name "$CONTAINER_NAME" \
     --network host \
-    --cpus="2.0" \
-    --memory="2g" \
+    --cpus="1" \
     -e XDG_RUNTIME_DIR=/tmp \
     -e ROS_DOMAIN_ID="${ROS_DOMAIN_ID}" \
     -e FASTDDS_BUILTIN_TRANSPORTS="${FASTDDS_BUILTIN_TRANSPORTS}" \

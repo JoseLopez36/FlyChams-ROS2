@@ -7,15 +7,15 @@ node_allowlist:
   - element_registrator
   - mission_state
   - fleet_state
-  - target_clustering
-  - cluster_analysis
-  - agent_assignment
+  # - target_clustering
+  # - cluster_analysis
+  # - agent_assignment
 
 # Per-node log level overrides
 node_log_levels:
-  element_registrator: "info"
-  mission_state: "info"
-  fleet_state: "info"
-  target_clustering: "info"
-  cluster_analysis: "info"
-  agent_assignment: "info"
+  element_registrator: "error"
+  mission_state: "error"
+  fleet_state: "error"
+  target_clustering: "error"
+  cluster_analysis: "error"
+  agent_assignment: "error"

@@ -9,5 +9,5 @@ node_allowlist:
 
 # Per-node log level overrides
 node_log_levels:
-  metrics_creator: "info"
-  markers_generator: "info"
+  metrics_creator: "error"
+  markers_generator: "error"
