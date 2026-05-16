@@ -4,7 +4,7 @@ uint8 status
 # Additional status flags
 bool fleet_ready
 float32 mission_time
-string[] active_agents
+string[] agents
 
 # Status values
 # READY: 0    Fleet can accept mission start

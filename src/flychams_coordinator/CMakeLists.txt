@@ -19,6 +19,7 @@ set(COORD_SRC
   src/registration/cluster_registration.cpp
   src/registration/element_registration.cpp
   # State
+  src/state/mission_state.cpp
   src/state/fleet_state.cpp
   # Clustering
   src/clustering/target_clustering.cpp
@@ -47,6 +48,11 @@ target_link_libraries(${PROJECT_NAME}
 add_executable(element_registrator_node src/element_registrator_node.cpp)
 target_link_libraries(element_registrator_node ${PROJECT_NAME})
 ament_target_dependencies(element_registrator_node rclcpp flychams_common flychams_api)
+
+# Create executable for mission manager node
+add_executable(mission_state_node src/mission_state_node.cpp)
+target_link_libraries(mission_state_node ${PROJECT_NAME})
+ament_target_dependencies(mission_state_node rclcpp flychams_common flychams_api)
 
 # Create executable for fleet manager node
 add_executable(fleet_state_node src/fleet_state_node.cpp)
@@ -77,7 +83,7 @@ install(TARGETS ${PROJECT_NAME}
   INCLUDES DESTINATION include
 )
 
-install(TARGETS element_registrator_node fleet_state_node target_clustering_node cluster_analysis_node agent_assignment_node
+install(TARGETS element_registrator_node mission_state_node fleet_state_node target_clustering_node cluster_analysis_node agent_assignment_node
   RUNTIME DESTINATION lib/${PROJECT_NAME}
 )
 

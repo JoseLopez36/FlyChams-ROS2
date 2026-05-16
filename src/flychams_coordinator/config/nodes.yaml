@@ -8,6 +8,16 @@
     # Update rate (Hz)
     registration_rate: 1.0
 
+/**/mission_state_node:
+  ros__parameters:
+    # Update rate (Hz)
+    update_rate: 1.0
+
+/**/fleet_state_node:
+  ros__parameters:
+    # Update rate (Hz)
+    update_rate: 1.0
+
 /**/target_clustering_node:
   ros__parameters:
     # Update rate (Hz)

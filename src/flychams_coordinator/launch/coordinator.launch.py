@@ -46,6 +46,10 @@ def generate_launch_description():
             'executable': 'element_registrator_node',
             'name': 'element_registrator_node'
         },
+        'mission_state': {
+            'executable': 'mission_state_node',
+            'name': 'mission_state_node'
+        },
         'fleet_state': {
             'executable': 'fleet_state_node',
             'name': 'fleet_state_node'

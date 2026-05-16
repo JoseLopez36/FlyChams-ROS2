@@ -10,20 +10,23 @@ namespace flychams::coordinator
 {
     /**
      * ════════════════════════════════════════════════════════════════
-     * @brief Fleet manager - aggregates agent statuses.
+     * @brief Mission manager - manages mission lifecycle and progress.
      *
      * @details
-     * Subscribes to all agent statuses via discovery and publishes
-     * FleetState.
+     * Subscribes to fleet and mission status, publishes detailed
+     * MissionState at 1Hz, and manages mission phases:
+     *   PLANNING → EXECUTION → COMPLETION/ABORT
+     *
+     * Tracks mission objectives, progress, and completion criteria.
      * ════════════════════════════════════════════════════════════════
      * @author Jose Francisco Lopez Ruiz
-     * @date 2025-05-14
+     * @date 2025-05-16
      * ════════════════════════════════════════════════════════════════
      */
-    class FleetState : public common::BaseDiscovererModule
+    class MissionState : public common::BaseDiscovererModule
     {
     public: // Constructor/Destructor
-        FleetState(common::BaseDiscovererNode::SharedPtr node)
+        MissionState(common::BaseDiscovererNode::SharedPtr node)
             : BaseDiscovererModule(node)
         {
             init();
@@ -34,45 +37,46 @@ namespace flychams::coordinator
         void onModuleShutdown() override;
 
     public: // Types
-        using SharedPtr = std::shared_ptr<FleetState>;
-        struct Agent
-        {
-            // Status data
-            common::AgentStatus status;
-            bool has_status;
-            // Subscriber
-            common::SubscriberPtr<common::AgentStatusMsg> status_sub;
-            // Constructor
-            Agent()
-                : status(common::AgentStatus::IDLE), has_status(false), status_sub()
-            {
-            }
-        };
+        using SharedPtr = std::shared_ptr<MissionState>;
 
     private: // Parameters
         float update_rate_;
 
     private: // Data
         // Agents
-        std::unordered_map<common::ID, Agent> agents_;
+        std::unordered_set<common::ID> agents_;
+        // Fleet state
+        common::FleetStatus fleet_status_;
+        bool has_fleet_status_;
+        // Mission state
+        common::MissionStatus mission_status_;
+        bool mission_active_;
+        std::chrono::steady_clock::time_point mission_start_time_;
+        float mission_time_;
+        bool fleet_ready_;
 
     public: // Dynamic element management
         void addAgent(const common::ID& agent_id);
         void removeAgent(const common::ID& agent_id);
 
     private: // Callbacks
-        void agentStatusCallback(const common::ID& agent_id, const common::AgentStatusMsg::SharedPtr msg);
+        void fleetStatusCallback(const common::FleetStatusMsg::SharedPtr msg);
+        void startMissionCallback(const common::EmptyMsg::SharedPtr msg);
+        void pauseMissionCallback(const common::EmptyMsg::SharedPtr msg);
+        void abortMissionCallback(const common::EmptyMsg::SharedPtr msg);
 
     private: // Update loop
         void update();
         bool checkStatus();
 
-    private: // State helpers
-        common::FleetStatus computeFleetStatus() const;
-
     private: // ROS components
+        // Subscribers
+        common::SubscriberPtr<common::FleetStatusMsg> fleet_status_sub_;
+        common::SubscriberPtr<common::EmptyMsg> start_mission_sub_;
+        common::SubscriberPtr<common::EmptyMsg> pause_mission_sub_;
+        common::SubscriberPtr<common::EmptyMsg> abort_mission_sub_;
         // Publishers
-        common::PublisherPtr<common::FleetStatusMsg> fleet_status_pub_;
+        common::PublisherPtr<common::MissionStatusMsg> mission_status_pub_;
         // Timer
         common::TimerPtr update_timer_;
     };

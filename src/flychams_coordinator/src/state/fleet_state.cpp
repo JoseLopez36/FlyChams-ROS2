@@ -15,22 +15,9 @@ void FleetState::onModuleInit()
 
     // Initialize data
     agents_.clear();
-    mission_status_ = MissionStatus::READY;
-    mission_time_ = 0.0f;
-    mission_start_time_ = node_->now();
-    active_agents_.clear();
 
-    // Create mission command subscriber
-    mission_cmd_sub_ = node_->create_subscription<StringMsg>(
-        "/flychams/coordinator/mission_cmd", 10,
-        [this](const StringMsg::SharedPtr msg)
-        {
-            this->missionCmdCallback(msg);
-        }, node_->getSubscriptionOptions());
-
-    // Create fleet/mission publishers
+    // Create fleet publisher
     fleet_status_pub_ = node_->createFleetStatusPublisher();
-    mission_status_pub_ = node_->createMissionStatusPublisher();
 
     // Set update timer
     update_timer_ = node_->createTimer(update_rate_, std::bind(&FleetState::update, this));
@@ -44,9 +31,6 @@ void FleetState::onModuleShutdown()
     agents_.clear();
     // Destroy publishers
     fleet_status_pub_.reset();
-    mission_status_pub_.reset();
-    // Destroy subscribers
-    mission_cmd_sub_.reset();
 }
 
 // ════════════════════════════════════════════════════════════════════════════
@@ -82,59 +66,8 @@ void FleetState::agentStatusCallback(const ID& agent_id, const AgentStatusMsg::S
     agents_[agent_id].has_status = true;
 }
 
-void FleetState::missionCmdCallback(const StringMsg::SharedPtr msg)
-{
-    const std::string& cmd = msg->data;
-    RCLCPP_INFO(node_->get_logger(), "Fleet manager: Mission command received: %s", cmd.c_str());
-
-    if (cmd == "start")
-    {
-        if (mission_status_ == MissionStatus::READY)
-        {
-            bool fleet_ready = (computeFleetStatus() == FleetStatus::ACTIVE);
-            if (fleet_ready)
-                transitionMission(MissionStatus::ACTIVE);
-            else
-                RCLCPP_WARN(node_->get_logger(), "Fleet manager: Cannot start mission - fleet not ready (not all agents ACTIVE)");
-        }
-        else
-        {
-            RCLCPP_WARN(node_->get_logger(), "Fleet manager: Cannot start mission - not in READY state");
-        }
-    }
-    else if (cmd == "pause")
-    {
-        if (mission_status_ == MissionStatus::ACTIVE)
-            transitionMission(MissionStatus::PAUSED);
-        else
-            RCLCPP_WARN(node_->get_logger(), "Fleet manager: Cannot pause - mission not ACTIVE");
-    }
-    else if (cmd == "resume")
-    {
-        if (mission_status_ == MissionStatus::PAUSED)
-            transitionMission(MissionStatus::ACTIVE);
-        else
-            RCLCPP_WARN(node_->get_logger(), "Fleet manager: Cannot resume - mission not PAUSED");
-    }
-    else if (cmd == "abort")
-    {
-        transitionMission(MissionStatus::ABORTED);
-    }
-    else if (cmd == "reset")
-    {
-        if (mission_status_ == MissionStatus::ABORTED)
-            transitionMission(MissionStatus::READY);
-        else
-            RCLCPP_WARN(node_->get_logger(), "Fleet manager: Cannot reset - mission not ABORTED");
-    }
-    else
-    {
-        RCLCPP_WARN(node_->get_logger(), "Fleet manager: Unknown mission command: %s", cmd.c_str());
-    }
-}
-
 // ════════════════════════════════════════════════════════════════════════════
-// UPDATE: Publish fleet and mission status
+// UPDATE: Publish fleet status
 // ════════════════════════════════════════════════════════════════════════════
 
 void FleetState::update()
@@ -145,8 +78,6 @@ void FleetState::update()
         RCLCPP_WARN(node_->get_logger(), "Fleet state: Skipping update due to invalid status");
         return;
     }
-
-    auto now = node_->now();
 
     // Compute fleet state
     FleetStatus fleet_status = computeFleetStatus();
@@ -168,20 +99,9 @@ void FleetState::update()
         if (agent.status == AgentStatus::ERROR) any_error = true;
     }
 
-    // If any agent errors out while mission is ACTIVE, transition to ABORTED
-    if (any_error && mission_status_ == MissionStatus::ACTIVE)
-    {
-        RCLCPP_ERROR(node_->get_logger(), "Fleet manager: Agent error detected during ACTIVE mission - aborting");
-        transitionMission(MissionStatus::ABORTED);
-    }
-
-    // Update mission time
-    if (mission_status_ == MissionStatus::ACTIVE)
-        mission_time_ = static_cast<float>((now - mission_start_time_).seconds());
-
     // Publish FleetStatus
     FleetStatusMsg fleet_msg;
-    fleet_msg.header.stamp = now;
+    fleet_msg.header.stamp = node_->now();
     fleet_msg.status = static_cast<uint8_t>(fleet_status);
     fleet_msg.all_agents_idle = all_idle;
     fleet_msg.all_agents_active = all_active;
@@ -189,15 +109,6 @@ void FleetState::update()
     fleet_msg.agent_ids = agent_ids;
     fleet_msg.agent_statuses = agent_statuses;
     fleet_status_pub_->publish(fleet_msg);
-
-    // Publish MissionStatus
-    MissionStatusMsg mission_msg;
-    mission_msg.header.stamp = now;
-    mission_msg.status = static_cast<uint8_t>(mission_status_);
-    mission_msg.fleet_ready = (fleet_status == FleetStatus::ACTIVE);
-    mission_msg.mission_time = mission_time_;
-    mission_msg.active_agents = active_agents_;
-    mission_status_pub_->publish(mission_msg);
 }
 
 // ════════════════════════════════════════════════════════════════════════════
@@ -206,54 +117,31 @@ void FleetState::update()
 
 bool FleetState::checkStatus()
 {
-    // Fleet state is always valid (it determines mission and fleet status)
-    // No additional checks needed at this level
+	// Check 1: All agents must have a valid status
+	for (const auto& [agent_id, agent] : agents_)
+	{
+		if (!agent.has_status)
+		{
+			RCLCPP_WARN(node_->get_logger(), "Fleet state: Agent %s has no status", agent_id.c_str());
+			return false;
+		}
+	}
+
     return true;
 }
 
 // ════════════════════════════════════════════════════════════════════════════
-// STATE MACHINE HELPERS
+// STATE HELPERS
 // ════════════════════════════════════════════════════════════════════════════
-
-void FleetState::transitionMission(MissionStatus new_state)
-{
-    RCLCPP_INFO(node_->get_logger(), "Fleet manager: Mission state transition: %d -> %d",
-        static_cast<int>(mission_status_), static_cast<int>(new_state));
-
-    mission_status_ = new_state;
-
-    if (new_state == MissionStatus::ACTIVE)
-    {
-        mission_start_time_ = node_->now();
-        // Build active agents list (all agents currently ACTIVE)
-        active_agents_.clear();
-        for (const auto& [agent_id, agent] : agents_)
-        {
-            if (agent.has_status && agent.status == AgentStatus::ACTIVE)
-                active_agents_.push_back(agent_id);
-        }
-    }
-    else if (new_state == MissionStatus::READY)
-    {
-        mission_time_ = 0.0f;
-        active_agents_.clear();
-    }
-}
 
 FleetStatus FleetState::computeFleetStatus() const
 {
-    if (agents_.empty())
-        return FleetStatus::IDLE;
-
     bool all_idle = true;
     bool all_active = true;
     bool any_error = false;
 
     for (const auto& [agent_id, agent] : agents_)
     {
-        if (!agent.has_status)
-            return FleetStatus::MIXED;
-
         if (agent.status != AgentStatus::IDLE) all_idle = false;
         if (agent.status != AgentStatus::ACTIVE) all_active = false;
         if (agent.status == AgentStatus::ERROR) any_error = true;
