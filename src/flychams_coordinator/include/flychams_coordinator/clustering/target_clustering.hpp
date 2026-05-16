@@ -95,6 +95,7 @@ namespace flychams::coordinator
 
 	private: // Clustering management
 		void update();
+		bool checkStatus();
 
 	private: // ROS components
 		// Timer

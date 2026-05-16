@@ -3,6 +3,11 @@
     # Update rate (Hz)
     fleet_state_rate: 1.0
 
+/**/element_registrator_node:
+  ros__parameters:
+    # Update rate (Hz)
+    registration_rate: 1.0
+
 /**/target_clustering_node:
   ros__parameters:
     # Update rate (Hz)

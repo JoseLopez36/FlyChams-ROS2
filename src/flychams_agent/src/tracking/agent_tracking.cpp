@@ -191,28 +191,21 @@ bool AgentTracking::checkStatus()
         return false;
     }
 
-    // Check 2: Fleet must be active
-    if (!node_->isFleetActive())
-    {
-        RCLCPP_WARN(node_->get_logger(), "Agent tracking: Fleet is not active");
-        return false;
-    }
-
-    // Check 3: Agent must have a valid status
+    // Check 2: Agent must have a valid status
     if (!agent_.has_status)
     {
         RCLCPP_WARN(node_->get_logger(), "Agent tracking: Agent %s has no status", agent_id_.c_str());
         return false;
     }
 
-    // Check 4: Agent must be in ACTIVE state
+    // Check 3: Agent must be in ACTIVE state
     if (agent_.status != AgentStatus::ACTIVE)
     {
         RCLCPP_WARN(node_->get_logger(), "Agent tracking: Agent %s is not in ACTIVE state", agent_id_.c_str());
         return false;
     }
 
-    // Check 5: Agent must have cluster assignments
+    // Check 4: Agent must have cluster assignments
     if (!agent_.has_clusters)
     {
         RCLCPP_WARN(node_->get_logger(), "Agent tracking: Agent %s has no clusters", agent_id_.c_str());

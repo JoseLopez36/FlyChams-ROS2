@@ -156,21 +156,14 @@ bool AgentPositioning::checkStatus()
         return false;
     }
 
-    // Check 2: Fleet must be active
-    if (!node_->isFleetActive())
-    {
-        RCLCPP_WARN(node_->get_logger(), "Agent positioning: Fleet is not active");
-        return false;
-    }
-
-    // Check 3: Agent must have a valid position
+    // Check 2: Agent must have a valid position
     if (!agent_.has_position)
     {
         RCLCPP_WARN(node_->get_logger(), "Agent positioning: Agent %s has no position", agent_id_.c_str());
         return false;
     }
 
-    // Check 4: Agent must have cluster assignments
+    // Check 3: Agent must have cluster assignments
     if (!agent_.has_clusters)
     {
         RCLCPP_WARN(node_->get_logger(), "Agent positioning: Agent %s has no clusters", agent_id_.c_str());

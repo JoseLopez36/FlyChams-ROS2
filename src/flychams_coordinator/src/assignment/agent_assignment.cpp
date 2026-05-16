@@ -106,13 +106,6 @@ void AgentAssignment::addAgent(const ID& agent_id)
     X_prev_.resize(X_prev_.size() + agents_[agent_id].position_solver->getUnitCount() - 1);
     X_prev_.setConstant(-1);
 
-    // Create agent status subscriber
-    agents_[agent_id].status_sub = node_->createAgentStatusSubscriber(agent_id,
-        [this, agent_id](const AgentStatusMsg::SharedPtr msg)
-        {
-            this->agentStatusCallback(agent_id, msg);
-        }, node_->getSubscriptionOptions());
-
     // Create agent position subscriber
     agents_[agent_id].position_sub = node_->createAgentGlobalPositionSubscriber(agent_id,
         [this, agent_id](const PointStampedMsg::SharedPtr msg)
@@ -164,13 +157,6 @@ void AgentAssignment::clusterGeometryCallback(const ID& cluster_id, const Cluste
     clusters_[cluster_id].has_geometry = true;
 }
 
-void AgentAssignment::agentStatusCallback(const ID& agent_id, const AgentStatusMsg::SharedPtr msg)
-{
-    // Update agent status
-    agents_[agent_id].status = static_cast<AgentStatus>(msg->status);
-    agents_[agent_id].has_status = true;
-}
-
 void AgentAssignment::agentPositionCallback(const ID& agent_id, const PointStampedMsg::SharedPtr msg)
 {
     // Update agent position
@@ -184,39 +170,16 @@ void AgentAssignment::agentPositionCallback(const ID& agent_id, const PointStamp
 
 void AgentAssignment::update()
 {
-    // Skip assignment when mission is not ACTIVE
-    if (!node_->isMissionActive())
+    // Skip update if status is not valid
+    if (!checkStatus())
+    {
+        RCLCPP_WARN(node_->get_logger(), "Agent assignment: Skipping update due to invalid status");
         return;
-
-    // Check if we have a valid agent status, position and cluster geometry
-    for (const auto& [agent_id, agent] : agents_)
-    {
-        if (!agent.has_status || !agent.has_position)
-        {
-            RCLCPP_WARN(node_->get_logger(), "Agent assignment: Agent %s has no status or position", agent_id.c_str());
-            return; // Skip assignment if we don't have a valid agent status or position
-        }
-
-        // Check if we are in the correct state to assign clusters
-        if (agent.status != AgentStatus::ACTIVE)
-        {
-            RCLCPP_WARN(node_->get_logger(), "Agent assignment: Agent %s is not in the correct state to assign clusters",
-                agent_id.c_str());
-            return;
-        }
-    }
-    for (const auto& [cluster_id, cluster] : clusters_)
-    {
-        if (!cluster.has_geometry)
-        {
-            RCLCPP_WARN(node_->get_logger(), "Agent assignment: Cluster %s has no geometry", cluster_id.c_str());
-            return; // Skip assignment if we don't have a valid cluster geometry
-        }
     }
 
     // Get vectors of agent and cluster data with ordered data
     // It is important that the data is ordered according to the ordered sets A_ and T_,
-    // since the assignment solver assumes that the data follows the same order always.
+    // since the assignment solver assumes that the data follows the same order always
     // Agents
     int n_agents = static_cast<int>(A_.size());
     Matrix3Xr tab_x(3, n_agents);
@@ -286,6 +249,50 @@ void AgentAssignment::update()
 
         k++;
     }
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+// STATUS: Status check
+// ════════════════════════════════════════════════════════════════════════════
+
+bool AgentAssignment::checkStatus()
+{
+    // Check 1: Mission must be active
+    if (!node_->isMissionActive())
+    {
+        RCLCPP_WARN(node_->get_logger(), "Agent assignment: Mission is not active");
+        return false;
+    }
+
+    // Check 2: Fleet must be active
+    if (!node_->isFleetActive())
+    {
+        RCLCPP_WARN(node_->get_logger(), "Agent assignment: Fleet is not active");
+        return false;
+    }
+
+    // Check 3: All agents must have a defined position
+    for (const auto& [agent_id, agent] : agents_)
+    {
+        if (!agent.has_position)
+        {
+            RCLCPP_WARN(node_->get_logger(), "Agent assignment: Agent %s has no position", agent_id.c_str());
+            return false;
+        }
+    }
+
+    // Check 4: All clusters must have a defined geometry
+    for (const auto& [cluster_id, cluster] : clusters_)
+    {
+        if (!cluster.has_geometry)
+        {
+            RCLCPP_WARN(node_->get_logger(), "Agent assignment: Cluster %s has no geometry", cluster_id.c_str());
+            return false;
+        }
+    }
+    
+    // All checks passed
+    return true;
 }
 
 // ════════════════════════════════════════════════════════════════════════════

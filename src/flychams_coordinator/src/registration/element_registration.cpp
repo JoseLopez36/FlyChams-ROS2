@@ -10,6 +10,10 @@ using namespace flychams::coordinator;
 
 void ElementRegistration::onModuleInit()
 {
+	// Get parameters from parameter server
+    // Get registration rate
+    update_rate_ = node_->getParameterOr<float>("registration_rate", 1.0f);
+
 	// Create registration instances for each element type
 	agent_registration_ = std::make_shared<AgentRegistration>(node_);
 	target_registration_ = std::make_shared<TargetRegistration>(node_);
@@ -62,8 +66,8 @@ void ElementRegistration::onModuleInit()
 	origin_msg.position.altitude = node_->getSettings()->getEnvironment().geopoint.altitude;
 	global_origin_pub_->publish(origin_msg);
 
-	// Initialize registration update timer (1 Hz)
-	update_timer_ = node_->createTimer(1.0f, std::bind(&ElementRegistration::publishRegistration, this));
+	// Initialize registration update timer
+	update_timer_ = node_->createTimer(update_rate_, std::bind(&ElementRegistration::publishRegistration, this));
 }
 
 void ElementRegistration::onModuleShutdown()

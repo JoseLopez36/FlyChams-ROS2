@@ -103,23 +103,12 @@ void ClusterAnalysis::targetPositionCallback(const ID& target_id, const PointSta
 
 void ClusterAnalysis::update()
 {
-	// Check if we have a valid assignment and position for each target and cluster
-	for (const auto& [cluster_id, cluster] : clusters_)
-	{
-		if (!cluster.has_assignment)
-		{
-			RCLCPP_WARN(node_->get_logger(), "Cluster analysis: Cluster %s has no assignment", cluster_id.c_str());
-			return; // Skip updating if we don't have a valid cluster assignment
-		}
-	}
-	for (const auto& [target_id, target] : targets_)
-	{
-		if (!target.has_position)
-		{
-			RCLCPP_WARN(node_->get_logger(), "Cluster analysis: Target %s has no position", target_id.c_str());
-			return; // Skip analysis if we don't have a valid target position
-		}
-	}
+    // Skip update if status is not valid
+    if (!checkStatus())
+    {
+        RCLCPP_WARN(node_->get_logger(), "Cluster analysis: Skipping update due to invalid status");
+        return;
+    }
 
 	// Compute cluster geometry and publish
 	for (auto& [cluster_id, cluster] : clusters_)
@@ -147,6 +136,57 @@ void ClusterAnalysis::update()
 		// Publish cluster geometry
 		cluster.geometry_pub->publish(msg);
 	}
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+// STATUS: Status check
+// ════════════════════════════════════════════════════════════════════════════
+
+bool ClusterAnalysis::checkStatus()
+{
+	// Check 1: Mission must be active
+	if (!node_->isMissionActive())
+	{
+		RCLCPP_WARN(node_->get_logger(), "Cluster analysis: Mission is not active");
+		return false;
+	}
+
+	// Check 2: Fleet must be active
+	if (!node_->isFleetActive())
+	{
+		RCLCPP_WARN(node_->get_logger(), "Cluster analysis: Fleet is not active");
+		return false;
+	}
+
+	// Check 3: There must be at least one cluster and one target
+	if (clusters_.empty() || targets_.empty())
+	{
+		RCLCPP_WARN(node_->get_logger(), "Cluster analysis: No clusters or targets available");
+		return false;
+	}
+
+	// Check 4: All clusters must have a valid assignment
+	for (const auto& [cluster_id, cluster] : clusters_)
+	{
+		if (!cluster.has_assignment)
+		{
+			RCLCPP_WARN(node_->get_logger(), "Cluster analysis: Cluster %s has no assignment", cluster_id.c_str());
+			return false;
+		}
+	}
+
+	// Check 5: All targets must have a defined position
+	for (const auto& [target_id, target] : targets_)
+	{
+		if (!target.has_position)
+		{
+			RCLCPP_WARN(node_->get_logger(), "Cluster analysis: Target %s has no position", target_id.c_str());
+			return false;
+		}
+	}
+
+	// All checks passed
+	return true;
 }
 
 // ════════════════════════════════════════════════════════════════════════════

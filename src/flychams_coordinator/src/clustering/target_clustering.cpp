@@ -122,26 +122,12 @@ void TargetClustering::targetPositionCallback(const ID& target_id, const PointSt
 
 void TargetClustering::update()
 {
-	// Skip clustering when mission is not ACTIVE
-	if (!node_->isMissionActive())
-		return;
-
-	// Check if there are any clusters and targets
-	if (C_.empty() || T_.empty())
-	{
-		RCLCPP_WARN(node_->get_logger(), "Target clustering: No clusters or targets available");
-		return;
-	}
-
-	// Check if we have a valid target positions
-	for (const auto& [target_id, target] : targets_)
-	{
-		if (!target.has_position)
-		{
-			RCLCPP_WARN(node_->get_logger(), "Target clustering: Target %s has no position", target_id.c_str());
-			return; // Skip clustering if we don't have a valid target position
-		}
-	}
+    // Skip update if status is not valid
+    if (!checkStatus())
+    {
+        RCLCPP_WARN(node_->get_logger(), "Target clustering: Skipping update due to invalid status");
+        return;
+    }
 
 	// Compute time step
 	auto current_time = node_->now();
@@ -212,4 +198,45 @@ void TargetClustering::update()
 
 		k++;
 	}
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+// STATUS: Status check
+// ════════════════════════════════════════════════════════════════════════════
+
+bool TargetClustering::checkStatus()
+{
+    // Check 1: Mission must be active
+    if (!node_->isMissionActive())
+    {
+        RCLCPP_WARN(node_->get_logger(), "Target clustering: Mission is not active");
+        return false;
+    }
+
+    // Check 2: Fleet must be active
+    if (!node_->isFleetActive())
+    {
+        RCLCPP_WARN(node_->get_logger(), "Target clustering: Fleet is not active");
+        return false;
+    }
+
+	// Check 3: There must be at least one cluster and one target
+	if (C_.empty() || T_.empty())
+	{
+		RCLCPP_WARN(node_->get_logger(), "Target clustering: No clusters or targets available");
+		return false;
+	}
+
+	// Check 4: All targets must have a defined position
+	for (const auto& [target_id, target] : targets_)
+	{
+		if (!target.has_position)
+		{
+			RCLCPP_WARN(node_->get_logger(), "Target clustering: Target %s has no position", target_id.c_str());
+			return false;
+		}
+	}
+    
+    // All checks passed
+    return true;
 }

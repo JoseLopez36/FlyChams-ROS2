@@ -4,10 +4,10 @@
 #include "flychams_common/clustering/welzls_circle.hpp"
 
 // Base module include
-#include "flychams_common/base/base_discoverer_module.hpp"
+#include "flychams_common/base/base_status_discoverer_module.hpp"
 
 // Base node include
-#include "flychams_common/base/base_discoverer_node.hpp"
+#include "flychams_common/base/base_status_discoverer_node.hpp"
 
 namespace flychams::coordinator
 {
@@ -25,11 +25,11 @@ namespace flychams::coordinator
 	 * @date 2025-02-26
 	 * ════════════════════════════════════════════════════════════════
 	 */
-	class ClusterAnalysis : public common::BaseDiscovererModule
+	class ClusterAnalysis : public common::BaseStatusDiscovererModule
 	{
 	public: // Constructor/Destructor
-		ClusterAnalysis(common::BaseDiscovererNode::SharedPtr node)
-			: BaseDiscovererModule(node)
+		ClusterAnalysis(common::BaseStatusDiscovererNode::SharedPtr node)
+			: BaseStatusDiscovererModule(node)
 		{
 			init();
 		}
@@ -93,6 +93,7 @@ namespace flychams::coordinator
 
 	private: // Analysis management
 		void update();
+		bool checkStatus();
 
 	private: // Analysis methods
 		std::pair<common::Vector2r, float> calculateEnclosingCircle(const common::Matrix3Xr& tab_P, const float& min_radius, const float& margin_radius);

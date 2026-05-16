@@ -65,6 +65,7 @@ namespace flychams::coordinator
 
     private: // Update loop
         void update();
+        bool checkStatus();
 
     private: // State machine helpers
         void transitionMission(common::MissionStatus new_status);

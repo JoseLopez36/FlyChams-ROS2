@@ -44,6 +44,9 @@ namespace flychams::coordinator
 	public: // Types
 		using SharedPtr = std::shared_ptr<ElementRegistration>;
 
+    private: // Parameters
+        float update_rate_;
+
 	private: // Registration instances
 		AgentRegistration::SharedPtr agent_registration_;
 		TargetRegistration::SharedPtr target_registration_;

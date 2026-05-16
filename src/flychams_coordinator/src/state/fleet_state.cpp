@@ -139,6 +139,13 @@ void FleetState::missionCmdCallback(const StringMsg::SharedPtr msg)
 
 void FleetState::update()
 {
+    // Skip update if status is not valid
+    if (!checkStatus())
+    {
+        RCLCPP_WARN(node_->get_logger(), "Fleet state: Skipping update due to invalid status");
+        return;
+    }
+
     auto now = node_->now();
 
     // Compute fleet state
@@ -191,6 +198,17 @@ void FleetState::update()
     mission_msg.mission_time = mission_time_;
     mission_msg.active_agents = active_agents_;
     mission_status_pub_->publish(mission_msg);
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+// STATUS: Status check
+// ════════════════════════════════════════════════════════════════════════════
+
+bool FleetState::checkStatus()
+{
+    // Fleet state is always valid (it determines mission and fleet status)
+    // No additional checks needed at this level
+    return true;
 }
 
 // ════════════════════════════════════════════════════════════════════════════

@@ -36,16 +36,12 @@ namespace flychams::coordinator
         using SharedPtr = std::shared_ptr<AgentAssignment>;
         struct Agent
         {
-            // Status data
-            common::AgentStatus status;
-            bool has_status;
             // Unit data
             std::vector<common::ID> tracking_unit_ids;
             // Position data
             common::PointMsg position;
             bool has_position;
             // Subscribers
-            common::SubscriberPtr<common::AgentStatusMsg> status_sub;
             common::SubscriberPtr<common::PointStampedMsg> position_sub;
             // Publisher
             common::PublisherPtr<common::AgentAssignmentMsg> assignment_pub;
@@ -53,7 +49,7 @@ namespace flychams::coordinator
             common::PositionSolver::SharedPtr position_solver;
             // Constructor
             Agent()
-                : status(), has_status(false), position(), has_position(false), status_sub(), position_sub(), assignment_pub(), position_solver()
+                : tracking_unit_ids(), position(), has_position(false), position_sub(), assignment_pub(), position_solver()
             {
             }
             // Destructor
@@ -109,11 +105,11 @@ namespace flychams::coordinator
 
     private: // Callbacks
         void clusterGeometryCallback(const common::ID& cluster_id, const common::ClusterGeometryMsg::SharedPtr msg);
-        void agentStatusCallback(const common::ID& agent_id, const common::AgentStatusMsg::SharedPtr msg);
         void agentPositionCallback(const common::ID& agent_id, const common::PointStampedMsg::SharedPtr msg);
 
     private: // Assignment management
         void update();
+        bool checkStatus();
 
     private: // Utility methods
         common::PositionSolver::SharedPtr createPositionSolver(const std::string& agent_id, const common::PositionSolver::Parameters& solver_params, const common::PositionSolver::SolverMode& solver_mode);
