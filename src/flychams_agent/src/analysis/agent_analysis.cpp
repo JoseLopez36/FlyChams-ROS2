@@ -163,7 +163,7 @@ void AgentAnalysis::updateClusterSubscriptions(const std::vector<ID>& new_cluste
 // ANALYSIS: Analysis methods
 // ════════════════════════════════════════════════════════════════════════════
 
-std::pair<PointMsg, float> AgentAnalysis::computeCentralCluster(const std::vector<common::PointMsg>& centers, const std::vector<float>& radii)
+std::pair<PointMsg, float> AgentAnalysis::computeCentralCluster(const std::vector<PointMsg>& centers, const std::vector<float>& radii)
 {
     // Get number of tracking units
     int n = centers.size() - 1;
@@ -180,7 +180,7 @@ std::pair<PointMsg, float> AgentAnalysis::computeCentralCluster(const std::vecto
     }
 
     // Compute mean of all available clusters
-    common::Vector3r z_mean = common::Vector3r::Zero();
+    Vector3r z_mean = Vector3r::Zero();
     for (int i = 0; i < n; i++)
     {
         z_mean += tab_P.col(i);

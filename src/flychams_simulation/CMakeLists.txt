@@ -14,8 +14,10 @@ find_package(flychams_api REQUIRED)
 
 # Create simulation library
 set(SIMULATION_SRC
+  # Target
   src/target/target_state.cpp
   src/target/target_control.cpp
+  # Bridge
   src/bridge/simulation_bridge.cpp
   src/bridge/agent_bridge.cpp
 )

@@ -2,250 +2,248 @@
 
 using namespace flychams::common;
 
-namespace flychams::simulation
+using namespace flychams::simulation;
+
+// ════════════════════════════════════════════════════════════════════════════
+// CONSTRUCTOR: Constructor and destructor
+// ════════════════════════════════════════════════════════════════════════════
+
+void TargetControl::onModuleInit()
 {
-    // ════════════════════════════════════════════════════════════════════════════
-    // CONSTRUCTOR: Constructor and destructor
-    // ════════════════════════════════════════════════════════════════════════════
+    // Get parameters from parameter server
+    // Get update rate
+    update_rate_ = node_->getParameterOr<float>("update_rate", 20.0f);
+    // Get highlight parameters
+    highlight_targets_ = node_->getParameterOr<bool>("highlight_targets", true);
+    highlight_clusters_ = node_->getParameterOr<bool>("highlight_clusters", true);
 
-    void TargetControl::onModuleInit()
+    // Initialize data
+    targets_.clear();
+    clusters_.clear();
+    spawn_index_ = 0;
+
+    // Create simulation tools
+    simulation_tools_ = std::make_shared<SimulationBridge>(node_);
+
+    // Set update timer
+    update_timer_ = node_->createTimer(update_rate_, std::bind(&TargetControl::update, this));
+}
+
+void TargetControl::onModuleShutdown()
+{
+    // Destroy target and cluster maps
+    targets_.clear();
+    clusters_.clear();
+    // Destroy simulation tools
+    simulation_tools_.reset();
+    // Destroy update timer
+    update_timer_.reset();
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+// PUBLIC METHODS: Public methods for adding/removing clusters and targets
+// ════════════════════════════════════════════════════════════════════════════
+
+void TargetControl::addTarget(const ID& target_id)
+{
+    // Create and add target
+    targets_.insert({ target_id, Target() });
+
+    // Create target position subscriber
+    targets_[target_id].position_sub = node_->createTargetPositionSubscriber(target_id,
+        [this, target_id](const PointStampedMsg::SharedPtr msg)
+        {
+            this->targetPositionCallback(target_id, msg);
+        }, node_->getSubscriptionOptions());
+
+    // Spawn target in simulation
+    PointMsg initial_position;
+    initial_position.x = 0.0f;
+    initial_position.y = 0.0f;
+    initial_position.z = 0.0f;
+    spawnTarget(target_id, initial_position, node_->getSettings()->getTarget(target_id)->type);
+
+    // Increment spawn index
+    spawn_index_++;
+
+    // Delay to ensure target is spawned
+    std::this_thread::sleep_for(std::chrono::milliseconds(100));
+}
+
+void TargetControl::removeTarget(const ID& target_id)
+{
+    // Remove target from map
+    targets_.erase(target_id);
+}
+
+void TargetControl::addCluster(const ID& cluster_id)
+{
+    // Create and add cluster
+    clusters_.insert({ cluster_id, Cluster() });
+
+    // Create cluster geometry subscriber
+    clusters_[cluster_id].geometry_sub = node_->createClusterGeometrySubscriber(cluster_id,
+        [this, cluster_id](const ClusterGeometryMsg::SharedPtr msg)
+        {
+            this->clusterGeometryCallback(cluster_id, msg);
+        }, node_->getSubscriptionOptions());
+
+    // Spawn cluster in simulation (if highlight is enabled)
+    if (highlight_clusters_)
     {
-        // Get parameters from parameter server
-        // Get update rate
-        update_rate_ = node_->getParameterOr<float>("update_rate", 20.0f);
-        // Get highlight parameters
-        highlight_targets_ = node_->getParameterOr<bool>("highlight_targets", true);
-        highlight_clusters_ = node_->getParameterOr<bool>("highlight_clusters", true);
-
-        // Initialize data
-        targets_.clear();
-        clusters_.clear();
-        spawn_index_ = 0;
-
-        // Create simulation tools
-        simulation_tools_ = std::make_shared<SimulationBridge>(node_);
-
-        // Set update timer
-        update_timer_ = node_->createTimer(update_rate_, std::bind(&TargetControl::update, this));
-    }
-
-    void TargetControl::onModuleShutdown()
-    {
-        // Destroy target and cluster maps
-        targets_.clear();
-        clusters_.clear();
-        // Destroy simulation tools
-        simulation_tools_.reset();
-        // Destroy update timer
-        update_timer_.reset();
-    }
-
-    // ════════════════════════════════════════════════════════════════════════════
-    // PUBLIC METHODS: Public methods for adding/removing clusters and targets
-    // ════════════════════════════════════════════════════════════════════════════
-
-    void TargetControl::addTarget(const ID& target_id)
-    {
-        // Create and add target
-        targets_.insert({ target_id, Target() });
-
-        // Create target position subscriber
-        targets_[target_id].position_sub = node_->createTargetPositionSubscriber(target_id,
-            [this, target_id](const PointStampedMsg::SharedPtr msg)
-            {
-                this->targetPositionCallback(target_id, msg);
-            }, node_->getSubscriptionOptions());
-
-        // Spawn target in simulation
         PointMsg initial_position;
         initial_position.x = 0.0f;
         initial_position.y = 0.0f;
         initial_position.z = 0.0f;
-        spawnTarget(target_id, initial_position, node_->getSettings()->getTarget(target_id)->type);
-
-        // Increment spawn index
-        spawn_index_++;
-
-        // Delay to ensure target is spawned
-        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+        float initial_radius = 1.0f;
+        spawnCluster(cluster_id, initial_position, initial_radius);
     }
 
-    void TargetControl::removeTarget(const ID& target_id)
+    // Increment spawn index
+    spawn_index_++;
+
+    // Delay to ensure cluster is spawned
+    std::this_thread::sleep_for(std::chrono::milliseconds(100));
+}
+
+void TargetControl::removeCluster(const ID& cluster_id)
+{
+    // Remove cluster from map
+    clusters_.erase(cluster_id);
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+// CALLBACKS: Callback functions
+// ════════════════════════════════════════════════════════════════════════════
+
+void TargetControl::targetPositionCallback(const ID& target_id, const PointStampedMsg::SharedPtr msg)
+{
+    // Update target position
+    targets_[target_id].position = msg->point;
+    targets_[target_id].has_position = true;
+}
+
+void TargetControl::clusterGeometryCallback(const ID& cluster_id, const ClusterGeometryMsg::SharedPtr msg)
+{
+    // Update cluster geometry
+    clusters_[cluster_id].position = msg->center;
+    clusters_[cluster_id].radius = msg->radius;
+    clusters_[cluster_id].has_geometry = true;
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+// UPDATE: Update control
+// ════════════════════════════════════════════════════════════════════════════
+
+void TargetControl::update()
+{
+    // Update targets in simulation
+    updateTargets();
+
+    // Delay to ensure targets are updated
+    std::this_thread::sleep_for(std::chrono::milliseconds(10));
+
+    // Update clusters in simulation
+    updateClusters();
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+// CONTROL: Control methods
+// ════════════════════════════════════════════════════════════════════════════
+
+void TargetControl::destroyTargets()
+{
+    simulation_tools_->removeAllTargets();
+}
+
+void TargetControl::destroyClusters()
+{
+    simulation_tools_->removeAllClusters();
+}
+
+void TargetControl::spawnTarget(const ID& target_id, const PointMsg& initial_position, const TargetType& target_type)
+{
+    // Highlight color (red with low alpha)
+    ColorMsg highlight_color;
+    highlight_color.r = 1.0f;
+    highlight_color.g = 0.0f;
+    highlight_color.b = 0.0f;
+    highlight_color.a = 0.005f;
+
+    // Add target to simulation
+    simulation_tools_->addTargetGroup({ target_id }, { target_type }, { initial_position }, highlight_targets_, { highlight_color });
+}
+
+void TargetControl::spawnCluster(const ID& cluster_id, const PointMsg& initial_center, const float& initial_radius)
+{
+    // // Highlight color (cyan with low alpha)
+    // ColorMsg highlight_color;
+    // highlight_color.r = 0.0f;
+    // highlight_color.g = 1.0f;
+    // highlight_color.b = 1.0f;
+    // highlight_color.a = 0.005f;
+
+    // Highlight color (orange with medium alpha)
+    ColorMsg highlight_color;
+    highlight_color.r = 1.0f;
+    highlight_color.g = 0.5f;
+    highlight_color.b = 0.0f;
+    highlight_color.a = 0.15f;
+
+    // Add cluster to simulation
+    simulation_tools_->addClusterGroup({ cluster_id }, { initial_center }, { initial_radius }, highlight_clusters_, { highlight_color });
+}
+
+void TargetControl::updateTargets()
+{
+    // Iterate over all targets
+    std::vector<ID> target_ids;
+    std::vector<PointMsg> target_positions;
+    for (const auto& [target_id, target] : targets_)
     {
-        // Remove target from map
-        targets_.erase(target_id);
-    }
-
-    void TargetControl::addCluster(const ID& cluster_id)
-    {
-        // Create and add cluster
-        clusters_.insert({ cluster_id, Cluster() });
-
-        // Create cluster geometry subscriber
-        clusters_[cluster_id].geometry_sub = node_->createClusterGeometrySubscriber(cluster_id,
-            [this, cluster_id](const ClusterGeometryMsg::SharedPtr msg)
-            {
-                this->clusterGeometryCallback(cluster_id, msg);
-            }, node_->getSubscriptionOptions());
-
-        // Spawn cluster in simulation (if highlight is enabled)
-        if (highlight_clusters_)
+        // Check if we have a valid target position
+        if (!target.has_position)
         {
-            PointMsg initial_position;
-            initial_position.x = 0.0f;
-            initial_position.y = 0.0f;
-            initial_position.z = 0.0f;
-            float initial_radius = 1.0f;
-            spawnCluster(cluster_id, initial_position, initial_radius);
+            RCLCPP_WARN(node_->get_logger(), "Target control: Target %s has no true position", target_id.c_str());
+            continue; // Skip if we don't have a valid target position
         }
 
-        // Increment spawn index
-        spawn_index_++;
-
-        // Delay to ensure cluster is spawned
-        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+        // Add target to command vectors
+        target_ids.push_back(target_id);
+        target_positions.push_back(target.position);
     }
 
-    void TargetControl::removeCluster(const ID& cluster_id)
+    // Send target commands to simulation
+    simulation_tools_->updateTargetGroup(target_ids, target_positions);
+}
+
+void TargetControl::updateClusters()
+{
+    // Check if clusters are highlighted (if not, they are not spawned)
+    if (!highlight_clusters_)
     {
-        // Remove cluster from map
-        clusters_.erase(cluster_id);
+        return;
     }
 
-    // ════════════════════════════════════════════════════════════════════════════
-    // CALLBACKS: Callback functions
-    // ════════════════════════════════════════════════════════════════════════════
-
-    void TargetControl::targetPositionCallback(const ID& target_id, const PointStampedMsg::SharedPtr msg)
+    // Iterate over all clusters
+    std::vector<ID> cluster_ids;
+    std::vector<PointMsg> cluster_positions;
+    std::vector<float> cluster_radii;
+    for (const auto& [cluster_id, cluster] : clusters_)
     {
-        // Update target position
-        targets_[target_id].position = msg->point;
-        targets_[target_id].has_position = true;
-    }
-
-    void TargetControl::clusterGeometryCallback(const ID& cluster_id, const ClusterGeometryMsg::SharedPtr msg)
-    {
-        // Update cluster geometry
-        clusters_[cluster_id].position = msg->center;
-        clusters_[cluster_id].radius = msg->radius;
-        clusters_[cluster_id].has_geometry = true;
-    }
-
-    // ════════════════════════════════════════════════════════════════════════════
-    // UPDATE: Update control
-    // ════════════════════════════════════════════════════════════════════════════
-
-    void TargetControl::update()
-    {
-        // Update targets in simulation
-        updateTargets();
-
-        // Delay to ensure targets are updated
-        std::this_thread::sleep_for(std::chrono::milliseconds(10));
-
-        // Update clusters in simulation
-        updateClusters();
-    }
-
-    // ════════════════════════════════════════════════════════════════════════════
-    // CONTROL: Control methods
-    // ════════════════════════════════════════════════════════════════════════════
-
-    void TargetControl::destroyTargets()
-    {
-        simulation_tools_->removeAllTargets();
-    }
-
-    void TargetControl::destroyClusters()
-    {
-        simulation_tools_->removeAllClusters();
-    }
-
-    void TargetControl::spawnTarget(const ID& target_id, const PointMsg& initial_position, const TargetType& target_type)
-    {
-        // Highlight color (red with low alpha)
-        ColorMsg highlight_color;
-        highlight_color.r = 1.0f;
-        highlight_color.g = 0.0f;
-        highlight_color.b = 0.0f;
-        highlight_color.a = 0.005f;
-
-        // Add target to simulation
-        simulation_tools_->addTargetGroup({ target_id }, { target_type }, { initial_position }, highlight_targets_, { highlight_color });
-    }
-
-    void TargetControl::spawnCluster(const ID& cluster_id, const PointMsg& initial_center, const float& initial_radius)
-    {
-        // // Highlight color (cyan with low alpha)
-        // ColorMsg highlight_color;
-        // highlight_color.r = 0.0f;
-        // highlight_color.g = 1.0f;
-        // highlight_color.b = 1.0f;
-        // highlight_color.a = 0.005f;
-
-        // Highlight color (orange with medium alpha)
-        ColorMsg highlight_color;
-        highlight_color.r = 1.0f;
-        highlight_color.g = 0.5f;
-        highlight_color.b = 0.0f;
-        highlight_color.a = 0.15f;
-
-        // Add cluster to simulation
-        simulation_tools_->addClusterGroup({ cluster_id }, { initial_center }, { initial_radius }, highlight_clusters_, { highlight_color });
-    }
-
-    void TargetControl::updateTargets()
-    {
-        // Iterate over all targets
-        std::vector<ID> target_ids;
-        std::vector<PointMsg> target_positions;
-        for (const auto& [target_id, target] : targets_)
+        // Check if we have a valid cluster geometry
+        if (!cluster.has_geometry)
         {
-            // Check if we have a valid target position
-            if (!target.has_position)
-            {
-                RCLCPP_WARN(node_->get_logger(), "Target control: Target %s has no true position", target_id.c_str());
-                continue; // Skip if we don't have a valid target position
-            }
-
-            // Add target to command vectors
-            target_ids.push_back(target_id);
-            target_positions.push_back(target.position);
+            RCLCPP_WARN(node_->get_logger(), "Target control: Cluster %s has no geometry", cluster_id.c_str());
+            continue; // Skip if we don't have a valid cluster geometry
         }
 
-        // Send target commands to simulation
-        simulation_tools_->updateTargetGroup(target_ids, target_positions);
+        // Add cluster to command vectors
+        cluster_ids.push_back(cluster_id);
+        cluster_positions.push_back(cluster.position);
+        cluster_radii.push_back(cluster.radius);
     }
 
-    void TargetControl::updateClusters()
-    {
-        // Check if clusters are highlighted (if not, they are not spawned)
-        if (!highlight_clusters_)
-        {
-            return;
-        }
-
-        // Iterate over all clusters
-        std::vector<ID> cluster_ids;
-        std::vector<PointMsg> cluster_positions;
-        std::vector<float> cluster_radii;
-        for (const auto& [cluster_id, cluster] : clusters_)
-        {
-            // Check if we have a valid cluster geometry
-            if (!cluster.has_geometry)
-            {
-                RCLCPP_WARN(node_->get_logger(), "Target control: Cluster %s has no geometry", cluster_id.c_str());
-                continue; // Skip if we don't have a valid cluster geometry
-            }
-
-            // Add cluster to command vectors
-            cluster_ids.push_back(cluster_id);
-            cluster_positions.push_back(cluster.position);
-            cluster_radii.push_back(cluster.radius);
-        }
-
-        // Update clusters in simulation
-        simulation_tools_->updateClusterGroup(cluster_ids, cluster_positions, cluster_radii);
-    }
-
-} // namespace flychams::simulation
+    // Update clusters in simulation
+    simulation_tools_->updateClusterGroup(cluster_ids, cluster_positions, cluster_radii);
+}

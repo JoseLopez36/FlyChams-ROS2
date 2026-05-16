@@ -57,7 +57,7 @@ void DroneState::stateCallback(const mavros_msgs::msg::State::SharedPtr msg)
     agent_.has_state = true;
 }
 
-void DroneState::localOdomCallback(const common::OdometryMsg::SharedPtr msg)
+void DroneState::localOdomCallback(const OdometryMsg::SharedPtr msg)
 {
     // Check if we have a valid state
     if (!agent_.has_state)

@@ -43,7 +43,7 @@ void DroneFrames::onModuleShutdown()
 // CALLBACKS: Callback functions
 // ════════════════════════════════════════════════════════════════════════════
 
-void DroneFrames::globalOriginCallback(const common::GeoPointStampedMsg::SharedPtr msg)
+void DroneFrames::globalOriginCallback(const GeoPointStampedMsg::SharedPtr msg)
 {
     // Update global origin data
     agent_.global_origin = msg->position;
@@ -74,7 +74,7 @@ void DroneFrames::homePositionCallback(const mavros_msgs::msg::HomePosition::Sha
     createLocalFrame(agent_.home_position, agent_.global_origin);
 }
 
-void DroneFrames::localOdomCallback(const common::OdometryMsg::SharedPtr msg)
+void DroneFrames::localOdomCallback(const OdometryMsg::SharedPtr msg)
 {
     // Check if we have a valid global origin and home position
     if (!agent_.has_global_origin || !agent_.has_home_position)
@@ -92,7 +92,7 @@ void DroneFrames::localOdomCallback(const common::OdometryMsg::SharedPtr msg)
 // FRAMES CREATION: Frames creation
 // ════════════════════════════════════════════════════════════════════════════
 
-void DroneFrames::createLocalFrame(const common::GeoPointMsg& home_geopoint, const common::GeoPointMsg& origin_geopoint)
+void DroneFrames::createLocalFrame(const GeoPointMsg& home_geopoint, const GeoPointMsg& origin_geopoint)
 {
     // Get frames
     std::string world_frame = node_->getGlobalFrame();
@@ -122,7 +122,7 @@ void DroneFrames::createLocalFrame(const common::GeoPointMsg& home_geopoint, con
 // FRAMES UPDATE: Frames update
 // ════════════════════════════════════════════════════════════════════════════
 
-void DroneFrames::updateBodyFrame(const common::PointMsg& position, const common::QuaternionMsg& orientation)
+void DroneFrames::updateBodyFrame(const PointMsg& position, const QuaternionMsg& orientation)
 {
     // Get frames
     std::string local_frame = node_->getAgentLocalFrame(agent_id_);

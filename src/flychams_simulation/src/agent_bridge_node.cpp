@@ -7,6 +7,7 @@
 #include "flychams_common/base/base_discoverer_node.hpp"
 
 using namespace flychams::common;
+
 using namespace flychams::simulation;
 
 /**
@@ -51,6 +52,7 @@ private: // Element management
         // Create agent simulation bridge
         auto bridge = std::make_shared<AgentBridge>(agent_id, sharedFromThis());
         agent_bridges_.insert(std::make_pair(agent_id, bridge));
+        
         RCLCPP_INFO(node_->get_logger(), "Agent simulation bridge created for agent: %s", agent_id.c_str());
     }
 

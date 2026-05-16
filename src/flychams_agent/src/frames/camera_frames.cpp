@@ -61,7 +61,7 @@ void CameraFrames::onModuleShutdown()
 // CALLBACKS: Callback functions
 // ════════════════════════════════════════════════════════════════════════════
 
-void CameraFrames::observationSetpointsCallback(const common::ObservationSetpointsMsg::SharedPtr msg)
+void CameraFrames::observationSetpointsCallback(const ObservationSetpointsMsg::SharedPtr msg)
 {
     // Update observation setpoints
     agent_.observation_setpoints = *msg;
@@ -72,7 +72,7 @@ void CameraFrames::observationSetpointsCallback(const common::ObservationSetpoin
 // FRAMES CREATION: Frames creation
 // ════════════════════════════════════════════════════════════════════════════
 
-void CameraFrames::createCameraOpticalFrame(const common::ID camera_id)
+void CameraFrames::createCameraOpticalFrame(const ID camera_id)
 {
     // Get frames
     std::string camera_body_frame = node_->getCameraBodyFrame(agent_id_, camera_id);
@@ -109,7 +109,7 @@ void CameraFrames::update()
     for (int i = 0; i < agent_.observation_setpoints.n_o; ++i)
     {
         // Filter out units that are not cameras
-        if (agent_.observation_setpoints.types[i] != static_cast<uint8_t>(common::ObservationType::Camera))
+        if (agent_.observation_setpoints.types[i] != static_cast<uint8_t>(ObservationType::Camera))
         {
             continue;
         }
@@ -148,7 +148,7 @@ void CameraFrames::update()
 // FRAMES UPDATE: Frames update
 // ════════════════════════════════════════════════════════════════════════════
 
-void CameraFrames::updateCameraBodyFrame(const common::ID camera_id, const common::PointMsg& position, const common::QuaternionMsg& orientation)
+void CameraFrames::updateCameraBodyFrame(const ID camera_id, const PointMsg& position, const QuaternionMsg& orientation)
 {
     // Get frames
     std::string world_frame = node_->getGlobalFrame();

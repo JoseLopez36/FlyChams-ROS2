@@ -7,6 +7,7 @@
 #include "flychams_common/base/base_discoverer_node.hpp"
 
 using namespace flychams::common;
+
 using namespace flychams::simulation;
 
 /**
@@ -61,6 +62,7 @@ private: // Element management
         // Create target controllers
         auto target_state = std::make_shared<TargetState>(target_id, sharedFromThis());
         target_state_.insert(std::make_pair(target_id, target_state));
+
         RCLCPP_INFO(node_->get_logger(), "Target state created for target %s", target_id.c_str());
     }
 

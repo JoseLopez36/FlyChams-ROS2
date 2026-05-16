@@ -108,7 +108,7 @@ void AgentStream::onModuleShutdown()
 // CALLBACKS: Callback functions
 // ════════════════════════════════════════════════════════════════════════════
 
-void AgentStream::observationSetpointsCallback(const common::ObservationSetpointsMsg::SharedPtr msg)
+void AgentStream::observationSetpointsCallback(const ObservationSetpointsMsg::SharedPtr msg)
 {
     // Get central stream unit
     std::shared_ptr<StreamUnit> unit = stream_units_[central_camera_id_];

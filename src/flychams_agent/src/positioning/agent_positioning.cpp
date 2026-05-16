@@ -41,7 +41,7 @@ void AgentPositioning::onModuleInit()
 
     // Get relevant transform frames
     world_frame_ = node_->getGlobalFrame();
-    const common::TrackingParameters& tracking_params = node_->getSettings()->getTrackingParameters(agent_id_);
+    const TrackingParameters& tracking_params = node_->getSettings()->getTrackingParameters(agent_id_);
     central_optical_frame_ = node_->getCameraOpticalFrame(agent_id_, tracking_params.observation_units_params[0].id);
 
     // Create and initialize solver
