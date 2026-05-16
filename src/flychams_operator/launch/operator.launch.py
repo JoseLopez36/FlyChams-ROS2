@@ -16,12 +16,12 @@ def launch_foxglove_bridge():
             name='foxglove_bridge',
             output='screen',
             namespace='foxglove',
-            arguments=['--ros-args', '--log-level', 'warn'],
+            arguments=['--ros-args', '--log-level', 'info'],
             parameters=[{
                 'port': port,
                 'address': '0.0.0.0',
                 'tls': False,
-                'topic_whitelist': ['^/flychams/.*'],
+                'topic_whitelist': ['^/flychams/.*', '/rosout'],
                 'send_buffer_limit': 10000000,
                 'num_threads': 4,
             }]

@@ -1,5 +1,59 @@
 {
   "configById": {
+    "RosOut!colog": {
+      "minLogLevel": 1,
+      "preload": false,
+      "searchTerms": [
+        "flychams.coordinator"
+      ],
+      "nameFilter": {},
+      "fontSize": 14
+    },
+    "RosOut!simlog": {
+      "minLogLevel": 1,
+      "preload": false,
+      "searchTerms": [
+        "flychams.simulation"
+      ],
+      "nameFilter": {},
+      "fontSize": 14
+    },
+    "RosOut!oplog": {
+      "minLogLevel": 1,
+      "preload": false,
+      "searchTerms": [
+        "flychams.operator"
+      ],
+      "nameFilter": {},
+      "fontSize": 14
+    },
+    "RosOut!a00log": {
+      "minLogLevel": 1,
+      "preload": false,
+      "searchTerms": [
+        "flychams.agent.AGENT00"
+      ],
+      "nameFilter": {},
+      "fontSize": 14
+    },
+    "RosOut!a01log": {
+      "minLogLevel": 1,
+      "preload": false,
+      "searchTerms": [
+        "flychams.agent.AGENT01"
+      ],
+      "nameFilter": {},
+      "fontSize": 14
+    },
+    "RosOut!a02log": {
+      "minLogLevel": 1,
+      "preload": false,
+      "searchTerms": [
+        "flychams.agent.AGENT02"
+      ],
+      "nameFilter": {},
+      "fontSize": 14
+    },
     "button.Button!mstart": {
       "outputMode": "publisher",
       "name": "/flychams/coordinator/start_mission",
@@ -1094,17 +1148,34 @@
       "imageMode": {},
       "foxglovePanelTitle": "Situational Awareness"
     },
-    "RosOut!log": {
-      "minLogLevel": 2,
-      "preload": true,
-      "searchTerms": [],
-      "nameFilter": {
-        "foxglove_bridge": {
-          "visible": false
+    "Tab!43q87u9": {
+      "tabs": [
+        {
+          "title": "Coordinator Log",
+          "layout": "RosOut!colog"
+        },
+        {
+          "title": "Simulation Log",
+          "layout": "RosOut!simlog"
+        },
+        {
+          "title": "Operator Log",
+          "layout": "RosOut!oplog"
+        },
+        {
+          "title": "AGENT00 Log",
+          "layout": "RosOut!a00log"
+        },
+        {
+          "title": "AGENT01 Log",
+          "layout": "RosOut!a01log"
+        },
+        {
+          "title": "AGENT02 Log",
+          "layout": "RosOut!a02log"
         }
-      },
-      "fontSize": 14,
-      "foxglovePanelTitle": "System Log"
+      ],
+      "activeTabIdx": 0
     },
     "Tab!fleetctrl": {
       "activeTabIdx": 0,
@@ -1165,7 +1236,7 @@
     "first": {
       "first": "3D!scene",
       "second": {
-        "first": "RosOut!log",
+        "first": "Tab!43q87u9",
         "second": "Tab!fleetctrl",
         "direction": "row",
         "splitPercentage": 55
