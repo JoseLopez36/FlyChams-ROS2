@@ -462,8 +462,8 @@ void MissionSettingsParser::parseTopicParameters(const NodePtr& node, MissionCon
 {
 	// Coordinator topics
 	node->get_parameter<std::string>("coordinator_topics.registration", config_ptr->topics.registration);
-	node->get_parameter<std::string>("fleet_topics.fleet_status", config_ptr->topics.fleet_status);
-	node->get_parameter<std::string>("fleet_topics.mission_status", config_ptr->topics.mission_status);
+	node->get_parameter<std::string>("coordinator_topics.fleet_status", config_ptr->topics.fleet_status);
+	node->get_parameter<std::string>("coordinator_topics.mission_status", config_ptr->topics.mission_status);
 	node->get_parameter<std::string>("coordinator_topics.global_origin", config_ptr->topics.global_origin);
 	node->get_parameter<std::string>("coordinator_topics.target_position", config_ptr->topics.target_position);
 	node->get_parameter<std::string>("coordinator_topics.cluster_assignment", config_ptr->topics.cluster_assignment);

@@ -1,59 +1,11 @@
 #!/usr/bin/env python3
 from launch import LaunchDescription
 from launch_ros.actions import Node
-from launch.actions import DeclareLaunchArgument, OpaqueFunction
-from launch.substitutions import LaunchConfiguration, EnvironmentVariable, PathJoinSubstitution
-from launch_ros.substitutions import FindPackageShare
+from launch.actions import DeclareLaunchArgument
+from launch.substitutions import LaunchConfiguration, EnvironmentVariable
 from ament_index_python.packages import get_package_share_directory
 import os
-import tempfile
 import yaml
-
-_mavros_temp_dir = tempfile.mkdtemp()
-
-def launch_mavros(context):
-    agent_id_val  = context.launch_configurations['agent_id']
-    fcu_url       = context.launch_configurations['fcu_url']
-    gcs_url       = context.launch_configurations['gcs_url']
-    tgt_system    = int(context.launch_configurations['tgt_system'])
-    tgt_component = int(context.launch_configurations['tgt_component'])
-    fcu_protocol  = context.launch_configurations['fcu_protocol']
-
-    pkg_config_dir = os.path.join(
-        get_package_share_directory('flychams_agent'), 'config')
-
-    pluginlists_path = PathJoinSubstitution([
-        FindPackageShare('flychams_agent'), 'config', 'pluginlists.yaml'
-    ])
-
-    # Read mavros.yaml and substitute AGENTID placeholder
-    mavros_config_src = os.path.join(pkg_config_dir, 'mavros.yaml')
-    temp_config_path = os.path.join(_mavros_temp_dir, f'mavros_{agent_id_val}.yaml')
-    with open(mavros_config_src, 'r') as f:
-        content = f.read().replace('AGENTID', agent_id_val)
-    with open(temp_config_path, 'w') as f:
-        f.write(content)
-
-    return [
-        Node(
-            package='mavros',
-            executable='mavros_node',
-            name='mavros_node',
-            output='screen',
-            namespace=['mavros/', agent_id_val],
-            parameters=[
-                pluginlists_path,
-                temp_config_path,
-                {
-                    'fcu_url':       fcu_url,
-                    'gcs_url':       gcs_url,
-                    'tgt_system':    tgt_system,
-                    'tgt_component': tgt_component,
-                    'fcu_protocol':  fcu_protocol,
-                }
-            ],
-        )
-    ]
 
 def generate_launch_description():
     # Resolve config directories
@@ -63,11 +15,6 @@ def generate_launch_description():
         get_package_share_directory('flychams_common'), 'config', 'generated')
     pkg_config_dir = os.path.join(
         get_package_share_directory('flychams_agent'), 'config')
-
-    # Read mavros defaults from nodes.yaml
-    with open(os.path.join(pkg_config_dir, 'nodes.yaml'), 'r') as f:
-        _nodes_cfg = yaml.safe_load(f)
-    _mavros_defaults = _nodes_cfg.get('/**/mavros_node', {}).get('ros__parameters', {})
 
     # Declare launch arguments
     mission_yaml = DeclareLaunchArgument(
@@ -80,36 +27,6 @@ def generate_launch_description():
         'agent_id',
         default_value=EnvironmentVariable('AGENT_ID'),
         description='Agent ID (defaults to AGENT_ID environment variable)'
-    )
-
-    fcu_url = DeclareLaunchArgument(
-        'fcu_url',
-        default_value=str(_mavros_defaults.get('fcu_url', 'udp://:14030@172.17.0.2:14280')),
-        description='FCU connection URL'
-    )
-
-    gcs_url = DeclareLaunchArgument(
-        'gcs_url',
-        default_value=str(_mavros_defaults.get('gcs_url', '')),
-        description='GCS connection URL'
-    )
-
-    tgt_system = DeclareLaunchArgument(
-        'tgt_system',
-        default_value=str(_mavros_defaults.get('tgt_system', 1)),
-        description='MAVLink target system ID'
-    )
-
-    tgt_component = DeclareLaunchArgument(
-        'tgt_component',
-        default_value=str(_mavros_defaults.get('tgt_component', 1)),
-        description='MAVLink target component ID'
-    )
-
-    fcu_protocol = DeclareLaunchArgument(
-        'fcu_protocol',
-        default_value=str(_mavros_defaults.get('fcu_protocol', 'v2.0')),
-        description='FCU MAVLink protocol version'
     )
 
     # Load launch configuration
@@ -185,17 +102,8 @@ def generate_launch_description():
             )
             nodes.append(node)
 
-    # Launch Mavros node
-    mavros_node = OpaqueFunction(function=launch_mavros)
-
     return LaunchDescription([
         mission_yaml,
         agent_id,
-        fcu_url,
-        gcs_url,
-        tgt_system,
-        tgt_component,
-        fcu_protocol,
         *nodes,
-        mavros_node
     ])
