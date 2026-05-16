@@ -10,6 +10,8 @@
 
 using namespace flychams::common;
 
+using namespace flychams::operator_pkg;
+
 /**
  * ════════════════════════════════════════════════════════════════
  * @brief Metrics node: aggregates per-agent, per-target and
@@ -37,6 +39,7 @@ public: // Constructor/Destructor
 
     void onDiscoveryInit() override
     {
+        // Clear all metrics creators
         agent_metrics_.clear();
         target_metrics_.clear();
         cluster_metrics_.clear();
@@ -44,6 +47,7 @@ public: // Constructor/Destructor
 
     void onDiscoveryShutdown() override
     {
+        // Clear all metrics creators
         agent_metrics_.clear();
         target_metrics_.clear();
         cluster_metrics_.clear();
@@ -52,47 +56,57 @@ public: // Constructor/Destructor
 private: // Element management
     void onAddAgent(const ID& agent_id) override
     {
-        auto agent_metric = std::make_shared<flychams::operator_pkg::AgentMetrics>(agent_id, sharedFromThis());
+        // Initialize agent metric creator
+        auto agent_metric = std::make_shared<AgentMetrics>(agent_id, sharedFromThis());
         agent_metrics_.insert(std::make_pair(agent_id, agent_metric));
+
         RCLCPP_INFO(node_->get_logger(), "Metrics node: agent metrics created for %s", agent_id.c_str());
     }
 
     void onRemoveAgent(const ID& agent_id) override
     {
+        // Remove agent metric creator
         agent_metrics_.erase(agent_id);
         RCLCPP_INFO(node_->get_logger(), "Metrics node: agent metrics destroyed for %s", agent_id.c_str());
     }
 
     void onAddTarget(const ID& target_id) override
     {
-        auto target_metric = std::make_shared<flychams::operator_pkg::TargetMetrics>(target_id, sharedFromThis());
+        // Initialize target metric creator
+        auto target_metric = std::make_shared<TargetMetrics>(target_id, sharedFromThis());
         target_metrics_.insert(std::make_pair(target_id, target_metric));
+
         RCLCPP_INFO(node_->get_logger(), "Metrics node: target metrics created for %s", target_id.c_str());
     }
 
     void onRemoveTarget(const ID& target_id) override
     {
+        // Remove target metric creator
         target_metrics_.erase(target_id);
         RCLCPP_INFO(node_->get_logger(), "Metrics node: target metrics destroyed for %s", target_id.c_str());
     }
 
     void onAddCluster(const ID& cluster_id) override
     {
-        auto cluster_metric = std::make_shared<flychams::operator_pkg::ClusterMetrics>(cluster_id, sharedFromThis());
+        // Initialize cluster metric creator
+        auto cluster_metric = std::make_shared<ClusterMetrics>(cluster_id, sharedFromThis());
         cluster_metrics_.insert(std::make_pair(cluster_id, cluster_metric));
+        
         RCLCPP_INFO(node_->get_logger(), "Metrics node: cluster metrics created for %s", cluster_id.c_str());
     }
 
     void onRemoveCluster(const ID& cluster_id) override
     {
+        // Remove cluster metric creator
         cluster_metrics_.erase(cluster_id);
         RCLCPP_INFO(node_->get_logger(), "Metrics node: cluster metrics destroyed for %s", cluster_id.c_str());
     }
 
 private: // Components
-    std::unordered_map<ID, flychams::operator_pkg::AgentMetrics::SharedPtr> agent_metrics_;
-    std::unordered_map<ID, flychams::operator_pkg::TargetMetrics::SharedPtr> target_metrics_;
-    std::unordered_map<ID, flychams::operator_pkg::ClusterMetrics::SharedPtr> cluster_metrics_;
+    // Metric creators
+    std::unordered_map<ID, AgentMetrics::SharedPtr> agent_metrics_;
+    std::unordered_map<ID, TargetMetrics::SharedPtr> target_metrics_;
+    std::unordered_map<ID, ClusterMetrics::SharedPtr> cluster_metrics_;
 };
 
 int main(int argc, char** argv)

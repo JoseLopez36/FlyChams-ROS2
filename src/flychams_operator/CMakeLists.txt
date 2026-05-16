@@ -14,9 +14,11 @@ find_package(flychams_api REQUIRED)
 
 # Create operator library
 set(OPERATOR_SRC
+  # Metrics
   src/metrics/agent_metrics.cpp
   src/metrics/target_metrics.cpp
   src/metrics/cluster_metrics.cpp
+  # Markers
   src/markers/agent_markers.cpp
   src/markers/target_markers.cpp
   src/markers/cluster_markers.cpp

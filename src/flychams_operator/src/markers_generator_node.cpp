@@ -10,6 +10,8 @@
 
 using namespace flychams::common;
 
+using namespace flychams::operator_pkg;
+
 /**
  * ════════════════════════════════════════════════════════════════
  * @brief Markers node: publishes visualization MarkerArrays for
@@ -37,6 +39,7 @@ public: // Constructor/Destructor
 
     void onDiscoveryInit() override
     {
+        // Clear all marker generators
         agent_markers_.clear();
         target_markers_.clear();
         cluster_markers_.clear();
@@ -44,6 +47,7 @@ public: // Constructor/Destructor
 
     void onDiscoveryShutdown() override
     {
+        // Clear all marker generators
         agent_markers_.clear();
         target_markers_.clear();
         cluster_markers_.clear();
@@ -52,47 +56,57 @@ public: // Constructor/Destructor
 private: // Element management
     void onAddAgent(const ID& agent_id) override
     {
-        auto agent_marker = std::make_shared<flychams::operator_pkg::AgentMarkers>(agent_id, sharedFromThis());
+        // Initialize agent marker generator
+        auto agent_marker = std::make_shared<AgentMarkers>(agent_id, sharedFromThis());
         agent_markers_.insert(std::make_pair(agent_id, agent_marker));
+        
         RCLCPP_INFO(node_->get_logger(), "Markers node: agent markers created for %s", agent_id.c_str());
     }
 
     void onRemoveAgent(const ID& agent_id) override
     {
+        // Destroy agent marker generator
         agent_markers_.erase(agent_id);
         RCLCPP_INFO(node_->get_logger(), "Markers node: agent markers destroyed for %s", agent_id.c_str());
     }
 
     void onAddTarget(const ID& target_id) override
     {
-        auto target_marker = std::make_shared<flychams::operator_pkg::TargetMarkers>(target_id, sharedFromThis());
+        // Initialize target marker generator
+        auto target_marker = std::make_shared<TargetMarkers>(target_id, sharedFromThis());
         target_markers_.insert(std::make_pair(target_id, target_marker));
+        
         RCLCPP_INFO(node_->get_logger(), "Markers node: target markers created for %s", target_id.c_str());
     }
 
     void onRemoveTarget(const ID& target_id) override
     {
+        // Destroy target marker generator
         target_markers_.erase(target_id);
         RCLCPP_INFO(node_->get_logger(), "Markers node: target markers destroyed for %s", target_id.c_str());
     }
 
     void onAddCluster(const ID& cluster_id) override
     {
-        auto cluster_marker = std::make_shared<flychams::operator_pkg::ClusterMarkers>(cluster_id, sharedFromThis());
+        // Initialize cluster marker generator
+        auto cluster_marker = std::make_shared<ClusterMarkers>(cluster_id, sharedFromThis());
         cluster_markers_.insert(std::make_pair(cluster_id, cluster_marker));
+        
         RCLCPP_INFO(node_->get_logger(), "Markers node: cluster markers created for %s", cluster_id.c_str());
     }
 
     void onRemoveCluster(const ID& cluster_id) override
     {
+        // Destroy cluster marker generator
         cluster_markers_.erase(cluster_id);
         RCLCPP_INFO(node_->get_logger(), "Markers node: cluster markers destroyed for %s", cluster_id.c_str());
     }
 
 private: // Components
-    std::unordered_map<ID, flychams::operator_pkg::AgentMarkers::SharedPtr> agent_markers_;
-    std::unordered_map<ID, flychams::operator_pkg::TargetMarkers::SharedPtr> target_markers_;
-    std::unordered_map<ID, flychams::operator_pkg::ClusterMarkers::SharedPtr> cluster_markers_;
+    // Marker generators
+    std::unordered_map<ID, AgentMarkers::SharedPtr> agent_markers_;
+    std::unordered_map<ID, TargetMarkers::SharedPtr> target_markers_;
+    std::unordered_map<ID, ClusterMarkers::SharedPtr> cluster_markers_;
 };
 
 int main(int argc, char** argv)
