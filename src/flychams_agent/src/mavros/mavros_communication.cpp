@@ -78,6 +78,14 @@ bool MavrosCommunication::land()
     return node_->sendRequest<mavros_msgs::srv::CommandTOL>(land_client_, request, 2000);
 }
 
+bool MavrosCommunication::setMode(const std::string& mode)
+{
+    auto request = std::make_shared<mavros_msgs::srv::SetMode::Request>();
+    request->custom_mode = mode;
+
+    return node_->sendRequest<mavros_msgs::srv::SetMode>(set_mode_client_, request, 2000);
+}
+
 bool MavrosCommunication::enableOffboard(const bool& enable)
 {
     // Switch to OFFBOARD mode

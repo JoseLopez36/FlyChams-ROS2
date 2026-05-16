@@ -34,13 +34,24 @@ void DroneState::onModuleInit()
     agent_.local_position_pub = node_->createAgentLocalPositionPublisher(agent_id_);
     agent_.global_position_pub = node_->createAgentGlobalPositionPublisher(agent_id_);
 
+    // Subscribe to coordinator command topics
+    arm_all_sub_ = node_->create_subscription<BoolMsg>(
+        "/flychams/coordinator/arm_all", 10,
+        std::bind(&DroneState::armAllCallback, this, std::placeholders::_1));
+    return_home_sub_ = node_->create_subscription<EmptyMsg>(
+        "/flychams/coordinator/return_home", 10,
+        std::bind(&DroneState::returnHomeCallback, this, std::placeholders::_1));
+
     // Set update timer
     update_timer_ = node_->createTimer(update_rate_, std::bind(&DroneState::update, this));
 }
 
 void DroneState::onModuleShutdown()
 {
-    // Destroy subscribers
+    // Destroy command subscribers
+    arm_all_sub_.reset();
+    return_home_sub_.reset();
+    // Destroy mavros subscribers
     agent_.state_sub.reset();
     agent_.local_odom_sub.reset();
     // Destroy publishers
@@ -71,6 +82,29 @@ void DroneState::localOdomCallback(const OdometryMsg::SharedPtr msg)
     agent_.has_local_odom = true;
 }
 
+void DroneState::armAllCallback(const BoolMsg::SharedPtr msg)
+{
+    bool requested_arm = msg->data;
+    bool currently_armed = agent_.state.armed;
+
+    if (requested_arm && !currently_armed)
+    {
+        RCLCPP_INFO(node_->get_logger(), "Arm command received for %s", agent_id_.c_str());
+        armAgent(true);
+    }
+    else if (!requested_arm && currently_armed)
+    {
+        RCLCPP_INFO(node_->get_logger(), "Disarm command received for %s", agent_id_.c_str());
+        armAgent(false);
+    }
+}
+
+void DroneState::returnHomeCallback(const EmptyMsg::SharedPtr msg)
+{
+    RCLCPP_INFO(node_->get_logger(), "Return home command received for %s", agent_id_.c_str());
+    returnHome();
+}
+
 // ════════════════════════════════════════════════════════════════════════════
 // UPDATE: Update state
 // ════════════════════════════════════════════════════════════════════════════
@@ -83,12 +117,81 @@ void DroneState::update()
         return;
     }
 
-    // Update status
-    updateStatus(agent_.state, agent_.local_odom);
+    // Handle state based on current odometry and status
+    bool connected = agent_.state.connected;
+    bool armed = agent_.state.armed;
+    float altitude = agent_.local_odom.pose.pose.position.z;
+
+    // Map PX4 state to simplified 3-state AgentStatus
+    // ACTIVE = armed AND flying (above takeoff altitude)
+    AgentStatus status = AgentStatus::IDLE;
+    bool is_flying = false;
+
+    if (!connected)
+    {
+        status = AgentStatus::ERROR;
+        RCLCPP_ERROR(node_->get_logger(), "Drone state: Agent %s is not connected", agent_id_.c_str());
+    }
+    else if (!armed)
+    {
+        // Disarmed = IDLE (safe state on ground)
+        status = AgentStatus::IDLE;
+    }
+    else
+    {
+        // Armed: check if flying above takeoff altitude
+        is_flying = altitude >= takeoff_altitude_;
+        if (is_flying)
+        {
+            status = AgentStatus::ACTIVE;
+        }
+        else
+        {
+            // Armed but still on ground (taking off or just armed on ground)
+            status = AgentStatus::IDLE;
+        }
+    }
+
+    // Publish agent status
+    AgentStatusMsg status_msg;
+    status_msg.header.stamp = node_->now();
+    status_msg.status = static_cast<uint8_t>(status);
+    status_msg.is_armed = armed;
+    status_msg.is_flying = is_flying;
+    agent_.status_pub->publish(status_msg);
 
     // Update local and global position
     updateLocalPosition(agent_.local_odom);
     updateGlobalPosition(agent_.local_odom);
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+// COMMAND HANDLERS
+// ════════════════════════════════════════════════════════════════════════════
+
+void DroneState::armAgent(const bool arm)
+{
+    if (!mavros_comm_->armDisarm(arm))
+    {
+        RCLCPP_ERROR(node_->get_logger(), "Failed to %s %s", arm ? "arm" : "disarm", agent_id_.c_str());
+    }
+    else
+    {
+        RCLCPP_INFO(node_->get_logger(), "%s %s successfully", arm ? "Armed" : "Disarmed", agent_id_.c_str());
+    }
+}
+
+void DroneState::returnHome()
+{
+    // Set mode to AUTO.RTL (Return to Launch)
+    if (!mavros_comm_->setMode("AUTO.RTL"))
+    {
+        RCLCPP_ERROR(node_->get_logger(), "Failed to set RTL mode for %s", agent_id_.c_str());
+    }
+    else
+    {
+        RCLCPP_INFO(node_->get_logger(), "RTL mode set for %s", agent_id_.c_str());
+    }
 }
 
 // ════════════════════════════════════════════════════════════════════════════
@@ -116,47 +219,6 @@ bool DroneState::checkStatus()
 // ════════════════════════════════════════════════════════════════════════════
 // STATUS UPDATE: Status update
 // ════════════════════════════════════════════════════════════════════════════
-
-void DroneState::updateStatus(const mavros_msgs::msg::State& state, const OdometryMsg& local_odom)
-{
-    // Handle state based on current odometry and status
-    bool connected = state.connected;
-    bool armed = state.armed;
-    std::string mode = state.mode;
-    float altitude = local_odom.pose.pose.position.z;
-
-    // Map PX4 state to simplified 3-state AgentStatus
-    AgentStatus status = AgentStatus::IDLE;
-
-    if (!connected)
-    {
-        status = AgentStatus::ERROR;
-        RCLCPP_ERROR(node_->get_logger(), "Drone state: Agent %s is not connected", agent_id_.c_str());
-    }
-    else if (!armed)
-    {
-        // Disarmed and on ground = IDLE (safe state)
-        status = AgentStatus::IDLE;
-    }
-    else
-    {
-        // Armed: determine if flying (ACTIVE) or still taking off (also ACTIVE)
-        // ACTIVE covers: AUTO.TAKEOFF, OFFBOARD, AUTO.MISSION, AUTO.LOITER, POSCTL, AUTO.LAND, AUTO.RTL
-        // All armed states are ACTIVE since the drone is under power
-        status = AgentStatus::ACTIVE;
-    }
-
-    // Informational flags
-    bool is_flying = armed && (altitude >= takeoff_altitude_ - 0.5f);
-
-    // Publish agent status
-    AgentStatusMsg status_msg;
-    status_msg.header.stamp = node_->now();
-    status_msg.status = static_cast<uint8_t>(status);
-    status_msg.is_armed = armed;
-    status_msg.is_flying = is_flying;
-    agent_.status_pub->publish(status_msg);
-}
 
 void DroneState::updateLocalPosition(const OdometryMsg& local_odom)
 {

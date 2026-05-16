@@ -114,7 +114,6 @@ void MissionState::startMissionCallback(const EmptyMsg::SharedPtr msg)
 
 void MissionState::pauseMissionCallback(const std_msgs::msg::Empty::SharedPtr msg)
 {
-    (void)msg;
     if (mission_status_ == MissionStatus::ACTIVE)
     {
         mission_status_ = MissionStatus::PAUSED;
@@ -130,7 +129,6 @@ void MissionState::pauseMissionCallback(const std_msgs::msg::Empty::SharedPtr ms
 
 void MissionState::abortMissionCallback(const std_msgs::msg::Empty::SharedPtr msg)
 {
-    (void)msg;
     if (mission_status_ == MissionStatus::ACTIVE || mission_status_ == MissionStatus::PAUSED)
     {
         mission_status_ = MissionStatus::ABORTED;

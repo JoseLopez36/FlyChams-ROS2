@@ -8,6 +8,7 @@
 #include <std_msgs/msg/float32.hpp>
 #include <std_msgs/msg/string.hpp>
 #include <std_msgs/msg/empty.hpp>
+#include <std_msgs/msg/bool.hpp>
 
 // Geometry messages
 #include <geometry_msgs/msg/point.hpp>
@@ -151,6 +152,8 @@ namespace flychams::common
     using StringMsg = std_msgs::msg::String;
     // Empty
     using EmptyMsg = std_msgs::msg::Empty;
+    // Bool
+    using BoolMsg = std_msgs::msg::Bool;
 
     // ════════════════════════════════════════════════════════════════
     // TF2 TYPES: Transform types

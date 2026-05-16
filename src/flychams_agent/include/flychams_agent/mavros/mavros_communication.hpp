@@ -52,6 +52,7 @@ namespace flychams::agent
         bool armDisarm(const bool& arm);
         bool takeoff(const float& z);
         bool land();
+        bool setMode(const std::string& mode);
         bool enableOffboard(const bool& enable);
         void setLocalPosition(const float& x, const float& y, const float& z);
 
