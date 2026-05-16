@@ -38,7 +38,7 @@ void DroneState::onModuleInit()
     arm_all_sub_ = node_->create_subscription<BoolMsg>(
         "/flychams/coordinator/arm_all", 10,
         std::bind(&DroneState::armAllCallback, this, std::placeholders::_1));
-    return_home_sub_ = node_->create_subscription<EmptyMsg>(
+    return_home_sub_ = node_->create_subscription<BoolMsg>(
         "/flychams/coordinator/return_home", 10,
         std::bind(&DroneState::returnHomeCallback, this, std::placeholders::_1));
 
@@ -99,7 +99,7 @@ void DroneState::armAllCallback(const BoolMsg::SharedPtr msg)
     }
 }
 
-void DroneState::returnHomeCallback(const EmptyMsg::SharedPtr msg)
+void DroneState::returnHomeCallback(const BoolMsg::SharedPtr msg)
 {
     RCLCPP_INFO(node_->get_logger(), "Return home command received for %s", agent_id_.c_str());
     returnHome();

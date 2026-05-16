@@ -176,7 +176,7 @@
     "Image!a0c0": {
       "synchronize": false,
       "imageMode": {
-        "imageTopic": "/flychams/operator/AGENT00/MULTICAMERA00/image/compressed"
+        "imageTopic": "/flychams/agent/AGENT00/MULTICAMERA00/image"
       },
       "foxglovePanelTitle": "AGENT00 - Central",
       "cameraState": {
@@ -222,7 +222,7 @@
     "Image!a0c1": {
       "synchronize": false,
       "imageMode": {
-        "imageTopic": "/flychams/operator/AGENT00/MULTICAMERA01/image/compressed"
+        "imageTopic": "/flychams/agent/AGENT00/MULTICAMERA01/image"
       },
       "foxglovePanelTitle": "AGENT00 - Tracking 1",
       "cameraState": {
@@ -268,7 +268,7 @@
     "Image!a0c2": {
       "synchronize": false,
       "imageMode": {
-        "imageTopic": "/flychams/operator/AGENT00/MULTICAMERA02/image/compressed"
+        "imageTopic": "/flychams/agent/AGENT00/MULTICAMERA02/image"
       },
       "foxglovePanelTitle": "AGENT00 - Tracking 2",
       "cameraState": {
@@ -406,7 +406,7 @@
     "Image!a1c0": {
       "synchronize": false,
       "imageMode": {
-        "imageTopic": "/flychams/operator/AGENT01/MULTICAMERA03/image/compressed"
+        "imageTopic": "/flychams/agent/AGENT01/MULTICAMERA00/image"
       },
       "foxglovePanelTitle": "AGENT01 — Central",
       "cameraState": {
@@ -454,7 +454,7 @@
     "Image!a1c1": {
       "synchronize": false,
       "imageMode": {
-        "imageTopic": "/flychams/operator/AGENT01/MULTICAMERA04/image/compressed"
+        "imageTopic": "/flychams/agent/AGENT01/MULTICAMERA01/image"
       },
       "foxglovePanelTitle": "AGENT01 — Tracking 1",
       "cameraState": {
@@ -500,7 +500,7 @@
     "Image!a1c2": {
       "synchronize": false,
       "imageMode": {
-        "imageTopic": "/flychams/operator/AGENT01/MULTICAMERA05/image/compressed"
+        "imageTopic": "/flychams/agent/AGENT01/MULTICAMERA02/image"
       },
       "foxglovePanelTitle": "AGENT01 — Tracking 2",
       "cameraState": {
@@ -638,7 +638,7 @@
     "Image!a2c0": {
       "synchronize": false,
       "imageMode": {
-        "imageTopic": "/flychams/operator/AGENT02/MULTICAMERA06/image/compressed"
+        "imageTopic": "/flychams/agent/AGENT02/MULTICAMERA00/image"
       },
       "foxglovePanelTitle": "AGENT02 — Central",
       "cameraState": {
@@ -684,7 +684,7 @@
     "Image!a2c1": {
       "synchronize": false,
       "imageMode": {
-        "imageTopic": "/flychams/operator/AGENT02/MULTICAMERA07/image/compressed"
+        "imageTopic": "/flychams/agent/AGENT02/MULTICAMERA01/image"
       },
       "foxglovePanelTitle": "AGENT02 — Tracking 1",
       "cameraState": {
@@ -730,7 +730,7 @@
     "Image!a2c2": {
       "synchronize": false,
       "imageMode": {
-        "imageTopic": "/flychams/operator/AGENT02/MULTICAMERA08/image/compressed"
+        "imageTopic": "/flychams/agent/AGENT02/MULTICAMERA02/image"
       },
       "foxglovePanelTitle": "AGENT02 — Tracking 2",
       "cameraState": {
@@ -888,19 +888,19 @@
     "Plot!speeds": {
       "paths": [
         {
-          "value": "/flychams/operator/AGENT00/metrics.speed",
+          "value": "/flychams/operator/AGENT00/agent_metrics.speed",
           "enabled": true,
           "timestampMethod": "receiveTime",
           "label": "AGENT00"
         },
         {
-          "value": "/flychams/operator/AGENT01/metrics.speed",
+          "value": "/flychams/operator/AGENT01/agent_metrics.speed",
           "enabled": true,
           "timestampMethod": "receiveTime",
           "label": "AGENT01"
         },
         {
-          "value": "/flychams/operator/AGENT02/metrics.speed",
+          "value": "/flychams/operator/AGENT02/agent_metrics.speed",
           "enabled": true,
           "timestampMethod": "receiveTime",
           "label": "AGENT02"
@@ -915,19 +915,19 @@
     "Plot!altitudes": {
       "paths": [
         {
-          "value": "/flychams/control/AGENT00/local/position.point.z",
+          "value": "/flychams/agent/AGENT00/local_position.point.z",
           "enabled": true,
           "timestampMethod": "receiveTime",
           "label": "AGENT00"
         },
         {
-          "value": "/flychams/control/AGENT01/local/position.point.z",
+          "value": "/flychams/agent/AGENT01/local_position.point.z",
           "enabled": true,
           "timestampMethod": "receiveTime",
           "label": "AGENT01"
         },
         {
-          "value": "/flychams/control/AGENT02/local/position.point.z",
+          "value": "/flychams/agent/AGENT02/local_position.point.z",
           "enabled": true,
           "timestampMethod": "receiveTime",
           "label": "AGENT02"
@@ -942,19 +942,19 @@
     "Plot!dtgoal": {
       "paths": [
         {
-          "value": "/flychams/operator/AGENT00/metrics.distance_to_goal",
+          "value": "/flychams/operator/AGENT00/agent_metrics.distance_to_goal",
           "enabled": true,
           "timestampMethod": "receiveTime",
           "label": "AGENT00"
         },
         {
-          "value": "/flychams/operator/AGENT01/metrics.distance_to_goal",
+          "value": "/flychams/operator/AGENT01/agent_metrics.distance_to_goal",
           "enabled": true,
           "timestampMethod": "receiveTime",
           "label": "AGENT01"
         },
         {
-          "value": "/flychams/operator/AGENT02/metrics.distance_to_goal",
+          "value": "/flychams/operator/AGENT02/agent_metrics.distance_to_goal",
           "enabled": true,
           "timestampMethod": "receiveTime",
           "label": "AGENT02"
@@ -969,19 +969,19 @@
     "Plot!optdur": {
       "paths": [
         {
-          "value": "/flychams/operator/AGENT00/metrics.optimization_duration",
+          "value": "/flychams/operator/AGENT00/agent_metrics.optimization_duration",
           "enabled": true,
           "timestampMethod": "receiveTime",
           "label": "AGENT00"
         },
         {
-          "value": "/flychams/operator/AGENT01/metrics.optimization_duration",
+          "value": "/flychams/operator/AGENT01/agent_metrics.optimization_duration",
           "enabled": true,
           "timestampMethod": "receiveTime",
           "label": "AGENT01"
         },
         {
-          "value": "/flychams/operator/AGENT02/metrics.optimization_duration",
+          "value": "/flychams/operator/AGENT02/agent_metrics.optimization_duration",
           "enabled": true,
           "timestampMethod": "receiveTime",
           "label": "AGENT02"
@@ -996,25 +996,25 @@
     "Plot!global": {
       "paths": [
         {
-          "value": "/flychams/operator/global/metrics.mission_time",
+          "value": "/flychams/coordinator/mission_status.mission_time",
           "enabled": true,
           "timestampMethod": "receiveTime",
           "label": "Mission Time (s)"
         },
         {
-          "value": "/flychams/operator/global/metrics.total_agents",
+          "value": "/flychams/operator/mission_metrics.total_agents",
           "enabled": true,
           "timestampMethod": "receiveTime",
           "label": "Agents"
         },
         {
-          "value": "/flychams/operator/global/metrics.total_targets",
+          "value": "/flychams/operator/mission_metrics.total_targets",
           "enabled": true,
           "timestampMethod": "receiveTime",
           "label": "Targets"
         },
         {
-          "value": "/flychams/operator/global/metrics.total_clusters",
+          "value": "/flychams/operator/mission_metrics.total_clusters",
           "enabled": true,
           "timestampMethod": "receiveTime",
           "label": "Clusters"
@@ -1029,17 +1029,17 @@
     "StateTransitions!states": {
       "paths": [
         {
-          "value": "/flychams/control/AGENT00/status.status",
+          "value": "/flychams/agent/AGENT00/status.status",
           "enabled": true,
           "timestampMethod": "receiveTime"
         },
         {
-          "value": "/flychams/control/AGENT01/status.status",
+          "value": "/flychams/agent/AGENT01/status.status",
           "enabled": true,
           "timestampMethod": "receiveTime"
         },
         {
-          "value": "/flychams/control/AGENT02/status.status",
+          "value": "/flychams/agent/AGENT02/status.status",
           "enabled": true,
           "timestampMethod": "receiveTime"
         }
@@ -1079,37 +1079,37 @@
       },
       "transforms": {},
       "topics": {
-        "/flychams/operator/AGENT00/markers": {
+        "/flychams/operator/AGENT00/agent_markers": {
           "visible": true
         },
-        "/flychams/operator/AGENT01/markers": {
+        "/flychams/operator/AGENT01/agent_markers": {
           "visible": true
         },
-        "/flychams/operator/AGENT02/markers": {
+        "/flychams/operator/AGENT02/agent_markers": {
           "visible": true
         },
-        "/flychams/operator/TARGET02COUNT00/markers": {
+        "/flychams/operator/TARGET02COUNT00/target_markers": {
           "visible": true
         },
-        "/flychams/operator/TARGET02COUNT01/markers": {
+        "/flychams/operator/TARGET02COUNT01/target_markers": {
           "visible": true
         },
-        "/flychams/operator/TARGET02COUNT02/markers": {
+        "/flychams/operator/TARGET02COUNT02/target_markers": {
           "visible": true
         },
-        "/flychams/operator/TARGET02COUNT03/markers": {
+        "/flychams/operator/TARGET02COUNT03/target_markers": {
           "visible": true
         },
-        "/flychams/operator/TARGET02COUNT04/markers": {
+        "/flychams/operator/TARGET02COUNT04/target_markers": {
           "visible": true
         },
-        "/flychams/operator/TARGET02COUNT05/markers": {
+        "/flychams/operator/TARGET02COUNT05/target_markers": {
           "visible": true
         },
-        "/flychams/operator/TARGET02COUNT06/markers": {
+        "/flychams/operator/TARGET02COUNT06/target_markers": {
           "visible": true
         },
-        "/flychams/operator/TARGET02COUNT07/markers": {
+        "/flychams/operator/TARGET02COUNT07/target_markers": {
           "visible": true
         }
       },

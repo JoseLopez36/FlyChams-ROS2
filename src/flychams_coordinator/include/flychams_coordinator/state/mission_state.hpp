@@ -61,9 +61,9 @@ namespace flychams::coordinator
 
     private: // Callbacks
         void fleetStatusCallback(const common::FleetStatusMsg::SharedPtr msg);
-        void startMissionCallback(const common::EmptyMsg::SharedPtr msg);
-        void pauseMissionCallback(const common::EmptyMsg::SharedPtr msg);
-        void abortMissionCallback(const common::EmptyMsg::SharedPtr msg);
+        void startMissionCallback(const common::BoolMsg::SharedPtr msg);
+        void pauseMissionCallback(const common::BoolMsg::SharedPtr msg);
+        void abortMissionCallback(const common::BoolMsg::SharedPtr msg);
 
     private: // Update loop
         void update();
@@ -72,9 +72,9 @@ namespace flychams::coordinator
     private: // ROS components
         // Subscribers
         common::SubscriberPtr<common::FleetStatusMsg> fleet_status_sub_;
-        common::SubscriberPtr<common::EmptyMsg> start_mission_sub_;
-        common::SubscriberPtr<common::EmptyMsg> pause_mission_sub_;
-        common::SubscriberPtr<common::EmptyMsg> abort_mission_sub_;
+        common::SubscriberPtr<common::BoolMsg> start_mission_sub_;
+        common::SubscriberPtr<common::BoolMsg> pause_mission_sub_;
+        common::SubscriberPtr<common::BoolMsg> abort_mission_sub_;
         // Publishers
         common::PublisherPtr<common::MissionStatusMsg> mission_status_pub_;
         // Timer

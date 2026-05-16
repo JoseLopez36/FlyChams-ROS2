@@ -27,13 +27,13 @@ void MissionState::onModuleInit()
         std::bind(&MissionState::fleetStatusCallback, this, std::placeholders::_1), node_->getSubscriptionOptions());
 
     // Create mission command subscribers
-    start_mission_sub_ = node_->create_subscription<std_msgs::msg::Empty>(
+    start_mission_sub_ = node_->create_subscription<BoolMsg>(
         "/flychams/coordinator/start_mission", 10,
         std::bind(&MissionState::startMissionCallback, this, std::placeholders::_1));
-    pause_mission_sub_ = node_->create_subscription<std_msgs::msg::Empty>(
+    pause_mission_sub_ = node_->create_subscription<BoolMsg>(
         "/flychams/coordinator/pause_mission", 10,
         std::bind(&MissionState::pauseMissionCallback, this, std::placeholders::_1));
-    abort_mission_sub_ = node_->create_subscription<std_msgs::msg::Empty>(
+    abort_mission_sub_ = node_->create_subscription<BoolMsg>(
         "/flychams/coordinator/abort_mission", 10,
         std::bind(&MissionState::abortMissionCallback, this, std::placeholders::_1));
 
@@ -88,7 +88,7 @@ void MissionState::fleetStatusCallback(const FleetStatusMsg::SharedPtr msg)
     fleet_ready_ = msg->all_agents_idle && !agents_.empty();
 }
 
-void MissionState::startMissionCallback(const EmptyMsg::SharedPtr msg)
+void MissionState::startMissionCallback(const BoolMsg::SharedPtr msg)
 {
     if (mission_status_ == MissionStatus::READY && fleet_ready_)
     {
@@ -112,7 +112,7 @@ void MissionState::startMissionCallback(const EmptyMsg::SharedPtr msg)
     }
 }
 
-void MissionState::pauseMissionCallback(const std_msgs::msg::Empty::SharedPtr msg)
+void MissionState::pauseMissionCallback(const BoolMsg::SharedPtr msg)
 {
     if (mission_status_ == MissionStatus::ACTIVE)
     {
@@ -127,7 +127,7 @@ void MissionState::pauseMissionCallback(const std_msgs::msg::Empty::SharedPtr ms
     }
 }
 
-void MissionState::abortMissionCallback(const std_msgs::msg::Empty::SharedPtr msg)
+void MissionState::abortMissionCallback(const BoolMsg::SharedPtr msg)
 {
     if (mission_status_ == MissionStatus::ACTIVE || mission_status_ == MissionStatus::PAUSED)
     {

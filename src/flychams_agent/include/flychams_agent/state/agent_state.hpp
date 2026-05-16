@@ -75,7 +75,7 @@ namespace flychams::agent
         void stateCallback(const mavros_msgs::msg::State::SharedPtr msg);
         void localOdomCallback(const common::OdometryMsg::SharedPtr msg);
         void armAllCallback(const common::BoolMsg::SharedPtr msg);
-        void returnHomeCallback(const common::EmptyMsg::SharedPtr msg);
+        void returnHomeCallback(const common::BoolMsg::SharedPtr msg);
 
     private: // Status management
         void update();
@@ -92,7 +92,7 @@ namespace flychams::agent
     private: // ROS components
         // Subscribers
         common::SubscriberPtr<common::BoolMsg> arm_all_sub_;
-        common::SubscriberPtr<common::EmptyMsg> return_home_sub_;
+        common::SubscriberPtr<common::BoolMsg> return_home_sub_;
         // Timer
         common::TimerPtr update_timer_;
     };
