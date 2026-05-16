@@ -58,11 +58,9 @@ void AgentBridge::observationSetpointsCallback(const ObservationSetpointsMsg::Sh
 
 void AgentBridge::update()
 {
-    // Check if we have valid observation setpoints
-    if (!agent_.has_observation_setpoints)
+    // Skip update if status is not valid
+    if (!checkStatus())
     {
-        RCLCPP_WARN_THROTTLE(node_->get_logger(), *node_->get_clock(), 5000,
-            "Agent simulation bridge: Agent %s has no observation setpoints", agent_id_.c_str());
         return;
     }
 
@@ -70,6 +68,28 @@ void AgentBridge::update()
     publishGimbalAngleCmd();
     publishCameraFovCmd();
 }
+
+// ════════════════════════════════════════════════════════════════════════════
+// STATUS: Status check
+// ════════════════════════════════════════════════════════════════════════════
+
+bool AgentBridge::checkStatus()
+{
+    // Check 1: Agent must have valid observation setpoints
+    if (!agent_.has_observation_setpoints)
+    {
+        RCLCPP_WARN_THROTTLE(node_->get_logger(), *node_->get_clock(), 5000,
+            "Agent simulation bridge: Agent %s has no observation setpoints", agent_id_.c_str());
+        return false;
+    }
+
+    // All checks passed
+    return true;
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+// PUBLISHING
+// ════════════════════════════════════════════════════════════════════════════
 
 void AgentBridge::publishGimbalAngleCmd()
 {

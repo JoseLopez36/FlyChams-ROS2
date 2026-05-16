@@ -75,6 +75,9 @@ namespace flychams::simulation
 
     private: // Bridge management
         void update();
+        bool checkStatus();
+
+    private: // Publishing
         void publishCameraFovCmd();
         void publishGimbalAngleCmd();
 

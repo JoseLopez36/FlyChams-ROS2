@@ -52,7 +52,8 @@ void ClusterMarkers::clusterGeometryCallback(const ClusterGeometryMsg::SharedPtr
 
 void ClusterMarkers::update()
 {
-    if (!cluster_.has_geometry)
+    // Skip update if status is not valid
+    if (!checkStatus())
     {
         return;
     }
@@ -119,4 +120,20 @@ void ClusterMarkers::update()
     array.markers.push_back(label);
 
     cluster_.markers_pub->publish(array);
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+// STATUS: Status check
+// ════════════════════════════════════════════════════════════════════════════
+
+bool ClusterMarkers::checkStatus()
+{
+    // Check 1: Cluster must have a valid geometry
+    if (!cluster_.has_geometry)
+    {
+        return false;
+    }
+
+    // All checks passed
+    return true;
 }

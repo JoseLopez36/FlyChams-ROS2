@@ -91,7 +91,8 @@ void AgentMetrics::observationSetpointsCallback(const ObservationSetpointsMsg::S
 
 void AgentMetrics::update()
 {
-    if (!agent_.has_position)
+    // Skip update if status is not valid
+    if (!checkStatus())
     {
         return;
     }
@@ -138,4 +139,20 @@ void AgentMetrics::update()
     msg.average_speed = average_speed;
 
     agent_.metrics_pub->publish(msg);
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+// STATUS: Status check
+// ════════════════════════════════════════════════════════════════════════════
+
+bool AgentMetrics::checkStatus()
+{
+    // Check 1: Agent must have a valid position
+    if (!agent_.has_position)
+    {
+        return false;
+    }
+
+    // All checks passed
+    return true;
 }

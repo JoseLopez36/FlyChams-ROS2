@@ -51,7 +51,8 @@ void TargetMarkers::positionCallback(const PointStampedMsg::SharedPtr msg)
 
 void TargetMarkers::update()
 {
-    if (!target_.has_position)
+    // Skip update if status is not valid
+    if (!checkStatus())
     {
         return;
     }
@@ -94,4 +95,20 @@ void TargetMarkers::update()
     array.markers.push_back(label);
 
     target_.markers_pub->publish(array);
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+// STATUS: Status check
+// ════════════════════════════════════════════════════════════════════════════
+
+bool TargetMarkers::checkStatus()
+{
+    // Check 1: Target must have a valid position
+    if (!target_.has_position)
+    {
+        return false;
+    }
+
+    // All checks passed
+    return true;
 }

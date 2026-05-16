@@ -95,6 +95,7 @@ namespace flychams::simulation
 
     private: // Control management
         void update();
+        bool checkStatus();
 
     private: // Control methods
         void destroyTargets();

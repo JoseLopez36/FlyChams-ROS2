@@ -72,6 +72,7 @@ namespace flychams::operator_pkg
 
     private: // Update
         void update();
+        bool checkStatus();
 
     private: // ROS components
         common::TimerPtr update_timer_;

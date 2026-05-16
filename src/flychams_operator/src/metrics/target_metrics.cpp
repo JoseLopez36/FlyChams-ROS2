@@ -67,7 +67,8 @@ void TargetMetrics::positionCallback(const PointStampedMsg::SharedPtr msg)
 
 void TargetMetrics::update()
 {
-    if (!target_.has_position)
+    // Skip update if status is not valid
+    if (!checkStatus())
     {
         return;
     }
@@ -100,4 +101,20 @@ void TargetMetrics::update()
     msg.average_speed = average_speed;
 
     target_.metrics_pub->publish(msg);
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+// STATUS: Status check
+// ════════════════════════════════════════════════════════════════════════════
+
+bool TargetMetrics::checkStatus()
+{
+    // Check 1: Target must have a valid position
+    if (!target_.has_position)
+    {
+        return false;
+    }
+
+    // All checks passed
+    return true;
 }

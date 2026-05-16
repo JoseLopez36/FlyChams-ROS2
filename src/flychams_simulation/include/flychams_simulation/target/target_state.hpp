@@ -78,6 +78,7 @@ namespace flychams::simulation
 
     private: // State management
         void update();
+        bool checkStatus();
 
     private:
         // Timer

@@ -62,7 +62,8 @@ void AgentMarkers::statusCallback(const AgentStatusMsg::SharedPtr msg)
 
 void AgentMarkers::update()
 {
-    if (!agent_.has_position)
+    // Skip update if status is not valid
+    if (!checkStatus())
     {
         return;
     }
@@ -113,4 +114,20 @@ void AgentMarkers::update()
     array.markers.push_back(label);
 
     agent_.markers_pub->publish(array);
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+// STATUS: Status check
+// ════════════════════════════════════════════════════════════════════════════
+
+bool AgentMarkers::checkStatus()
+{
+    // Check 1: Agent must have a valid position
+    if (!agent_.has_position)
+    {
+        return false;
+    }
+
+    // All checks passed
+    return true;
 }

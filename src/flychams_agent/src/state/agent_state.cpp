@@ -97,19 +97,13 @@ void DroneState::update()
 
 bool DroneState::checkStatus()
 {
-    // Check 1: Mission must be active
-    if (!node_->isMissionActive())
-    {
-        return false;
-    }
-
-    // Check 2: Agent must have a valid mavros state
+    // Check 1: Agent must have a valid mavros state
     if (!agent_.has_state)
     {
         return false;
     }
 
-    // Check 3: Agent must have a valid mavros local odometry
+    // Check 2: Agent must have a valid mavros local odometry
     if (!agent_.has_local_odom)
     {
         return false;

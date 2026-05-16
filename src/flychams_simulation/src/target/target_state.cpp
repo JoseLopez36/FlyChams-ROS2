@@ -71,6 +71,12 @@ void TargetState::onModuleShutdown()
 
 void TargetState::update()
 {
+    // Skip update if status is not valid
+    if (!checkStatus())
+    {
+        return;
+    }
+
     // Compute time step
     auto current_time = node_->now();
     float dt = (current_time - last_update_time_).seconds();
@@ -127,4 +133,21 @@ void TargetState::update()
     target_.position.point.y = pos.y;
     target_.position.point.z = pos.z;
     target_.position_pub->publish(target_.position);
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+// STATUS: Status check
+// ════════════════════════════════════════════════════════════════════════════
+
+bool TargetState::checkStatus()
+{
+    // Check 1: Trajectory must have valid points
+    if (trajectory_.num_points == 0)
+    {
+        RCLCPP_WARN(node_->get_logger(), "Target state: No trajectory points available for target %s", target_id_.c_str());
+        return false;
+    }
+
+    // All checks passed
+    return true;
 }

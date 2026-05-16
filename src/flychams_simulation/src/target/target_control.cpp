@@ -137,6 +137,12 @@ void TargetControl::clusterGeometryCallback(const ID& cluster_id, const ClusterG
 
 void TargetControl::update()
 {
+    // Skip update if status is not valid
+    if (!checkStatus())
+    {
+        return;
+    }
+
     // Update targets in simulation
     updateTargets();
 
@@ -145,6 +151,22 @@ void TargetControl::update()
 
     // Update clusters in simulation
     updateClusters();
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+// STATUS: Status check
+// ════════════════════════════════════════════════════════════════════════════
+
+bool TargetControl::checkStatus()
+{
+    // Check 1: Simulation tools must be available
+    if (!simulation_tools_)
+    {
+        return false;
+    }
+
+    // All checks passed
+    return true;
 }
 
 // ════════════════════════════════════════════════════════════════════════════
