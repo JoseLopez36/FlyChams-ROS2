@@ -2,27 +2,25 @@
 
 using namespace flychams::common;
 
-namespace flychams::coordinator
+using namespace flychams::coordinator;
+
+// ════════════════════════════════════════════════════════════════════════════
+// CONSTRUCTOR: Constructor and destructor
+// ════════════════════════════════════════════════════════════════════════════
+
+void AgentRegistration::onModuleInit()
 {
-	// ════════════════════════════════════════════════════════════════════════════
-	// CONSTRUCTOR: Constructor and destructor
-	// ════════════════════════════════════════════════════════════════════════════
-
-	void AgentRegistration::onModuleInit()
+	// Iterate over all agents in the configuration
+	agents_.clear();
+	for (const auto& [agent_id, agent_ptr] : node_->getSettings()->getAgentTeam())
 	{
-		// Iterate over all agents in the configuration
-		agents_.clear();
-		for (const auto& [agent_id, agent_ptr] : node_->getSettings()->getAgentTeam())
-		{
-			// Add agent to list
-			agents_.push_back(agent_id);
-		}
+		// Add agent to list
+		agents_.push_back(agent_id);
 	}
+}
 
-	void AgentRegistration::onModuleShutdown()
-	{
-		// Destroy agents
-		agents_.clear();
-	}
-
-} // namespace flychams::coordinator
+void AgentRegistration::onModuleShutdown()
+{
+	// Destroy agents
+	agents_.clear();
+}

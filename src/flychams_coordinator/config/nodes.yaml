@@ -1,7 +1,30 @@
-/**/fleet_status_node:
+/**/fleet_state_node:
   ros__parameters:
     # Update rate (Hz)
-    fleet_status_rate: 1.0
+    fleet_state_rate: 1.0
+
+/**/target_clustering_node:
+  ros__parameters:
+    # Update rate (Hz)
+    clustering_rate: 3.33
+
+    # Persistence parameters
+    persistence:
+      ini_bonding_coef: 1.0           # Initial bonding coefficient
+      max_bonding_coef: 1.0           # Maximum bonding coefficient
+      bonding_coef_time_to_max: 100.0 # Time from 0 to max bonding coefficient (s)
+      max_hysteresis_ratio: 1.6       # Maximum hysteresis ratio
+      min_hysteresis_ratio: 0.8       # Minimum hysteresis ratio
+
+/**/cluster_analysis_node:
+  ros__parameters:
+    # Update rate (Hz)
+    analysis_rate: 20.0
+    
+    # Enclosing circle parameters
+    enclosing_circle:
+      min_circle_radius: 0.3
+      margin_circle_radius: 1.0
 
 /**/agent_assignment_node:
   ros__parameters:
@@ -40,26 +63,3 @@
       num_challenger_tests: 10
       # Nesterov parameters
       lipschitz_constant: 0.0
-
-/**/target_clustering_node:
-  ros__parameters:
-    # Update rate (Hz)
-    clustering_rate: 3.33
-
-    # Persistence parameters
-    persistence:
-      ini_bonding_coef: 1.0           # Initial bonding coefficient
-      max_bonding_coef: 1.0           # Maximum bonding coefficient
-      bonding_coef_time_to_max: 100.0 # Time from 0 to max bonding coefficient (s)
-      max_hysteresis_ratio: 1.6       # Maximum hysteresis ratio
-      min_hysteresis_ratio: 0.8       # Minimum hysteresis ratio
-
-/**/cluster_analysis_node:
-  ros__parameters:
-    # Update rate (Hz)
-    analysis_rate: 20.0
-    
-    # Enclosing circle parameters
-    enclosing_circle:
-      min_circle_radius: 0.3
-      margin_circle_radius: 1.0

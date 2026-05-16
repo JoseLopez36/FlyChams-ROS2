@@ -46,21 +46,21 @@ def generate_launch_description():
             'executable': 'element_registrator_node',
             'name': 'element_registrator_node'
         },
-        'fleet_status': {
-            'executable': 'fleet_status_node',
-            'name': 'fleet_status_node'
+        'fleet_state': {
+            'executable': 'fleet_state_node',
+            'name': 'fleet_state_node'
         },
-        'agent_assignment': {
-            'executable': 'agent_assignment_node',
-            'name': 'agent_assignment_node'
+        'target_clustering': {
+            'executable': 'target_clustering_node',
+            'name': 'target_clustering_node'
         },
         'cluster_analysis': {
             'executable': 'cluster_analysis_node',
             'name': 'cluster_analysis_node'
         },
-        'target_clustering': {
-            'executable': 'target_clustering_node',
-            'name': 'target_clustering_node'
+        'agent_assignment': {
+            'executable': 'agent_assignment_node',
+            'name': 'agent_assignment_node'
         }
     }
 

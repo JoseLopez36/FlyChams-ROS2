@@ -5,7 +5,7 @@
 # Node allowlist: Only launch these nodes
 node_allowlist:
   - element_registrator
-  - fleet_status
+  - fleet_state
   - target_clustering
   - cluster_analysis
   - agent_assignment
@@ -13,7 +13,7 @@ node_allowlist:
 # Per-node log level overrides
 node_log_levels:
   element_registrator: "info"
-  fleet_status: "info"
+  fleet_state: "info"
   target_clustering: "info"
   cluster_analysis: "info"
   agent_assignment: "info"

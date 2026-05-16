@@ -13,13 +13,18 @@ find_package(flychams_api REQUIRED)
 
 # Create coordinator library
 set(COORD_SRC
+  # Registration
   src/registration/agent_registration.cpp
   src/registration/target_registration.cpp
   src/registration/cluster_registration.cpp
   src/registration/element_registration.cpp
-  src/status/fleet_state.cpp
+  # State
+  src/state/fleet_state.cpp
+  # Clustering
   src/clustering/target_clustering.cpp
+  # Analysis
   src/analysis/cluster_analysis.cpp
+  # Assignment
   src/assignment/agent_assignment.cpp
 )
 add_library(${PROJECT_NAME} SHARED ${COORD_SRC})
@@ -72,7 +77,7 @@ install(TARGETS ${PROJECT_NAME}
   INCLUDES DESTINATION include
 )
 
-install(TARGETS agent_assignment_node fleet_state_node target_clustering_node cluster_analysis_node element_registrator_node
+install(TARGETS element_registrator_node fleet_state_node target_clustering_node cluster_analysis_node agent_assignment_node
   RUNTIME DESTINATION lib/${PROJECT_NAME}
 )
 

@@ -1,12 +1,13 @@
 #include "rclcpp/rclcpp.hpp"
 
 // Module include
-#include "flychams_coordinator/status/fleet_state.hpp"
+#include "flychams_coordinator/state/fleet_state.hpp"
 
 // Base node include
 #include "flychams_common/base/base_discoverer_node.hpp"
 
 using namespace flychams::common;
+
 using namespace flychams::coordinator;
 
 /**
