@@ -1,9 +1,9 @@
 #include "rclcpp/rclcpp.hpp"
 
-// Perception includes
+// Module include
 #include "flychams_coordinator/clustering/target_clustering.hpp"
 
-// Core includes
+// Base node include
 #include "flychams_common/base/base_discoverer_node.hpp"
 
 using namespace flychams::core;
@@ -34,16 +34,15 @@ public: // Constructor/Destructor
         // Nothing to do
     }
 
-    void onInit() override
+    void onDiscoveryInit() override
     {
-        // Use callback group from discovery node (to avoid race conditions)
         // Initialize target clustering
-        target_clustering_ = std::make_shared<TargetClustering>(node_, settings_tools_, topic_tools_, transform_tools_, discovery_cb_group_);
+        target_clustering_ = std::make_shared<TargetClustering>(sharedFromThis());
 
         RCLCPP_INFO(node_->get_logger(), "Target clustering created");
     }
 
-    void onShutdown() override
+    void onDiscoveryShutdown() override
     {
         // Destroy target clustering system
         target_clustering_.reset();

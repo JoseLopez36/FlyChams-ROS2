@@ -7,12 +7,12 @@ using namespace flychams::coordinator;
 // CONSTRUCTOR: Constructor and destructor
 // ════════════════════════════════════════════════════════════════════════════
 
-void ElementRegistration::onInit()
+void ElementRegistration::onModuleInit()
 {
 	// Create registration instances for each element type
-	agent_registration_ = std::make_shared<AgentRegistration>(node_, settings_tools_, topic_tools_, transform_tools_, module_cb_group_);
-	target_registration_ = std::make_shared<TargetRegistration>(node_, settings_tools_, topic_tools_, transform_tools_, module_cb_group_);
-	cluster_registration_ = std::make_shared<ClusterRegistration>(node_, settings_tools_, topic_tools_, transform_tools_, module_cb_group_);
+	agent_registration_ = std::make_shared<AgentRegistration>(node_);
+	target_registration_ = std::make_shared<TargetRegistration>(node_);
+	cluster_registration_ = std::make_shared<ClusterRegistration>(node_);
 
 	// Get all elements
 	agents_ = agent_registration_->getAgents();
@@ -48,27 +48,24 @@ void ElementRegistration::onInit()
 		registerElement(cluster_id, ElementType::Cluster);
 
 	// Create registration publisher
-	registration_pub_ = topic_tools_->createRegistrationPublisher();
+	registration_pub_ = node_->createRegistrationPublisher();
 
 	// Create global origin publisher
-	global_origin_pub_ = topic_tools_->createGlobalOriginPublisher();
+	global_origin_pub_ = node_->createGlobalOriginPublisher();
 
 	// Publish global origin
 	GeoPointStampedMsg origin_msg;
-	origin_msg.header = RosUtils::createHeader(node_, transform_tools_->getGlobalFrame());
-	origin_msg.position.latitude = settings_tools_->getEnvironment().geopoint.latitude;
-	origin_msg.position.longitude = settings_tools_->getEnvironment().geopoint.longitude;
-	origin_msg.position.altitude = settings_tools_->getEnvironment().geopoint.altitude;
+	origin_msg.header = node_->createHeader(node_->getGlobalFrame());
+	origin_msg.position.latitude = node_->getSettings()->getEnvironment().geopoint.latitude;
+	origin_msg.position.longitude = node_->getSettings()->getEnvironment().geopoint.longitude;
+	origin_msg.position.altitude = node_->getSettings()->getEnvironment().geopoint.altitude;
 	global_origin_pub_->publish(origin_msg);
 
 	// Initialize registration update timer (1 Hz)
-	update_timer_ = node_->create_wall_timer(
-		std::chrono::duration<float>(1.0f),
-		std::bind(&ElementRegistration::publishRegistration, this),
-		module_cb_group_);
+	update_timer_ = node_->createTimer(1.0f, std::bind(&ElementRegistration::publishRegistration, this));
 }
 
-void ElementRegistration::onShutdown()
+void ElementRegistration::onModuleShutdown()
 {
 	// Unregister all elements
 	for (const auto& agent_id : agents_)

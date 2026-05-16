@@ -8,35 +8,35 @@ namespace flychams::coordinator
     // CONSTRUCTOR: Constructor and destructor
     // ════════════════════════════════════════════════════════════════════════════
 
-    void AgentAssignment::onInit()
+    void AgentAssignment::onModuleInit()
     {
         // Get parameters from parameter server
         // Get update rate
-        update_rate_ = RosUtils::getParameterOr<float>(node_, "assignment_rate", 1.0f);
+        update_rate_ = node_->getParameterOr<float>("assignment_rate", 1.0f);
         // Get assignment mode
-        AssignmentSolver::SolverMode assignment_solver_mode = static_cast<AssignmentSolver::SolverMode>(RosUtils::getParameterOr<uint8_t>(node_, "assignment.solver_mode", 0));
+        AssignmentSolver::SolverMode assignment_solver_mode = static_cast<AssignmentSolver::SolverMode>(node_->getParameterOr<uint8_t>("assignment.solver_mode", 0));
         // Get assignment solver parameters
-        float observation_weight = RosUtils::getParameterOr<float>(node_, "assignment.observation_weight", 1.0f);
-        float distance_weight = RosUtils::getParameterOr<float>(node_, "assignment.distance_weight", 10.0f);
-        float switch_weight = RosUtils::getParameterOr<float>(node_, "assignment.switch_weight", 5000.0f);
+        float observation_weight = node_->getParameterOr<float>("assignment.observation_weight", 1.0f);
+        float distance_weight = node_->getParameterOr<float>("assignment.distance_weight", 10.0f);
+        float switch_weight = node_->getParameterOr<float>("assignment.switch_weight", 5000.0f);
         // Get position solver parameters
-        position_solver_mode_ = static_cast<PositionSolver::SolverMode>(RosUtils::getParameterOr<uint8_t>(node_, "positioning.solver_mode", 0));
+        position_solver_mode_ = static_cast<PositionSolver::SolverMode>(node_->getParameterOr<uint8_t>("positioning.solver_mode", 0));
         // Get generic position solver parameters
-        position_solver_params_.eps = RosUtils::getParameterOr<float>(node_, "positioning.eps", 1.0e-1f);
-        position_solver_params_.tol = RosUtils::getParameterOr<float>(node_, "positioning.convergence_tolerance", 1.0e-5f);
-        position_solver_params_.max_iter = RosUtils::getParameterOr<int>(node_, "positioning.max_iterations", 100);
+        position_solver_params_.eps = node_->getParameterOr<float>("positioning.eps", 1.0e-1f);
+        position_solver_params_.tol = node_->getParameterOr<float>("positioning.convergence_tolerance", 1.0e-5f);
+        position_solver_params_.max_iter = node_->getParameterOr<int>("positioning.max_iterations", 100);
         // Get PSO parameters
-        position_solver_params_.num_particles = RosUtils::getParameterOr<int>(node_, "positioning.num_particles", 50);
-        position_solver_params_.w_max = RosUtils::getParameterOr<float>(node_, "positioning.w_max", 0.4f);
-        position_solver_params_.w_min = RosUtils::getParameterOr<float>(node_, "positioning.w_min", 0.1f);
-        position_solver_params_.c1 = RosUtils::getParameterOr<float>(node_, "positioning.c1", 1.0f);
-        position_solver_params_.c2 = RosUtils::getParameterOr<float>(node_, "positioning.c2", 1.0f);
-        position_solver_params_.stagnation_limit = RosUtils::getParameterOr<int>(node_, "positioning.stagnation_limit", 5);
+        position_solver_params_.num_particles = node_->getParameterOr<int>("positioning.num_particles", 50);
+        position_solver_params_.w_max = node_->getParameterOr<float>("positioning.w_max", 0.4f);
+        position_solver_params_.w_min = node_->getParameterOr<float>("positioning.w_min", 0.1f);
+        position_solver_params_.c1 = node_->getParameterOr<float>("positioning.c1", 1.0f);
+        position_solver_params_.c2 = node_->getParameterOr<float>("positioning.c2", 1.0f);
+        position_solver_params_.stagnation_limit = node_->getParameterOr<int>("positioning.stagnation_limit", 5);
         // Get ALC-PSO parameters
-        position_solver_params_.max_lifespan = RosUtils::getParameterOr<int>(node_, "positioning.max_lifespan", 60);
-        position_solver_params_.num_challenger_tests = RosUtils::getParameterOr<int>(node_, "positioning.num_challenger_tests", 10);
+        position_solver_params_.max_lifespan = node_->getParameterOr<int>("positioning.max_lifespan", 60);
+        position_solver_params_.num_challenger_tests = node_->getParameterOr<int>("positioning.num_challenger_tests", 10);
         // Get Nesterov parameters
-        position_solver_params_.lipschitz_constant = RosUtils::getParameterOr<float>(node_, "positioning.lipschitz_constant", 0.0f);
+        position_solver_params_.lipschitz_constant = node_->getParameterOr<float>("positioning.lipschitz_constant", 0.0f);
 
         // Initialize data
         agents_.clear();
@@ -46,7 +46,7 @@ namespace flychams::coordinator
         X_prev_.resize(0);
 
         // Get relevant transform frames
-        world_frame_ = transform_tools_->getGlobalFrame();
+        world_frame_ = node_->getGlobalFrame();
         central_optical_frame_map_.clear();
 
         // Create and initialize assignment solver
@@ -59,14 +59,10 @@ namespace flychams::coordinator
         solver_->init(assignment_solver_mode, solver_params);
 
         // Set update timer
-        update_timer_ = rclcpp::create_timer(node_, 
-            node_->get_clock(), 
-            std::chrono::duration<float>(1.0f / update_rate_), 
-            std::bind(&AgentAssignment::update, this), 
-            module_cb_group_);
+        update_timer_ = node_->createTimer(update_rate_, std::bind(&AgentAssignment::update, this));
     }
 
-    void AgentAssignment::onShutdown()
+    void AgentAssignment::onModuleShutdown()
     {
         // Destroy assignment solver
         solver_->destroy();
@@ -90,7 +86,7 @@ namespace flychams::coordinator
         A_.insert(agent_id); // Add agent to ordered set
 
         // Define tracking units IDs
-        const auto& tracking_params = settings_tools_->getTrackingParameters(agent_id);
+        const auto& tracking_params = node_->getSettings()->getTrackingParameters(agent_id);
         agents_[agent_id].tracking_unit_ids.resize(tracking_params.n_t);
         int t_u = 0;
         for (int i = 1; i < tracking_params.n_o; i++)
@@ -101,7 +97,7 @@ namespace flychams::coordinator
 
         // Get central observation unit optical frame
         central_optical_frame_map_.insert({ agent_id,
-            transform_tools_->getCameraOpticalFrame(agent_id, tracking_params.observation_units_params[0].id) });
+            node_->getCameraOpticalFrame(agent_id, tracking_params.observation_units_params[0].id) });
 
         // Create and initialize position solver
         agents_[agent_id].position_solver = createPositionSolver(agent_id, position_solver_params_, position_solver_mode_);
@@ -111,21 +107,21 @@ namespace flychams::coordinator
         X_prev_.setConstant(-1);
 
         // Create agent status subscriber
-        agents_[agent_id].status_sub = topic_tools_->createAgentStatusSubscriber(agent_id,
+        agents_[agent_id].status_sub = node_->createAgentStatusSubscriber(agent_id,
             [this, agent_id](const AgentStatusMsg::SharedPtr msg)
             {
                 this->agentStatusCallback(agent_id, msg);
-            }, sub_options_with_module_cb_group_);
+            }, node_->getSubscriptionOptions());
 
         // Create agent position subscriber
-        agents_[agent_id].position_sub = topic_tools_->createAgentGlobalPositionSubscriber(agent_id,
+        agents_[agent_id].position_sub = node_->createAgentGlobalPositionSubscriber(agent_id,
             [this, agent_id](const PointStampedMsg::SharedPtr msg)
             {
                 this->agentPositionCallback(agent_id, msg);
-            }, sub_options_with_module_cb_group_);
+            }, node_->getSubscriptionOptions());
 
         // Create agent assignment publisher
-        agents_[agent_id].assignment_pub = topic_tools_->createAgentAssignmentPublisher(agent_id);
+        agents_[agent_id].assignment_pub = node_->createAgentAssignmentPublisher(agent_id);
     }
 
     void AgentAssignment::removeAgent(const ID& agent_id)
@@ -142,11 +138,11 @@ namespace flychams::coordinator
         T_.insert(cluster_id); // Add cluster to ordered set
 
         // Create cluster geometry subscriber
-        clusters_[cluster_id].geometry_sub = topic_tools_->createClusterGeometrySubscriber(cluster_id,
+        clusters_[cluster_id].geometry_sub = node_->createClusterGeometrySubscriber(cluster_id,
             [this, cluster_id](const ClusterGeometryMsg::SharedPtr msg)
             {
                 this->clusterGeometryCallback(cluster_id, msg);
-            }, sub_options_with_module_cb_group_);
+            }, node_->getSubscriptionOptions());
     }
 
     void AgentAssignment::removeCluster(const ID& cluster_id)
@@ -188,6 +184,10 @@ namespace flychams::coordinator
 
     void AgentAssignment::update()
     {
+        // Skip assignment when mission is not ACTIVE
+        if (!node_->isMissionActive())
+            return;
+
         // Check if we have a valid agent status, position and cluster geometry
         for (const auto& [agent_id, agent] : agents_)
         {
@@ -198,7 +198,7 @@ namespace flychams::coordinator
             }
 
             // Check if we are in the correct state to assign clusters
-            if (agent.status != AgentStatus::MISSION)
+            if (agent.status != AgentStatus::ACTIVE)
             {
                 RCLCPP_WARN(node_->get_logger(), "Agent assignment: Agent %s is not in the correct state to assign clusters",
                     agent_id.c_str());
@@ -226,9 +226,9 @@ namespace flychams::coordinator
         for (const auto& agent_id : A_)
         {
             const auto& agent = agents_[agent_id];
-            tab_x.col(k) = RosUtils::fromMsg(agent.position);
-            const TransformMsg& wTcentral_msg = transform_tools_->getTransform(world_frame_, central_optical_frame_map_[agent_id]);
-            wTcentral_array[k] = RosUtils::fromMsg(wTcentral_msg);
+            tab_x.col(k) = node_->fromMsg(agent.position);
+            const TransformMsg& wTcentral_msg = node_->getTransform(world_frame_, central_optical_frame_map_[agent_id]);
+            wTcentral_array[k] = node_->fromMsg(wTcentral_msg);
             solvers[k] = agent.position_solver;
             k++;
         }
@@ -240,7 +240,7 @@ namespace flychams::coordinator
         for (const auto& cluster_id : T_)
         {
             const auto& cluster = clusters_[cluster_id];
-            tab_P.col(i) = RosUtils::fromMsg(cluster.center);
+            tab_P.col(i) = node_->fromMsg(cluster.center);
             tab_r(i) = cluster.radius;
             i++;
         }
@@ -298,9 +298,9 @@ namespace flychams::coordinator
         PositionSolver::SharedPtr solver = std::make_shared<PositionSolver>();
 
         // Get config
-        const auto& config_ptr = settings_tools_->getConfig();
-        const auto& agent_ptr = settings_tools_->getAgent(agent_id);
-        const auto& tracking_params = settings_tools_->getTrackingParameters(agent_id);
+        const auto& config_ptr = node_->getSettings()->getConfig();
+        const auto& agent_ptr = node_->getSettings()->getAgent(agent_id);
+        const auto& tracking_params = node_->getSettings()->getTrackingParameters(agent_id);
 
         // Get cost parameters for each tracking unit
         CostFunctions::CostParameters cost_params;

@@ -46,6 +46,12 @@ namespace flychams::core
         void onStatusInit() override;
         void onStatusShutdown() override;
 
+    public: // Shared from this
+        SharedPtr sharedFromThis()
+        {
+            return std::dynamic_pointer_cast<BaseDiscovererNode>(shared_from_this());
+        }
+
     private: // Discovery data
         std::unordered_map<ID, ElementType> elements_;
 

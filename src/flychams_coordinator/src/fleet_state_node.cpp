@@ -1,9 +1,9 @@
 #include "rclcpp/rclcpp.hpp"
 
-// Fleet manager include
-#include "flychams_coordinator/fleet/fleet_status.hpp"
+// Module include
+#include "flychams_coordinator/status/fleet_state.hpp"
 
-// Core includes
+// Base node include
 #include "flychams_common/base/base_discoverer_node.hpp"
 
 using namespace flychams::core;
@@ -18,44 +18,62 @@ using namespace flychams::coordinator;
  * @date 2025-05-14
  * ════════════════════════════════════════════════════════════════
  */
-class FleetStatusNode : public BaseDiscovererNode
+class FleetStateNode : public BaseDiscovererNode
 {
 public: // Constructor/Destructor
-    FleetStatusNode(const std::string& node_name, const rclcpp::NodeOptions& options)
+    FleetStateNode(const std::string& node_name, const rclcpp::NodeOptions& options)
         : BaseDiscovererNode(node_name, options)
     {
         // Nothing to do
     }
 
-    void onInit() override
+    void onDiscoveryInit() override
     {
-        fleet_manager_ = std::make_shared<FleetStatus>(node_, settings_tools_, topic_tools_, transform_tools_, discovery_cb_group_);
+        // Initialize fleet manager
+        fleet_state_ = std::make_shared<FleetState>(sharedFromThis());
+        
         RCLCPP_INFO(node_->get_logger(), "Fleet manager created");
     }
 
-    void onShutdown() override
+    void onDiscoveryShutdown() override
     {
-        fleet_manager_.reset();
+        fleet_state_.reset();
     }
 
 private: // Element management
     void onAddAgent(const ID& agent_id) override
     {
-        fleet_manager_->addAgent(agent_id);
+        fleet_state_->addAgent(agent_id);
     }
 
     void onRemoveAgent(const ID& agent_id) override
     {
-        fleet_manager_->removeAgent(agent_id);
+        fleet_state_->removeAgent(agent_id);
     }
 
-    void onAddTarget(const ID& target_id) override {}
-    void onRemoveTarget(const ID& target_id) override {}
-    void onAddCluster(const ID& cluster_id) override {}
-    void onRemoveCluster(const ID& cluster_id) override {}
+    void onAddTarget(const ID& target_id) override
+    {
+        // Targets are not handled by this node
+    }
+
+    void onRemoveTarget(const ID& target_id) override
+    {
+        // Targets are not handled by this node
+    }
+
+    void onAddCluster(const ID& cluster_id) override
+    {
+        // Clusters are not handled by this node
+    }
+
+    void onRemoveCluster(const ID& cluster_id) override
+    {
+        // Clusters are not handled by this node
+    }
 
 private: // Components
-    FleetStatus::SharedPtr fleet_manager_;
+    // Fleet status manager
+    FleetState::SharedPtr fleet_state_;
 };
 
 int main(int argc, char** argv)
@@ -64,7 +82,7 @@ int main(int argc, char** argv)
     rclcpp::NodeOptions options;
     options.allow_undeclared_parameters(true);
     options.automatically_declare_parameters_from_overrides(true);
-    auto node = std::make_shared<FleetStatusNode>("fleet_status_node", options);
+    auto node = std::make_shared<FleetStateNode>("fleet_status_node", options);
     node->init();
     rclcpp::executors::MultiThreadedExecutor executor;
     executor.add_node(node);

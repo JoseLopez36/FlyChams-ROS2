@@ -1,9 +1,9 @@
 #include "rclcpp/rclcpp.hpp"
 
-// Registration includes
+// Module include
 #include "flychams_coordinator/registration/element_registration.hpp"
 
-// Core includes
+// Base node include
 #include "flychams_common/base/base_node.hpp"
 
 using namespace flychams::core;
@@ -27,15 +27,15 @@ public: // Constructor/Destructor
         // Nothing to do
     }
 
-    void onInit() override
+    void onNodeInit() override
     {
         // Initialize element registration system
-        element_registration_ = std::make_shared<ElementRegistration>(node_, settings_tools_, topic_tools_, transform_tools_, node_cb_group_);
+        element_registration_ = std::make_shared<ElementRegistration>(sharedFromThis());
 
         RCLCPP_INFO(node_->get_logger(), "Element registration created");
     }
 
-    void onShutdown() override
+    void onNodeShutdown() override
     {
         // Destroy element registration system
         element_registration_.reset();

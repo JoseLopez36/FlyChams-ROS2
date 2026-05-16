@@ -1,8 +1,10 @@
 std_msgs/Header header
+uint8 status
+
+# Additional status flags
 bool all_agents_idle
 bool all_agents_active
 bool any_agent_error
-uint8 fleet_state
 string[] agent_ids
 uint8[] agent_statuses
 

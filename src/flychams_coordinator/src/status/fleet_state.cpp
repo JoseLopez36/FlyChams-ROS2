@@ -1,4 +1,4 @@
-#include "flychams_coordinator/fleet/fleet_status.hpp"
+#include "flychams_coordinator/status/fleet_state.hpp"
 
 using namespace flychams::core;
 
@@ -8,21 +8,17 @@ namespace flychams::coordinator
     // CONSTRUCTOR: Constructor and destructor
     // ════════════════════════════════════════════════════════════════════════════
 
-    void FleetStatus::onInit()
+    void FleetState::onModuleInit()
     {
         // Get parameters from parameter server
-        update_rate_ = RosUtils::getParameterOr<float>(node_, "fleet_manager_rate", 1.0f);
+        update_rate_ = node_->getParameterOr<float>("fleet_manager_rate", 1.0f);
 
         // Initialize data
         agents_.clear();
-        mission_state_ = MissionState::READY;
+        mission_status_ = MissionStatus::READY;
         mission_time_ = 0.0f;
-        mission_start_time_ = RosUtils::now(node_);
+        mission_start_time_ = node_->now();
         active_agents_.clear();
-
-        // Create fleet/mission publishers
-        fleet_status_pub_ = topic_tools_->createFleetStatusPublisher();
-        mission_status_pub_ = topic_tools_->createMissionStatusPublisher();
 
         // Create mission command subscriber
         mission_cmd_sub_ = node_->create_subscription<StringMsg>(
@@ -30,22 +26,26 @@ namespace flychams::coordinator
             [this](const StringMsg::SharedPtr msg)
             {
                 this->missionCmdCallback(msg);
-            }, sub_options_with_module_cb_group_);
+            }, node_->getSubscriptionOptions());
+
+        // Create fleet/mission publishers
+        fleet_status_pub_ = node_->createFleetStatusPublisher();
+        mission_status_pub_ = node_->createMissionStatusPublisher();
 
         // Set update timer
-        update_timer_ = rclcpp::create_timer(node_,
-            node_->get_clock(),
-            std::chrono::duration<float>(1.0f / update_rate_),
-            std::bind(&FleetStatus::update, this),
-            module_cb_group_);
+        update_timer_ = node_->createTimer(update_rate_, std::bind(&FleetState::update, this));
     }
 
-    void FleetStatus::onShutdown()
+    void FleetState::onModuleShutdown()
     {
-        agents_.clear();
+        // Destroy update timer
         update_timer_.reset();
+        // Destroy agents
+        agents_.clear();
+        // Destroy publishers
         fleet_status_pub_.reset();
         mission_status_pub_.reset();
+        // Destroy subscribers
         mission_cmd_sub_.reset();
     }
 
@@ -53,20 +53,20 @@ namespace flychams::coordinator
     // PUBLIC METHODS: Dynamic element management
     // ════════════════════════════════════════════════════════════════════════════
 
-    void FleetStatus::addAgent(const ID& agent_id)
+    void FleetState::addAgent(const ID& agent_id)
     {
         agents_.insert({ agent_id, Agent() });
 
-        agents_[agent_id].status_sub = topic_tools_->createAgentStatusSubscriber(agent_id,
+        agents_[agent_id].status_sub = node_->createAgentStatusSubscriber(agent_id,
             [this, agent_id](const AgentStatusMsg::SharedPtr msg)
             {
                 this->agentStatusCallback(agent_id, msg);
-            }, sub_options_with_module_cb_group_);
+            }, node_->getSubscriptionOptions());
 
         RCLCPP_INFO(node_->get_logger(), "Fleet manager: Agent %s added", agent_id.c_str());
     }
 
-    void FleetStatus::removeAgent(const ID& agent_id)
+    void FleetState::removeAgent(const ID& agent_id)
     {
         agents_.erase(agent_id);
         RCLCPP_INFO(node_->get_logger(), "Fleet manager: Agent %s removed", agent_id.c_str());
@@ -76,24 +76,24 @@ namespace flychams::coordinator
     // CALLBACKS
     // ════════════════════════════════════════════════════════════════════════════
 
-    void FleetStatus::agentStatusCallback(const ID& agent_id, const AgentStatusMsg::SharedPtr msg)
+    void FleetState::agentStatusCallback(const ID& agent_id, const AgentStatusMsg::SharedPtr msg)
     {
         agents_[agent_id].status = static_cast<AgentStatus>(msg->status);
         agents_[agent_id].has_status = true;
     }
 
-    void FleetStatus::missionCmdCallback(const StringMsg::SharedPtr msg)
+    void FleetState::missionCmdCallback(const StringMsg::SharedPtr msg)
     {
         const std::string& cmd = msg->data;
         RCLCPP_INFO(node_->get_logger(), "Fleet manager: Mission command received: %s", cmd.c_str());
 
         if (cmd == "start")
         {
-            if (mission_state_ == MissionState::READY)
+            if (mission_status_ == MissionStatus::READY)
             {
-                bool fleet_ready = (computeFleetState() == FleetState::ACTIVE);
+                bool fleet_ready = (computeFleetStatus() == FleetStatus::ACTIVE);
                 if (fleet_ready)
-                    transitionMission(MissionState::ACTIVE);
+                    transitionMission(MissionStatus::ACTIVE);
                 else
                     RCLCPP_WARN(node_->get_logger(), "Fleet manager: Cannot start mission - fleet not ready (not all agents ACTIVE)");
             }
@@ -104,26 +104,26 @@ namespace flychams::coordinator
         }
         else if (cmd == "pause")
         {
-            if (mission_state_ == MissionState::ACTIVE)
-                transitionMission(MissionState::PAUSED);
+            if (mission_status_ == MissionStatus::ACTIVE)
+                transitionMission(MissionStatus::PAUSED);
             else
                 RCLCPP_WARN(node_->get_logger(), "Fleet manager: Cannot pause - mission not ACTIVE");
         }
         else if (cmd == "resume")
         {
-            if (mission_state_ == MissionState::PAUSED)
-                transitionMission(MissionState::ACTIVE);
+            if (mission_status_ == MissionStatus::PAUSED)
+                transitionMission(MissionStatus::ACTIVE);
             else
                 RCLCPP_WARN(node_->get_logger(), "Fleet manager: Cannot resume - mission not PAUSED");
         }
         else if (cmd == "abort")
         {
-            transitionMission(MissionState::ABORTED);
+            transitionMission(MissionStatus::ABORTED);
         }
         else if (cmd == "reset")
         {
-            if (mission_state_ == MissionState::ABORTED)
-                transitionMission(MissionState::READY);
+            if (mission_status_ == MissionStatus::ABORTED)
+                transitionMission(MissionStatus::READY);
             else
                 RCLCPP_WARN(node_->get_logger(), "Fleet manager: Cannot reset - mission not ABORTED");
         }
@@ -137,12 +137,12 @@ namespace flychams::coordinator
     // UPDATE: Publish fleet and mission status
     // ════════════════════════════════════════════════════════════════════════════
 
-    void FleetStatus::update()
+    void FleetState::update()
     {
-        auto now = RosUtils::now(node_);
+        auto now = node_->now();
 
         // Compute fleet state
-        FleetState fleet_state = computeFleetState();
+        FleetStatus fleet_status = computeFleetStatus();
 
         // Build agent id and status arrays
         std::vector<std::string> agent_ids;
@@ -162,23 +162,23 @@ namespace flychams::coordinator
         }
 
         // If any agent errors out while mission is ACTIVE, transition to ABORTED
-        if (any_error && mission_state_ == MissionState::ACTIVE)
+        if (any_error && mission_status_ == MissionStatus::ACTIVE)
         {
             RCLCPP_ERROR(node_->get_logger(), "Fleet manager: Agent error detected during ACTIVE mission - aborting");
-            transitionMission(MissionState::ABORTED);
+            transitionMission(MissionStatus::ABORTED);
         }
 
         // Update mission time
-        if (mission_state_ == MissionState::ACTIVE)
+        if (mission_status_ == MissionStatus::ACTIVE)
             mission_time_ = static_cast<float>((now - mission_start_time_).seconds());
 
         // Publish FleetStatus
         FleetStatusMsg fleet_msg;
         fleet_msg.header.stamp = now;
+        fleet_msg.status = static_cast<uint8_t>(fleet_status);
         fleet_msg.all_agents_idle = all_idle;
         fleet_msg.all_agents_active = all_active;
         fleet_msg.any_agent_error = any_error;
-        fleet_msg.fleet_state = static_cast<uint8_t>(fleet_state);
         fleet_msg.agent_ids = agent_ids;
         fleet_msg.agent_statuses = agent_statuses;
         fleet_status_pub_->publish(fleet_msg);
@@ -186,8 +186,8 @@ namespace flychams::coordinator
         // Publish MissionStatus
         MissionStatusMsg mission_msg;
         mission_msg.header.stamp = now;
-        mission_msg.status = static_cast<uint8_t>(mission_state_);
-        mission_msg.fleet_ready = (fleet_state == FleetState::ACTIVE);
+        mission_msg.status = static_cast<uint8_t>(mission_status_);
+        mission_msg.fleet_ready = (fleet_status == FleetStatus::ACTIVE);
         mission_msg.mission_time = mission_time_;
         mission_msg.active_agents = active_agents_;
         mission_status_pub_->publish(mission_msg);
@@ -197,16 +197,16 @@ namespace flychams::coordinator
     // STATE MACHINE HELPERS
     // ════════════════════════════════════════════════════════════════════════════
 
-    void FleetStatus::transitionMission(MissionState new_state)
+    void FleetState::transitionMission(MissionStatus new_state)
     {
         RCLCPP_INFO(node_->get_logger(), "Fleet manager: Mission state transition: %d -> %d",
-            static_cast<int>(mission_state_), static_cast<int>(new_state));
+            static_cast<int>(mission_status_), static_cast<int>(new_state));
 
-        mission_state_ = new_state;
+        mission_status_ = new_state;
 
-        if (new_state == MissionState::ACTIVE)
+        if (new_state == MissionStatus::ACTIVE)
         {
-            mission_start_time_ = RosUtils::now(node_);
+            mission_start_time_ = node_->now();
             // Build active agents list (all agents currently ACTIVE)
             active_agents_.clear();
             for (const auto& [agent_id, agent] : agents_)
@@ -215,17 +215,17 @@ namespace flychams::coordinator
                     active_agents_.push_back(agent_id);
             }
         }
-        else if (new_state == MissionState::READY)
+        else if (new_state == MissionStatus::READY)
         {
             mission_time_ = 0.0f;
             active_agents_.clear();
         }
     }
 
-    FleetState FleetStatus::computeFleetState() const
+    FleetStatus FleetState::computeFleetStatus() const
     {
         if (agents_.empty())
-            return FleetState::IDLE;
+            return FleetStatus::IDLE;
 
         bool all_idle = true;
         bool all_active = true;
@@ -234,17 +234,17 @@ namespace flychams::coordinator
         for (const auto& [agent_id, agent] : agents_)
         {
             if (!agent.has_status)
-                return FleetState::MIXED;
+                return FleetStatus::MIXED;
 
             if (agent.status != AgentStatus::IDLE) all_idle = false;
             if (agent.status != AgentStatus::ACTIVE) all_active = false;
             if (agent.status == AgentStatus::ERROR) any_error = true;
         }
 
-        if (any_error) return FleetState::ERROR;
-        if (all_active) return FleetState::ACTIVE;
-        if (all_idle) return FleetState::IDLE;
-        return FleetState::MIXED;
+        if (any_error) return FleetStatus::ERROR;
+        if (all_active) return FleetStatus::ACTIVE;
+        if (all_idle) return FleetStatus::IDLE;
+        return FleetStatus::MIXED;
     }
 
 } // namespace flychams::coordinator

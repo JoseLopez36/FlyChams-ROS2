@@ -1,9 +1,9 @@
 #include "rclcpp/rclcpp.hpp"
 
-// Perception includes
+// Module include
 #include "flychams_coordinator/analysis/cluster_analysis.hpp"
 
-// Core includes
+// Base node include
 #include "flychams_common/base/base_discoverer_node.hpp"
 
 using namespace flychams::core;
@@ -33,16 +33,15 @@ public: // Constructor/Destructor
         // Nothing to do
     }
 
-    void onInit() override
+    void onDiscoveryInit() override
     {
-        // Use callback group from discovery node (to avoid race conditions)
         // Initialize cluster analysis
-        cluster_analysis_ = std::make_shared<ClusterAnalysis>(node_, settings_tools_, topic_tools_, transform_tools_, discovery_cb_group_);
-
+        cluster_analysis_ = std::make_shared<ClusterAnalysis>(sharedFromThis());
+        
         RCLCPP_INFO(node_->get_logger(), "Cluster analysis created");
     }
 
-    void onShutdown() override
+    void onDiscoveryShutdown() override
     {
         // Destroy cluster analysis
         cluster_analysis_.reset();

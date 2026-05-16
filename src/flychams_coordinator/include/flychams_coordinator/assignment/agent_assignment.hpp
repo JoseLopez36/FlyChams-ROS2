@@ -1,10 +1,13 @@
 #pragma once
 
-// Assignment solver include
+// Utils include
 #include "flychams_common/assignment/assignment_solver.hpp"
 
 // Base module include
-#include "flychams_common/base/base_module.hpp"
+#include "flychams_common/base/base_discoverer_module.hpp"
+
+// Base node include
+#include "flychams_common/base/base_discoverer_node.hpp"
 
 namespace flychams::coordinator
 {
@@ -16,18 +19,18 @@ namespace flychams::coordinator
      * @date 2025-01-29
      * ════════════════════════════════════════════════════════════════
      */
-    class AgentAssignment : public core::BaseModule
+    class AgentAssignment : public core::BaseDiscovererModule
     {
     public: // Constructor/Destructor
-        AgentAssignment(core::NodePtr node, core::SettingsTools::SharedPtr settings_tools, core::TopicTools::SharedPtr topic_tools, core::TransformTools::SharedPtr transform_tools, core::CallbackGroupPtr module_cb_group)
-            : BaseModule(node, settings_tools, topic_tools, transform_tools, module_cb_group)
+        AgentAssignment(core::BaseDiscovererNode::SharedPtr node)
+            : BaseDiscovererModule(node)
         {
             init();
         }
 
     protected: // Overrides
-        void onInit() override;
-        void onShutdown() override;
+        void onModuleInit() override;
+        void onModuleShutdown() override;
 
     public: // Types
         using SharedPtr = std::shared_ptr<AgentAssignment>;

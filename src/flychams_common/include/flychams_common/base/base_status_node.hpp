@@ -38,6 +38,12 @@ namespace flychams::core
         virtual void onStatusInit() {}
         virtual void onStatusShutdown() {}
 
+    public: // Shared from this
+        SharedPtr sharedFromThis()
+        {
+            return std::dynamic_pointer_cast<BaseStatusNode>(shared_from_this());
+        }
+
     private: // Status data
         MissionStatus mission_status_ = MissionStatus::READY;
         FleetStatus fleet_status_ = FleetStatus::IDLE;
@@ -58,10 +64,9 @@ namespace flychams::core
         FleetStatus getFleetStatus() const { return fleet_status_; };
 
     public: // Status queries
-        bool isLimited() const;
-        bool isPaused() const;
-        bool isAborted() const;
         bool isMissionActive() const;
+        bool isMissionPaused() const;
+        bool isMissionAborted() const;
     };
 
 } // namespace flychams::core

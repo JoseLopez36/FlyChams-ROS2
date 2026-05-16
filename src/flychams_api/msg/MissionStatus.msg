@@ -1,5 +1,7 @@
 std_msgs/Header header
 uint8 status
+
+# Additional status flags
 bool fleet_ready
 float32 mission_time
 string[] active_agents

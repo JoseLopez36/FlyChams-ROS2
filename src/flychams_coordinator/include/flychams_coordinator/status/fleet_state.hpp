@@ -1,7 +1,10 @@
 #pragma once
 
 // Base module include
-#include "flychams_common/base/base_module.hpp"
+#include "flychams_common/base/base_discoverer_module.hpp"
+
+// Base node include
+#include "flychams_common/base/base_discoverer_node.hpp"
 
 namespace flychams::coordinator
 {
@@ -12,7 +15,7 @@ namespace flychams::coordinator
      *
      * @details
      * Subscribes to all agent statuses via discovery, publishes
-     * FleetStatus at 1Hz, and manages the MissionStatus state machine:
+     * FleetState at 1Hz, and manages the MissionStatus state machine:
      *   READY → ACTIVE → PAUSED → ACTIVE (resume)
      *   Any  → ABORTED (emergency)
      *
@@ -23,24 +26,21 @@ namespace flychams::coordinator
      * @date 2025-05-14
      * ════════════════════════════════════════════════════════════════
      */
-    class FleetStatus : public core::BaseModule
+    class FleetState : public core::BaseDiscovererModule
     {
     public: // Constructor/Destructor
-        FleetStatus(core::NodePtr node, core::SettingsTools::SharedPtr settings_tools,
-                     core::TopicTools::SharedPtr topic_tools,
-                     core::TransformTools::SharedPtr transform_tools,
-                     core::CallbackGroupPtr module_cb_group)
-            : BaseModule(node, settings_tools, topic_tools, transform_tools, module_cb_group)
+        FleetState(core::BaseDiscovererNode::SharedPtr node)
+            : BaseDiscovererModule(node)
         {
             init();
         }
 
     protected: // Overrides
-        void onInit() override;
-        void onShutdown() override;
+        void onModuleInit() override;
+        void onModuleShutdown() override;
 
     public: // Types
-        using SharedPtr = std::shared_ptr<FleetStatus>;
+        using SharedPtr = std::shared_ptr<FleetState>;
         struct Agent
         {
             // Status data
@@ -67,8 +67,8 @@ namespace flychams::coordinator
         void update();
 
     private: // State machine helpers
-        void transitionMission(core::MissionState new_state);
-        core::FleetState computeFleetState() const;
+        void transitionMission(core::MissionStatus new_status);
+        core::FleetStatus computeFleetStatus() const;
 
     private: // Parameters
         float update_rate_;
@@ -77,17 +77,17 @@ namespace flychams::coordinator
         // Agents
         std::unordered_map<core::ID, Agent> agents_;
         // Mission state
-        core::MissionState mission_state_;
+        core::MissionStatus mission_status_;
         float mission_time_;
         core::Time mission_start_time_;
         std::vector<core::ID> active_agents_;
 
     private: // ROS components
+        // Subscribers
+        core::SubscriberPtr<core::StringMsg> mission_cmd_sub_;
         // Publishers
         core::PublisherPtr<core::FleetStatusMsg> fleet_status_pub_;
         core::PublisherPtr<core::MissionStatusMsg> mission_status_pub_;
-        // Mission command subscriber (foxglove / operator)
-        core::SubscriberPtr<core::StringMsg> mission_cmd_sub_;
         // Timer
         core::TimerPtr update_timer_;
     };

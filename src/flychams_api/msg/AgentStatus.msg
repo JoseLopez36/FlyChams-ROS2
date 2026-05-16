@@ -1,5 +1,7 @@
 std_msgs/Header header
 uint8 status
+
+# Additional status flags
 bool is_armed
 bool is_flying
 

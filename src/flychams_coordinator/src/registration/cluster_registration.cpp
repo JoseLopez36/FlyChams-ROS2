@@ -8,15 +8,15 @@ namespace flychams::coordinator
 	// CONSTRUCTOR: Constructor and destructor
 	// ════════════════════════════════════════════════════════════════════════════
 
-	void ClusterRegistration::onInit()
+	void ClusterRegistration::onModuleInit()
 	{
 		// Iterate over all agents in the configuration
 		clusters_.clear();
 		int cluster_index = 0;
-		for (const auto& [agent_id, agent_ptr] : settings_tools_->getAgentTeam())
+		for (const auto& [agent_id, agent_ptr] : node_->getSettings()->getAgentTeam())
 		{
 			// Get tracking parameters
-			const auto& tracking_params = settings_tools_->getTrackingParameters(agent_id);
+			const auto& tracking_params = node_->getSettings()->getTrackingParameters(agent_id);
 
 			// Register clusters based on the number of tracking units
 			const int& n_t = tracking_params.n_t;
@@ -36,7 +36,7 @@ namespace flychams::coordinator
 		}
 	}
 
-	void ClusterRegistration::onShutdown()
+	void ClusterRegistration::onModuleShutdown()
 	{
 		// Destroy clusters
 		clusters_.clear();

@@ -8,17 +8,17 @@ namespace flychams::coordinator
 	// CONSTRUCTOR: Constructor and destructor
 	// ════════════════════════════════════════════════════════════════════════════
 
-	void TargetClustering::onInit()
+	void TargetClustering::onModuleInit()
 	{
 		// Get parameters from parameter server
 		// Get update rate
-		update_rate_ = RosUtils::getParameterOr<float>(node_, "clustering_rate", 3.33f);
+		update_rate_ = node_->getParameterOr<float>("clustering_rate", 3.33f);
 		// Get persistence parameters
-		float ini_bonding_coef = RosUtils::getParameterOr<float>(node_, "persistence.ini_bonding_coef", 1.0f);
-		float max_bonding_coef = RosUtils::getParameterOr<float>(node_, "persistence.max_bonding_coef", 1.0f);
-		float bonding_coef_time_to_max = RosUtils::getParameterOr<float>(node_, "persistence.bonding_coef_time_to_max", 100.0f);
-		float max_hysteresis_ratio = RosUtils::getParameterOr<float>(node_, "persistence.max_hysteresis_ratio", 0.4f);
-		float min_hysteresis_ratio = RosUtils::getParameterOr<float>(node_, "persistence.min_hysteresis_ratio", 0.2f);
+		float ini_bonding_coef = node_->getParameterOr<float>("persistence.ini_bonding_coef", 1.0f);
+		float max_bonding_coef = node_->getParameterOr<float>("persistence.max_bonding_coef", 1.0f);
+		float bonding_coef_time_to_max = node_->getParameterOr<float>("persistence.bonding_coef_time_to_max", 100.0f);
+		float max_hysteresis_ratio = node_->getParameterOr<float>("persistence.max_hysteresis_ratio", 0.4f);
+		float min_hysteresis_ratio = node_->getParameterOr<float>("persistence.min_hysteresis_ratio", 0.2f);
 
 		// Compute command timeout
 		cmd_timeout_ = (1.0f / update_rate_) * 1.25f;
@@ -42,15 +42,11 @@ namespace flychams::coordinator
 		k_means_solver_->init(solver_params);
 
 		// Set update timer
-		last_update_time_ = RosUtils::now(node_);
-        update_timer_ = rclcpp::create_timer(node_, 
-            node_->get_clock(), 
-            std::chrono::duration<float>(1.0f / update_rate_), 
-            std::bind(&TargetClustering::update, this), 
-            module_cb_group_);
+		last_update_time_ = node_->now();
+		update_timer_ = node_->createTimer(update_rate_, std::bind(&TargetClustering::update, this));
 	}
 
-	void TargetClustering::onShutdown()
+	void TargetClustering::onModuleShutdown()
 	{
 		// Destroy K-Means solver
 		k_means_solver_->destroy();
@@ -74,7 +70,7 @@ namespace flychams::coordinator
 		C_.insert(cluster_id); // Add cluster to ordered set
 
 		// Create cluster assignment publisher
-		clusters_[cluster_id].assignment_pub = topic_tools_->createClusterAssignmentPublisher(cluster_id);
+		clusters_[cluster_id].assignment_pub = node_->createClusterAssignmentPublisher(cluster_id);
 	}
 
 	void TargetClustering::removeCluster(const ID& cluster_id)
@@ -95,11 +91,11 @@ namespace flychams::coordinator
 		assignments_prev_.setConstant(-1);
 
 		// Create target true position subscriber
-		targets_[target_id].position_sub = topic_tools_->createTargetPositionSubscriber(target_id,
+		targets_[target_id].position_sub = node_->createTargetPositionSubscriber(target_id,
 			[this, target_id](const PointStampedMsg::SharedPtr msg)
 			{
 				this->targetPositionCallback(target_id, msg);
-			}, sub_options_with_module_cb_group_);
+			}, node_->getSubscriptionOptions());
 	}
 
 	void TargetClustering::removeTarget(const ID& target_id)
@@ -126,6 +122,10 @@ namespace flychams::coordinator
 
 	void TargetClustering::update()
 	{
+		// Skip clustering when mission is not ACTIVE
+		if (!node_->isMissionActive())
+			return;
+
 		// Check if there are any clusters and targets
 		if (C_.empty() || T_.empty())
 		{
@@ -144,7 +144,7 @@ namespace flychams::coordinator
 		}
 
 		// Compute time step
-		auto current_time = RosUtils::now(node_);
+		auto current_time = node_->now();
 		float dt = (current_time - last_update_time_).seconds();
 		last_update_time_ = current_time;
 
@@ -161,7 +161,7 @@ namespace flychams::coordinator
 		for (const auto& target_id : T_)
 		{
 			const auto& target = targets_[target_id];
-			tab_P.col(i) = RosUtils::fromMsg(target.position);
+			tab_P.col(i) = node_->fromMsg(target.position);
 			i++;
 		}
 

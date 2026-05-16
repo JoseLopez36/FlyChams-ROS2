@@ -8,28 +8,24 @@ namespace flychams::coordinator
 	// CONSTRUCTOR: Constructor and destructor
 	// ════════════════════════════════════════════════════════════════════════════
 
-	void ClusterAnalysis::onInit()
+	void ClusterAnalysis::onModuleInit()
 	{
 		// Get parameters from parameter server
 		// Get update rate
-		update_rate_ = RosUtils::getParameterOr<float>(node_, "analysis_rate", 20.0f);
+		update_rate_ = node_->getParameterOr<float>("analysis_rate", 20.0f);
 		// Get circle parameters
-		min_circle_radius_ = RosUtils::getParameterOr<float>(node_, "enclosing_circle.min_circle_radius", 0.10f);
-		margin_circle_radius_ = RosUtils::getParameterOr<float>(node_, "enclosing_circle.margin_circle_radius", 0.05f);
+		min_circle_radius_ = node_->getParameterOr<float>("enclosing_circle.min_circle_radius", 0.10f);
+		margin_circle_radius_ = node_->getParameterOr<float>("enclosing_circle.margin_circle_radius", 0.05f);
 
 		// Initialize data
 		clusters_.clear();
 		targets_.clear();
 
 		// Set update timer
-        update_timer_ = rclcpp::create_timer(node_, 
-            node_->get_clock(), 
-            std::chrono::duration<float>(1.0f / update_rate_), 
-            std::bind(&ClusterAnalysis::update, this), 
-            module_cb_group_);
+        update_timer_ = node_->createTimer(update_rate_, std::bind(&ClusterAnalysis::update, this));
 	}
 
-	void ClusterAnalysis::onShutdown()
+	void ClusterAnalysis::onModuleShutdown()
 	{
 		// Destroy clusters and targets
 		clusters_.clear();
@@ -48,14 +44,14 @@ namespace flychams::coordinator
 		clusters_.insert({ cluster_id, Cluster() });
 
 		// Create cluster assignment subscriber
-		clusters_[cluster_id].assignment_sub = topic_tools_->createClusterAssignmentSubscriber(cluster_id,
+		clusters_[cluster_id].assignment_sub = node_->createClusterAssignmentSubscriber(cluster_id,
 			[this, cluster_id](const ClusterAssignmentMsg::SharedPtr msg)
 			{
 				this->clusterAssignmentCallback(cluster_id, msg);
-			}, sub_options_with_module_cb_group_);
+			}, node_->getSubscriptionOptions());
 
 		// Create cluster geometry publisher
-		clusters_[cluster_id].geometry_pub = topic_tools_->createClusterGeometryPublisher(cluster_id);
+		clusters_[cluster_id].geometry_pub = node_->createClusterGeometryPublisher(cluster_id);
 	}
 
 	void ClusterAnalysis::removeCluster(const ID& cluster_id)
@@ -70,11 +66,11 @@ namespace flychams::coordinator
 		targets_.insert({ target_id, Target() });
 
 		// Create target true position subscriber
-		targets_[target_id].position_sub = topic_tools_->createTargetPositionSubscriber(target_id,
+		targets_[target_id].position_sub = node_->createTargetPositionSubscriber(target_id,
 			[this, target_id](const PointStampedMsg::SharedPtr msg)
 			{
 				this->targetPositionCallback(target_id, msg);
-			}, sub_options_with_module_cb_group_);
+			}, node_->getSubscriptionOptions());
 	}
 
 	void ClusterAnalysis::removeTarget(const ID& target_id)
@@ -134,7 +130,7 @@ namespace flychams::coordinator
 			for (int i = 0; i < n; i++)
 			{
 				const auto& target = targets_[cluster.assignment[i]];
-				tab_P.col(i) = RosUtils::fromMsg(target.position);
+				tab_P.col(i) = node_->fromMsg(target.position);
 			}
 
 			// Calculate enclosing circle (minimum enclosing circle with enforced limits)
@@ -142,7 +138,7 @@ namespace flychams::coordinator
 
 			// Create geometry message with calculated center and radius
 			ClusterGeometryMsg msg;
-			msg.header = RosUtils::createHeader(node_, transform_tools_->getGlobalFrame());
+			msg.header = node_->createHeader(node_->getGlobalFrame());
 			msg.center.x = center.x();
 			msg.center.y = center.y();
 			msg.center.z = 0.0f;

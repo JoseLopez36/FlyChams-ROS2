@@ -48,7 +48,7 @@ namespace flychams::core
 
     void BaseStatusNode::fleetStatusCallback(const FleetStatusMsg::SharedPtr msg)
     {
-        fleet_status_ = static_cast<FleetStatus>(msg->fleet_state);
+        fleet_status_ = static_cast<FleetStatus>(msg->status);
         has_fleet_status_ = true;
     }
 
@@ -56,25 +56,22 @@ namespace flychams::core
     // STATUS QUERIES
     // ════════════════════════════════════════════════════════════════════════════
 
-    bool BaseStatusNode::isLimited() const
-    {
-        if (!has_mission_status_) return false;
-        return mission_status_ != MissionStatus::ACTIVE;
-    }
-
-    bool BaseStatusNode::isPaused() const
-    {
-        return has_mission_status_ && mission_status_ == MissionStatus::PAUSED;
-    }
-
-    bool BaseStatusNode::isAborted() const
-    {
-        return has_mission_status_ && mission_status_ == MissionStatus::ABORTED;
-    }
-
     bool BaseStatusNode::isMissionActive() const
     {
-        return has_mission_status_ && mission_status_ == MissionStatus::ACTIVE;
+        if (!has_mission_status_) return false;
+        return mission_status_ == MissionStatus::ACTIVE;
+    }
+
+    bool BaseStatusNode::isMissionPaused() const
+    {
+        if (!has_mission_status_) return false;
+        return mission_status_ == MissionStatus::PAUSED;
+    }
+
+    bool BaseStatusNode::isMissionAborted() const
+    {
+        if (!has_mission_status_) return false;
+        return mission_status_ == MissionStatus::ABORTED;
     }
 
 } // namespace flychams::core

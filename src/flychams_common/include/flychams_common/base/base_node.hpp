@@ -91,6 +91,12 @@ namespace flychams::core
         virtual void onNodeInit() {}
         virtual void onNodeShutdown() {}
 
+    public: // Shared from this
+        SharedPtr sharedFromThis()
+        {
+            return std::dynamic_pointer_cast<BaseNode>(shared_from_this());
+        }
+
     protected: // Settings data
         SettingsTools::SharedPtr settings_;
 
