@@ -1,12 +1,13 @@
 #include "rclcpp/rclcpp.hpp"
 
-// Control includes
+// Module include
 #include "flychams_agent/drone/drone_control.hpp"
 
-// Core includes
-#include "flychams_common/base/base_node_with_tools.hpp"
+// Base node include
+#include "flychams_common/base/base_status_node.hpp"
 
 using namespace flychams::core;
+
 using namespace flychams::agent;
 
 /**
@@ -17,27 +18,27 @@ using namespace flychams::agent;
  * @date 2025-03-31
  * ════════════════════════════════════════════════════════════════
  */
-class DroneControlNode : public BaseNodeWithTools
+class DroneControlNode : public BaseStatusNode
 {
 public: // Constructor/Destructor
     DroneControlNode(const std::string& node_name, const rclcpp::NodeOptions& options)
-        : BaseNodeWithTools(node_name, options)
+        : BaseStatusNode(node_name, options)
     {
         // Nothing to do
     }
 
-    void onInit() override
+    void onStatusInit() override
     {
         // Get agent ID
-        agent_id_ = RosUtils::getParameter<std::string>(node_, "agent_id");
+        agent_id_ = getParameter<std::string>("agent_id");
 
         // Create drone control
-        drone_control_ = std::make_shared<DroneControl>(agent_id_, node_, settings_tools_, topic_tools_, transform_tools_, node_cb_group_);
+        drone_control_ = std::make_shared<DroneControl>(agent_id_, sharedFromThis());
 
         RCLCPP_INFO(node_->get_logger(), "Drone control created for agent: %s", agent_id_.c_str());
     }
 
-    void onShutdown() override
+    void onStatusShutdown() override
     {
         // Destroy drone control
         drone_control_.reset();

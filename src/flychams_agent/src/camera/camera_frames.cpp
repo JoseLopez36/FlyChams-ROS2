@@ -8,17 +8,17 @@ namespace flychams::agent
     // CONSTRUCTOR: Constructor and destructor
     // ════════════════════════════════════════════════════════════════════════════
 
-    void CameraFrames::onInit()
+    void CameraFrames::onModuleInit()
     {
         // Get parameters from parameter server
         // Get update rate
-        update_rate_ = RosUtils::getParameterOr<float>(node_, "update_rate", 30.0f);
+        update_rate_ = node_->getParameterOr<float>("update_rate", 30.0f);
 
         // Initialize data
         agent_ = Agent();
 
         // Get multi camera set
-        auto multi_camera_set = settings_tools_->getMultiCameraSet(agent_id_);
+        auto multi_camera_set = node_->getSettings()->getMultiCameraSet(agent_id_);
 
         // Iterate through all cameras to create initial frames
         for (const auto& [camera_id, camera_config_ptr] : multi_camera_set)
@@ -42,18 +42,14 @@ namespace flychams::agent
         }
 
         // Subscribe to agent observation setpoints
-        agent_.observation_setpoints_sub = topic_tools_->createObservationSetpointsSubscriber(agent_id_,
-            std::bind(&CameraFrames::observationSetpointsCallback, this, std::placeholders::_1), sub_options_with_module_cb_group_);
+        agent_.observation_setpoints_sub = node_->createObservationSetpointsSubscriber(agent_id_,
+            std::bind(&CameraFrames::observationSetpointsCallback, this, std::placeholders::_1), node_->getSubscriptionOptions());
 
         // Set update timer
-        update_timer_ = rclcpp::create_timer(node_, 
-            node_->get_clock(), 
-            std::chrono::duration<float>(1.0f / update_rate_), 
-            std::bind(&CameraFrames::update, this), 
-            module_cb_group_);
+        update_timer_ = node_->createTimer(update_rate_, std::bind(&CameraFrames::update, this));
     }
 
-    void CameraFrames::onShutdown()
+    void CameraFrames::onModuleShutdown()
     {
         // Destroy subscriber
         agent_.observation_setpoints_sub.reset();
@@ -79,8 +75,8 @@ namespace flychams::agent
     void CameraFrames::createCameraOpticalFrame(const core::ID camera_id)
     {
         // Get frames
-        std::string camera_body_frame = transform_tools_->getCameraBodyFrame(agent_id_, camera_id);
-        std::string camera_optical_frame = transform_tools_->getCameraOpticalFrame(agent_id_, camera_id);
+        std::string camera_body_frame = node_->getCameraBodyFrame(agent_id_, camera_id);
+        std::string camera_optical_frame = node_->getCameraOpticalFrame(agent_id_, camera_id);
 
         // Initialize camera optical at camera body origin with optical frame rotation
         Matrix4r camera_body_to_camera_optical = Matrix4r::Identity();
@@ -93,7 +89,7 @@ namespace flychams::agent
         camera_body_to_camera_optical.block<3, 3>(0, 0) = MathUtils::quatToMatrix(optical_quat);
 
         // Broadcast camera body -> camera optical (static)
-        transform_tools_->broadcastStaticTransform(camera_body_frame, camera_optical_frame, camera_body_to_camera_optical);
+        node_->broadcastStaticTransform(camera_body_frame, camera_optical_frame, camera_body_to_camera_optical);
         RCLCPP_INFO(node_->get_logger(), "Published static transform: %s -> %s", camera_body_frame.c_str(), camera_optical_frame.c_str());
     }
 
@@ -122,7 +118,7 @@ namespace flychams::agent
             const ID& camera_id = agent_.observation_setpoints.ids[i];
 
             // Get camera configuration
-            const auto& camera_config_ptr = settings_tools_->getMultiCamera(agent_id_, camera_id);
+            const auto& camera_config_ptr = node_->getSettings()->getMultiCamera(agent_id_, camera_id);
 
             // Get camera position from config (static relative to body)
             PointMsg position_msg;
@@ -141,7 +137,7 @@ namespace flychams::agent
                 Eigen::AngleAxisf(rpy_vec.x(), Vector3r::UnitX());
 
             QuaternionMsg orientation_msg;
-            RosUtils::toMsg(quat, orientation_msg);
+            node_->toMsg(quat, orientation_msg);
 
             // Update frame
             updateCameraBodyFrame(camera_id, position_msg, orientation_msg);
@@ -155,24 +151,24 @@ namespace flychams::agent
     void CameraFrames::updateCameraBodyFrame(const core::ID camera_id, const core::PointMsg& position, const core::QuaternionMsg& orientation)
     {
         // Get frames
-        std::string world_frame = transform_tools_->getGlobalFrame();
-        std::string body_frame = transform_tools_->getAgentBodyFrame(agent_id_);
-        std::string camera_body_frame = transform_tools_->getCameraBodyFrame(agent_id_, camera_id);
+        std::string world_frame = node_->getGlobalFrame();
+        std::string body_frame = node_->getAgentBodyFrame(agent_id_);
+        std::string camera_body_frame = node_->getCameraBodyFrame(agent_id_, camera_id);
 
         // Lookup body pose in world using TF
         PoseStampedMsg pose;
-        pose.header = RosUtils::createHeader(node_, body_frame);
+        pose.header = node_->createHeader(node_->getGlobalFrame());
         pose.pose.position = PointMsg();
         pose.pose.orientation = QuaternionMsg();
         pose.pose.orientation.w = 1.0;
-        const PoseStampedMsg wTb = transform_tools_->transformPose(pose, world_frame);
+        const PoseStampedMsg wTb = node_->transformPose(pose, world_frame);
 
         // Extract world to body pose
         const Vector3r wPb(
             wTb.pose.position.x,
             wTb.pose.position.y,
             wTb.pose.position.z);
-        const Quaternionr wQb = RosUtils::fromMsg(wTb.pose.orientation);
+        const Quaternionr wQb = node_->fromMsg(wTb.pose.orientation);
         const Matrix3r wRb = MathUtils::quatToMatrix(wQb);
 
         // Camera mounting offset in body frame
@@ -180,7 +176,7 @@ namespace flychams::agent
 
         // Get world to camera body position and orientation
         const Vector3r wPc = wPb + (wRb * bPc);
-        const Quaternionr wQc = RosUtils::fromMsg(orientation);
+        const Quaternionr wQc = node_->fromMsg(orientation);
 
         // Build world to camera body transform
         Matrix4r wTc = Matrix4r::Identity();
@@ -190,7 +186,7 @@ namespace flychams::agent
         wTc.block<3, 3>(0, 0) = MathUtils::quatToMatrix(wQc);
 
         // Broadcast world -> camera body (dynamic)
-        transform_tools_->broadcastTransform(world_frame, camera_body_frame, wTc);
+        node_->broadcastTransform(world_frame, camera_body_frame, wTc);
     }
 
 } // namespace flychams::agent

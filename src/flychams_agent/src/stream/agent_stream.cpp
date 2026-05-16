@@ -8,34 +8,34 @@ namespace flychams::agent
     // CONSTRUCTOR: Constructor and destructor
     // ════════════════════════════════════════════════════════════════════════════
 
-    void AgentStream::onInit()
+    void AgentStream::onModuleInit()
     {
         // Get parameters from parameter server
         // Interface parameters
-        central_view_width = RosUtils::getParameterOr<int>(node_, "central_view.width", 854);
-        central_view_height = RosUtils::getParameterOr<int>(node_, "central_view.height", 480);
-        tracking_view_width = RosUtils::getParameterOr<int>(node_, "tracking_view.width", 427);
-        tracking_view_height = RosUtils::getParameterOr<int>(node_, "tracking_view.height", 240);
+        central_view_width = node_->getParameterOr<int>("central_view.width", 854);
+        central_view_height = node_->getParameterOr<int>("central_view.height", 480);
+        tracking_view_width = node_->getParameterOr<int>("tracking_view.width", 427);
+        tracking_view_height = node_->getParameterOr<int>("tracking_view.height", 240);
         // Stream parameters
-        jpeg_quality_ = RosUtils::getParameterOr<int>(node_, "jpeg_quality", 80);
-        rtsp_latency_ms_ = RosUtils::getParameterOr<int>(node_, "rtsp_latency_ms", 100);
-        reconnect_delay_ms_ = RosUtils::getParameterOr<int>(node_, "reconnect_delay_ms", 2000);
-        stream_start_delay_ms_ = RosUtils::getParameterOr<int>(node_, "stream_start_delay_ms", 500);
-        output_encoding_ = RosUtils::getParameterOr<std::string>(node_, "output_encoding", "jpg");
-        use_nvidia_ = RosUtils::getParameterOr<bool>(node_, "use_nvidia", true);
+        jpeg_quality_ = node_->getParameterOr<int>("jpeg_quality", 80);
+        rtsp_latency_ms_ = node_->getParameterOr<int>("rtsp_latency_ms", 100);
+        reconnect_delay_ms_ = node_->getParameterOr<int>("reconnect_delay_ms", 2000);
+        stream_start_delay_ms_ = node_->getParameterOr<int>("stream_start_delay_ms", 500);
+        output_encoding_ = node_->getParameterOr<std::string>("output_encoding", "jpg");
+        use_nvidia_ = node_->getParameterOr<bool>("use_nvidia", true);
 
         // Initialize stream variables
         stream_units_.clear();
 
         // Get observation units config
-        const TrackingConfig& tracking_config = settings_tools_->getTracking(agent_id_);
+        const TrackingConfig& tracking_config = node_->getSettings()->getTracking(agent_id_);
         int stream_index = 0;
         for (const auto& [camera_id, camera] : tracking_config.multi_camera_set)
         {
             std::shared_ptr<StreamUnit> unit = std::make_shared<StreamUnit>();
             unit->config = camera;
             unit->pipeline = camera->source_stream_url;
-            unit->frame_id = transform_tools_->getCameraOpticalFrame(agent_id_, camera_id);
+            unit->frame_id = node_->getCameraOpticalFrame(agent_id_, camera_id);
             if (camera->role == ObservationRole::Central)
             {
                 central_camera_id_ = camera_id;
@@ -51,7 +51,7 @@ namespace flychams::agent
                     unit->crops.resize(nw);
                     for (const auto& [window_id, window] : tracking_config.multi_window_set)
                     {
-                        unit->crop_pubs.push_back(topic_tools_->createAgentMultiWindowImagePublisher(agent_id_, window_id));
+                        unit->crop_pubs.push_back(node_->createAgentMultiWindowImagePublisher(agent_id_, window_id));
                     }
                     unit->crop_output_width = tracking_view_width;
                     unit->crop_output_height = tracking_view_height;
@@ -64,7 +64,7 @@ namespace flychams::agent
                 unit->enable_crops = false;
             }
 
-            unit->image_pub = topic_tools_->createAgentMultiCameraImagePublisher(agent_id_, camera_id);
+            unit->image_pub = node_->createAgentMultiCameraImagePublisher(agent_id_, camera_id);
             unit->start_delay_ms = stream_index * stream_start_delay_ms_;
             unit->running = true;
             unit->thread = std::thread(&AgentStream::streamPipeline, this, unit);
@@ -79,12 +79,12 @@ namespace flychams::agent
             setenv("OPENCV_FFMPEG_CAPTURE_OPTIONS", "rtsp_transport;tcp", 1);
 
         // Subscribe to GUI setpoints topic
-        observation_setpoints_sub_ = topic_tools_->createObservationSetpointsSubscriber(agent_id_,
-            std::bind(&AgentStream::observationSetpointsCallback, this, std::placeholders::_1), sub_options_with_module_cb_group_);
+        observation_setpoints_sub_ = node_->createObservationSetpointsSubscriber(agent_id_,
+            std::bind(&AgentStream::observationSetpointsCallback, this, std::placeholders::_1), node_->getSubscriptionOptions());
 
     }
 
-    void AgentStream::onShutdown()
+    void AgentStream::onModuleShutdown()
     {
         // Destroy subscribers
         observation_setpoints_sub_.reset();

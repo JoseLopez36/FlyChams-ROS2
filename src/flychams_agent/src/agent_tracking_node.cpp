@@ -1,10 +1,10 @@
 #include "rclcpp/rclcpp.hpp"
 
-// Coordination includes
+// Module include
 #include "flychams_agent/tracking/agent_tracking.hpp"
 
-// Core includes
-#include "flychams_common/base/base_node_with_tools.hpp"
+// Base node include
+#include "flychams_common/base/base_status_node.hpp"
 
 using namespace flychams::core;
 using namespace flychams::agent;
@@ -18,27 +18,27 @@ using namespace flychams::agent;
  * @date 2025-02-28
  * ════════════════════════════════════════════════════════════════
  */
-class AgentTrackingNode : public BaseNodeWithTools
+class AgentTrackingNode : public BaseStatusNode
 {
 public: // Constructor/Destructor
     AgentTrackingNode(const std::string& node_name, const rclcpp::NodeOptions& options)
-        : BaseNodeWithTools(node_name, options)
+        : BaseStatusNode(node_name, options)
     {
         // Nothing to do
     }
 
-    void onInit() override
+    void onStatusInit() override
     {
         // Get agent ID
-        agent_id_ = RosUtils::getParameter<std::string>(node_, "agent_id");
+        agent_id_ = getParameter<std::string>("agent_id");
 
         // Create agent tracking
-        agent_tracking_ = std::make_shared<AgentTracking>(agent_id_, node_, settings_tools_, topic_tools_, transform_tools_, node_cb_group_);
+        agent_tracking_ = std::make_shared<AgentTracking>(agent_id_, sharedFromThis());
 
         RCLCPP_INFO(node_->get_logger(), "Agent tracking created for agent: %s", agent_id_.c_str());
     }
 
-    void onShutdown() override
+    void onStatusShutdown() override
     {
         // Destroy agent tracking
         agent_tracking_.reset();

@@ -1,13 +1,14 @@
 #pragma once
 
-// Communication include
+// Utils include
 #include "flychams_agent/mavros/mavros_communication.hpp"
-
-// Mavros include
 #include "flychams_agent/mavros/mavros_utils.hpp"
 
 // Base module include
 #include "flychams_common/base/base_module.hpp"
+
+// Base node include
+#include "flychams_common/base/base_node.hpp"
 
 namespace flychams::agent
 {
@@ -22,15 +23,15 @@ namespace flychams::agent
     class DroneFrames : public core::BaseModule
     {
     public: // Constructor/Destructor
-        DroneFrames(const core::ID& agent_id, core::NodePtr node, core::SettingsTools::SharedPtr settings_tools, core::TopicTools::SharedPtr topic_tools, core::TransformTools::SharedPtr transform_tools, core::CallbackGroupPtr module_cb_group)
-            : BaseModule(node, settings_tools, topic_tools, transform_tools, module_cb_group), agent_id_(agent_id)
+        DroneFrames(const core::ID& agent_id, core::BaseNode::SharedPtr node)
+            : BaseModule(node), agent_id_(agent_id)
         {
             init();
         }
 
     protected: // Overrides
-        void onInit() override;
-        void onShutdown() override;
+        void onModuleInit() override;
+        void onModuleShutdown() override;
 
     public: // Types
         using SharedPtr = std::shared_ptr<DroneFrames>;

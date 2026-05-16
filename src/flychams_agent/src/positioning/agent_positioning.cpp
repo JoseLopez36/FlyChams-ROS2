@@ -8,65 +8,61 @@ namespace flychams::agent
     // CONSTRUCTOR: Constructor and destructor
     // ════════════════════════════════════════════════════════════════════════════
 
-    void AgentPositioning::onInit()
+    void AgentPositioning::onModuleInit()
     {
         // Get parameters from parameter server
         // Get update rate
-        update_rate_ = RosUtils::getParameterOr<float>(node_, "positioning_rate", 1.0f);
+        update_rate_ = node_->getParameterOr<float>("positioning_rate", 1.0f);
         // Get solver parameters
-        solver_mode_ = static_cast<PositionSolver::SolverMode>(RosUtils::getParameterOr<uint8_t>(node_, "positioning.solver_mode", 0));
+        solver_mode_ = static_cast<PositionSolver::SolverMode>(node_->getParameterOr<uint8_t>("positioning.solver_mode", 0));
         // Get generic solver parameters
-        solver_params_.eps = RosUtils::getParameterOr<float>(node_, "positioning.eps", 1.0e-1f);
-        solver_params_.tol = RosUtils::getParameterOr<float>(node_, "positioning.convergence_tolerance", 1.0e-5f);
-        solver_params_.max_iter = RosUtils::getParameterOr<int>(node_, "positioning.max_iterations", 100);
+        solver_params_.eps = node_->getParameterOr<float>("positioning.eps", 1.0e-1f);
+        solver_params_.tol = node_->getParameterOr<float>("positioning.convergence_tolerance", 1.0e-5f);
+        solver_params_.max_iter = node_->getParameterOr<int>("positioning.max_iterations", 100);
         // Get PSO parameters
-        solver_params_.num_particles = RosUtils::getParameterOr<int>(node_, "positioning.num_particles", 50);
-        solver_params_.w_max = RosUtils::getParameterOr<float>(node_, "positioning.w_max", 0.4f);
-        solver_params_.w_min = RosUtils::getParameterOr<float>(node_, "positioning.w_min", 0.1f);
-        solver_params_.c1 = RosUtils::getParameterOr<float>(node_, "positioning.c1", 1.0f);
-        solver_params_.c2 = RosUtils::getParameterOr<float>(node_, "positioning.c2", 1.0f);
-        solver_params_.stagnation_limit = RosUtils::getParameterOr<int>(node_, "positioning.stagnation_limit", 5);
+        solver_params_.num_particles = node_->getParameterOr<int>("positioning.num_particles", 50);
+        solver_params_.w_max = node_->getParameterOr<float>("positioning.w_max", 0.4f);
+        solver_params_.w_min = node_->getParameterOr<float>("positioning.w_min", 0.1f);
+        solver_params_.c1 = node_->getParameterOr<float>("positioning.c1", 1.0f);
+        solver_params_.c2 = node_->getParameterOr<float>("positioning.c2", 1.0f);
+        solver_params_.stagnation_limit = node_->getParameterOr<int>("positioning.stagnation_limit", 5);
         // Get ALC-PSO parameters
-        solver_params_.max_lifespan = RosUtils::getParameterOr<int>(node_, "positioning.max_lifespan", 60);
-        solver_params_.num_challenger_tests = RosUtils::getParameterOr<int>(node_, "positioning.num_challenger_tests", 10);
+        solver_params_.max_lifespan = node_->getParameterOr<int>("positioning.max_lifespan", 60);
+        solver_params_.num_challenger_tests = node_->getParameterOr<int>("positioning.num_challenger_tests", 10);
         // Get Nesterov parameters
-        solver_params_.lipschitz_constant = RosUtils::getParameterOr<float>(node_, "positioning.lipschitz_constant", 0.0f);
+        solver_params_.lipschitz_constant = node_->getParameterOr<float>("positioning.lipschitz_constant", 0.0f);
 
         // Initialize data
         agent_ = Agent();
 
         // Initialize setpoint message
-        agent_.setpoint.header = RosUtils::createHeader(node_, transform_tools_->getGlobalFrame());
+        agent_.setpoint.header = node_->createHeader(node_->getGlobalFrame());
         agent_.setpoint.point = PointMsg();
 
         // Get relevant transform frames
-        world_frame_ = transform_tools_->getGlobalFrame();
-        const core::TrackingParameters& tracking_params = settings_tools_->getTrackingParameters(agent_id_);
-        central_optical_frame_ = transform_tools_->getCameraOpticalFrame(agent_id_, tracking_params.observation_units_params[0].id);
+        world_frame_ = node_->getGlobalFrame();
+        const core::TrackingParameters& tracking_params = node_->getSettings()->getTrackingParameters(agent_id_);
+        central_optical_frame_ = node_->getCameraOpticalFrame(agent_id_, tracking_params.observation_units_params[0].id);
 
         // Create and initialize solver
         solver_ = createSolver(agent_id_, solver_params_, solver_mode_);
 
         // Create subscribers for agent status, position and clusters
-        agent_.status_sub = topic_tools_->createAgentStatusSubscriber(agent_id_,
-            std::bind(&AgentPositioning::statusCallback, this, std::placeholders::_1), sub_options_with_module_cb_group_);
-        agent_.position_sub = topic_tools_->createAgentGlobalPositionSubscriber(agent_id_,
-            std::bind(&AgentPositioning::positionCallback, this, std::placeholders::_1), sub_options_with_module_cb_group_);
-        agent_.clusters_sub = topic_tools_->createAgentClustersSubscriber(agent_id_,
-            std::bind(&AgentPositioning::clustersCallback, this, std::placeholders::_1), sub_options_with_module_cb_group_);
+        agent_.status_sub = node_->createAgentStatusSubscriber(agent_id_,
+            std::bind(&AgentPositioning::statusCallback, this, std::placeholders::_1), node_->getSubscriptionOptions());
+        agent_.position_sub = node_->createAgentGlobalPositionSubscriber(agent_id_,
+            std::bind(&AgentPositioning::positionCallback, this, std::placeholders::_1), node_->getSubscriptionOptions());
+        agent_.clusters_sub = node_->createAgentClustersSubscriber(agent_id_,
+            std::bind(&AgentPositioning::clustersCallback, this, std::placeholders::_1), node_->getSubscriptionOptions());
 
         // Create publisher for agent setpoint
-        agent_.setpoint_pub = topic_tools_->createAgentPositionSetpointPublisher(agent_id_);
+        agent_.setpoint_pub = node_->createAgentPositionSetpointPublisher(agent_id_);
 
         // Set update timer
-        update_timer_ = rclcpp::create_timer(node_, 
-            node_->get_clock(), 
-            std::chrono::duration<float>(1.0f / update_rate_), 
-            std::bind(&AgentPositioning::update, this), 
-            module_cb_group_);
+        update_timer_ = node_->createTimer(update_rate_, std::bind(&AgentPositioning::update, this));
     }
 
-    void AgentPositioning::onShutdown()
+    void AgentPositioning::onModuleShutdown()
     {
         // Destroy solver
         solver_->destroy();
@@ -118,7 +114,7 @@ namespace flychams::agent
         }
 
         // Check if we are in the correct state to position
-        if (agent_.status != AgentStatus::MISSION)
+        if (agent_.status != AgentStatus::ACTIVE || !node_->isMissionActive())
         {
             RCLCPP_WARN(node_->get_logger(), "Agent positioning: Agent %s is not in the correct state to position",
                 agent_id_.c_str());
@@ -126,19 +122,19 @@ namespace flychams::agent
         }
 
         // Convert messages to Eigen types
-        Vector3r x0 = RosUtils::fromMsg(agent_.position);
+        Vector3r x0 = node_->fromMsg(agent_.position);
         int n = static_cast<int>(agent_.clusters.centers.size());
         Matrix3Xr tab_P = Matrix3Xr::Zero(3, n);
         RowVectorXr tab_r = RowVectorXr::Zero(n);
         for (int i = 0; i < n; i++)
         {
-            tab_P.col(i) = RosUtils::fromMsg(agent_.clusters.centers[i]);
+            tab_P.col(i) = node_->fromMsg(agent_.clusters.centers[i]);
             tab_r(i) = agent_.clusters.radii[i];
         }
 
         // Get central observation unit transform
-        const TransformMsg& wTcentral_msg = transform_tools_->getTransform(world_frame_, central_optical_frame_);
-        Matrix4r wTcentral = RosUtils::fromMsg(wTcentral_msg);
+        const TransformMsg& wTcentral_msg = node_->getTransform(world_frame_, central_optical_frame_);
+        Matrix4r wTcentral = node_->fromMsg(wTcentral_msg);
 
         // Solve agent positioning
         float J;
@@ -150,8 +146,8 @@ namespace flychams::agent
             J, optimal_position(0), optimal_position(1), optimal_position(2), time_elapsed);
 
         // Publish position
-        agent_.setpoint.header.stamp = RosUtils::now(node_);
-        RosUtils::toMsg(optimal_position, agent_.setpoint.point);
+        agent_.setpoint.header.stamp = node_->now();
+        node_->toMsg(optimal_position, agent_.setpoint.point);
         agent_.setpoint_pub->publish(agent_.setpoint);
     }
 
@@ -165,9 +161,9 @@ namespace flychams::agent
         PositionSolver::SharedPtr solver = std::make_shared<PositionSolver>();
 
         // Get config
-        const auto& config_ptr = settings_tools_->getConfig();
-        const auto& agent_ptr = settings_tools_->getAgent(agent_id);
-        const auto& tracking_params = settings_tools_->getTrackingParameters(agent_id);
+        const auto& config_ptr = node_->getSettings()->getConfig();
+        const auto& agent_ptr = node_->getSettings()->getAgent(agent_id);
+        const auto& tracking_params = node_->getSettings()->getTrackingParameters(agent_id);
 
         // Get cost parameters for each tracking unit
         CostFunctions::CostParameters cost_params;

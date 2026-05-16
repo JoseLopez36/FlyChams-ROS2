@@ -1,10 +1,13 @@
 #pragma once
 
-// Tracking includes
+// Utils include
 #include "flychams_common/tracking/observation_solver.hpp"
 
 // Base module include
-#include "flychams_common/base/base_module.hpp"
+#include "flychams_common/base/base_status_module.hpp"
+
+// Base node include
+#include "flychams_common/base/base_status_node.hpp"
 
 namespace flychams::agent
 {
@@ -16,18 +19,18 @@ namespace flychams::agent
      * @date 2025-01-29
      * ════════════════════════════════════════════════════════════════
      */
-    class AgentTracking : public core::BaseModule
+    class AgentTracking : public core::BaseStatusModule
     {
     public: // Constructor/Destructor
-        AgentTracking(const core::ID& agent_id, core::NodePtr node, core::SettingsTools::SharedPtr settings_tools, core::TopicTools::SharedPtr topic_tools, core::TransformTools::SharedPtr transform_tools, core::CallbackGroupPtr module_cb_group)
-            : BaseModule(node, settings_tools, topic_tools, transform_tools, module_cb_group), agent_id_(agent_id)
+        AgentTracking(const core::ID& agent_id, core::BaseStatusNode::SharedPtr node)
+            : BaseStatusModule(node), agent_id_(agent_id)
         {
             init();
         }
 
     protected: // Overrides
-        void onInit() override;
-        void onShutdown() override;
+        void onModuleInit() override;
+        void onModuleShutdown() override;
 
     public: // Types
         using SharedPtr = std::shared_ptr<AgentTracking>;

@@ -3,6 +3,9 @@
 // Base module include
 #include "flychams_common/base/base_module.hpp"
 
+// Base node include
+#include "flychams_common/base/base_node.hpp"
+
 namespace flychams::agent
 {
     /**
@@ -16,36 +19,32 @@ namespace flychams::agent
     class AgentAnalysis : public core::BaseModule
     {
     public: // Constructor/Destructor
-        AgentAnalysis(const core::ID& agent_id, core::NodePtr node, core::SettingsTools::SharedPtr settings_tools, core::TopicTools::SharedPtr topic_tools, core::TransformTools::SharedPtr transform_tools, core::CallbackGroupPtr module_cb_group)
-            : BaseModule(node, settings_tools, topic_tools, transform_tools, module_cb_group), agent_id_(agent_id)
+        AgentAnalysis(const core::ID& agent_id, core::BaseNode::SharedPtr node)
+            : BaseModule(node), agent_id_(agent_id)
         {
             init();
         }
 
     protected: // Overrides
-        void onInit() override;
-        void onShutdown() override;
+        void onModuleInit() override;
+        void onModuleShutdown() override;
 
     public: // Types
         using SharedPtr = std::shared_ptr<AgentAnalysis>;
         struct Agent
         {
-            // Status data
-            core::AgentStatus status;
-            bool has_status;
             // Assignment data
             std::vector<core::ID> unit_ids;
             std::vector<core::ID> cluster_ids;
             core::ID central_unit_id;
             bool has_assignment;
             // Subscribers
-            core::SubscriberPtr<core::AgentStatusMsg> status_sub;
             core::SubscriberPtr<core::AgentAssignmentMsg> assignment_sub;
             // Publisher
             core::PublisherPtr<core::AgentClustersMsg> clusters_pub;
             // Constructor
             Agent()
-                : status(), has_status(false), unit_ids(), cluster_ids(), has_assignment(false), status_sub(), assignment_sub(), clusters_pub()
+                : unit_ids(), cluster_ids(), has_assignment(false), assignment_sub(), clusters_pub()
             {
             }
         };
@@ -75,7 +74,6 @@ namespace flychams::agent
         std::unordered_map<core::ID, Cluster> clusters_;
 
     private: // Callbacks
-        void statusCallback(const core::AgentStatusMsg::SharedPtr msg);
         void assignmentCallback(const core::AgentAssignmentMsg::SharedPtr msg);
         void clusterGeometryCallback(const core::ID& cluster_id, const core::ClusterGeometryMsg::SharedPtr msg);
 

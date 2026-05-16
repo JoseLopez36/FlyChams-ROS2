@@ -8,33 +8,33 @@ namespace flychams::agent
     // CONSTRUCTOR: Constructor and destructor
     // ════════════════════════════════════════════════════════════════════════════
 
-    void AgentTracking::onInit()
+    void AgentTracking::onModuleInit()
     {
         // Get parameters from parameter server
         // Get update rate
-        update_rate_ = RosUtils::getParameterOr<float>(node_, "tracking_rate", 20.0f);
+        update_rate_ = node_->getParameterOr<float>("tracking_rate", 20.0f);
 
         // Initialize data
         agent_ = Agent();
         solvers_.clear();
 
         // Get tracking parameters
-        tracking_params_ = settings_tools_->getTrackingParameters(agent_id_);
+        tracking_params_ = node_->getSettings()->getTrackingParameters(agent_id_);
 
         // Get relevant transform frames
-        world_frame_ = transform_tools_->getGlobalFrame();
+        world_frame_ = node_->getGlobalFrame();
         n_frames_ = 0;
         for (const auto& unit : tracking_params_.observation_units_params)
         {
             if (unit.type == ObservationType::Camera)
             {
-                optical_frames_.push_back(transform_tools_->getCameraOpticalFrame(agent_id_, unit.id));
+                optical_frames_.push_back(node_->getCameraOpticalFrame(agent_id_, unit.id));
                 n_frames_++;
             }
         }
 
         // Initialize observation setpoints message
-        agent_.observation_setpoints.header = RosUtils::createHeader(node_, transform_tools_->getGlobalFrame());
+        agent_.observation_setpoints.header = node_->createHeader(node_->getGlobalFrame());
         agent_.observation_setpoints.n_o = tracking_params_.n_o;
         agent_.observation_setpoints.n_t = tracking_params_.n_t;
         agent_.observation_setpoints.n_c = tracking_params_.n_c;
@@ -63,23 +63,19 @@ namespace flychams::agent
         }
 
         // Create subscribers for agent status, position and clusters
-        agent_.status_sub = topic_tools_->createAgentStatusSubscriber(agent_id_,
-            std::bind(&AgentTracking::statusCallback, this, std::placeholders::_1), sub_options_with_module_cb_group_);
-        agent_.clusters_sub = topic_tools_->createAgentClustersSubscriber(agent_id_,
-            std::bind(&AgentTracking::clustersCallback, this, std::placeholders::_1), sub_options_with_module_cb_group_);
+        agent_.status_sub = node_->createAgentStatusSubscriber(agent_id_,
+            std::bind(&AgentTracking::statusCallback, this, std::placeholders::_1), node_->getSubscriptionOptions());
+        agent_.clusters_sub = node_->createAgentClustersSubscriber(agent_id_,
+            std::bind(&AgentTracking::clustersCallback, this, std::placeholders::_1), node_->getSubscriptionOptions());
 
         // Create publisher for observation setpoints
-        agent_.observation_setpoints_pub = topic_tools_->createObservationSetpointsPublisher(agent_id_);
-
+        agent_.observation_setpoints_pub = node_->createObservationSetpointsPublisher(agent_id_);
+        
         // Set update timer
-        update_timer_ = rclcpp::create_timer(node_,
-            node_->get_clock(),
-            std::chrono::duration<float>(1.0f / update_rate_),
-            std::bind(&AgentTracking::update, this),
-            module_cb_group_);
+        update_timer_ = node_->createTimer(update_rate_, std::bind(&AgentTracking::update, this));
     }
 
-    void AgentTracking::onShutdown()
+    void AgentTracking::onModuleShutdown()
     {
         // Destroy agent data
         agent_.status_sub.reset();
@@ -121,7 +117,7 @@ namespace flychams::agent
         }
 
         // Check if we are in the correct state to track
-        if (agent_.status != AgentStatus::MISSION)
+        if (agent_.status != AgentStatus::ACTIVE || !node_->isMissionActive())
         {
             RCLCPP_WARN(node_->get_logger(), "Agent tracking: Agent %s is not in the correct state to track",
                 agent_id_.c_str());
@@ -134,7 +130,7 @@ namespace flychams::agent
         RowVectorXr tab_r = RowVectorXr::Zero(n);
         for (size_t i = 0; i < n; i++)
         {
-            tab_P.col(i) = RosUtils::fromMsg(agent_.clusters.centers[i]);
+            tab_P.col(i) = node_->fromMsg(agent_.clusters.centers[i]);
             tab_r(i) = agent_.clusters.radii[i];
         }
 
@@ -142,8 +138,8 @@ namespace flychams::agent
         std::vector<Matrix4r> tab_T(n_frames_);
         for (int c = 0; c < n_frames_; c++)
         {
-            const TransformMsg& T = transform_tools_->getTransform(world_frame_, optical_frames_[c]);
-            tab_T[c] = RosUtils::fromMsg(T);
+            const TransformMsg& T = node_->getTransform(world_frame_, optical_frames_[c]);
+            tab_T[c] = node_->fromMsg(T);
         }
 
         // Solve tracking for each observation unit
@@ -161,7 +157,7 @@ namespace flychams::agent
                 // Set central camera reference focal length
                 zoom_factor = tracking_params_.observation_units_params[0].upsilon_ref;
                 // Get central camera initial orientation
-                rotation = settings_tools_->getMultiCamera(agent_id_, unit.id)->orientation;
+                rotation = node_->getSettings()->getMultiCamera(agent_id_, unit.id)->orientation;
             }
             else if (unit.type == ObservationType::Camera && unit.role == ObservationRole::Tracking)
             {
@@ -176,11 +172,11 @@ namespace flychams::agent
             agent_.observation_setpoints.zoom_factors[i] = zoom_factor;
             if (unit.type == ObservationType::Camera)
             {
-                RosUtils::toMsg(rotation, agent_.observation_setpoints.rotations[i]);
+                node_->toMsg(rotation, agent_.observation_setpoints.rotations[i]);
             }
             else if (unit.type == ObservationType::Window)
             {
-                RosUtils::toMsg(crop, agent_.observation_setpoints.crops[i]);
+                node_->toMsg(crop, agent_.observation_setpoints.crops[i]);
             }
 
             i++;

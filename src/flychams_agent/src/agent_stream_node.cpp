@@ -1,10 +1,10 @@
 #include "rclcpp/rclcpp.hpp"
 
-// Stream includes
+// Module include
 #include "flychams_agent/stream/agent_stream.hpp"
 
-// Core includes
-#include "flychams_common/base/base_node_with_tools.hpp"
+// Base node include
+#include "flychams_common/base/base_node.hpp"
 
 using namespace flychams::core;
 using namespace flychams::agent;
@@ -17,27 +17,27 @@ using namespace flychams::agent;
  * @date 2026-03-06
  * ════════════════════════════════════════════════════════════════
  */
-class AgentStreamNode : public BaseNodeWithTools
+class AgentStreamNode : public BaseNode
 {
 public: // Constructor/Destructor
     AgentStreamNode(const std::string& node_name, const rclcpp::NodeOptions& options)
-        : BaseNodeWithTools(node_name, options)
+        : BaseNode(node_name, options)
     {
         // Nothing to do
     }
 
-    void onInit() override
+    void onNodeInit() override
     {
         // Get agent ID
-        agent_id_ = RosUtils::getParameter<std::string>(node_, "agent_id");
+        agent_id_ = getParameter<std::string>("agent_id");
 
         // Create agent stream module
-        agent_stream_ = std::make_shared<AgentStream>(agent_id_, node_, settings_tools_, topic_tools_, transform_tools_, node_cb_group_);
+        agent_stream_ = std::make_shared<AgentStream>(agent_id_, sharedFromThis());
 
         RCLCPP_INFO(node_->get_logger(), "Agent stream created for agent: %s", agent_id_.c_str());
     }
 
-    void onShutdown() override
+    void onNodeShutdown() override
     {
         // Destroy agent stream module
         agent_stream_.reset();

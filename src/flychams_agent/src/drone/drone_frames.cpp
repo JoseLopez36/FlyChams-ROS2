@@ -8,28 +8,28 @@ namespace flychams::agent
     // CONSTRUCTOR: Constructor and destructor
     // ════════════════════════════════════════════════════════════════════════════
 
-    void DroneFrames::onInit()
+    void DroneFrames::onModuleInit()
     {
         // Get parameters from parameter server
         // Get update rate
-        update_rate_ = RosUtils::getParameterOr<float>(node_, "drone_frames.update_rate", 5.0f);
+        update_rate_ = node_->getParameterOr<float>("drone_frames.update_rate", 5.0f);
 
         // Initialize data
         agent_ = Agent();
 
         // Create mavros communication
-        mavros_comm_ = std::make_shared<MavrosCommunication>(agent_id_, node_, settings_tools_, topic_tools_, transform_tools_, module_cb_group_);
+        mavros_comm_ = std::make_shared<MavrosCommunication>(agent_id_, node_);
 
         // Subscribe to topics
-        agent_.global_origin_sub = topic_tools_->createGlobalOriginSubscriber(
-            std::bind(&DroneFrames::globalOriginCallback, this, std::placeholders::_1), sub_options_with_module_cb_group_);
+        agent_.global_origin_sub = node_->createGlobalOriginSubscriber(
+            std::bind(&DroneFrames::globalOriginCallback, this, std::placeholders::_1), node_->getSubscriptionOptions());
         agent_.home_position_sub = mavros_comm_->subscribeHomePosition(
-            std::bind(&DroneFrames::homePositionCallback, this, std::placeholders::_1), sub_options_with_module_cb_group_);
+            std::bind(&DroneFrames::homePositionCallback, this, std::placeholders::_1), node_->getSubscriptionOptions());
         agent_.local_odom_sub = mavros_comm_->subscribeLocalOdometry(
-            std::bind(&DroneFrames::localOdomCallback, this, std::placeholders::_1), sub_options_with_module_cb_group_);
+            std::bind(&DroneFrames::localOdomCallback, this, std::placeholders::_1), node_->getSubscriptionOptions());
     }
 
-    void DroneFrames::onShutdown()
+    void DroneFrames::onModuleShutdown()
     {
         // Destroy subscriber
         agent_.global_origin_sub.reset();
@@ -95,8 +95,8 @@ namespace flychams::agent
     void DroneFrames::createLocalFrame(const core::GeoPointMsg& home_geopoint, const core::GeoPointMsg& origin_geopoint)
     {
         // Get frames
-        std::string world_frame = transform_tools_->getGlobalFrame();
-        std::string local_frame = transform_tools_->getAgentLocalFrame(agent_id_);
+        std::string world_frame = node_->getGlobalFrame();
+        std::string local_frame = node_->getAgentLocalFrame(agent_id_);
 
         // Get home position in cartesian coordinates
         PointMsg home_position = MavrosUtils::fromGlobal(home_geopoint.latitude, home_geopoint.longitude, home_geopoint.altitude, origin_geopoint);
@@ -115,7 +115,7 @@ namespace flychams::agent
         world_to_local.block<3, 3>(0, 0) = MathUtils::quatToMatrix(quat);
 
         // Broadcast world -> local (static)
-        transform_tools_->broadcastStaticTransform(world_frame, local_frame, world_to_local);
+        node_->broadcastStaticTransform(world_frame, local_frame, world_to_local);
     }
 
     // ════════════════════════════════════════════════════════════════════════════
@@ -125,8 +125,8 @@ namespace flychams::agent
     void DroneFrames::updateBodyFrame(const core::PointMsg& position, const core::QuaternionMsg& orientation)
     {
         // Get frames
-        std::string local_frame = transform_tools_->getAgentLocalFrame(agent_id_);
-        std::string body_frame = transform_tools_->getAgentBodyFrame(agent_id_);
+        std::string local_frame = node_->getAgentLocalFrame(agent_id_);
+        std::string body_frame = node_->getAgentBodyFrame(agent_id_);
 
         // Get body transformation
         Matrix4r local_to_body = Matrix4r::Identity();
@@ -137,11 +137,11 @@ namespace flychams::agent
         local_to_body(2, 3) = position.z;
 
         // Set orientation
-        Quaternionr orientation_quat = RosUtils::fromMsg(orientation);
+        Quaternionr orientation_quat = node_->fromMsg(orientation);
         local_to_body.block<3, 3>(0, 0) = MathUtils::quatToMatrix(orientation_quat);
 
         // Broadcast local -> body
-        transform_tools_->broadcastTransform(local_frame, body_frame, local_to_body);
+        node_->broadcastTransform(local_frame, body_frame, local_to_body);
     }
 
 } // namespace flychams::agent

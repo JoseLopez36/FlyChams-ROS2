@@ -8,43 +8,34 @@ namespace flychams::agent
     // CONSTRUCTOR: Constructor and destructor
     // ════════════════════════════════════════════════════════════════════════════
 
-    void AgentAnalysis::onInit()
+    void AgentAnalysis::onModuleInit()
     {
         // Get parameters from parameter server
         // Get update rate
-        update_rate_ = RosUtils::getParameterOr<float>(node_, "analysis_rate", 20.0f);
+        update_rate_ = node_->getParameterOr<float>("analysis_rate", 20.0f);
 
         // Initialize data
         agent_ = Agent();
         clusters_.clear();
 
         // Define agent's central unit ID
-        const auto& tracking_params = settings_tools_->getTrackingParameters(agent_id_);
+        const auto& tracking_params = node_->getSettings()->getTrackingParameters(agent_id_);
         agent_.central_unit_id = tracking_params.observation_units_params[0].id;
 
-        // Create agent status subscriber
-        agent_.status_sub = topic_tools_->createAgentStatusSubscriber(agent_id_,
-            std::bind(&AgentAnalysis::statusCallback, this, std::placeholders::_1), sub_options_with_module_cb_group_);
-
         // Create agent assignment subscriber
-        agent_.assignment_sub = topic_tools_->createAgentAssignmentSubscriber(agent_id_,
-            std::bind(&AgentAnalysis::assignmentCallback, this, std::placeholders::_1), sub_options_with_module_cb_group_);
+        agent_.assignment_sub = node_->createAgentAssignmentSubscriber(agent_id_,
+            std::bind(&AgentAnalysis::assignmentCallback, this, std::placeholders::_1), node_->getSubscriptionOptions());
 
         // Create agent clusters publisher
-        agent_.clusters_pub = topic_tools_->createAgentClustersPublisher(agent_id_);
+        agent_.clusters_pub = node_->createAgentClustersPublisher(agent_id_);
 
         // Set update timer
-        update_timer_ = rclcpp::create_timer(node_, 
-            node_->get_clock(), 
-            std::chrono::duration<float>(1.0f / update_rate_), 
-            std::bind(&AgentAnalysis::update, this), 
-            module_cb_group_);
+        update_timer_ = node_->createTimer(update_rate_, std::bind(&AgentAnalysis::update, this));
     }
 
-    void AgentAnalysis::onShutdown()
+    void AgentAnalysis::onModuleShutdown()
     {
         // Destroy subscribers/publishers
-        agent_.status_sub.reset();
         agent_.assignment_sub.reset();
         agent_.clusters_pub.reset();
         
@@ -58,13 +49,6 @@ namespace flychams::agent
     // ════════════════════════════════════════════════════════════════════════════
     // CALLBACKS: Callback functions
     // ════════════════════════════════════════════════════════════════════════════
-
-    void AgentAnalysis::statusCallback(const AgentStatusMsg::SharedPtr msg)
-    {
-        // Update agent status
-        agent_.status = static_cast<AgentStatus>(msg->status);
-        agent_.has_status = true;
-    }
 
     void AgentAnalysis::assignmentCallback(const AgentAssignmentMsg::SharedPtr msg)
     {
@@ -94,17 +78,11 @@ namespace flychams::agent
 
     void AgentAnalysis::update()
     {
-        // Check if we have a valid agent status or assignment
-        if (!agent_.has_status || !agent_.has_assignment)
+        // Check if we have a valid assignment
+        if (!agent_.has_assignment)
         {
-            // Wait for status and assignment
+            // Wait for assignment
             return; 
-        }
-
-        // Check if we are in the correct state to analyze
-        if (agent_.status != AgentStatus::MISSION)
-        {
-            return;
         }
 
         // Check if we have valid cluster geometries for assigned clusters
@@ -119,7 +97,7 @@ namespace flychams::agent
 
         // Create clusters message
         AgentClustersMsg msg;
-        msg.header = RosUtils::createHeader(node_, transform_tools_->getGlobalFrame());
+        msg.header = node_->createHeader(node_->getGlobalFrame());
 
         // Iterate over the assignment and add tracking clusters
         int n_t = static_cast<int>(agent_.unit_ids.size());
@@ -172,10 +150,10 @@ namespace flychams::agent
             if (clusters_.find(id) == clusters_.end())
             {
                 Cluster new_cluster;
-                new_cluster.geometry_sub = topic_tools_->createClusterGeometrySubscriber(id,
+                new_cluster.geometry_sub = node_->createClusterGeometrySubscriber(id,
                     [this, id](const ClusterGeometryMsg::SharedPtr msg) {
                         this->clusterGeometryCallback(id, msg);
-                    }, sub_options_with_module_cb_group_);
+                    }, node_->getSubscriptionOptions());
                 clusters_[id] = std::move(new_cluster);
             }
         }
@@ -196,7 +174,7 @@ namespace flychams::agent
         int c = 0;
         for (int i = 1; i < n + 1; i++)
         {
-            tab_P.col(c) = RosUtils::fromMsg(centers[i]);
+            tab_P.col(c) = node_->fromMsg(centers[i]);
             tab_r(c) = radii[i];
             c++;
         }
@@ -222,7 +200,7 @@ namespace flychams::agent
 
         // Convert back to message
         PointMsg central_P;
-        RosUtils::toMsg(z_mean, central_P);
+        node_->toMsg(z_mean, central_P);
         float central_r = r_max;
 
         // Return central cluster and radius

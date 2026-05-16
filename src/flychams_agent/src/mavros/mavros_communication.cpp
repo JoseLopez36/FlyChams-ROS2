@@ -8,7 +8,7 @@ namespace flychams::agent
     // CONSTRUCTOR: Constructor and destructor
     // ════════════════════════════════════════════════════════════════════════════
 
-    void MavrosCommunication::onInit()
+    void MavrosCommunication::onModuleInit()
     {
         // Initialize ROS components
         arming_client_ = node_->create_client<mavros_msgs::srv::CommandBool>("/mavros/" + agent_id_ + "/cmd/arming");
@@ -18,7 +18,7 @@ namespace flychams::agent
         local_pos_pub_ = node_->create_publisher<PoseStampedMsg>("/mavros/" + agent_id_ + "/setpoint_position/local", 10);
     }
 
-    void MavrosCommunication::onShutdown()
+    void MavrosCommunication::onModuleShutdown()
     {
         // Destroy clients
         arming_client_.reset();
@@ -60,7 +60,7 @@ namespace flychams::agent
         auto request = std::make_shared<mavros_msgs::srv::CommandBool::Request>();
         request->value = arm;
 
-        return RosUtils::sendRequest<mavros_msgs::srv::CommandBool>(node_, arming_client_, request, 2000);
+        return node_->sendRequest<mavros_msgs::srv::CommandBool>(arming_client_, request, 2000);
     }
 
     bool MavrosCommunication::takeoff(const float& z)
@@ -68,14 +68,14 @@ namespace flychams::agent
         auto request = std::make_shared<mavros_msgs::srv::CommandTOL::Request>();
         request->altitude = z;
 
-        return RosUtils::sendRequest<mavros_msgs::srv::CommandTOL>(node_, takeoff_client_, request, 2000);
+        return node_->sendRequest<mavros_msgs::srv::CommandTOL>(takeoff_client_, request, 2000);
     }
 
     bool MavrosCommunication::land()
     {
         auto request = std::make_shared<mavros_msgs::srv::CommandTOL::Request>();
 
-        return RosUtils::sendRequest<mavros_msgs::srv::CommandTOL>(node_, land_client_, request, 2000);
+        return node_->sendRequest<mavros_msgs::srv::CommandTOL>(land_client_, request, 2000);
     }
 
     bool MavrosCommunication::enableOffboard(const bool& enable)
@@ -84,14 +84,14 @@ namespace flychams::agent
         auto request = std::make_shared<mavros_msgs::srv::SetMode::Request>();
         request->custom_mode = enable ? "OFFBOARD" : "AUTO.LOITER";
 
-        return RosUtils::sendRequest<mavros_msgs::srv::SetMode>(node_, set_mode_client_, request, 2000);
+        return node_->sendRequest<mavros_msgs::srv::SetMode>(set_mode_client_, request, 2000);
     }
 
     void MavrosCommunication::setLocalPosition(const float& x, const float& y, const float& z)
     {
         // Create local pose stamped message
         PoseStampedMsg msg;
-        msg.header = RosUtils::createHeader(node_, transform_tools_->getAgentLocalFrame(agent_id_));
+        msg.header = node_->createHeader(node_->getAgentLocalFrame(agent_id_));
         msg.pose.position.x = x;
         msg.pose.position.y = y;
         msg.pose.position.z = z;

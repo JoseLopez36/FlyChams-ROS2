@@ -8,19 +8,19 @@ namespace flychams::agent
 	// CONSTRUCTOR: Constructor and destructor
 	// ════════════════════════════════════════════════════════════════════════════
 
-	void DroneControl::onInit()
+	void DroneControl::onModuleInit()
 	{
 		// Get parameters from parameter server
 		// Get update rate
-		update_rate_ = RosUtils::getParameterOr<float>(node_, "update_rate", 10.0f);
+		update_rate_ = node_->getParameterOr<float>("update_rate", 10.0f);
 		// Get control mode
-		control_mode_ = static_cast<ControlMode>(RosUtils::getParameterOr<uint8_t>(node_, "control_mode", 0));
+		control_mode_ = static_cast<ControlMode>(node_->getParameterOr<uint8_t>("control_mode", 0));
 		// Get flight parameters
-		takeoff_altitude_ = RosUtils::getParameterOr<float>(node_, "takeoff_altitude", 1.5f);
+		takeoff_altitude_ = node_->getParameterOr<float>("takeoff_altitude", 1.5f);
 
 		// Get space constraints
-		const auto& config_ptr = settings_tools_->getConfig();
-		const auto& agent_ptr = settings_tools_->getAgent(agent_id_);
+		const auto& config_ptr = node_->getSettings()->getConfig();
+		const auto& agent_ptr = node_->getSettings()->getAgent(agent_id_);
 		float min_horizontal = config_ptr->horizontal_constraint(0);
 		float max_horizontal = config_ptr->horizontal_constraint(1);
 		float min_vertical = config_ptr->vertical_constraint(0);
@@ -39,26 +39,22 @@ namespace flychams::agent
 		command_counter_ = 0;
 
 		// Create mavros communication
-		mavros_comm_ = std::make_shared<MavrosCommunication>(agent_id_, node_, settings_tools_, topic_tools_, transform_tools_, module_cb_group_);
+		mavros_comm_ = std::make_shared<MavrosCommunication>(agent_id_, node_);
 
 		// Subscribe to status, position and setpoint topics
-		agent_.status_sub = topic_tools_->createAgentStatusSubscriber(agent_id_,
-			std::bind(&DroneControl::statusCallback, this, std::placeholders::_1), sub_options_with_module_cb_group_);
-		agent_.local_position_sub = topic_tools_->createAgentLocalPositionSubscriber(agent_id_,
-			std::bind(&DroneControl::localPositionCallback, this, std::placeholders::_1), sub_options_with_module_cb_group_);
-		agent_.setpoint_sub = topic_tools_->createAgentPositionSetpointSubscriber(agent_id_,
-			std::bind(&DroneControl::setpointPositionCallback, this, std::placeholders::_1), sub_options_with_module_cb_group_);
+		agent_.status_sub = node_->createAgentStatusSubscriber(agent_id_,
+			std::bind(&DroneControl::statusCallback, this, std::placeholders::_1), node_->getSubscriptionOptions());
+		agent_.local_position_sub = node_->createAgentLocalPositionSubscriber(agent_id_,
+			std::bind(&DroneControl::localPositionCallback, this, std::placeholders::_1), node_->getSubscriptionOptions());
+		agent_.setpoint_sub = node_->createAgentPositionSetpointSubscriber(agent_id_,
+			std::bind(&DroneControl::setpointPositionCallback, this, std::placeholders::_1), node_->getSubscriptionOptions());
 
 		// Set update timer
-		last_update_time_ = RosUtils::now(node_);
-        update_timer_ = rclcpp::create_timer(node_, 
-            node_->get_clock(), 
-            std::chrono::duration<float>(1.0f / update_rate_), 
-            std::bind(&DroneControl::update, this), 
-            module_cb_group_);
+		last_update_time_ = node_->now();
+		update_timer_ = node_->createTimer(update_rate_, std::bind(&DroneControl::update, this));
 	}
 
-	void DroneControl::onShutdown()
+	void DroneControl::onModuleShutdown()
 	{
 		// Destroy subscribers
 		agent_.status_sub.reset();
@@ -110,17 +106,39 @@ namespace flychams::agent
 		}
 
 		// Compute time step
-		auto current_time = RosUtils::now(node_);
+		auto current_time = node_->now();
 		float dt = (current_time - last_update_time_).seconds();
 		last_update_time_ = current_time;
+		(void)dt;
 
-		// Initialize success variable
 		bool success = true;
 
-		// Proceed based on the status of the agent
+		// Mission-level limiting: PAUSED → hover, ABORTED → land
+		if (node_->isMissionAborted())
+		{
+			success &= requestLand();
+			if (!success)
+				RCLCPP_ERROR(node_->get_logger(), "Drone control: Failed to land agent %s on mission ABORT",
+					agent_id_.c_str());
+			command_counter_ = 0;
+			return;
+		}
+
+		if (node_->isMissionPaused())
+		{
+			success &= requestHover();
+			if (!success)
+				RCLCPP_ERROR(node_->get_logger(), "Drone control: Failed to hover agent %s on mission PAUSE",
+					agent_id_.c_str());
+			command_counter_ = 0;
+			return;
+		}
+
+		// Proceed based on the 3-state agent status
 		switch (agent_.status)
 		{
 		case AgentStatus::IDLE:
+			// Agent is on the ground and disarmed: prepare for takeoff
 			success &= requestTakeoff();
 			if (command_counter_ > 10)
 			{
@@ -135,61 +153,30 @@ namespace flychams::agent
 			}
 			command_counter_++;
 			break;
-		case AgentStatus::TAKEOFF:
-			success &= requestTakeoff();
-			if (!success)
-			{
-				RCLCPP_ERROR(node_->get_logger(), "Drone control: Failed to takeoff agent %s in takeoff mode",
-					agent_id_.c_str());
-				return;
-			}
-			command_counter_ = 0;
-			break;
-		case AgentStatus::MISSION:
+		case AgentStatus::ACTIVE:
+			// Agent is armed and flying: execute mission setpoints
 			switch (control_mode_)
 			{
 			case ControlMode::POSITION:
-				// Check if we have a valid setpoint
 				if (agent_.has_setpoint)
 				{
-					// We have a valid setpoint
-					// Check if the setpoint is inside the flying box
 					if (isInsideFlyingBox(agent_.setpoint.point))
-					{
-						// The setpoint is inside the flying box, so we move to it
 						success &= requestSetpoint();
-					}
 					else
-					{
-						// The setpoint is outside the flying box, so we hover
 						success &= requestHover();
-					}
 				}
 				else
 				{
-					// We don't have a valid setpoint, so we hover
 					success &= requestHover();
 				}
 				break;
-
 			case ControlMode::VELOCITY:
 				// TODO: Implement velocity control
 				break;
 			}
-
 			if (!success)
 			{
-				RCLCPP_ERROR(node_->get_logger(), "Drone control: Failed to control agent %s in mission mode",
-					agent_id_.c_str());
-				return;
-			}
-			command_counter_ = 0;
-			break;
-		case AgentStatus::LAND:
-			success &= requestLand();
-			if (!success)
-			{
-				RCLCPP_ERROR(node_->get_logger(), "Drone control: Failed to land agent %s in landing mode",
+				RCLCPP_ERROR(node_->get_logger(), "Drone control: Failed to control agent %s in active mode",
 					agent_id_.c_str());
 				return;
 			}
@@ -206,7 +193,6 @@ namespace flychams::agent
 			command_counter_ = 0;
 			break;
 		default:
-			// The agent is in an unknown status, so we land
 			success &= requestLand();
 			if (!success)
 			{
@@ -246,7 +232,7 @@ namespace flychams::agent
 
 	bool DroneControl::requestTakeoff()
 	{
-		if (agent_.status == AgentStatus::IDLE || agent_.status == AgentStatus::TAKEOFF)
+		if (agent_.status == AgentStatus::IDLE)
 		{
 			mavros_comm_->setLocalPosition(0.0f, 0.0f, takeoff_altitude_);
 			return true;
@@ -257,7 +243,7 @@ namespace flychams::agent
 
 	bool DroneControl::requestHover()
 	{
-		if (agent_.status == AgentStatus::TAKEOFF || agent_.status == AgentStatus::MISSION)
+		if (agent_.status == AgentStatus::ACTIVE)
 		{
 			mavros_comm_->setLocalPosition(agent_.local_position.point.x, agent_.local_position.point.y, agent_.local_position.point.z);
 			return true;
@@ -268,11 +254,10 @@ namespace flychams::agent
 
 	bool DroneControl::requestSetpoint()
 	{
-		if (agent_.status == AgentStatus::MISSION)
+		if (agent_.status == AgentStatus::ACTIVE)
 		{
-			// Transform setpoint to local frame
-			const std::string& local_frame = transform_tools_->getAgentLocalFrame(agent_id_);
-			const PointStampedMsg local_setpoint = transform_tools_->transformPoint(agent_.setpoint, local_frame);
+			const std::string& local_frame = node_->getAgentLocalFrame(agent_id_);
+			const PointStampedMsg local_setpoint = node_->transformPoint(agent_.setpoint, local_frame);
 
 			mavros_comm_->setLocalPosition(local_setpoint.point.x, local_setpoint.point.y, local_setpoint.point.z);
 			RCLCPP_DEBUG(node_->get_logger(), "Drone control: Setpoint sent to agent %s",
@@ -287,7 +272,7 @@ namespace flychams::agent
 
 	bool DroneControl::requestLand()
 	{
-		if (agent_.status == AgentStatus::MISSION || agent_.status == AgentStatus::ERROR)
+		if (agent_.status == AgentStatus::ACTIVE || agent_.status == AgentStatus::ERROR)
 			return mavros_comm_->land();
 		else
 			return false;

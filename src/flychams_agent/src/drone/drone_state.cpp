@@ -8,32 +8,32 @@ namespace flychams::agent
     // CONSTRUCTOR: Constructor and destructor
     // ════════════════════════════════════════════════════════════════════════════
 
-    void DroneState::onInit()
+    void DroneState::onModuleInit()
     {
         // Get parameters from parameter server
         // Get flight parameters
-        takeoff_altitude_ = RosUtils::getParameterOr<float>(node_, "takeoff_altitude", 1.5f);
-        landing_altitude_ = RosUtils::getParameterOr<float>(node_, "landing_altitude", 0.5f);
+        takeoff_altitude_ = node_->getParameterOr<float>("takeoff_altitude", 1.5f);
+        landing_altitude_ = node_->getParameterOr<float>("landing_altitude", 0.5f);
 
         // Initialize data
         agent_ = Agent();
 
         // Create mavros communication
-        mavros_comm_ = std::make_shared<MavrosCommunication>(agent_id_, node_, settings_tools_, topic_tools_, transform_tools_, module_cb_group_);
+        mavros_comm_ = std::make_shared<MavrosCommunication>(agent_id_, node_);
 
         // Subscribe to mavros topics
         agent_.state_sub = mavros_comm_->subscribeState(
-            std::bind(&DroneState::stateCallback, this, std::placeholders::_1), sub_options_with_module_cb_group_);
+            std::bind(&DroneState::stateCallback, this, std::placeholders::_1), node_->getSubscriptionOptions());
         agent_.local_odom_sub = mavros_comm_->subscribeLocalOdometry(
-            std::bind(&DroneState::localOdomCallback, this, std::placeholders::_1), sub_options_with_module_cb_group_);
+            std::bind(&DroneState::localOdomCallback, this, std::placeholders::_1), node_->getSubscriptionOptions());
 
         // Create publishers for agent status and position
-        agent_.status_pub = topic_tools_->createAgentStatusPublisher(agent_id_);
-        agent_.local_position_pub = topic_tools_->createAgentLocalPositionPublisher(agent_id_);
-        agent_.global_position_pub = topic_tools_->createAgentGlobalPositionPublisher(agent_id_);
+        agent_.status_pub = node_->createAgentStatusPublisher(agent_id_);
+        agent_.local_position_pub = node_->createAgentLocalPositionPublisher(agent_id_);
+        agent_.global_position_pub = node_->createAgentGlobalPositionPublisher(agent_id_);
     }
 
-    void DroneState::onShutdown()
+    void DroneState::onModuleShutdown()
     {
         // Destroy subscribers
         agent_.state_sub.reset();
@@ -89,7 +89,7 @@ namespace flychams::agent
         std::string mode = state.mode;
         float altitude = local_odom.pose.pose.position.z;
 
-        // Initialize status
+        // Map PX4 state to simplified 3-state AgentStatus
         AgentStatus status = AgentStatus::IDLE;
 
         if (!connected)
@@ -99,37 +99,26 @@ namespace flychams::agent
         }
         else if (!armed)
         {
+            // Disarmed and on ground = IDLE (safe state)
             status = AgentStatus::IDLE;
-            RCLCPP_WARN(node_->get_logger(), "Drone state: Agent %s is not armed", agent_id_.c_str());
         }
         else
         {
-            if (mode == "AUTO.TAKEOFF")
-            {
-                status = AgentStatus::TAKEOFF;
-            }
-            else if (mode == "AUTO.LAND" || mode == "AUTO.RTL")
-            {
-                status = AgentStatus::LAND;
-            }
-            else
-            {
-                // OFFBOARD, AUTO.MISSION, AUTO.LOITER, POSCTL, etc.
-                if (altitude >= takeoff_altitude_ - 0.5f)
-                {
-                    status = AgentStatus::MISSION;
-                }
-                else
-                {
-                    status = AgentStatus::TAKEOFF;
-                }
-            }
+            // Armed: determine if flying (ACTIVE) or still taking off (also ACTIVE)
+            // ACTIVE covers: AUTO.TAKEOFF, OFFBOARD, AUTO.MISSION, AUTO.LOITER, POSCTL, AUTO.LAND, AUTO.RTL
+            // All armed states are ACTIVE since the drone is under power
+            status = AgentStatus::ACTIVE;
         }
+
+        // Informational flags
+        bool is_flying = armed && (altitude >= takeoff_altitude_ - 0.5f);
 
         // Publish agent status
         AgentStatusMsg status_msg;
-        status_msg.header.stamp = RosUtils::now(node_);
+        status_msg.header.stamp = node_->now();
         status_msg.status = static_cast<uint8_t>(status);
+        status_msg.is_armed = armed;
+        status_msg.is_flying = is_flying;
         agent_.status_pub->publish(status_msg);
     }
 
@@ -154,7 +143,7 @@ namespace flychams::agent
         // Create global position message
         PointStampedMsg global_position_msg;
         global_position_msg.header.stamp = local_odom.header.stamp;
-        global_position_msg = transform_tools_->transformPoint(local_position_msg, transform_tools_->getGlobalFrame());
+        global_position_msg = node_->transformPoint(local_position_msg, node_->getGlobalFrame());
 
         // Publish agent global position
         agent_.global_position_pub->publish(global_position_msg);
