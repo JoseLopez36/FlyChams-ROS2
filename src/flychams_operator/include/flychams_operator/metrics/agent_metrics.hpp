@@ -1,10 +1,10 @@
 #pragma once
 
 // Base module include
-#include "flychams_common/base/base_module.hpp"
+#include "flychams_common/base/base_status_discoverer_module.hpp"
 
 // Base node include
-#include "flychams_common/base/base_node.hpp"
+#include "flychams_common/base/base_status_discoverer_node.hpp"
 
 namespace flychams::operator_pkg
 {
@@ -23,11 +23,11 @@ namespace flychams::operator_pkg
      * @date 2025-05-14
      * ════════════════════════════════════════════════════════════════
      */
-    class AgentMetrics : public common::BaseModule
+    class AgentMetrics : public common::BaseStatusDiscovererModule
     {
     public: // Constructor/Destructor
-        AgentMetrics(const common::ID& agent_id, common::BaseNode::SharedPtr node)
-            : BaseModule(node), agent_id_(agent_id)
+        AgentMetrics(const common::ID& agent_id, common::BaseStatusDiscovererNode::SharedPtr node)
+            : BaseStatusDiscovererModule(node), agent_id_(agent_id)
         {
             init();
         }

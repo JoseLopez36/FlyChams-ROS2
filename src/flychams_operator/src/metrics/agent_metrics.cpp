@@ -147,7 +147,14 @@ void AgentMetrics::update()
 
 bool AgentMetrics::checkStatus()
 {
-    // Check 1: Agent must have a valid position
+    // Check 1: Mission must be active
+    if (!node_->isMissionActive())
+    {
+        RCLCPP_WARN(node_->get_logger(), "Target clustering: Mission is not active");
+        return false;
+    }
+
+    // Check 2: Agent must have a valid position
     if (!agent_.has_position)
     {
         return false;

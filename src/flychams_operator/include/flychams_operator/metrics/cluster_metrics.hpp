@@ -1,10 +1,10 @@
 #pragma once
 
 // Base module include
-#include "flychams_common/base/base_module.hpp"
+#include "flychams_common/base/base_status_discoverer_module.hpp"
 
 // Base node include
-#include "flychams_common/base/base_node.hpp"
+#include "flychams_common/base/base_status_discoverer_node.hpp"
 
 namespace flychams::operator_pkg
 {
@@ -22,11 +22,11 @@ namespace flychams::operator_pkg
      * @date 2025-05-14
      * ════════════════════════════════════════════════════════════════
      */
-    class ClusterMetrics : public common::BaseModule
+    class ClusterMetrics : public common::BaseStatusDiscovererModule
     {
     public: // Constructor/Destructor
-        ClusterMetrics(const common::ID& cluster_id, common::BaseNode::SharedPtr node)
-            : BaseModule(node), cluster_id_(cluster_id)
+        ClusterMetrics(const common::ID& cluster_id, common::BaseStatusDiscovererNode::SharedPtr node)
+            : BaseStatusDiscovererModule(node), cluster_id_(cluster_id)
         {
             init();
         }

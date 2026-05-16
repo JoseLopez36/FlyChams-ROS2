@@ -111,7 +111,14 @@ void ClusterMetrics::update()
 
 bool ClusterMetrics::checkStatus()
 {
-    // Check 1: Cluster must have a valid geometry
+    // Check 1: Mission must be active
+    if (!node_->isMissionActive())
+    {
+        RCLCPP_WARN(node_->get_logger(), "Target clustering: Mission is not active");
+        return false;
+    }
+
+    // Check 2: Cluster must have a valid geometry
     if (!cluster_.has_geometry)
     {
         return false;

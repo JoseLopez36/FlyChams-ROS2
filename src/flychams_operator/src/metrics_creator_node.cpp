@@ -6,7 +6,7 @@
 #include "flychams_operator/metrics/cluster_metrics.hpp"
 
 // Base node include
-#include "flychams_common/base/base_discoverer_node.hpp"
+#include "flychams_common/base/base_status_discoverer_node.hpp"
 
 using namespace flychams::common;
 
@@ -28,11 +28,11 @@ using namespace flychams::operator_pkg;
  * @date 2025-05-14
  * ════════════════════════════════════════════════════════════════
  */
-class MetricsCreatorNode : public BaseDiscovererNode
+class MetricsCreatorNode : public BaseStatusDiscovererNode
 {
 public: // Constructor/Destructor
     MetricsCreatorNode(const std::string& node_name, const rclcpp::NodeOptions& options)
-        : BaseDiscovererNode(node_name, options)
+        : BaseStatusDiscovererNode(node_name, options)
     {
         // Nothing to do
     }
