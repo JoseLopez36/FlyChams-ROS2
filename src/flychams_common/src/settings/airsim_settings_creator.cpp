@@ -297,6 +297,8 @@ void AirsimSettingsCreator::writeVehiclesSection(const MissionConfigPtr& config_
                 {"NAV_RCL_ACT", 0},
                 {"NAV_DLL_ACT", 0},
                 {"COM_OBL_ACT", 1},
+                {"COM_DISARM_PRFLT", 0},
+                {"COM_RC_IN_MODE", 1},
                 {"LPE_LAT", config_ptr->environment.geopoint.latitude},
                 {"LPE_LON", config_ptr->environment.geopoint.longitude}
             };

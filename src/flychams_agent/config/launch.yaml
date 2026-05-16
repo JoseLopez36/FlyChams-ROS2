@@ -7,9 +7,9 @@ node_allowlist:
   - agent_frames
   - agent_state
   - agent_control
-  # - agent_analysis
-  # - agent_positioning
-  # - agent_tracking
+  - agent_analysis
+  - agent_positioning
+  - agent_tracking
   # - agent_stream
 
 # Per-node log level overrides

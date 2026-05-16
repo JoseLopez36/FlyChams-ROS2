@@ -158,9 +158,6 @@
               max_focal: 0.003000
               ref_focal: 0.003000
               source_stream_url: "rtsp://127.0.0.1:8554/AGENT00/MULTICAMERA00"
-              hardware: "SIYI A8 Mini"
-              ip: "192.168.144.25"
-              port: 37260
               camera:
                 id: CAM00
                 name: "Low-Resolution Central Camera"
@@ -225,9 +222,6 @@
               max_focal: 0.040000
               ref_focal: 0.010000
               source_stream_url: "rtsp://127.0.0.1:8554/AGENT00/MULTICAMERA01"
-              hardware: "SIYI A8 Mini"
-              ip: "192.168.144.25"
-              port: 37260
               camera:
                 id: CAM01
                 name: "Low-Resolution Tracking Camera"
@@ -292,9 +286,6 @@
               max_focal: 0.040000
               ref_focal: 0.010000
               source_stream_url: "rtsp://127.0.0.1:8554/AGENT00/MULTICAMERA02"
-              hardware: "SIYI A8 Mini"
-              ip: "192.168.144.25"
-              port: 37260
               camera:
                 id: CAM01
                 name: "Low-Resolution Tracking Camera"
@@ -416,9 +407,6 @@
               max_focal: 0.003000
               ref_focal: 0.003000
               source_stream_url: "rtsp://127.0.0.1:8554/AGENT01/MULTICAMERA03"
-              hardware: "SIYI A8 Mini"
-              ip: "192.168.144.25"
-              port: 37260
               camera:
                 id: CAM00
                 name: "Low-Resolution Central Camera"
@@ -483,9 +471,6 @@
               max_focal: 0.040000
               ref_focal: 0.010000
               source_stream_url: "rtsp://127.0.0.1:8554/AGENT01/MULTICAMERA04"
-              hardware: "SIYI A8 Mini"
-              ip: "192.168.144.25"
-              port: 37260
               camera:
                 id: CAM01
                 name: "Low-Resolution Tracking Camera"
@@ -550,9 +535,6 @@
               max_focal: 0.040000
               ref_focal: 0.010000
               source_stream_url: "rtsp://127.0.0.1:8554/AGENT01/MULTICAMERA05"
-              hardware: "SIYI A8 Mini"
-              ip: "192.168.144.25"
-              port: 37260
               camera:
                 id: CAM01
                 name: "Low-Resolution Tracking Camera"
@@ -674,9 +656,6 @@
               max_focal: 0.003000
               ref_focal: 0.003000
               source_stream_url: "rtsp://127.0.0.1:8554/AGENT02/MULTICAMERA06"
-              hardware: "SIYI A8 Mini"
-              ip: "192.168.144.25"
-              port: 37260
               camera:
                 id: CAM00
                 name: "Low-Resolution Central Camera"
@@ -741,9 +720,6 @@
               max_focal: 0.040000
               ref_focal: 0.010000
               source_stream_url: "rtsp://127.0.0.1:8554/AGENT02/MULTICAMERA07"
-              hardware: "SIYI A8 Mini"
-              ip: "192.168.144.25"
-              port: 37260
               camera:
                 id: CAM01
                 name: "Low-Resolution Tracking Camera"
@@ -808,9 +784,6 @@
               max_focal: 0.040000
               ref_focal: 0.010000
               source_stream_url: "rtsp://127.0.0.1:8554/AGENT02/MULTICAMERA08"
-              hardware: "SIYI A8 Mini"
-              ip: "192.168.144.25"
-              port: 37260
               camera:
                 id: CAM01
                 name: "Low-Resolution Tracking Camera"

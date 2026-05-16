@@ -31,7 +31,6 @@ echo "Starting PX4 container: $CONTAINER_NAME"
 docker run ${RUN_FLAGS} \
     --name "$CONTAINER_NAME" \
     --network host \
-    --cpus="1" \
     -e LOCAL_USER_ID="$(id -u)" \
     -e CCACHE_DIR="${CCACHE_DIR}" \
     -v ${CCACHE_DIR}:${CCACHE_DIR}:rw \

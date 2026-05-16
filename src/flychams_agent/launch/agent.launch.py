@@ -16,6 +16,13 @@ def generate_launch_description():
     pkg_config_dir = os.path.join(
         get_package_share_directory('flychams_agent'), 'config')
 
+    # Read clock_speed from system.yaml to determine if sim time is needed
+    system_yaml_path = os.path.join(common_core_dir, 'system.yaml')
+    with open(system_yaml_path, 'r') as f:
+        system_config = yaml.safe_load(f)
+    clock_speed = system_config.get('/**', {}).get('ros__parameters', {}).get('simulation', {}).get('clock_speed', 1.0)
+    use_sim_time = clock_speed != 1.0
+
     # Declare launch arguments
     mission_yaml = DeclareLaunchArgument(
         'mission_yaml',
@@ -44,6 +51,7 @@ def generate_launch_description():
         os.path.join(common_core_dir, 'frames.yaml'),
         LaunchConfiguration('mission_yaml'),
         os.path.join(pkg_config_dir, 'nodes.yaml'),
+        {'use_sim_time': use_sim_time},
     ]
 
     # Define node configurations
