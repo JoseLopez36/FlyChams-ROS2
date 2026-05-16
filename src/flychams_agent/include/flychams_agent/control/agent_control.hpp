@@ -94,6 +94,7 @@ namespace flychams::agent
 
 	private: // Control management
 		void update();
+		bool checkStatus();
 
 	private: // Requests (only if the agent is in the correct state)
 		bool requestOffboard();

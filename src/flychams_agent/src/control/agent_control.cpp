@@ -97,13 +97,12 @@ void DroneControl::setpointPositionCallback(const PointStampedMsg::SharedPtr msg
 
 void DroneControl::update()
 {
-	// Check if we have a valid status and position
-	if (!agent_.has_status || !agent_.has_local_position)
-	{
-		RCLCPP_WARN(node_->get_logger(), "Drone control: No status or local position data received for agent %s",
-			agent_id_.c_str());
-		return;
-	}
+    // Skip update if status is not valid
+    if (!checkStatus())
+    {
+        RCLCPP_WARN(node_->get_logger(), "Drone control: Skipping update due to invalid status");
+        return;
+    }
 
 	// Compute time step
 	auto current_time = node_->now();
@@ -203,6 +202,37 @@ void DroneControl::update()
 		command_counter_ = 0;
 		break;
 	}
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+// STATUS: Status check
+// ════════════════════════════════════════════════════════════════════════════
+
+bool DroneControl::checkStatus()
+{
+	// Check 1: Mission must be active
+	if (!node_->isMissionActive())
+	{
+		RCLCPP_WARN(node_->get_logger(), "Drone control: Mission is not active");
+		return false;
+	}
+
+	// Check 2: Agent must have a valid status
+	if (!agent_.has_status)
+	{
+		RCLCPP_WARN(node_->get_logger(), "Drone control: Agent %s has no status", agent_id_.c_str());
+		return false;
+	}
+
+	// Check 3: Agent must have a valid local position
+	if (!agent_.has_local_position)
+	{
+		RCLCPP_WARN(node_->get_logger(), "Drone control: Agent %s has no local position", agent_id_.c_str());
+		return false;
+	}
+
+	// All checks passed
+	return true;
 }
 
 // ════════════════════════════════════════════════════════════════════════════

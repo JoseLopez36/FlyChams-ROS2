@@ -80,6 +80,7 @@ namespace flychams::agent
 
     private: // Tracking management
         void update();
+        bool checkStatus();
 
     private: // Tracking methods
         std::tuple<float, common::Vector3r> updateCamera(const common::Vector3r& P, const float& r, const common::Matrix4r& T, common::ObservationSolver::SharedPtr solver);

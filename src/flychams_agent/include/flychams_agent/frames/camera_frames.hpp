@@ -1,10 +1,10 @@
 #pragma once
 
 // Base module include
-#include "flychams_common/base/base_module.hpp"
+#include "flychams_common/base/base_status_module.hpp"
 
 // Base node include
-#include "flychams_common/base/base_node.hpp"
+#include "flychams_common/base/base_status_node.hpp"
 
 namespace flychams::agent
 {
@@ -16,11 +16,11 @@ namespace flychams::agent
      * @date 2025-12-09
      * ════════════════════════════════════════════════════════════════
      */
-    class CameraFrames : public common::BaseModule
+    class CameraFrames : public common::BaseStatusModule
     {
     public: // Constructor/Destructor
-        CameraFrames(const common::ID& agent_id, common::BaseNode::SharedPtr node)
-            : BaseModule(node), agent_id_(agent_id)
+        CameraFrames(const common::ID& agent_id, common::BaseStatusNode::SharedPtr node)
+            : BaseStatusModule(node), agent_id_(agent_id)
         {
             init();
         }
@@ -61,6 +61,7 @@ namespace flychams::agent
 
     private: // Frames management
         void update();
+        bool checkStatus();
 
     private: // Frames update methods
         void updateCameraBodyFrame(const common::ID camera_id, const common::PointMsg& position, const common::QuaternionMsg& orientation);

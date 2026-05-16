@@ -1,10 +1,10 @@
 #pragma once
 
 // Base module include
-#include "flychams_common/base/base_module.hpp"
+#include "flychams_common/base/base_status_module.hpp"
 
 // Base node include
-#include "flychams_common/base/base_node.hpp"
+#include "flychams_common/base/base_status_node.hpp"
 
 namespace flychams::agent
 {
@@ -16,11 +16,11 @@ namespace flychams::agent
      * @date 2025-03-28
      * ════════════════════════════════════════════════════════════════
      */
-    class AgentAnalysis : public common::BaseModule
+    class AgentAnalysis : public common::BaseStatusModule
     {
     public: // Constructor/Destructor
-        AgentAnalysis(const common::ID& agent_id, common::BaseNode::SharedPtr node)
-            : BaseModule(node), agent_id_(agent_id)
+        AgentAnalysis(const common::ID& agent_id, common::BaseStatusNode::SharedPtr node)
+            : BaseStatusModule(node), agent_id_(agent_id)
         {
             init();
         }
@@ -79,6 +79,7 @@ namespace flychams::agent
 
     private: // Analysis management
         void update();
+        bool checkStatus();
         void updateClusterSubscriptions(const std::vector<common::ID>& new_cluster_ids);
 
     private: // Analysis methods

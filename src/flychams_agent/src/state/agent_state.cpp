@@ -11,8 +11,10 @@ using namespace flychams::agent;
 void DroneState::onModuleInit()
 {
     // Get parameters from parameter server
+    // Get update rate
+    update_rate_ = node_->getParameterOr<float>("update_rate", 10.0f);
     // Get flight parameters
-    takeoff_altitude_ = node_->getParameterOr<float>("takeoff_altitude", 1.5f);
+    takeoff_altitude_ = node_->getParameterOr<float>("takeoff_altitude", 3.0f);
     landing_altitude_ = node_->getParameterOr<float>("landing_altitude", 0.5f);
 
     // Initialize data
@@ -31,6 +33,9 @@ void DroneState::onModuleInit()
     agent_.status_pub = node_->createAgentStatusPublisher(agent_id_);
     agent_.local_position_pub = node_->createAgentLocalPositionPublisher(agent_id_);
     agent_.global_position_pub = node_->createAgentGlobalPositionPublisher(agent_id_);
+
+    // Set update timer
+    update_timer_ = node_->createTimer(update_rate_, std::bind(&DroneState::update, this));
 }
 
 void DroneState::onModuleShutdown()
@@ -44,6 +49,8 @@ void DroneState::onModuleShutdown()
     agent_.global_position_pub.reset();
     // Destroy mavros communication
     mavros_comm_.reset();
+    // Destroy update timer
+    update_timer_.reset();
 }
 
 // ════════════════════════════════════════════════════════════════════════════
@@ -59,26 +66,61 @@ void DroneState::stateCallback(const mavros_msgs::msg::State::SharedPtr msg)
 
 void DroneState::localOdomCallback(const OdometryMsg::SharedPtr msg)
 {
-    // Check if we have a valid state
-    if (!agent_.has_state)
-    {
-        RCLCPP_WARN(node_->get_logger(), "Drone state: No state data received for agent %s", agent_id_.c_str());
-        return;
-    }
-
-    // Get odometry
-    const OdometryMsg& local_odom = *msg;
-
-    // Update status
-    updateStatus(agent_.state, local_odom);
-
-    // Update local and global position
-    updateLocalPosition(local_odom);
-    updateGlobalPosition(local_odom);
+    // Store odometry data
+    agent_.local_odom = *msg;
+    agent_.has_local_odom = true;
 }
 
 // ════════════════════════════════════════════════════════════════════════════
-// STATE MANAGEMENT: State transition and validation methods
+// UPDATE: Update state
+// ════════════════════════════════════════════════════════════════════════════
+
+void DroneState::update()
+{
+    // Skip update if status is not valid
+    if (!checkStatus())
+    {
+        return;
+    }
+
+    // Update status
+    updateStatus(agent_.state, agent_.local_odom);
+
+    // Update local and global position
+    updateLocalPosition(agent_.local_odom);
+    updateGlobalPosition(agent_.local_odom);
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+// STATUS: Status check
+// ════════════════════════════════════════════════════════════════════════════
+
+bool DroneState::checkStatus()
+{
+    // Check 1: Mission must be active
+    if (!node_->isMissionActive())
+    {
+        return false;
+    }
+
+    // Check 2: Agent must have a valid mavros state
+    if (!agent_.has_state)
+    {
+        return false;
+    }
+
+    // Check 3: Agent must have a valid mavros local odometry
+    if (!agent_.has_local_odom)
+    {
+        return false;
+    }
+
+    // All checks passed
+    return true;
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+// STATUS UPDATE: Status update
 // ════════════════════════════════════════════════════════════════════════════
 
 void DroneState::updateStatus(const mavros_msgs::msg::State& state, const OdometryMsg& local_odom)

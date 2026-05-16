@@ -4,6 +4,16 @@
     takeoff_altitude: 3.0
     landing_altitude: 0.5
 
+/**/agent_frames_node:
+  ros__parameters:
+    # Update rate (Hz)
+    update_rate: 30.0
+
+/**/agent_state_node:
+  ros__parameters:
+    # Update rate (Hz)
+    update_rate: 10.0
+
 /**/agent_control_node:
   ros__parameters:
     # Update rate (Hz)

@@ -85,6 +85,7 @@ namespace flychams::agent
 
     private: // Positioning management
         void update();
+        bool checkStatus();
 
     private: // Positioning methods
         common::PositionSolver::SharedPtr createSolver(const std::string& agent_id, const common::PositionSolver::Parameters& solver_params, const common::PositionSolver::SolverMode& solver_mode);

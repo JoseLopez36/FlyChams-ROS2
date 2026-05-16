@@ -4,7 +4,7 @@
 #include "flychams_agent/state/agent_state.hpp"
 
 // Base node include
-#include "flychams_common/base/base_node.hpp"
+#include "flychams_common/base/base_status_node.hpp"
 
 using namespace flychams::common;
 
@@ -18,16 +18,16 @@ using namespace flychams::agent;
  * @date 2025-03-31
  * ════════════════════════════════════════════════════════════════
  */
-class AgentStateNode : public BaseNode
+class AgentStateNode : public BaseStatusNode
 {
 public: // Constructor/Destructor
     AgentStateNode(const std::string& node_name, const rclcpp::NodeOptions& options)
-        : BaseNode(node_name, options)
+        : BaseStatusNode(node_name, options)
     {
         // Nothing to do
     }
 
-    void onNodeInit() override
+    void onStatusInit() override
     {
         // Get agent ID
         agent_id_ = getParameter<std::string>("agent_id");
@@ -38,7 +38,7 @@ public: // Constructor/Destructor
         RCLCPP_INFO(node_->get_logger(), "Drone state created for agent: %s", agent_id_.c_str());
     }
 
-    void onNodeShutdown() override
+    void onStatusShutdown() override
     {
         // Destroy drone state
         drone_state_.reset();

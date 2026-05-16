@@ -5,10 +5,10 @@
 #include "flychams_agent/mavros/mavros_utils.hpp"
 
 // Base module include
-#include "flychams_common/base/base_module.hpp"
+#include "flychams_common/base/base_status_module.hpp"
 
 // Base node include
-#include "flychams_common/base/base_node.hpp"
+#include "flychams_common/base/base_status_node.hpp"
 
 namespace flychams::agent
 {
@@ -20,11 +20,11 @@ namespace flychams::agent
      * @date 2025-03-26
      * ════════════════════════════════════════════════════════════════
      */
-    class DroneFrames : public common::BaseModule
+    class DroneFrames : public common::BaseStatusModule
     {
     public: // Constructor/Destructor
-        DroneFrames(const common::ID& agent_id, common::BaseNode::SharedPtr node)
-            : BaseModule(node), agent_id_(agent_id)
+        DroneFrames(const common::ID& agent_id, common::BaseStatusNode::SharedPtr node)
+            : BaseStatusModule(node), agent_id_(agent_id)
         {
             init();
         }
@@ -43,6 +43,10 @@ namespace flychams::agent
             // Home position data
             common::GeoPointMsg home_position;
             bool has_home_position;
+            // Odometry data
+            common::PointMsg local_position;
+            common::QuaternionMsg local_orientation;
+            bool has_local_odom;
             // Subscriber
             common::SubscriberPtr<common::GeoPointStampedMsg> global_origin_sub;
             common::SubscriberPtr<mavros_msgs::msg::HomePosition> home_position_sub;
@@ -50,6 +54,7 @@ namespace flychams::agent
             // Constructor
             Agent()
                 : global_origin(), has_global_origin(false), home_position(), has_home_position(false),
+                local_position(), local_orientation(), has_local_odom(false),
                 global_origin_sub(), home_position_sub(), local_odom_sub()
             {
             }
@@ -75,6 +80,14 @@ namespace flychams::agent
 
     private: // Frames update
         void updateBodyFrame(const common::PointMsg& position, const common::QuaternionMsg& orientation);
+
+    private: // Frames management
+        void update();
+        bool checkStatus();
+
+    private: // ROS components
+        // Timer
+        common::TimerPtr update_timer_;
     };
 
 } // namespace flychams::agent

@@ -5,7 +5,7 @@
 #include "flychams_agent/frames/camera_frames.hpp"
 
 // Base node include
-#include "flychams_common/base/base_node.hpp"
+#include "flychams_common/base/base_status_node.hpp"
 
 using namespace flychams::common;
 
@@ -19,16 +19,16 @@ using namespace flychams::agent;
  * @date 2025-12-9
  * ════════════════════════════════════════════════════════════════
  */
-class AgentFramesNode : public BaseNode
+class AgentFramesNode : public BaseStatusNode
 {
 public: // Constructor/Destructor
     AgentFramesNode(const std::string& node_name, const rclcpp::NodeOptions& options)
-        : BaseNode(node_name, options)
+        : BaseStatusNode(node_name, options)
     {
         // Nothing to do
     }
 
-    void onNodeInit() override
+    void onStatusInit() override
     {
         // Get agent ID
         agent_id_ = getParameter<std::string>("agent_id");
@@ -42,7 +42,7 @@ public: // Constructor/Destructor
         RCLCPP_INFO(node_->get_logger(), "Drone frames created for agent: %s", agent_id_.c_str());
     }
 
-    void onNodeShutdown() override
+    void onStatusShutdown() override
     {
         // Destroy drone frames
         drone_frames_.reset();

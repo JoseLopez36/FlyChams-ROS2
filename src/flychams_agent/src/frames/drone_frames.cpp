@@ -12,7 +12,7 @@ void DroneFrames::onModuleInit()
 {
     // Get parameters from parameter server
     // Get update rate
-    update_rate_ = node_->getParameterOr<float>("agent_frames.update_rate", 5.0f);
+    update_rate_ = node_->getParameterOr<float>("update_rate", 30.0f);
 
     // Initialize data
     agent_ = Agent();
@@ -27,6 +27,9 @@ void DroneFrames::onModuleInit()
         std::bind(&DroneFrames::homePositionCallback, this, std::placeholders::_1), node_->getSubscriptionOptions());
     agent_.local_odom_sub = mavros_comm_->subscribeLocalOdometry(
         std::bind(&DroneFrames::localOdomCallback, this, std::placeholders::_1), node_->getSubscriptionOptions());
+
+    // Set update timer
+    update_timer_ = node_->createTimer(update_rate_, std::bind(&DroneFrames::update, this));
 }
 
 void DroneFrames::onModuleShutdown()
@@ -37,6 +40,8 @@ void DroneFrames::onModuleShutdown()
     agent_.local_odom_sub.reset();
     // Destroy mavros communication
     mavros_comm_.reset();
+    // Destroy update timer
+    update_timer_.reset();
 }
 
 // ════════════════════════════════════════════════════════════════════════════
@@ -76,16 +81,10 @@ void DroneFrames::homePositionCallback(const mavros_msgs::msg::HomePosition::Sha
 
 void DroneFrames::localOdomCallback(const OdometryMsg::SharedPtr msg)
 {
-    // Check if we have a valid global origin and home position
-    if (!agent_.has_global_origin || !agent_.has_home_position)
-    {
-        RCLCPP_WARN(node_->get_logger(), "Drone frames: No global origin or home position data received. Cannot update body frame for agent %s", agent_id_.c_str());
-        return;
-    }
-    // Update body frame
-    const auto& position = msg->pose.pose.position;
-    const auto& orientation = msg->pose.pose.orientation;
-    updateBodyFrame(position, orientation);
+    // Store odometry data
+    agent_.local_position = msg->pose.pose.position;
+    agent_.local_orientation = msg->pose.pose.orientation;
+    agent_.has_local_odom = true;
 }
 
 // ════════════════════════════════════════════════════════════════════════════
@@ -116,6 +115,56 @@ void DroneFrames::createLocalFrame(const GeoPointMsg& home_geopoint, const GeoPo
 
     // Broadcast world -> local (static)
     node_->broadcastStaticTransform(world_frame, local_frame, world_to_local);
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+// UPDATE: Update frames
+// ════════════════════════════════════════════════════════════════════════════
+
+void DroneFrames::update()
+{
+    // Skip update if status is not valid
+    if (!checkStatus())
+    {
+        return;
+    }
+
+    // Update body frame with latest odometry data
+    updateBodyFrame(agent_.local_position, agent_.local_orientation);
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+// STATUS: Status check
+// ════════════════════════════════════════════════════════════════════════════
+
+bool DroneFrames::checkStatus()
+{
+    // Check 1: Mission must be active
+    if (!node_->isMissionActive())
+    {
+        return false;
+    }
+
+    // Check 2: Agent must have a valid global origin
+    if (!agent_.has_global_origin)
+    {
+        return false;
+    }
+
+    // Check 3: Agent must have a valid home position
+    if (!agent_.has_home_position)
+    {
+        return false;
+    }
+
+    // Check 4: Agent must have a valid local odometry
+    if (!agent_.has_local_odom)
+    {
+        return false;
+    }
+
+    // All checks passed
+    return true;
 }
 
 // ════════════════════════════════════════════════════════════════════════════

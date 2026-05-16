@@ -64,9 +64,14 @@ namespace flychams::common
         FleetStatus getFleetStatus() const { return fleet_status_; };
 
     public: // Status queries
+        bool isMissionReady() const;
         bool isMissionActive() const;
         bool isMissionPaused() const;
         bool isMissionAborted() const;
+        bool isFleetIdle() const;
+        bool isFleetActive() const;
+        bool isFleetMixed() const;
+        bool isFleetError() const;
     };
 
 } // namespace flychams::common

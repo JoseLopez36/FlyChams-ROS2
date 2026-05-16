@@ -78,21 +78,11 @@ void AgentAnalysis::clusterGeometryCallback(const ID& cluster_id, const ClusterG
 
 void AgentAnalysis::update()
 {
-    // Check if we have a valid assignment
-    if (!agent_.has_assignment)
+    // Skip update if status is not valid
+    if (!checkStatus())
     {
-        // Wait for assignment
-        return; 
-    }
-
-    // Check if we have valid cluster geometries for assigned clusters
-    for (const auto& cluster_id : agent_.cluster_ids)
-    {
-        if (clusters_.find(cluster_id) == clusters_.end() || !clusters_[cluster_id].has_geometry)
-        {
-            // Wait for cluster geometry
-            return; 
-        }
+        RCLCPP_WARN(node_->get_logger(), "Agent analysis: Skipping update due to invalid status");
+        return;
     }
 
     // Create clusters message
@@ -124,6 +114,40 @@ void AgentAnalysis::update()
 
     // Publish
     agent_.clusters_pub->publish(msg);
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+// STATUS: Status check
+// ════════════════════════════════════════════════════════════════════════════
+
+bool AgentAnalysis::checkStatus()
+{
+    // Check 1: Mission must be active
+    if (!node_->isMissionActive())
+    {
+        RCLCPP_WARN(node_->get_logger(), "Agent analysis: Mission is not active");
+        return false;
+    }
+
+    // Check 2: Agent must have a valid assignment
+    if (!agent_.has_assignment)
+    {
+        RCLCPP_WARN(node_->get_logger(), "Agent analysis: Agent %s has no assignment", agent_id_.c_str());
+        return false;
+    }
+
+    // Check 3: All assigned clusters must have valid geometries
+    for (const auto& cluster_id : agent_.cluster_ids)
+    {
+        if (clusters_.find(cluster_id) == clusters_.end() || !clusters_[cluster_id].has_geometry)
+        {
+            RCLCPP_WARN(node_->get_logger(), "Agent analysis: Cluster %s has no geometry", cluster_id.c_str());
+            return false;
+        }
+    }
+
+    // All checks passed
+    return true;
 }
 
 void AgentAnalysis::updateClusterSubscriptions(const std::vector<ID>& new_cluster_ids)

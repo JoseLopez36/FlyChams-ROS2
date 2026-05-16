@@ -106,18 +106,10 @@ void AgentPositioning::clustersCallback(const AgentClustersMsg::SharedPtr msg)
 
 void AgentPositioning::update()
 {
-    // Check if we have a valid agent status, position and cluster assignments
-    if (!agent_.has_status || !agent_.has_position || !agent_.has_clusters)
+    // Skip update if status is not valid
+    if (!checkStatus())
     {
-        RCLCPP_WARN(node_->get_logger(), "Agent positioning: Agent %s has no status, position or clusters", agent_id_.c_str());
-        return; // Skip positioning if we don't have a valid agent status, position or clusters
-    }
-
-    // Check if we are in the correct state to position
-    if (agent_.status != AgentStatus::ACTIVE || !node_->isMissionActive())
-    {
-        RCLCPP_WARN(node_->get_logger(), "Agent positioning: Agent %s is not in the correct state to position",
-            agent_id_.c_str());
+        RCLCPP_WARN(node_->get_logger(), "Agent positioning: Skipping update due to invalid status");
         return;
     }
 
@@ -149,6 +141,44 @@ void AgentPositioning::update()
     agent_.setpoint.header.stamp = node_->now();
     node_->toMsg(optimal_position, agent_.setpoint.point);
     agent_.setpoint_pub->publish(agent_.setpoint);
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+// STATUS: Status check
+// ════════════════════════════════════════════════════════════════════════════
+
+bool AgentPositioning::checkStatus()
+{
+    // Check 1: Mission must be active
+    if (!node_->isMissionActive())
+    {
+        RCLCPP_WARN(node_->get_logger(), "Agent positioning: Mission is not active");
+        return false;
+    }
+
+    // Check 2: Fleet must be active
+    if (!node_->isFleetActive())
+    {
+        RCLCPP_WARN(node_->get_logger(), "Agent positioning: Fleet is not active");
+        return false;
+    }
+
+    // Check 3: Agent must have a valid position
+    if (!agent_.has_position)
+    {
+        RCLCPP_WARN(node_->get_logger(), "Agent positioning: Agent %s has no position", agent_id_.c_str());
+        return false;
+    }
+
+    // Check 4: Agent must have cluster assignments
+    if (!agent_.has_clusters)
+    {
+        RCLCPP_WARN(node_->get_logger(), "Agent positioning: Agent %s has no clusters", agent_id_.c_str());
+        return false;
+    }
+
+    // All checks passed
+    return true;
 }
 
 // ════════════════════════════════════════════════════════════════════════════

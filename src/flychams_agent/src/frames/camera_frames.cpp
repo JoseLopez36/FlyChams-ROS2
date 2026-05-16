@@ -99,8 +99,8 @@ void CameraFrames::createCameraOpticalFrame(const ID camera_id)
 
 void CameraFrames::update()
 {
-    // Check if we have received observation setpoints
-    if (!agent_.has_observation_setpoints)
+    // Skip update if status is not valid
+    if (!checkStatus())
     {
         return;
     }
@@ -142,6 +142,28 @@ void CameraFrames::update()
         // Update frame
         updateCameraBodyFrame(camera_id, position_msg, orientation_msg);
     }
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+// STATUS: Status check
+// ════════════════════════════════════════════════════════════════════════════
+
+bool CameraFrames::checkStatus()
+{
+    // Check 1: Mission must be active
+    if (!node_->isMissionActive())
+    {
+        return false;
+    }
+
+    // Check 2: Agent must have a valid observation setpoints
+    if (!agent_.has_observation_setpoints)
+    {
+        return false;
+    }
+
+    // All checks passed
+    return true;
 }
 
 // ════════════════════════════════════════════════════════════════════════════

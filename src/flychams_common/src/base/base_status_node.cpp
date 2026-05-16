@@ -56,6 +56,12 @@ void BaseStatusNode::fleetStatusCallback(const FleetStatusMsg::SharedPtr msg)
 // STATUS QUERIES
 // ════════════════════════════════════════════════════════════════════════════
 
+bool BaseStatusNode::isMissionReady() const
+{
+    if (!has_mission_status_) return false;
+    return mission_status_ == MissionStatus::READY;
+}
+
 bool BaseStatusNode::isMissionActive() const
 {
     if (!has_mission_status_) return false;
@@ -72,4 +78,28 @@ bool BaseStatusNode::isMissionAborted() const
 {
     if (!has_mission_status_) return false;
     return mission_status_ == MissionStatus::ABORTED;
+}
+
+bool BaseStatusNode::isFleetIdle() const
+{
+    if (!has_fleet_status_) return false;
+    return fleet_status_ == FleetStatus::IDLE;
+}
+
+bool BaseStatusNode::isFleetActive() const
+{
+    if (!has_fleet_status_) return false;
+    return fleet_status_ == FleetStatus::ACTIVE;
+}
+
+bool BaseStatusNode::isFleetMixed() const
+{
+    if (!has_fleet_status_) return false;
+    return fleet_status_ == FleetStatus::MIXED;
+}
+
+bool BaseStatusNode::isFleetError() const
+{
+    if (!has_fleet_status_) return false;
+    return fleet_status_ == FleetStatus::ERROR;
 }

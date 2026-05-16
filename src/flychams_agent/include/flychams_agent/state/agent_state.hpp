@@ -4,10 +4,10 @@
 #include "flychams_agent/mavros/mavros_communication.hpp"
 
 // Base module include
-#include "flychams_common/base/base_module.hpp"
+#include "flychams_common/base/base_status_module.hpp"
 
 // Base node include
-#include "flychams_common/base/base_node.hpp"
+#include "flychams_common/base/base_status_node.hpp"
 
 namespace flychams::agent
 {
@@ -19,11 +19,11 @@ namespace flychams::agent
      * @date 2025-03-26
      * ════════════════════════════════════════════════════════════════
      */
-    class DroneState : public common::BaseModule
+    class DroneState : public common::BaseStatusModule
     {
     public: // Constructor/Destructor
-        DroneState(const common::ID& agent_id, common::BaseNode::SharedPtr node)
-            : BaseModule(node), agent_id_(agent_id)
+        DroneState(const common::ID& agent_id, common::BaseStatusNode::SharedPtr node)
+            : BaseStatusModule(node), agent_id_(agent_id)
         {
             init();
         }
@@ -39,6 +39,9 @@ namespace flychams::agent
             // State data
             mavros_msgs::msg::State state;
             bool has_state;
+            // Odometry data
+            common::OdometryMsg local_odom;
+            bool has_local_odom;
             // Subscriber
             common::SubscriberPtr<mavros_msgs::msg::State> state_sub;
             common::SubscriberPtr<common::OdometryMsg> local_odom_sub;
@@ -48,7 +51,8 @@ namespace flychams::agent
             common::PublisherPtr<common::PointStampedMsg> global_position_pub;
             // Constructor
             Agent()
-                : state(), has_state(false), state_sub(), local_odom_sub(),
+                : state(), has_state(false), local_odom(), has_local_odom(false),
+                state_sub(), local_odom_sub(),
                 status_pub(), local_position_pub(), global_position_pub()
             {
             }
@@ -56,6 +60,7 @@ namespace flychams::agent
 
     private: // Parameters
         common::ID agent_id_;
+        float update_rate_;
         // Flight parameters
         float takeoff_altitude_;
         float landing_altitude_;
@@ -71,9 +76,17 @@ namespace flychams::agent
         void localOdomCallback(const common::OdometryMsg::SharedPtr msg);
 
     private: // Status management
+        void update();
+        bool checkStatus();
+
+    private: // Status update methods
         void updateStatus(const mavros_msgs::msg::State& state, const common::OdometryMsg& local_odom);
         void updateLocalPosition(const common::OdometryMsg& local_odom);
         void updateGlobalPosition(const common::OdometryMsg& local_odom);
+
+    private: // ROS components
+        // Timer
+        common::TimerPtr update_timer_;
     };
 
 } // namespace flychams::agent

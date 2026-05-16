@@ -109,18 +109,10 @@ void AgentTracking::clustersCallback(const AgentClustersMsg::SharedPtr msg)
 
 void AgentTracking::update()
 {
-    // Check if we have a valid agent status and cluster assignments
-    if (!agent_.has_status || !agent_.has_clusters)
+    // Skip update if status is not valid
+    if (!checkStatus())
     {
-        RCLCPP_WARN(node_->get_logger(), "Agent tracking: Agent %s has no status or clusters", agent_id_.c_str());
-        return; // Skip tracking if we don't have a valid agent status or clusters
-    }
-
-    // Check if we are in the correct state to track
-    if (agent_.status != AgentStatus::ACTIVE || !node_->isMissionActive())
-    {
-        RCLCPP_WARN(node_->get_logger(), "Agent tracking: Agent %s is not in the correct state to track",
-            agent_id_.c_str());
+        RCLCPP_WARN(node_->get_logger(), "Agent tracking: Skipping update due to invalid status");
         return;
     }
 
@@ -184,6 +176,51 @@ void AgentTracking::update()
 
     // Publish observation setpoints
     agent_.observation_setpoints_pub->publish(agent_.observation_setpoints);
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+// STATUS: Status check
+// ════════════════════════════════════════════════════════════════════════════
+
+bool AgentTracking::checkStatus()
+{
+    // Check 1: Mission must be active
+    if (!node_->isMissionActive())
+    {
+        RCLCPP_WARN(node_->get_logger(), "Agent tracking: Mission is not active");
+        return false;
+    }
+
+    // Check 2: Fleet must be active
+    if (!node_->isFleetActive())
+    {
+        RCLCPP_WARN(node_->get_logger(), "Agent tracking: Fleet is not active");
+        return false;
+    }
+
+    // Check 3: Agent must have a valid status
+    if (!agent_.has_status)
+    {
+        RCLCPP_WARN(node_->get_logger(), "Agent tracking: Agent %s has no status", agent_id_.c_str());
+        return false;
+    }
+
+    // Check 4: Agent must be in ACTIVE state
+    if (agent_.status != AgentStatus::ACTIVE)
+    {
+        RCLCPP_WARN(node_->get_logger(), "Agent tracking: Agent %s is not in ACTIVE state", agent_id_.c_str());
+        return false;
+    }
+
+    // Check 5: Agent must have cluster assignments
+    if (!agent_.has_clusters)
+    {
+        RCLCPP_WARN(node_->get_logger(), "Agent tracking: Agent %s has no clusters", agent_id_.c_str());
+        return false;
+    }
+
+    // All checks passed
+    return true;
 }
 
 // ════════════════════════════════════════════════════════════════════════════
