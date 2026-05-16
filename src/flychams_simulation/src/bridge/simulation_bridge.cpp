@@ -1,4 +1,4 @@
-#include "flychams_simulation/tools/simulation_tools.hpp"
+#include "flychams_simulation/bridge/simulation_bridge.hpp"
 
 using namespace airsim_interfaces::msg;
 using namespace airsim_interfaces::srv;
@@ -10,8 +10,7 @@ namespace flychams::simulation
     // CONSTRUCTOR: Constructor and destructor
     // ════════════════════════════════════════════════════════════════════════════
 
-    SimulationTools::SimulationTools(NodePtr node, const SettingsTools::SharedPtr& settings_tools)
-        : node_(node), settings_tools_(settings_tools)
+    void SimulationBridge::onModuleInit()
     {
         // Initialize ROS components
         // Global commands
@@ -27,12 +26,7 @@ namespace flychams::simulation
         update_cluster_cmd_group_pub_ = node_->create_publisher<UpdateClusterCmdGroupMsg>("/airsim/clusters/cmd/update", 10);
     }
 
-    SimulationTools::~SimulationTools()
-    {
-        shutdown();
-    }
-
-    void SimulationTools::shutdown()
+    void SimulationBridge::onModuleShutdown()
     {
         // Destroy clients
         reset_client_.reset();
@@ -45,46 +39,44 @@ namespace flychams::simulation
         // Destroy publishers
         update_target_cmd_group_pub_.reset();
         update_cluster_cmd_group_pub_.reset();
-        // Destroy node pointer
-        node_.reset();
     }
 
     // ════════════════════════════════════════════════════════════════════════════
     // GLOBAL CONTROL: Service-based control methods
     // ════════════════════════════════════════════════════════════════════════════
 
-    bool SimulationTools::resetSimulation()
+    bool SimulationBridge::resetSimulation()
     {
         // Create request
         auto request = std::make_shared<Reset::Request>();
 
         // Send request and wait for response
-        return RosUtils::sendRequest<Reset>(node_, reset_client_, request, 1000);
+        return node_->sendRequest<Reset>(reset_client_, request, 1000);
     }
 
-    bool SimulationTools::runSimulation()
+    bool SimulationBridge::runSimulation()
     {
         // Create request
         auto request = std::make_shared<Run::Request>();
 
         // Send request and wait for response
-        return RosUtils::sendRequest<Run>(node_, run_client_, request, 1000);
+        return node_->sendRequest<Run>(run_client_, request, 1000);
     }
 
-    bool SimulationTools::pauseSimulation()
+    bool SimulationBridge::pauseSimulation()
     {
         // Create request
         auto request = std::make_shared<Pause::Request>();
 
         // Send request and wait for response
-        return RosUtils::sendRequest<Pause>(node_, pause_client_, request, 1000);
+        return node_->sendRequest<Pause>(pause_client_, request, 1000);
     }
 
     // ════════════════════════════════════════════════════════════════════════════
     // TRACKING CONTROL: Service-based control methods
     // ════════════════════════════════════════════════════════════════════════════
 
-    bool SimulationTools::addTargetGroup(const IDs& target_ids, const std::vector<TargetType>& target_types, const std::vector<PointMsg>& positions, const bool& highlight, const std::vector<ColorMsg>& highlight_colors)
+    bool SimulationBridge::addTargetGroup(const IDs& target_ids, const std::vector<TargetType>& target_types, const std::vector<PointMsg>& positions, const bool& highlight, const std::vector<ColorMsg>& highlight_colors)
     {
         // Create request
         auto request = std::make_shared<AddTargetGroup::Request>();
@@ -109,10 +101,10 @@ namespace flychams::simulation
         }
 
         // Send request and wait for response
-        return RosUtils::sendRequest<AddTargetGroup>(node_, add_target_group_client_, request, 100000);
+        return node_->sendRequest<AddTargetGroup>(add_target_group_client_, request, 100000);
     }
 
-    bool SimulationTools::addClusterGroup(const IDs& cluster_ids, const std::vector<PointMsg>& centers, const std::vector<float>& radii, const bool& highlight, const std::vector<ColorMsg>& highlight_colors)
+    bool SimulationBridge::addClusterGroup(const IDs& cluster_ids, const std::vector<PointMsg>& centers, const std::vector<float>& radii, const bool& highlight, const std::vector<ColorMsg>& highlight_colors)
     {
         // Create request
         auto request = std::make_shared<AddClusterGroup::Request>();
@@ -123,32 +115,32 @@ namespace flychams::simulation
         request->highlight_color_rgba = highlight_colors;
 
         // Send request and wait for response
-        return RosUtils::sendRequest<AddClusterGroup>(node_, add_cluster_group_client_, request, 100000);
+        return node_->sendRequest<AddClusterGroup>(add_cluster_group_client_, request, 100000);
     }
 
-    bool SimulationTools::removeAllTargets()
+    bool SimulationBridge::removeAllTargets()
     {
         // Create request
         auto request = std::make_shared<RemoveAllTargets::Request>();
 
         // Send request and wait for response
-        return RosUtils::sendRequest<RemoveAllTargets>(node_, remove_all_targets_client_, request, 100000);
+        return node_->sendRequest<RemoveAllTargets>(remove_all_targets_client_, request, 100000);
     }
 
-    bool SimulationTools::removeAllClusters()
+    bool SimulationBridge::removeAllClusters()
     {
         // Create request
         auto request = std::make_shared<RemoveAllClusters::Request>();
 
         // Send request and wait for response
-        return RosUtils::sendRequest<RemoveAllClusters>(node_, remove_all_clusters_client_, request, 100000);
+        return node_->sendRequest<RemoveAllClusters>(remove_all_clusters_client_, request, 100000);
     }
 
     // ════════════════════════════════════════════════════════════════════════════
     // OBJECT CONTROL: Publisher-based control methods
     // ════════════════════════════════════════════════════════════════════════════
 
-    void SimulationTools::updateTargetGroup(const IDs& target_ids, const std::vector<PointMsg>& positions)
+    void SimulationBridge::updateTargetGroup(const IDs& target_ids, const std::vector<PointMsg>& positions)
     {
         // Create message
         UpdateTargetCmdGroup msg;
@@ -159,7 +151,7 @@ namespace flychams::simulation
         update_target_cmd_group_pub_->publish(msg);
     }
 
-    void SimulationTools::updateClusterGroup(const IDs& cluster_ids, const std::vector<PointMsg>& centers, const std::vector<float>& radii)
+    void SimulationBridge::updateClusterGroup(const IDs& cluster_ids, const std::vector<PointMsg>& centers, const std::vector<float>& radii)
     {
         // Create message
         UpdateClusterCmdGroup msg;
@@ -169,11 +161,6 @@ namespace flychams::simulation
 
         // Publish message
         update_cluster_cmd_group_pub_->publish(msg);
-    }
-
-    SimulationTools::SharedPtr createSimulationTools(NodePtr node, const SettingsTools::SharedPtr& settings_tools)
-    {
-        return std::make_shared<SimulationTools>(node, settings_tools);
     }
 
 } // namespace flychams::simulation

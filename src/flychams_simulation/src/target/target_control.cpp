@@ -8,14 +8,14 @@ namespace flychams::simulation
     // CONSTRUCTOR: Constructor and destructor
     // ════════════════════════════════════════════════════════════════════════════
 
-    void TargetControl::onInit()
+    void TargetControl::onModuleInit()
     {
         // Get parameters from parameter server
         // Get update rate
-        update_rate_ = RosUtils::getParameterOr<float>(node_, "update_rate", 20.0f);
+        update_rate_ = node_->getParameterOr<float>("update_rate", 20.0f);
         // Get highlight parameters
-        highlight_targets_ = RosUtils::getParameterOr<bool>(node_, "highlight_targets", true);
-        highlight_clusters_ = RosUtils::getParameterOr<bool>(node_, "highlight_clusters", true);
+        highlight_targets_ = node_->getParameterOr<bool>("highlight_targets", true);
+        highlight_clusters_ = node_->getParameterOr<bool>("highlight_clusters", true);
 
         // Initialize data
         targets_.clear();
@@ -23,17 +23,13 @@ namespace flychams::simulation
         spawn_index_ = 0;
 
         // Create simulation tools
-        simulation_tools_ = createSimulationTools(node_, settings_tools_);
+        simulation_tools_ = std::make_shared<SimulationBridge>(node_);
 
         // Set update timer
-        update_timer_ = rclcpp::create_timer(node_, 
-            node_->get_clock(),
-            std::chrono::duration<float>(1.0f / update_rate_), 
-            std::bind(&TargetControl::update, this), 
-            module_cb_group_);
+        update_timer_ = node_->createTimer(update_rate_, std::bind(&TargetControl::update, this));
     }
 
-    void TargetControl::onShutdown()
+    void TargetControl::onModuleShutdown()
     {
         // Destroy target and cluster maps
         targets_.clear();
@@ -54,18 +50,18 @@ namespace flychams::simulation
         targets_.insert({ target_id, Target() });
 
         // Create target position subscriber
-        targets_[target_id].position_sub = topic_tools_->createTargetPositionSubscriber(target_id,
+        targets_[target_id].position_sub = node_->createTargetPositionSubscriber(target_id,
             [this, target_id](const PointStampedMsg::SharedPtr msg)
             {
                 this->targetPositionCallback(target_id, msg);
-            }, sub_options_with_module_cb_group_);
+            }, node_->getSubscriptionOptions());
 
         // Spawn target in simulation
         PointMsg initial_position;
         initial_position.x = 0.0f;
         initial_position.y = 0.0f;
         initial_position.z = 0.0f;
-        spawnTarget(target_id, initial_position, settings_tools_->getTarget(target_id)->type);
+        spawnTarget(target_id, initial_position, node_->getSettings()->getTarget(target_id)->type);
 
         // Increment spawn index
         spawn_index_++;
@@ -86,11 +82,11 @@ namespace flychams::simulation
         clusters_.insert({ cluster_id, Cluster() });
 
         // Create cluster geometry subscriber
-        clusters_[cluster_id].geometry_sub = topic_tools_->createClusterGeometrySubscriber(cluster_id,
+        clusters_[cluster_id].geometry_sub = node_->createClusterGeometrySubscriber(cluster_id,
             [this, cluster_id](const ClusterGeometryMsg::SharedPtr msg)
             {
                 this->clusterGeometryCallback(cluster_id, msg);
-            }, sub_options_with_module_cb_group_);
+            }, node_->getSubscriptionOptions());
 
         // Spawn cluster in simulation (if highlight is enabled)
         if (highlight_clusters_)

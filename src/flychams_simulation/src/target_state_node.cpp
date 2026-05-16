@@ -1,9 +1,9 @@
 #include "rclcpp/rclcpp.hpp"
 
-// Target includes
+// Module include
 #include "flychams_simulation/target/target_state.hpp"
 
-// Core includes
+// Base node include
 #include "flychams_common/base/base_discoverer_node.hpp"
 
 using namespace flychams::core;
@@ -33,13 +33,13 @@ public: // Constructor/Destructor
         // Nothing to do
     }
 
-    void onInit() override
+    void onDiscoveryInit() override
     {
         // Initialize target states
         target_state_.clear();
     }
 
-    void onShutdown() override
+    void onDiscoveryShutdown() override
     {
         // Destroy target states
         target_state_.clear();
@@ -58,11 +58,8 @@ private: // Element management
 
     void onAddTarget(const ID& target_id) override
     {
-        // Create callback group for target state
-        auto state_cb_group = node_->create_callback_group(rclcpp::CallbackGroupType::MutuallyExclusive);
-
         // Create target controllers
-        auto target_state = std::make_shared<TargetState>(target_id, node_, settings_tools_, topic_tools_, transform_tools_, state_cb_group);
+        auto target_state = std::make_shared<TargetState>(target_id, sharedFromThis());
         target_state_.insert(std::make_pair(target_id, target_state));
         RCLCPP_INFO(node_->get_logger(), "Target state created for target %s", target_id.c_str());
     }

@@ -1,10 +1,13 @@
 #pragma once
 
-// Simulation tools include
-#include "flychams_simulation/tools/simulation_tools.hpp"
+// Utils include
+#include "flychams_simulation/bridge/simulation_bridge.hpp"
 
 // Base module include
 #include "flychams_common/base/base_module.hpp"
+
+// Base node include
+#include "flychams_common/base/base_node.hpp"
 
 namespace flychams::simulation
 {
@@ -25,15 +28,15 @@ namespace flychams::simulation
     class TargetControl : public core::BaseModule
     {
     public: // Constructor/Destructor
-        TargetControl(core::NodePtr node, core::SettingsTools::SharedPtr settings_tools, core::TopicTools::SharedPtr topic_tools, core::TransformTools::SharedPtr transform_tools, core::CallbackGroupPtr module_cb_group)
-            : BaseModule(node, settings_tools, topic_tools, transform_tools, module_cb_group)
+        TargetControl(core::BaseNode::SharedPtr node)
+            : BaseModule(node)
         {
             init();
         }
 
     protected: // Overrides
-        void onInit() override;
-        void onShutdown() override;
+        void onModuleInit() override;
+        void onModuleShutdown() override;
 
     public: // Types
         using SharedPtr = std::shared_ptr<TargetControl>;
@@ -78,7 +81,7 @@ namespace flychams::simulation
         // Other
         int spawn_index_;
         // Simulation tools
-        SimulationTools::SharedPtr simulation_tools_;
+        SimulationBridge::SharedPtr simulation_tools_;
 
     public: // Public methods
         void addCluster(const core::ID& cluster_id);

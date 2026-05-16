@@ -1,9 +1,9 @@
 #include "rclcpp/rclcpp.hpp"
 
-// Target includes
+// Module include
 #include "flychams_simulation/target/target_control.hpp"
 
-// Core includes
+// Base node include
 #include "flychams_common/base/base_discoverer_node.hpp"
 
 using namespace flychams::core;
@@ -33,16 +33,15 @@ public: // Constructor/Destructor
         // Nothing to do
     }
 
-    void onInit() override
+    void onDiscoveryInit() override
     {
-        // Use callback group from discovery node (to avoid race conditions)
         // Initialize target control
-        target_control_ = std::make_shared<TargetControl>(node_, settings_tools_, topic_tools_, transform_tools_, discovery_cb_group_);
+        target_control_ = std::make_shared<TargetControl>(sharedFromThis());
 
         RCLCPP_INFO(node_->get_logger(), "Target control created");
     }
 
-    void onShutdown() override
+    void onDiscoveryShutdown() override
     {
         // Destroy target control
         target_control_.reset();

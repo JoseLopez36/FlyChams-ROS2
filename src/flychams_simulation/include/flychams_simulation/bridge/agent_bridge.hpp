@@ -1,11 +1,14 @@
 #pragma once
 
-// AirSim interfaces includes
+// Utils include
 #include <airsim_interfaces/msg/gimbal_angle_cmd.hpp>
 #include <airsim_interfaces/msg/camera_fov_cmd.hpp>
 
 // Base module include
 #include "flychams_common/base/base_module.hpp"
+
+// Base node include
+#include "flychams_common/base/base_node.hpp"
 
 namespace flychams::simulation
 {
@@ -24,21 +27,21 @@ namespace flychams::simulation
      * @date 2025-05-14
      * ════════════════════════════════════════════════════════════════
      */
-    class AgentSimulationBridge : public core::BaseModule
+    class AgentBridge : public core::BaseModule
     {
     public: // Constructor/Destructor
-        AgentSimulationBridge(const core::ID& agent_id, core::NodePtr node, core::SettingsTools::SharedPtr settings_tools, core::TopicTools::SharedPtr topic_tools, core::TransformTools::SharedPtr transform_tools, core::CallbackGroupPtr module_cb_group)
-            : BaseModule(node, settings_tools, topic_tools, transform_tools, module_cb_group), agent_id_(agent_id)
+        AgentBridge(const core::ID& agent_id, core::BaseNode::SharedPtr node)
+            : BaseModule(node), agent_id_(agent_id)
         {
             init();
         }
 
     protected: // Overrides
-        void onInit() override;
-        void onShutdown() override;
+        void onModuleInit() override;
+        void onModuleShutdown() override;
 
     public: // Types
-        using SharedPtr = std::shared_ptr<AgentSimulationBridge>;
+        using SharedPtr = std::shared_ptr<AgentBridge>;
         using CameraFovCmdMsg = airsim_interfaces::msg::CameraFovCmd;
         using GimbalAngleCmdMsg = airsim_interfaces::msg::GimbalAngleCmd;
         struct Agent

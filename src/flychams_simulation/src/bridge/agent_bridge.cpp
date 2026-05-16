@@ -1,8 +1,5 @@
 #include "flychams_simulation/bridge/agent_bridge.hpp"
 
-// Utils includes
-#include "flychams_common/utils/vision_utils.hpp"
-
 using namespace airsim_interfaces::msg;
 using namespace flychams::core;
 
@@ -12,18 +9,18 @@ namespace flychams::simulation
     // CONSTRUCTOR: Constructor and destructor
     // ════════════════════════════════════════════════════════════════════════════
 
-    void AgentSimulationBridge::onInit()
+    void AgentBridge::onModuleInit()
     {
         // Get parameters from parameter server
         // Get update rate
-        update_rate_ = RosUtils::getParameterOr<float>(node_, "bridge_update_rate", 20.0f);
+        update_rate_ = node_->getParameterOr<float>("bridge_update_rate", 20.0f);
 
         // Initialize data
         agent_ = Agent();
 
         // Create subscriber for agent observation setpoints
-        agent_.observation_setpoints_sub = topic_tools_->createObservationSetpointsSubscriber(agent_id_,
-            std::bind(&AgentSimulationBridge::observationSetpointsCallback, this, std::placeholders::_1), sub_options_with_module_cb_group_);
+        agent_.observation_setpoints_sub = node_->createObservationSetpointsSubscriber(agent_id_,
+            std::bind(&AgentBridge::observationSetpointsCallback, this, std::placeholders::_1), node_->getSubscriptionOptions());
 
         // Create publishers for AirSim commands
         // Camera FOV command topic: /airsim/vehicles/cmd/camera_fov
@@ -32,14 +29,10 @@ namespace flychams::simulation
         agent_.gimbal_angle_cmd_pub = node_->create_publisher<GimbalAngleCmdMsg>("/airsim/vehicles/cmd/gimbal_angle", 10);
 
         // Set update timer
-        update_timer_ = rclcpp::create_timer(node_,
-            node_->get_clock(),
-            std::chrono::duration<float>(1.0f / update_rate_),
-            std::bind(&AgentSimulationBridge::update, this),
-            module_cb_group_);
+        update_timer_ = node_->createTimer(update_rate_, std::bind(&AgentBridge::update, this));
     }
 
-    void AgentSimulationBridge::onShutdown()
+    void AgentBridge::onModuleShutdown()
     {
         // Destroy agent data
         agent_.observation_setpoints_sub.reset();
@@ -53,7 +46,7 @@ namespace flychams::simulation
     // CALLBACKS: Callback functions
     // ════════════════════════════════════════════════════════════════════════════
 
-    void AgentSimulationBridge::observationSetpointsCallback(const ObservationSetpointsMsg::SharedPtr msg)
+    void AgentBridge::observationSetpointsCallback(const ObservationSetpointsMsg::SharedPtr msg)
     {
         // Update observation setpoints
         agent_.observation_setpoints = *msg;
@@ -64,7 +57,7 @@ namespace flychams::simulation
     // UPDATE: Update bridge
     // ════════════════════════════════════════════════════════════════════════════
 
-    void AgentSimulationBridge::update()
+    void AgentBridge::update()
     {
         // Check if we have valid observation setpoints
         if (!agent_.has_observation_setpoints)
@@ -79,11 +72,11 @@ namespace flychams::simulation
         publishCameraFovCmd();
     }
 
-    void AgentSimulationBridge::publishGimbalAngleCmd()
+    void AgentBridge::publishGimbalAngleCmd()
     {
         // Create gimbal angle command message
         GimbalAngleCmdMsg msg;
-        msg.header = RosUtils::createHeader(node_, transform_tools_->getGlobalFrame());
+        msg.header = node_->createHeader(node_->getGlobalFrame());
 
         // Extract gimbal angle data from observation setpoints
         for (int i = 0; i < agent_.observation_setpoints.n_o; ++i)
@@ -108,7 +101,7 @@ namespace flychams::simulation
                 Eigen::AngleAxisf(rpy_vec.x(), Vector3r::UnitX());
 
             QuaternionMsg quat_msg;
-            RosUtils::toMsg(quat, quat_msg);
+            node_->toMsg(quat, quat_msg);
             msg.orientations.push_back(quat_msg);
         }
 
@@ -116,11 +109,11 @@ namespace flychams::simulation
         agent_.gimbal_angle_cmd_pub->publish(msg);
     }
 
-    void AgentSimulationBridge::publishCameraFovCmd()
+    void AgentBridge::publishCameraFovCmd()
     {
         // Create camera FOV command message
         CameraFovCmdMsg msg;
-        msg.header = RosUtils::createHeader(node_, transform_tools_->getGlobalFrame());
+        msg.header = node_->createHeader(node_->getGlobalFrame());
 
         // Extract camera FOV data from observation setpoints
         for (int i = 0; i < agent_.observation_setpoints.n_o; ++i)
@@ -138,7 +131,7 @@ namespace flychams::simulation
             msg.camera_names.push_back(camera_id);
 
             // Get camera configuration for sensor size
-            const auto& camera_config = settings_tools_->getCamera(agent_id_, camera_id);
+            const auto& camera_config = node_->getSettings()->getCamera(agent_id_, camera_id);
             const float& sensor_width = camera_config.sensor_size(0);
 
             // Calculate camera FoV

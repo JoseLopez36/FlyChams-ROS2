@@ -1,13 +1,5 @@
 #pragma once
 
-// Tools includes
-#include "flychams_common/settings/settings_tools.hpp"
-
-// Core includes
-#include "flychams_common/types/core_types.hpp"
-#include "flychams_common/types/ros_types.hpp"
-#include "flychams_common/utils/ros_utils.hpp"
-
 // AirSim interfaces includes
 // Global commands
 #include <airsim_interfaces/srv/reset.hpp>
@@ -20,6 +12,12 @@
 #include <airsim_interfaces/srv/remove_all_clusters.hpp>
 #include <airsim_interfaces/msg/update_target_cmd_group.hpp>
 #include <airsim_interfaces/msg/update_cluster_cmd_group.hpp>
+
+// Base module include
+#include "flychams_common/base/base_module.hpp"
+
+// Base node include
+#include "flychams_common/base/base_node.hpp"
 
 namespace flychams::simulation
 {
@@ -36,15 +34,21 @@ namespace flychams::simulation
      * @date 2025-02-28
      * ════════════════════════════════════════════════════════════════
      */
-    class SimulationTools
+    class SimulationBridge : public core::BaseModule
     {
     public: // Constructors/Destructors
-        SimulationTools(core::NodePtr node, const core::SettingsTools::SharedPtr& settings_tools);
-        ~SimulationTools();
-        void shutdown();
+        SimulationBridge(core::BaseNode::SharedPtr node)
+            : BaseModule(node)
+        {
+            init();
+        }
+
+    protected: // Overrides
+        void onModuleInit() override;
+        void onModuleShutdown() override;
 
     public: // Types
-        using SharedPtr = std::shared_ptr<SimulationTools>;
+        using SharedPtr = std::shared_ptr<SimulationBridge>;
         using ResetSrv = airsim_interfaces::srv::Reset;
         using RunSrv = airsim_interfaces::srv::Run;
         using PauseSrv = airsim_interfaces::srv::Pause;
@@ -68,19 +72,11 @@ namespace flychams::simulation
         void updateTargetGroup(const core::IDs& target_ids, const std::vector<core::PointMsg>& positions);
         void updateClusterGroup(const core::IDs& cluster_ids, const std::vector<core::PointMsg>& centers, const std::vector<float>& radii);
 
-    protected: // Data
-        // ROS components
-        core::NodePtr node_;
-
-        // Config tools
-        core::SettingsTools::SharedPtr settings_tools_;
-
     private: // ROS components
         // Global commands
         core::ClientPtr<ResetSrv> reset_client_;
         core::ClientPtr<RunSrv> run_client_;
         core::ClientPtr<PauseSrv> pause_client_;
-
         // Tracking commands
         core::ClientPtr<AddTargetGroupSrv> add_target_group_client_;
         core::ClientPtr<AddClusterGroupSrv> add_cluster_group_client_;
@@ -89,7 +85,5 @@ namespace flychams::simulation
         core::PublisherPtr<UpdateTargetCmdGroupMsg> update_target_cmd_group_pub_;
         core::PublisherPtr<UpdateClusterCmdGroupMsg> update_cluster_cmd_group_pub_;
     };
-
-    SimulationTools::SharedPtr createSimulationTools(core::NodePtr node, const core::SettingsTools::SharedPtr& settings_tools);
 
 } // namespace flychams::simulation

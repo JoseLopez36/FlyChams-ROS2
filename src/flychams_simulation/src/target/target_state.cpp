@@ -8,11 +8,11 @@ namespace flychams::simulation
     // CONSTRUCTOR: Constructor and destructor
     // ════════════════════════════════════════════════════════════════════════════
 
-    void TargetState::onInit()
+    void TargetState::onModuleInit()
     {
         // Get parameters from parameter server
         // Get update rate
-        update_rate_ = RosUtils::getParameterOr<float>(node_, "update_rate", 20.0f);
+        update_rate_ = node_->getParameterOr<float>("update_rate", 20.0f);
 
         // Compute command timeout
         cmd_timeout_ = (1.0f / update_rate_) * 1.25f;
@@ -22,9 +22,9 @@ namespace flychams::simulation
         target_ = Target();
 
         // Parse trajectory
-        const auto& root = settings_tools_->getSystem().trajectory_root;
-        const auto& folder = settings_tools_->getTarget(target_id_)->trajectory_folder;
-        const auto& index = settings_tools_->getTarget(target_id_)->target_index;
+        const auto& root = node_->getSettings()->getSystem().trajectory_root;
+        const auto& folder = node_->getSettings()->getTarget(target_id_)->trajectory_folder;
+        const auto& index = node_->getSettings()->getTarget(target_id_)->target_index;
         const auto& path = root + "/" + folder + "/" + "TRAJ" + std::to_string(index + 1) + ".csv";
         RCLCPP_INFO(node_->get_logger(), "Target state: Parsing trajectory for target %s with path %s", target_id_.c_str(), path.c_str());
         trajectory_.points = TrajectoryParser::parse(path);
@@ -42,26 +42,22 @@ namespace flychams::simulation
         }
 
         // Initialize target position
-        target_.position.header = RosUtils::createHeader(node_, transform_tools_->getGlobalFrame());
+        target_.position.header = node_->createHeader(node_->getGlobalFrame());
         target_.position.point.x = trajectory_.points[0].x;
         target_.position.point.y = trajectory_.points[0].y;
         target_.position.point.z = trajectory_.points[0].z;
 
         // Initialize target position publisher and publish first message
-        target_.position_pub = topic_tools_->createTargetPositionPublisher(target_id_);
+        target_.position_pub = node_->createTargetPositionPublisher(target_id_);
         target_.position_pub->publish(target_.position);
 
         // Set update timer
         time_elapsed_ = 0.0f;
-        last_update_time_ = RosUtils::now(node_);
-        update_timer_ = rclcpp::create_timer(node_, 
-            node_->get_clock(), 
-            std::chrono::duration<float>(1.0f / update_rate_), 
-            std::bind(&TargetState::update, this), 
-            module_cb_group_);
+        last_update_time_ = node_->now();
+        update_timer_ = node_->createTimer(update_rate_, std::bind(&TargetState::update, this));
     }
 
-    void TargetState::onShutdown()
+    void TargetState::onModuleShutdown()
     {
         // Destroy target publisher
         target_.position_pub.reset();
@@ -76,7 +72,7 @@ namespace flychams::simulation
     void TargetState::update()
     {
         // Compute time step
-        auto current_time = RosUtils::now(node_);
+        auto current_time = node_->now();
         float dt = (current_time - last_update_time_).seconds();
         last_update_time_ = current_time;
 
@@ -126,7 +122,7 @@ namespace flychams::simulation
 
         // Update and publish target position
         TrajectoryParser::Point pos = trajectory_.points[trajectory_.current_idx];
-        target_.position.header.stamp = RosUtils::now(node_);
+        target_.position.header.stamp = node_->now();
         target_.position.point.x = pos.x;
         target_.position.point.y = pos.y;
         target_.position.point.z = pos.z;

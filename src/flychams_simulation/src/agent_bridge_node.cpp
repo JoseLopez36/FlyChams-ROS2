@@ -1,9 +1,9 @@
 #include "rclcpp/rclcpp.hpp"
 
-// Simulation bridge includes
+// Module include
 #include "flychams_simulation/bridge/agent_bridge.hpp"
 
-// Core includes
+// Base node include
 #include "flychams_common/base/base_discoverer_node.hpp"
 
 using namespace flychams::core;
@@ -33,13 +33,13 @@ public: // Constructor/Destructor
         // Nothing to do
     }
 
-    void onInit() override
+    void onDiscoveryInit() override
     {
         // Initialize agent bridges map
         agent_bridges_.clear();
     }
 
-    void onShutdown() override
+    void onDiscoveryShutdown() override
     {
         // Destroy agent bridges
         agent_bridges_.clear();
@@ -48,11 +48,8 @@ public: // Constructor/Destructor
 private: // Element management
     void onAddAgent(const ID& agent_id) override
     {
-        // Create callback group for agent bridge
-        auto bridge_cb_group = node_->create_callback_group(rclcpp::CallbackGroupType::MutuallyExclusive);
-
         // Create agent simulation bridge
-        auto bridge = std::make_shared<AgentSimulationBridge>(agent_id, node_, settings_tools_, topic_tools_, transform_tools_, bridge_cb_group);
+        auto bridge = std::make_shared<AgentBridge>(agent_id, sharedFromThis());
         agent_bridges_.insert(std::make_pair(agent_id, bridge));
         RCLCPP_INFO(node_->get_logger(), "Agent simulation bridge created for agent: %s", agent_id.c_str());
     }
@@ -85,8 +82,8 @@ private: // Element management
     }
 
 private: // Components
-    // Agent simulation bridges
-    std::unordered_map<ID, AgentSimulationBridge::SharedPtr> agent_bridges_;
+    // Agent bridges
+    std::unordered_map<ID, AgentBridge::SharedPtr> agent_bridges_;
 };
 
 int main(int argc, char** argv)
