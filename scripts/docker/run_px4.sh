@@ -30,6 +30,7 @@ fi
 echo "Starting PX4 container: $CONTAINER_NAME"
 docker run ${RUN_FLAGS} \
     --name "$CONTAINER_NAME" \
+    --privileged \
     --network host \
     -e LOCAL_USER_ID="$(id -u)" \
     -e CCACHE_DIR="${CCACHE_DIR}" \

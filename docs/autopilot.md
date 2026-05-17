@@ -83,7 +83,7 @@ docker build -t micro-xrce-dds-agent .
 The agent is launched by the FlyChams scripts automatically in simulation mode. To run it manually:
 
 ```bash
-docker run --rm --network host micro-xrce-dds-agent UDPv4 -p 8888
+docker run --rm --network host micro-xrce-dds-agent udp4 -p 8888
 ```
 
 ---

@@ -9,8 +9,7 @@ endif()
 find_package(ament_cmake REQUIRED)
 find_package(ament_cmake_python REQUIRED)
 find_package(rclcpp REQUIRED)
-find_package(mavros REQUIRED)
-find_package(mavros_msgs REQUIRED)
+find_package(px4_msgs REQUIRED)
 find_package(flychams_common REQUIRED)
 find_package(flychams_api REQUIRED)
 
@@ -35,9 +34,6 @@ set(CONTROL_SRC
   src/tracking/agent_tracking.cpp
   # Stream
   src/stream/agent_stream.cpp
-  # MavROS
-  src/mavros/mavros_communication.cpp
-  src/mavros/mavros_utils.cpp
 )
 add_library(${PROJECT_NAME} SHARED ${CONTROL_SRC})
 target_include_directories(${PROJECT_NAME} PUBLIC
@@ -48,7 +44,7 @@ target_include_directories(${PROJECT_NAME} PUBLIC
 
 # Export dependencies
 ament_target_dependencies(${PROJECT_NAME}
-  rclcpp mavros mavros_msgs flychams_common flychams_api
+  rclcpp px4_msgs flychams_common flychams_api
 )
 
 # Link to required libraries
@@ -60,17 +56,17 @@ target_link_libraries(${PROJECT_NAME}
 # Create executable for agent frames node
 add_executable(agent_frames_node src/agent_frames_node.cpp)
 target_link_libraries(agent_frames_node ${PROJECT_NAME})
-ament_target_dependencies(agent_frames_node rclcpp mavros_msgs flychams_common flychams_api)
+ament_target_dependencies(agent_frames_node rclcpp px4_msgs flychams_common flychams_api)
 
 # Create executable for agent state node
 add_executable(agent_state_node src/agent_state_node.cpp)
 target_link_libraries(agent_state_node ${PROJECT_NAME})
-ament_target_dependencies(agent_state_node rclcpp mavros_msgs flychams_common flychams_api)
+ament_target_dependencies(agent_state_node rclcpp px4_msgs flychams_common flychams_api)
 
 # Create executable for agent control node
 add_executable(agent_control_node src/agent_control_node.cpp)
 target_link_libraries(agent_control_node ${PROJECT_NAME})
-ament_target_dependencies(agent_control_node rclcpp mavros_msgs flychams_common flychams_api)
+ament_target_dependencies(agent_control_node rclcpp px4_msgs flychams_common flychams_api)
 
 # Create executable for agent analysis node
 add_executable(agent_analysis_node src/agent_analysis_node.cpp)
@@ -135,8 +131,7 @@ ament_export_targets(${PROJECT_NAME} HAS_LIBRARY_TARGET)
 ament_export_dependencies(
   rclcpp
   rclpy
-  mavros
-  mavros_msgs
+  px4_msgs
   flychams_common
   flychams_api
 )

@@ -34,6 +34,10 @@ def launch_sim(agent_ids: list):
         run(f"DETACH=true {SCRIPT_DIR}/launch_px4.sh {i}")
         time.sleep(1)
 
+    # Micro-XRCE-DDS Agent
+    run(f"DETACH=true {SCRIPT_DIR}/launch_micro_xrce_dds.sh")
+    time.sleep(1)
+
     # Coordinator
     run(f"DETACH=true {SCRIPT_DIR}/launch_coordinator.sh")
     time.sleep(1)
@@ -47,10 +51,8 @@ def launch_sim(agent_ids: list):
     time.sleep(1)
 
     # One agent container per agent
-    for i, agent_id in enumerate(agent_ids):
-        fcu_url   = f"udp://:{14030 + i}@127.0.0.1:{14280 + i}"
-        tgt_system = i + 1
-        run(f"DETACH=true FCU_URL={fcu_url} TGT_SYSTEM={tgt_system} {SCRIPT_DIR}/launch_agent.sh {agent_id}")
+    for agent_id in agent_ids:
+        run(f"DETACH=true {SCRIPT_DIR}/launch_agent.sh {agent_id}")
         time.sleep(1)
 
 # ------------------------------------------------------------------

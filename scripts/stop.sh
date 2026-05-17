@@ -11,6 +11,8 @@ stop_container() {
 containers=(
     "flychams-coordinator"
     "flychams-simulation"
+    "flychams-operator"
+    "flychams-micro-xrce-dds"
     $(docker ps --format '{{.Names}}' | grep '^flychams-agent-')
     $(docker ps --format '{{.Names}}' | grep '^flychams-px4-')
 )

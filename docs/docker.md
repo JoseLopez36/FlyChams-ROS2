@@ -36,8 +36,7 @@ Extends `flychams-base` with no additional layers.
 
 Extends `flychams-base` with agent-specific tooling.
 
-- **MAVROS**: Full `ros-humble-mavros*` package suite.
-- **GeographicLib**: Datasets for MAVROS coordinate transformations.
+- **px4_msgs**: Built from source (`release/1.16` branch) into `/home/testuser/px4_msgs_ws` — provides PX4 uORB ROS2 message types.
 - **Ultralytics**: YOLO models via `ultralytics` + `lapx`.
 
 ### flychams-operator

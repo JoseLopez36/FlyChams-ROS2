@@ -22,9 +22,10 @@ scripts/flychams.py
 **Sim mode launch order:**
 
 1. One `PX4-{i}` container per agent via `scripts/launch_px4.sh {i}` (detached).
-2. Coordinator container running `coordinator.launch.py`.
-3. Simulation container running `simulation.launch.py`.
-4. One agent container per agent running `agent.launch.py`.
+2. `flychams-micro-xrce-dds` container via `scripts/launch_micro_xrce_dds.sh` (detached).
+3. Coordinator container running `coordinator.launch.py`.
+4. Simulation container running `simulation.launch.py`.
+5. One agent container per agent running `agent.launch.py`.
 
 ### Individual launch scripts
 
@@ -32,6 +33,7 @@ For launching a single service independently:
 
 ```bash
 scripts/launch_px4.sh 0          # PX4 SITL for agent index 0
+scripts/launch_micro_xrce_dds.sh # Micro-XRCE-DDS Agent (default port 8888)
 scripts/launch_coordinator.sh
 scripts/launch_simulation.sh
 scripts/launch_operator.sh

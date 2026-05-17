@@ -16,8 +16,7 @@
   <!-- Dependencies -->
   <depend>rclcpp</depend>
   <depend>rclpy</depend>
-  <depend>mavros</depend>
-  <depend>mavros_msgs</depend>
+  <depend>px4_msgs</depend>
   <depend>geographiclib</depend>
   <depend>flychams_common</depend>
   <depend>flychams_api</depend>
