@@ -12,6 +12,7 @@ RUN apt-get update && \
     libyaml-cpp-dev \
     ros-$ROS_DISTRO-pcl-ros \
     ros-$ROS_DISTRO-pcl-conversions \
+    libgeographic-dev \
     && rm -rf /var/lib/apt/lists/* && \
     apt-get clean
 

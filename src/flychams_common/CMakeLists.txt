@@ -19,6 +19,8 @@ find_package(tf2 REQUIRED)
 find_package(tf2_ros REQUIRED)
 find_package(tf2_geometry_msgs REQUIRED)
 find_package(OpenCV REQUIRED)
+list(APPEND CMAKE_MODULE_PATH "/usr/share/cmake/geographiclib")
+find_package(GeographicLib REQUIRED)
 find_package(flychams_api REQUIRED)
 
 # Disable OpenXLSX documentation generation (requires Doxygen)
@@ -44,7 +46,8 @@ add_library(${PROJECT_NAME} SHARED
   src/settings/settings_tools.cpp
   # Utils
   src/utils/math_utils.cpp
-  src/utils/vision_utils.cpp  
+  src/utils/vision_utils.cpp
+  src/utils/frame_utils.cpp  
   # Base
   src/base/base_node.cpp
   src/base/base_status_node.cpp
@@ -74,6 +77,7 @@ target_link_libraries(${PROJECT_NAME}
     tf2_ros::tf2_ros
     tf2_geometry_msgs::tf2_geometry_msgs
     ${OpenCV_LIBS}
+    ${GeographicLib_LIBRARIES}
     OpenXLSX::OpenXLSX
     nlopt
 )
@@ -92,6 +96,10 @@ ament_target_dependencies(${PROJECT_NAME}
   tf2_geometry_msgs
   OpenCV
   flychams_api
+)
+
+target_include_directories(${PROJECT_NAME} PUBLIC
+  ${GeographicLib_INCLUDE_DIRS}
 )
 
 # Create executable for settings creator node

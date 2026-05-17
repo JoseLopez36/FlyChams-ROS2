@@ -3,7 +3,7 @@
 CONTAINER_NAME="flychams-micro-xrce-dds"
 
 # Environment variables
-CMD="${CMD:-MicroXRCEAgent udp4 -p 8888}"
+CMD="${CMD:-udp4 -p 8888}"
 DETACH="${DETACH:-false}"
 
 [ "$DETACH" = "true" ] && RUN_FLAGS="--rm -d" || RUN_FLAGS="--rm -it"
@@ -18,4 +18,4 @@ docker run ${RUN_FLAGS} \
     --name "$CONTAINER_NAME" \
     --network host \
     micro-xrce-dds-agent \
-    bash -c "$CMD"
+    $CMD

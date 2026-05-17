@@ -2,7 +2,6 @@
 
 // Utils include
 #include "flychams_agent/mavros/mavros_communication.hpp"
-#include "flychams_agent/mavros/mavros_utils.hpp"
 
 // Base module include
 #include "flychams_common/base/base_status_module.hpp"

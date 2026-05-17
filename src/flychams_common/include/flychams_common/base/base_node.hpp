@@ -21,6 +21,7 @@
 // Utils includes
 #include "flychams_common/utils/math_utils.hpp"
 #include "flychams_common/utils/vision_utils.hpp"
+#include "flychams_common/utils/frame_utils.hpp"
 
 namespace flychams::common
 {
