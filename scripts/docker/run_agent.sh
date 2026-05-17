@@ -19,6 +19,28 @@ FASTDDS_BUILTIN_TRANSPORTS="${FASTDDS_BUILTIN_TRANSPORTS:-UDPv4}"
 
 [ "$DETACH" = "true" ] && RUN_FLAGS="--rm -d" || RUN_FLAGS="--rm -it"
 
+# Auto-detect GPU vendor if not specified
+GPU_VENDOR="${GPU_VENDOR:-auto}"
+if [ "$GPU_VENDOR" = "auto" ]; then
+    GPU_VENDOR=$($SCRIPT_DIR/detect_gpu.sh)
+    echo "Auto-detected GPU vendor: $GPU_VENDOR"
+fi
+
+# Build GPU-specific Docker flags
+GPU_FLAGS=""
+if [ "$GPU_VENDOR" = "nvidia" ]; then
+    echo "Using NVIDIA GPU runtime"
+    GPU_FLAGS="--runtime nvidia --gpus all -e NVIDIA_DRIVER_CAPABILITIES=all -e NVIDIA_VISIBLE_DEVICES=all"
+elif [ "$GPU_VENDOR" = "amd" ]; then
+    echo "Using AMD GPU (ROCm/VAAPI)"
+    GPU_FLAGS="--device /dev/kfd --device /dev/dri --group-add video --group-add render -e ROCR_VISIBLE_DEVICES=all"
+elif [ "$GPU_VENDOR" = "intel" ]; then
+    echo "Using Intel GPU (VAAPI)"
+    GPU_FLAGS="--device /dev/dri --group-add video -e LIBVA_DRIVER_NAME=iHD"
+else
+    echo "No GPU detected or GPU_VENDOR=none - running without GPU acceleration"
+fi
+
 if docker ps -a --format '{{.Names}}' | grep -q "^${CONTAINER_NAME}$"; then
     echo "Removing existing container: $CONTAINER_NAME"
     docker rm -f "$CONTAINER_NAME"
@@ -29,10 +51,7 @@ docker run ${RUN_FLAGS} \
     --name "$CONTAINER_NAME" \
     --privileged \
     --network host \
-    --runtime nvidia \
-    --gpus all \
-    -e NVIDIA_DRIVER_CAPABILITIES=all \
-    -e NVIDIA_VISIBLE_DEVICES=all \
+    ${GPU_FLAGS} \
     -e XDG_RUNTIME_DIR=/tmp \
     -e AGENT_ID="$AGENT_ID" \
     -e AGENT_IDX="${AGENT_IDX:-0}" \

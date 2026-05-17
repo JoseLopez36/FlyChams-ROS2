@@ -77,7 +77,9 @@ This project is part of a broader research initiative by the Department of Syste
 ### Software Requirements
 
 - **Ubuntu 20.04, 22.04, or 24.04** (or compatible Linux distribution)
-- **Docker** - Required for running coordinator, simulation, agent and operator containers. It must be installed with NVIDIA Container Toolkit: [Installing NVIDIA Container Toolkit](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html)
+- **Docker** - Required for running coordinator, simulation, agent and operator containers.
+  - For **NVIDIA GPUs**: [NVIDIA Container Toolkit](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html)
+  - For **AMD GPUs**: Docker with `/dev/kfd` and `/dev/dri` access (ROCm not required for VAAPI)
 - **PX4 v1.16 + Micro-XRCE-DDS Agent v2.4.3** - Required for autopilot SITL simulation. See **[docs/autopilot.md](docs/autopilot.md)** for setup.
 - **Unreal Engine 5.2.1 (optional)** - Required for creating custom photorealistic simulation environments.
 

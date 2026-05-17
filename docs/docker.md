@@ -69,7 +69,13 @@ All scripts live in `scripts/` and are run from the project root.
 
 ### Prerequisites
 
+#### NVIDIA GPU
 - Docker with NVIDIA Container Toolkit: [Installing NVIDIA Container Toolkit](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html).
+
+#### AMD GPU
+- Docker with device access to `/dev/kfd` (AMD GPU kernel driver) and `/dev/dri` (Direct Rendering Interface).
+- No additional container toolkit required for VAAPI hardware decoding.
+- For PyTorch ROCm support, install ROCm on the host.
 
 ### Build
 
@@ -96,11 +102,24 @@ scripts/docker/run_operator.sh
 
 All containers use:
 - `--network host` for ROS2 DDS discovery.
-- `--runtime nvidia --gpus all` for NVIDIA GPU access.
+- GPU access via vendor-specific Docker flags (auto-detected):
+  - **NVIDIA**: `--runtime nvidia --gpus all -e NVIDIA_DRIVER_CAPABILITIES=all -e NVIDIA_VISIBLE_DEVICES=all`
+  - **AMD**: `--device /dev/kfd --device /dev/dri --group-add video --group-add render -e ROCR_VISIBLE_DEVICES=all`
+  - **Intel**: `--device /dev/dri --group-add video -e LIBVA_DRIVER_NAME=iHD`
 - Project root mounted at `/home/testuser/FlyChams-ROS2`.
 - `ROS_DOMAIN_ID` and `FASTDDS_BUILTIN_TRANSPORTS` forwarded from the host.
 
-The agent container additionally receives `AGENT_ID` as an environment variable. The operator container does not require GPU access and omits `--runtime nvidia`.
+The agent container additionally receives `AGENT_ID` as an environment variable. The operator container does not require GPU access.
+
+### GPU Vendor Selection
+
+Override auto-detection by setting the `GPU_VENDOR` environment variable:
+
+```bash
+GPU_VENDOR=nvidia scripts/docker/run_agent.sh AGENT00
+GPU_VENDOR=amd scripts/docker/run_agent.sh AGENT00
+GPU_VENDOR=none scripts/docker/run_agent.sh AGENT00   # CPU only
+```
 
 ### Exec
 

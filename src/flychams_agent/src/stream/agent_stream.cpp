@@ -22,7 +22,20 @@ void AgentStream::onModuleInit()
     reconnect_delay_ms_ = node_->getParameterOr<int>("reconnect_delay_ms", 2000);
     stream_start_delay_ms_ = node_->getParameterOr<int>("stream_start_delay_ms", 500);
     output_encoding_ = node_->getParameterOr<std::string>("output_encoding", "jpg");
-    use_nvidia_ = node_->getParameterOr<bool>("use_nvidia", true);
+    gpu_vendor_ = node_->getParameterOr<std::string>("gpu_vendor", "auto");
+    
+    // Auto-detect GPU vendor if set to "auto"
+    if (gpu_vendor_ == "auto")
+    {
+        const char* cuda_visible = std::getenv("CUDA_VISIBLE_DEVICES");
+        const char* rocr_visible = std::getenv("ROCR_VISIBLE_DEVICES");
+        if (cuda_visible && strlen(cuda_visible) > 0)
+            gpu_vendor_ = "nvidia";
+        else if (rocr_visible && strlen(rocr_visible) > 0)
+            gpu_vendor_ = "amd";
+        else
+            gpu_vendor_ = "none";
+    }
 
     // Initialize stream variables
     stream_units_.clear();
@@ -72,11 +85,17 @@ void AgentStream::onModuleInit()
         stream_index++;
     }
 
-    // Set OpenCV FFMPEG capture options
-    if (use_nvidia_)
-        setenv("OPENCV_FFMPEG_CAPTURE_OPTIONS", "video_codec;hevc_cuvid|rtsp_transport;tcp", 1);
-    else
-        setenv("OPENCV_FFMPEG_CAPTURE_OPTIONS", "rtsp_transport;tcp", 1);
+    // Set OpenCV FFMPEG capture options based on GPU vendor
+    std::string ffmpeg_options = "rtsp_transport;tcp";
+    if (gpu_vendor_ == "nvidia")
+    {
+        ffmpeg_options = "video_codec;hevc_cuvid|rtsp_transport;tcp";
+    }
+    else if (gpu_vendor_ == "amd" || gpu_vendor_ == "intel")
+    {
+        ffmpeg_options = "video_codec;hevc_vaapi|rtsp_transport;tcp";
+    }
+    setenv("OPENCV_FFMPEG_CAPTURE_OPTIONS", ffmpeg_options.c_str(), 1);
 
     // Subscribe to GUI setpoints topic
     observation_setpoints_sub_ = node_->createObservationSetpointsSubscriber(agent_id_,

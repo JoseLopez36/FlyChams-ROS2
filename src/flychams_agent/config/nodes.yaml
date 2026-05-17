@@ -75,4 +75,6 @@
     reconnect_delay_ms: 2000
     stream_start_delay_ms: 500
     output_encoding: jpg
-    use_nvidia: true
+    # GPU vendor for hardware video decoding
+    # Options: "auto" (detect from env), "nvidia", "amd", "intel", "none"
+    gpu_vendor: auto

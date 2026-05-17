@@ -84,7 +84,7 @@ namespace flychams::agent
         int reconnect_delay_ms_;
         int stream_start_delay_ms_;
         std::string output_encoding_;
-        bool use_nvidia_;
+        std::string gpu_vendor_;  // "none", "nvidia", "amd", "intel"
 
     private: // Data
         // Stream units
