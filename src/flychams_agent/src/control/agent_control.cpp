@@ -15,6 +15,8 @@ void DroneControl::onModuleInit()
 	update_rate_ = node_->getParameterOr<float>("update_rate", 10.0f);
 	// Get control mode
 	control_mode_ = static_cast<ControlMode>(node_->getParameterOr<uint8_t>("control_mode", 0));
+	// Get auto arm flag
+	bool auto_arm = node_->getParameterOr<bool>("auto_arm", false);
 	// Get flight parameters
 	takeoff_altitude_ = node_->getParameterOr<float>("takeoff_altitude", 1.5f);
 
@@ -39,7 +41,7 @@ void DroneControl::onModuleInit()
 	command_counter_ = 0;
 
 	// Initialize arm all flag
-	arm_all_ = false;
+	arm_all_ = auto_arm;
 
 	// Initialize land all flag
 	land_all_ = false;

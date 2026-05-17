@@ -29,13 +29,13 @@ void MissionState::onModuleInit()
     // Create mission command subscribers
     start_mission_sub_ = node_->create_subscription<BoolMsg>(
         "/flychams/coordinator/start_mission", 10,
-        std::bind(&MissionState::startMissionCallback, this, std::placeholders::_1));
+        std::bind(&MissionState::startMissionCallback, this, std::placeholders::_1), node_->getSubscriptionOptions());
     pause_mission_sub_ = node_->create_subscription<BoolMsg>(
         "/flychams/coordinator/pause_mission", 10,
-        std::bind(&MissionState::pauseMissionCallback, this, std::placeholders::_1));
+        std::bind(&MissionState::pauseMissionCallback, this, std::placeholders::_1), node_->getSubscriptionOptions());
     abort_mission_sub_ = node_->create_subscription<BoolMsg>(
         "/flychams/coordinator/abort_mission", 10,
-        std::bind(&MissionState::abortMissionCallback, this, std::placeholders::_1));
+        std::bind(&MissionState::abortMissionCallback, this, std::placeholders::_1), node_->getSubscriptionOptions());
 
     // Create mission status publisher
     mission_status_pub_ = node_->createMissionStatusPublisher();
@@ -84,8 +84,8 @@ void MissionState::fleetStatusCallback(const FleetStatusMsg::SharedPtr msg)
     fleet_status_ = static_cast<FleetStatus>(msg->status);
     has_fleet_status_ = true;
 
-    // Fleet is ready when all agents are idle (ready to start mission)
-    fleet_ready_ = msg->all_agents_idle && !agents_.empty();
+    // Fleet is ready when all agents are active
+    fleet_ready_ = msg->all_agents_active;
 }
 
 void MissionState::startMissionCallback(const BoolMsg::SharedPtr msg)

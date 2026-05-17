@@ -18,9 +18,10 @@
   ros__parameters:
     # Update rate (Hz)
     update_rate: 10.0
-
     # Control mode (0: position, 1: velocity)
     control_mode: 0
+    # Automatically arm all agents on startup
+    auto_arm: true
 
 /**/agent_analysis_node:
   ros__parameters:
@@ -31,7 +32,6 @@
   ros__parameters:
     # Update rate (Hz)
     positioning_rate: 10.0
-
     # Positioning parameters
     positioning:
       # Positioning solver mode 
