@@ -74,6 +74,7 @@ void TargetState::update()
     // Skip update if status is not valid
     if (!checkStatus())
     {
+        RCLCPP_WARN(node_->get_logger(), "Target state: Skipping update due to invalid status");
         return;
     }
 

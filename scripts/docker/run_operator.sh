@@ -22,7 +22,6 @@ echo "Starting operator container: $CONTAINER_NAME"
 docker run ${RUN_FLAGS} \
     --name "$CONTAINER_NAME" \
     --network host \
-    --cpus="1" \
     -e ROS_DOMAIN_ID="${ROS_DOMAIN_ID}" \
     -e FASTDDS_BUILTIN_TRANSPORTS="${FASTDDS_BUILTIN_TRANSPORTS}" \
     -v "$PROJECT_ROOT:/home/testuser/FlyChams-ROS2" \

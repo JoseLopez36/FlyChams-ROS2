@@ -2,7 +2,7 @@
     "SettingsVersion": 2.0,
     "SimMode": "Multirotor",
     "ClockType": "SteppableClock",
-    "ClockSpeed": 0.5,
+    "ClockSpeed": 1.0,
     "ViewMode": "NoDisplay",
     "LogMessagesVisible": false,
     "ApiServerPort": 41451,
@@ -76,7 +76,8 @@
                 "COM_DISARM_PRFLT": 0,
                 "COM_RC_IN_MODE": 1,
                 "LPE_LAT": 35.98655700683594,
-                "LPE_LON": -5.89301061630249
+                "LPE_LON": -5.89301061630249,
+                "SENS_BARO_RATE": 20.0
             },
             "Sensors": {
                 "Barometer": {
@@ -354,7 +355,8 @@
                 "COM_DISARM_PRFLT": 0,
                 "COM_RC_IN_MODE": 1,
                 "LPE_LAT": 35.98655700683594,
-                "LPE_LON": -5.89301061630249
+                "LPE_LON": -5.89301061630249,
+                "SENS_BARO_RATE": 20.0
             },
             "Sensors": {
                 "Barometer": {
@@ -632,7 +634,8 @@
                 "COM_DISARM_PRFLT": 0,
                 "COM_RC_IN_MODE": 1,
                 "LPE_LAT": 35.98655700683594,
-                "LPE_LON": -5.89301061630249
+                "LPE_LON": -5.89301061630249,
+                "SENS_BARO_RATE": 20.0
             },
             "Sensors": {
                 "Barometer": {

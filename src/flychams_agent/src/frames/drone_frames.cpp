@@ -53,6 +53,18 @@ void DroneFrames::globalOriginCallback(const GeoPointStampedMsg::SharedPtr msg)
     // Update global origin data
     agent_.global_origin = msg->position;
     agent_.has_global_origin = true;
+
+    // In simulation the global origin equals the home position.
+    // Use it as a fallback so frames can be created without waiting for PX4.
+    if (!agent_.has_home_position)
+    {
+        RCLCPP_WARN(node_->get_logger(), "Drone frames: No home position data received. Using global origin as home position for agent %s", agent_id_.c_str());
+        agent_.home_position = msg->position;
+        agent_.has_home_position = true;
+
+        // Create local frame
+        createLocalFrame(agent_.home_position, agent_.global_origin);
+    }
 }
 
 void DroneFrames::homePositionCallback(const px4_msgs::msg::HomePosition::SharedPtr msg)
@@ -138,6 +150,7 @@ void DroneFrames::update()
     // Skip update if status is not valid
     if (!checkStatus())
     {
+        RCLCPP_WARN(node_->get_logger(), "Drone frames: Skipping update due to invalid status");
         return;
     }
 

@@ -54,6 +54,7 @@ void TargetMarkers::update()
     // Skip update if status is not valid
     if (!checkStatus())
     {
+        RCLCPP_WARN(node_->get_logger(), "Target markers: Skipping update due to invalid status");
         return;
     }
 

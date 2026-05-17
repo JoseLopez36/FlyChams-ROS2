@@ -71,9 +71,9 @@ void ClusterMetrics::update()
     // Skip update if status is not valid
     if (!checkStatus())
     {
+        RCLCPP_WARN(node_->get_logger(), "Cluster metrics: Skipping update due to invalid status");
         return;
     }
-
     // Compute dt
     auto now = node_->now();
     float dt = static_cast<float>((now - last_update_time_).seconds());

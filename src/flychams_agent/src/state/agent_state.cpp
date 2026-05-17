@@ -78,6 +78,7 @@ void DroneState::update()
     // Skip update if status is not valid
     if (!checkStatus())
     {
+        RCLCPP_WARN(node_->get_logger(), "Drone state: Skipping update due to invalid status");
         return;
     }
 
@@ -102,6 +103,7 @@ void DroneState::update()
     {
         // Disarmed = IDLE (safe state on ground)
         status = AgentStatus::IDLE;
+        RCLCPP_INFO(node_->get_logger(), "Drone state: Agent %s is disarmed", agent_id_.c_str());
     }
     else
     {
@@ -110,11 +112,13 @@ void DroneState::update()
         if (is_flying)
         {
             status = AgentStatus::ACTIVE;
+            RCLCPP_INFO(node_->get_logger(), "Drone state: Agent %s is flying", agent_id_.c_str());
         }
         else
         {
             // Armed but still on ground (taking off or just armed on ground)
             status = AgentStatus::IDLE;
+            RCLCPP_INFO(node_->get_logger(), "Drone state: Agent %s is armed but not flying", agent_id_.c_str());
         }
     }
 

@@ -55,9 +55,9 @@ void ClusterMarkers::update()
     // Skip update if status is not valid
     if (!checkStatus())
     {
+        RCLCPP_WARN(node_->get_logger(), "Cluster markers: Skipping update due to invalid status");
         return;
     }
-
     const std::string& frame = node_->getGlobalFrame();
     auto stamp = node_->now();
     const float r = cluster_.radius > 0.0f ? cluster_.radius : 1.0f;

@@ -17,16 +17,9 @@ def launch_airsim():
             namespace='airsim',
             arguments=['--ros-args', '--log-level', 'error'],
             parameters=[{
-                'update_airsim_state_every_n_sec': 0.020,
-                'update_sim_clock_every_n_sec': 0.001,
-                'world_frame_id': 'world',
-                'vehicle_local_frame_id': 'local',
-                'vehicle_body_frame_id': 'body',
-                'camera_body_frame_id': 'body',
-                'camera_optical_frame_id': 'optical',
+                'update_sim_clock_every_n_sec': 0.01,
                 'host_ip': 'localhost',
-                'host_port': 41451,
-                'broadcast_transforms': False
+                'host_port': 41451
             }]
         )
     ]
