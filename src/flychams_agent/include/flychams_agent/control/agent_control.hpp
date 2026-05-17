@@ -84,6 +84,8 @@ namespace flychams::agent
 		uint8_t command_counter_;
 		// Last update time
 		common::Time last_update_time_;
+		// Arm all flag
+		bool arm_all_;
 		// Land all flag
 		bool land_all_;
 		// Return home flag

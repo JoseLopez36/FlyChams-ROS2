@@ -38,6 +38,9 @@ void DroneControl::onModuleInit()
 	// Initialize command counter
 	command_counter_ = 0;
 
+	// Initialize arm all flag
+	arm_all_ = false;
+
 	// Initialize land all flag
 	land_all_ = false;
 
@@ -117,17 +120,9 @@ void DroneControl::armAllCallback(const BoolMsg::SharedPtr msg)
 		return;
 	}
 
-	bool requested_arm = msg->data;
-	if (requested_arm)
-	{
-		RCLCPP_INFO(node_->get_logger(), "Drone control: Arm command received for %s", agent_id_.c_str());
-		requestArm();
-	}
-	else
-	{
-		RCLCPP_INFO(node_->get_logger(), "Drone control: Disarm command received for %s", agent_id_.c_str());
-		requestDisarm();
-	}
+	RCLCPP_INFO(node_->get_logger(), "Drone control: Arm all command received for %s", agent_id_.c_str());
+	arm_all_ = true;
+	command_counter_ = 0;
 }
 
 void DroneControl::landAllCallback(const BoolMsg::SharedPtr msg)
@@ -160,7 +155,6 @@ void DroneControl::update()
 	auto current_time = node_->now();
 	float dt = (current_time - last_update_time_).seconds();
 	last_update_time_ = current_time;
-	(void)dt;
 
 	bool success = true;
 
@@ -205,6 +199,8 @@ void DroneControl::update()
 	switch (agent_.status)
 	{
 	case AgentStatus::IDLE:
+		if (!arm_all_)
+			break;
 		// Agent is on the ground and disarmed: prepare for takeoff
 		success &= requestTakeoff();
 		if (command_counter_ > 10)
@@ -278,21 +274,14 @@ void DroneControl::update()
 
 bool DroneControl::checkStatus()
 {
-	// Check 1: Mission must be active
-	if (!node_->isMissionActive())
-	{
-		RCLCPP_WARN(node_->get_logger(), "Drone control: Mission is not active");
-		return false;
-	}
-
-	// Check 2: Agent must have a valid status
+	// Check 1: Agent must have a valid status
 	if (!agent_.has_status)
 	{
 		RCLCPP_WARN(node_->get_logger(), "Drone control: Agent %s has no status", agent_id_.c_str());
 		return false;
 	}
 
-	// Check 3: Agent must have a valid local position
+	// Check 2: Agent must have a valid local position
 	if (!agent_.has_local_position)
 	{
 		RCLCPP_WARN(node_->get_logger(), "Drone control: Agent %s has no local position", agent_id_.c_str());

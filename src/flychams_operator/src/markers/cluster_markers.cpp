@@ -131,6 +131,7 @@ bool ClusterMarkers::checkStatus()
     // Check 1: Cluster must have a valid geometry
     if (!cluster_.has_geometry)
     {
+        RCLCPP_WARN(node_->get_logger(), "Cluster markers: Cluster %s has no geometry", cluster_id_.c_str());
         return false;
     }
 

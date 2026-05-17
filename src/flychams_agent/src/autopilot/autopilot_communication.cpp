@@ -40,7 +40,7 @@ SubscriberPtr<px4_msgs::msg::HomePosition> AutopilotCommunication::subscribeHome
 {
     rclcpp::QoS qos = rclcpp::QoS(rclcpp::KeepLast(1))
         .reliability(rclcpp::ReliabilityPolicy::BestEffort)
-        .durability(rclcpp::DurabilityPolicy::TransientLocal);
+        .durability(rclcpp::DurabilityPolicy::Volatile);
     return node_->create_subscription<px4_msgs::msg::HomePosition>(
         "/" + agent_id_ + "/fmu/out/home_position", qos, callback, options);
 }
@@ -53,7 +53,7 @@ SubscriberPtr<px4_msgs::msg::VehicleStatus> AutopilotCommunication::subscribeVeh
         .reliability(rclcpp::ReliabilityPolicy::BestEffort)
         .durability(rclcpp::DurabilityPolicy::Volatile);
     return node_->create_subscription<px4_msgs::msg::VehicleStatus>(
-        "/" + agent_id_ + "/fmu/out/vehicle_status", qos, callback, options);
+        "/" + agent_id_ + "/fmu/out/vehicle_status_v1", qos, callback, options);
 }
 
 SubscriberPtr<px4_msgs::msg::VehicleOdometry> AutopilotCommunication::subscribeLocalOdometry(

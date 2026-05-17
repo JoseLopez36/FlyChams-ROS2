@@ -107,6 +107,7 @@ bool TargetMarkers::checkStatus()
     // Check 1: Target must have a valid position
     if (!target_.has_position)
     {
+        RCLCPP_WARN(node_->get_logger(), "Target markers: Target %s has no position", target_id_.c_str());
         return false;
     }
 

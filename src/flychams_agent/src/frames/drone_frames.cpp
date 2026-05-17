@@ -164,27 +164,24 @@ void DroneFrames::update()
 
 bool DroneFrames::checkStatus()
 {
-    // Check 1: Mission must be active
-    if (!node_->isMissionActive())
-    {
-        return false;
-    }
-
-    // Check 2: Agent must have a valid global origin
+    // Check 1: Agent must have a valid global origin
     if (!agent_.has_global_origin)
     {
+        RCLCPP_WARN(node_->get_logger(), "Drone frames: Agent %s has no global origin", agent_id_.c_str());
         return false;
     }
 
-    // Check 3: Agent must have a valid home position
+    // Check 2: Agent must have a valid home position
     if (!agent_.has_home_position)
     {
+        RCLCPP_WARN(node_->get_logger(), "Drone frames: Agent %s has no home position", agent_id_.c_str());
         return false;
     }
 
-    // Check 4: Agent must have a valid local odometry
+    // Check 3: Agent must have a valid local odometry
     if (!agent_.has_local_odom)
     {
+        RCLCPP_WARN(node_->get_logger(), "Drone frames: Agent %s has no local odometry", agent_id_.c_str());
         return false;
     }
 

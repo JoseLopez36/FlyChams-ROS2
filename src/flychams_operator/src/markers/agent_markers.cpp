@@ -126,6 +126,7 @@ bool AgentMarkers::checkStatus()
     // Check 1: Agent must have a valid position
     if (!agent_.has_position)
     {
+        RCLCPP_WARN(node_->get_logger(), "Agent markers: Agent %s has no position", agent_id_.c_str());
         return false;
     }
 

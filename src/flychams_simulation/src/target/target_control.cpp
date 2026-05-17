@@ -163,6 +163,7 @@ bool TargetControl::checkStatus()
     // Check 1: Simulation tools must be available
     if (!simulation_tools_)
     {
+        RCLCPP_WARN(node_->get_logger(), "Target control: Simulation tools not available");
         return false;
     }
 

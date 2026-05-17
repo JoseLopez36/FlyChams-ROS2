@@ -60,8 +60,8 @@
       "buttonMode": "push",
       "activeColor": "#31daa2",
       "inactiveColor": "#10b981",
-      "activeText": "▶  Start",
-      "inactiveText": "▶  Start",
+      "activeText": "Start",
+      "inactiveText": "Start",
       "foxglovePanelTitle": "Start"
     },
     "button.Button!mpause": {
@@ -70,8 +70,8 @@
       "buttonMode": "push",
       "activeColor": "#e59132",
       "inactiveColor": "#D97706",
-      "activeText": "⏸  Pause",
-      "inactiveText": "⏸  Pause",
+      "activeText": "Pause",
+      "inactiveText": "Pause",
       "foxglovePanelTitle": "Pause"
     },
     "button.Button!mabort": {
@@ -80,8 +80,8 @@
       "buttonMode": "push",
       "activeColor": "#e33c3c",
       "inactiveColor": "#DC2626",
-      "activeText": "⏹  Abort",
-      "inactiveText": "⏹  Abort",
+      "activeText": "Abort",
+      "inactiveText": "Abort",
       "foxglovePanelTitle": "Abort"
     },
     "button.Button!landall": {
@@ -90,19 +90,19 @@
       "buttonMode": "push",
       "activeColor": "#f59e0b",
       "inactiveColor": "#d97706",
-      "activeText": "🛬  Land",
-      "inactiveText": "🛬  Land",
+      "activeText": "Land All",
+      "inactiveText": "Land All",
       "foxglovePanelTitle": "Land All"
     },
     "button.Button!armall": {
       "outputMode": "publisher",
       "name": "/flychams/coordinator/arm_all",
-      "buttonMode": "toggle",
+      "buttonMode": "push",
       "activeColor": "#10B981",
-      "inactiveColor": "#EF4444",
-      "activeText": "🔓  Armed",
-      "inactiveText": "🔒  Disarmed",
-      "foxglovePanelTitle": "Arm / Disarm"
+      "inactiveColor": "#10B981",
+      "activeText": "Arm All",
+      "inactiveText": "Arm All",
+      "foxglovePanelTitle": "Arm All"
     },
     "button.Button!rth": {
       "outputMode": "publisher",
@@ -110,9 +110,9 @@
       "buttonMode": "push",
       "activeColor": "#2ab9dd",
       "inactiveColor": "#0891B2",
-      "activeText": "🏠  Home",
-      "inactiveText": "🏠  Home",
-      "foxglovePanelTitle": "Home"
+      "activeText": "Home All",
+      "inactiveText": "Home All",
+      "foxglovePanelTitle": "Home All"
     },
     "Tab!cams": {
       "activeTabIdx": 0,

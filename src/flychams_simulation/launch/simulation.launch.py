@@ -15,7 +15,7 @@ def launch_airsim():
             name='airsim_node',
             output='screen',
             namespace='airsim',
-            arguments=['--ros-args', '--log-level', 'error'],
+            arguments=['--ros-args', '--log-level', 'info'],
             parameters=[{
                 'update_sim_clock_every_n_sec': 0.01,
                 'host_ip': 'localhost',

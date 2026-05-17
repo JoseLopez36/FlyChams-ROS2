@@ -151,15 +151,10 @@ void CameraFrames::update()
 
 bool CameraFrames::checkStatus()
 {
-    // Check 1: Mission must be active
-    if (!node_->isMissionActive())
-    {
-        return false;
-    }
-
-    // Check 2: Agent must have a valid observation setpoints
+    // Check 1: Agent must have a valid observation setpoints
     if (!agent_.has_observation_setpoints)
     {
+        RCLCPP_WARN(node_->get_logger(), "Camera frames: Agent %s has no observation setpoints", agent_id_.c_str());
         return false;
     }
 
