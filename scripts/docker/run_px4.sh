@@ -16,7 +16,7 @@ DETACH="${DETACH:-false}"
 [ "$DETACH" = "true" ] && RUN_FLAGS="--rm -d" || RUN_FLAGS="--rm -it"
 
 # PX4 Docker repository
-PX4_DOCKER_REPO="px4io/px4-dev-nuttx-focal:2021-04-29"
+PX4_DOCKER_REPO="px4io/px4-dev-nuttx-focal:2022-08-12"
 
 # Create cache directory
 CCACHE_DIR=${HOME}/.ccache
@@ -34,7 +34,7 @@ docker run ${RUN_FLAGS} \
     -e LOCAL_USER_ID="$(id -u)" \
     -e CCACHE_DIR="${CCACHE_DIR}" \
     -v ${CCACHE_DIR}:${CCACHE_DIR}:rw \
-    -v ${FLYCHAMS_PX4_PATH}:${FLYCHAMS_PX4_PATH}:rw \
-    -w "${FLYCHAMS_PX4_PATH}" \
+    -v ${PX4_AUTOPILOT_PATH}:${PX4_AUTOPILOT_PATH}:rw \
+    -w "${PX4_AUTOPILOT_PATH}" \
     ${PX4_DOCKER_REPO} \
     bash -c "$CMD"

@@ -3,7 +3,7 @@
     # Simulation settings
     simulation:
       framework: AirSim
-      clock_speed: 0.5    # Clock speed multiplier (1.0 = real-time)
+      clock_speed: 1    # Clock speed multiplier (1.0 = real-time)
       quality_preset: 1
 
     # Path settings

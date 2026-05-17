@@ -12,7 +12,8 @@ The project leverages:
 - **ROS2 Humble** for the distributed robotics framework.
 - **Unreal Engine 5** for photorealistic simulation.
 - **AirSim** for high-fidelity physics simulation.
-- **PX4** for commercial flight control.
+- **PX4 v1.16** for commercial flight control.
+- **Micro-XRCE-DDS** for PX4–ROS2 topic bridging.
 - **Docker** for containerised deployment of all system components.
 
 ---
@@ -77,6 +78,7 @@ This project is part of a broader research initiative by the Department of Syste
 
 - **Ubuntu 20.04, 22.04, or 24.04** (or compatible Linux distribution)
 - **Docker** - Required for running coordinator, simulation, agent and operator containers. It must be installed with NVIDIA Container Toolkit: [Installing NVIDIA Container Toolkit](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html)
+- **PX4 v1.16 + Micro-XRCE-DDS Agent v2.4.3** - Required for autopilot SITL simulation. See **[docs/autopilot.md](docs/autopilot.md)** for setup.
 - **Unreal Engine 5.2.1 (optional)** - Required for creating custom photorealistic simulation environments.
 
 ### Hardware Requirements
@@ -142,6 +144,7 @@ FlyChams-ROS2/
 | [docs/setup.md](docs/setup.md) | Prerequisites, building workspaces, generating settings, env vars |
 | [docs/launch.md](docs/launch.md) | Launching, stopping, and inspecting logs |
 | [docs/docker.md](docs/docker.md) | Building and managing Docker images |
+| [docs/autopilot.md](docs/autopilot.md) | PX4 v1.16 and Micro-XRCE-DDS Agent setup |
 | [docs/simulator.md](docs/simulator.md) | AirSim / UE5 simulator setup |
 | [docs/foxglove.md](docs/foxglove.md) | Foxglove Studio operator interface |
 

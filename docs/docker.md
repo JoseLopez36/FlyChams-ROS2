@@ -50,12 +50,19 @@ Extends `flychams-base` with Foxglove Bridge for remote monitoring via Foxglove 
 
 Required for PX4 SITL simulation. Not built locally — pulled from Docker Hub.
 
-- **Image**: `px4io/px4-dev-nuttx-focal:2021-04-29`
-- **Purpose**: Provides the NuttX toolchain used to compile and run PX4 firmware in software-in-the-loop (SITL) mode.
+- **Image**: `px4io/px4-dev-nuttx-focal:2022-08-12`
+- **Purpose**: Provides the NuttX toolchain used to compile and run PX4 v1.16 firmware in software-in-the-loop (SITL) mode.
 
-```bash
-docker pull px4io/px4-dev-nuttx-focal:2021-04-29
-```
+See [autopilot.md](autopilot.md) for installation and build instructions.
+
+### micro-xrce-dds-agent (external)
+
+Required for ROS2 communication with PX4 via the Micro-XRCE-DDS protocol.
+
+- **Image**: `micro-xrce-dds-agent` (built from the `Dockerfile` at the root of the Micro-XRCE-DDS-Agent v2.4.3 source tree)
+- **Purpose**: Bridges PX4 uORB topics to ROS2 DDS, enabling direct topic communication between PX4 SITL and the FlyChams ROS2 stack.
+
+See [autopilot.md](autopilot.md) for installation and build instructions.
 
 ## Scripts
 

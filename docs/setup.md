@@ -5,14 +5,7 @@ All scripts are run from the **project root** unless stated otherwise.
 ## Prerequisites
 
 1. Docker images built — see [docker.md](docker.md).
-2. PX4 simulation image pulled (sim mode only):
-   ```bash
-   docker pull px4io/px4-dev-nuttx-focal:2021-04-29
-   ```
-3. `FLYCHAMS_PX4_PATH` set to the absolute path of your PX4 source tree (sim mode only). Add it to your shell profile to persist across sessions:
-   ```bash
-   export FLYCHAMS_PX4_PATH=/path/to/PX4-Autopilot
-   ```
+2. PX4 and Micro-XRCE-DDS Agent set up — see [autopilot.md](autopilot.md).
 
 ---
 
@@ -51,7 +44,8 @@ All containers inherit the following from the host (with defaults):
 |---|---|---|
 | `ROS_DOMAIN_ID` | `0` | ROS2 DDS domain |
 | `FASTDDS_BUILTIN_TRANSPORTS` | `UDPv4` | FastDDS transport |
-| `FLYCHAMS_PX4_PATH` | — | Absolute path to the PX4 source tree (required for `launch_px4.sh`) |
+| `PX4_AUTOPILOT_PATH` | — | Absolute path to the PX4 source tree (see [autopilot.md](autopilot.md)) |
+| `Micro_XRCE_DDS_AGENT_PATH` | — | Absolute path to the Micro-XRCE-DDS-Agent source tree (see [autopilot.md](autopilot.md)) |
 | `FOXGLOVE_PORT` | `8765` | WebSocket port for Foxglove Bridge |
 
 Override on the command line:
