@@ -1,7 +1,7 @@
 #pragma once
 
 // Utils include
-#include "flychams_agent/mavros/mavros_communication.hpp"
+#include "flychams_agent/autopilot/autopilot_communication.hpp"
 
 // Base module include
 #include "flychams_common/base/base_status_module.hpp"
@@ -48,8 +48,8 @@ namespace flychams::agent
             bool has_local_odom;
             // Subscriber
             common::SubscriberPtr<common::GeoPointStampedMsg> global_origin_sub;
-            common::SubscriberPtr<mavros_msgs::msg::HomePosition> home_position_sub;
-            common::SubscriberPtr<common::OdometryMsg> local_odom_sub;
+            common::SubscriberPtr<px4_msgs::msg::HomePosition> home_position_sub;
+            common::SubscriberPtr<px4_msgs::msg::VehicleOdometry> local_odom_sub;
             // Constructor
             Agent()
                 : global_origin(), has_global_origin(false), home_position(), has_home_position(false),
@@ -66,13 +66,13 @@ namespace flychams::agent
     private: // Data
         // Agent
         Agent agent_;
-        // Mavros communication
-        MavrosCommunication::SharedPtr mavros_comm_;
+        // PX4 communication
+        AutopilotCommunication::SharedPtr autopilot_comm_;
 
     private: // Callbacks
         void globalOriginCallback(const common::GeoPointStampedMsg::SharedPtr msg);
-        void homePositionCallback(const mavros_msgs::msg::HomePosition::SharedPtr msg);
-        void localOdomCallback(const common::OdometryMsg::SharedPtr msg);
+        void homePositionCallback(const px4_msgs::msg::HomePosition::SharedPtr msg);
+        void localOdomCallback(const px4_msgs::msg::VehicleOdometry::SharedPtr msg);
 
     private: // Frames creation
         void createLocalFrame(const common::GeoPointMsg& home_geopoint, const common::GeoPointMsg& origin_geopoint);

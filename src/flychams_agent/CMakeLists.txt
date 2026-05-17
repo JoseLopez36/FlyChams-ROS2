@@ -34,6 +34,8 @@ set(CONTROL_SRC
   src/tracking/agent_tracking.cpp
   # Stream
   src/stream/agent_stream.cpp
+  # Autopilot
+  src/autopilot/autopilot_communication.cpp
 )
 add_library(${PROJECT_NAME} SHARED ${CONTROL_SRC})
 target_include_directories(${PROJECT_NAME} PUBLIC

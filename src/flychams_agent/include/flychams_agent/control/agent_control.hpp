@@ -1,7 +1,7 @@
 #pragma once
 
 // Utils include
-#include "flychams_agent/mavros/mavros_communication.hpp"
+#include "flychams_agent/autopilot/autopilot_communication.hpp"
 
 // Base module include
 #include "flychams_common/base/base_status_module.hpp"
@@ -88,8 +88,8 @@ namespace flychams::agent
 		bool land_all_;
 		// Return home flag
 		bool return_home_;
-		// Mavros communication
-		MavrosCommunication::SharedPtr mavros_comm_;
+		// PX4 communication
+		AutopilotCommunication::SharedPtr autopilot_comm_;
 
 	private: // Callbacks
 		void statusCallback(const common::AgentStatusMsg::SharedPtr msg);

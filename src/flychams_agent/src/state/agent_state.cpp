@@ -20,13 +20,13 @@ void DroneState::onModuleInit()
     // Initialize data
     agent_ = Agent();
 
-    // Create mavros communication
-    mavros_comm_ = std::make_shared<MavrosCommunication>(agent_id_, node_);
+    // Create PX4 communication
+    autopilot_comm_ = std::make_shared<AutopilotCommunication>(agent_id_, node_);
 
-    // Subscribe to mavros topics
-    agent_.state_sub = mavros_comm_->subscribeState(
-        std::bind(&DroneState::stateCallback, this, std::placeholders::_1), node_->getSubscriptionOptions());
-    agent_.local_odom_sub = mavros_comm_->subscribeLocalOdometry(
+    // Subscribe to PX4 topics
+    agent_.status_sub = autopilot_comm_->subscribeVehicleStatus(
+        std::bind(&DroneState::vehicleStatusCallback, this, std::placeholders::_1), node_->getSubscriptionOptions());
+    agent_.local_odom_sub = autopilot_comm_->subscribeLocalOdometry(
         std::bind(&DroneState::localOdomCallback, this, std::placeholders::_1), node_->getSubscriptionOptions());
 
     // Create publishers for agent status and position
@@ -40,15 +40,15 @@ void DroneState::onModuleInit()
 
 void DroneState::onModuleShutdown()
 {
-    // Destroy mavros subscribers
-    agent_.state_sub.reset();
+    // Destroy PX4 subscribers
+    agent_.status_sub.reset();
     agent_.local_odom_sub.reset();
     // Destroy publishers
     agent_.status_pub.reset();
     agent_.local_position_pub.reset();
     agent_.global_position_pub.reset();
-    // Destroy mavros communication
-    mavros_comm_.reset();
+    // Destroy PX4 communication
+    autopilot_comm_.reset();
     // Destroy update timer
     update_timer_.reset();
 }
@@ -57,17 +57,15 @@ void DroneState::onModuleShutdown()
 // CALLBACKS: Callback functions
 // ════════════════════════════════════════════════════════════════════════════
 
-void DroneState::stateCallback(const mavros_msgs::msg::State::SharedPtr msg)
+void DroneState::vehicleStatusCallback(const px4_msgs::msg::VehicleStatus::SharedPtr msg)
 {
-    // Update current status
-    agent_.state = *msg;
-    agent_.has_state = true;
+    agent_.vehicle_status = *msg;
+    agent_.has_status = true;
 }
 
-void DroneState::localOdomCallback(const OdometryMsg::SharedPtr msg)
+void DroneState::localOdomCallback(const px4_msgs::msg::VehicleOdometry::SharedPtr msg)
 {
-    // Store odometry data
-    agent_.local_odom = *msg;
+    agent_.vehicle_odom = *msg;
     agent_.has_local_odom = true;
 }
 
@@ -84,9 +82,11 @@ void DroneState::update()
     }
 
     // Handle state based on current odometry and status
-    bool connected = agent_.state.connected;
-    bool armed = agent_.state.armed;
-    float altitude = agent_.local_odom.pose.pose.position.z;
+    // VehicleStatus: arming_state == 2 means ARMED
+    bool connected = true;
+    bool armed = (agent_.vehicle_status.arming_state == px4_msgs::msg::VehicleStatus::ARMING_STATE_ARMED);
+    // VehicleOdometry position[2] is NED down — negate for altitude (up positive)
+    float altitude = -agent_.vehicle_odom.position[2];
 
     // Map PX4 state to simplified 3-state AgentStatus
     // ACTIVE = armed AND flying (above takeoff altitude)
@@ -127,8 +127,8 @@ void DroneState::update()
     agent_.status_pub->publish(status_msg);
 
     // Update local and global position
-    updateLocalPosition(agent_.local_odom);
-    updateGlobalPosition(agent_.local_odom);
+    updateLocalPosition(agent_.vehicle_odom);
+    updateGlobalPosition(agent_.vehicle_odom);
 }
 
 // ════════════════════════════════════════════════════════════════════════════
@@ -137,13 +137,13 @@ void DroneState::update()
 
 bool DroneState::checkStatus()
 {
-    // Check 1: Agent must have a valid mavros state
-    if (!agent_.has_state)
+    // Check 1: Agent must have a valid PX4 vehicle status
+    if (!agent_.has_status)
     {
         return false;
     }
 
-    // Check 2: Agent must have a valid mavros local odometry
+    // Check 2: Agent must have a valid PX4 local odometry
     if (!agent_.has_local_odom)
     {
         return false;
@@ -157,29 +157,38 @@ bool DroneState::checkStatus()
 // STATUS UPDATE: Status update
 // ════════════════════════════════════════════════════════════════════════════
 
-void DroneState::updateLocalPosition(const OdometryMsg& local_odom)
+void DroneState::updateLocalPosition(const px4_msgs::msg::VehicleOdometry& vehicle_odom)
 {
-    // Create local position message
-    PointStampedMsg local_position_msg;
-    local_position_msg.header = local_odom.header;
-    local_position_msg.point = local_odom.pose.pose.position;
+    // Convert NED position to ENU
+    const Vector3r ned_pos(vehicle_odom.position[0], vehicle_odom.position[1], vehicle_odom.position[2]);
+    const Vector3r enu_pos = FrameUtils::pointFromNED(ned_pos);
 
-    // Publish agent local position
+    PointStampedMsg local_position_msg;
+    local_position_msg.header.stamp = node_->now();
+    local_position_msg.header.frame_id = node_->getAgentLocalFrame(agent_id_);
+    local_position_msg.point.x = enu_pos.x();
+    local_position_msg.point.y = enu_pos.y();
+    local_position_msg.point.z = enu_pos.z();
+
     agent_.local_position_pub->publish(local_position_msg);
 }
 
-void DroneState::updateGlobalPosition(const OdometryMsg& local_odom)
+void DroneState::updateGlobalPosition(const px4_msgs::msg::VehicleOdometry& vehicle_odom)
 {
-    // Create local position message
-    PointStampedMsg local_position_msg;
-    local_position_msg.header = local_odom.header;
-    local_position_msg.point = local_odom.pose.pose.position;
+    // Convert NED position to ENU
+    const Vector3r ned_pos(vehicle_odom.position[0], vehicle_odom.position[1], vehicle_odom.position[2]);
+    const Vector3r enu_pos = FrameUtils::pointFromNED(ned_pos);
 
-    // Create global position message
+    PointStampedMsg local_position_msg;
+    local_position_msg.header.stamp = node_->now();
+    local_position_msg.header.frame_id = node_->getAgentLocalFrame(agent_id_);
+    local_position_msg.point.x = enu_pos.x();
+    local_position_msg.point.y = enu_pos.y();
+    local_position_msg.point.z = enu_pos.z();
+
     PointStampedMsg global_position_msg;
-    global_position_msg.header.stamp = local_odom.header.stamp;
+    global_position_msg.header.stamp = node_->now();
     global_position_msg = node_->transformPoint(local_position_msg, node_->getGlobalFrame());
 
-    // Publish agent global position
     agent_.global_position_pub->publish(global_position_msg);
 }

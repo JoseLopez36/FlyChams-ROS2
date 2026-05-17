@@ -17,15 +17,15 @@ void DroneFrames::onModuleInit()
     // Initialize data
     agent_ = Agent();
 
-    // Create mavros communication
-    mavros_comm_ = std::make_shared<MavrosCommunication>(agent_id_, node_);
+    // Create PX4 communication
+    autopilot_comm_ = std::make_shared<AutopilotCommunication>(agent_id_, node_);
 
     // Subscribe to topics
     agent_.global_origin_sub = node_->createGlobalOriginSubscriber(
         std::bind(&DroneFrames::globalOriginCallback, this, std::placeholders::_1), node_->getSubscriptionOptions());
-    agent_.home_position_sub = mavros_comm_->subscribeHomePosition(
+    agent_.home_position_sub = autopilot_comm_->subscribeHomePosition(
         std::bind(&DroneFrames::homePositionCallback, this, std::placeholders::_1), node_->getSubscriptionOptions());
-    agent_.local_odom_sub = mavros_comm_->subscribeLocalOdometry(
+    agent_.local_odom_sub = autopilot_comm_->subscribeLocalOdometry(
         std::bind(&DroneFrames::localOdomCallback, this, std::placeholders::_1), node_->getSubscriptionOptions());
 
     // Set update timer
@@ -38,8 +38,8 @@ void DroneFrames::onModuleShutdown()
     agent_.global_origin_sub.reset();
     agent_.home_position_sub.reset();
     agent_.local_odom_sub.reset();
-    // Destroy mavros communication
-    mavros_comm_.reset();
+    // Destroy PX4 communication
+    autopilot_comm_.reset();
     // Destroy update timer
     update_timer_.reset();
 }
@@ -55,7 +55,7 @@ void DroneFrames::globalOriginCallback(const GeoPointStampedMsg::SharedPtr msg)
     agent_.has_global_origin = true;
 }
 
-void DroneFrames::homePositionCallback(const mavros_msgs::msg::HomePosition::SharedPtr msg)
+void DroneFrames::homePositionCallback(const px4_msgs::msg::HomePosition::SharedPtr msg)
 {
     // Check if we have a valid global origin
     if (!agent_.has_global_origin)
@@ -72,18 +72,30 @@ void DroneFrames::homePositionCallback(const mavros_msgs::msg::HomePosition::Sha
     }
 
     // Update current home position
-    agent_.home_position = msg->geo;
+    agent_.home_position.latitude = msg->lat;
+    agent_.home_position.longitude = msg->lon;
+    agent_.home_position.altitude = msg->alt;
     agent_.has_home_position = true;
 
     // Create local frame
     createLocalFrame(agent_.home_position, agent_.global_origin);
 }
 
-void DroneFrames::localOdomCallback(const OdometryMsg::SharedPtr msg)
+void DroneFrames::localOdomCallback(const px4_msgs::msg::VehicleOdometry::SharedPtr msg)
 {
-    // Store odometry data
-    agent_.local_position = msg->pose.pose.position;
-    agent_.local_orientation = msg->pose.pose.orientation;
+    // Store odometry data — PX4 VehicleOdometry is NED, convert to ENU
+    const Vector3r ned_pos(msg->position[0], msg->position[1], msg->position[2]);
+    const Vector3r enu_pos = FrameUtils::pointFromNED(ned_pos);
+    agent_.local_position.x = enu_pos.x();
+    agent_.local_position.y = enu_pos.y();
+    agent_.local_position.z = enu_pos.z();
+
+    const Quaternionr ned_q(msg->q[0], msg->q[1], msg->q[2], msg->q[3]);
+    const Quaternionr enu_q = FrameUtils::quatFromNED(ned_q);
+    agent_.local_orientation.x = enu_q.x();
+    agent_.local_orientation.y = enu_q.y();
+    agent_.local_orientation.z = enu_q.z();
+    agent_.local_orientation.w = enu_q.w();
     agent_.has_local_odom = true;
 }
 

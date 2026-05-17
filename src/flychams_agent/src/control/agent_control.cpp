@@ -44,8 +44,8 @@ void DroneControl::onModuleInit()
 	// Initialize return home flag
 	return_home_ = false;
 
-	// Create mavros communication
-	mavros_comm_ = std::make_shared<MavrosCommunication>(agent_id_, node_);
+	// Create PX4 communication
+	autopilot_comm_ = std::make_shared<AutopilotCommunication>(agent_id_, node_);
 
 	// Subscribe to status, position and setpoint topics
 	agent_.status_sub = node_->createAgentStatusSubscriber(agent_id_,
@@ -78,8 +78,8 @@ void DroneControl::onModuleShutdown()
 	arm_all_sub_.reset();
 	land_all_sub_.reset();
 	return_home_sub_.reset();
-	// Destroy mavros communication
-	mavros_comm_.reset();
+	// Destroy PX4 communication
+	autopilot_comm_.reset();
 	// Destroy update timer
 	update_timer_.reset();
 }
@@ -140,7 +140,7 @@ void DroneControl::returnHomeCallback(const BoolMsg::SharedPtr msg)
 {
 	return_home_ = true;
 	RCLCPP_INFO(node_->get_logger(), "Drone control: Return home command received for %s", agent_id_.c_str());
-	mavros_comm_->setMode("AUTO.RTL");
+	autopilot_comm_->setMode("AUTO.RTL");
 }
 
 // ════════════════════════════════════════════════════════════════════════════
@@ -309,13 +309,13 @@ bool DroneControl::checkStatus()
 
 bool DroneControl::requestOffboard()
 {
-	return mavros_comm_->enableOffboard(true);
+	return autopilot_comm_->enableOffboard(true);
 }
 
 bool DroneControl::requestDisarm()
 {
 	if (agent_.status == AgentStatus::IDLE || agent_.status == AgentStatus::ERROR)
-		return mavros_comm_->armDisarm(false);
+		return autopilot_comm_->armDisarm(false);
 	else
 		return false;
 }
@@ -323,7 +323,7 @@ bool DroneControl::requestDisarm()
 bool DroneControl::requestArm()
 {
 	if (agent_.status == AgentStatus::IDLE)
-		return mavros_comm_->armDisarm(true);
+		return autopilot_comm_->armDisarm(true);
 	else
 		return false;
 }
@@ -332,7 +332,7 @@ bool DroneControl::requestTakeoff()
 {
 	if (agent_.status == AgentStatus::IDLE)
 	{
-		mavros_comm_->setLocalPosition(0.0f, 0.0f, takeoff_altitude_);
+		autopilot_comm_->setLocalPosition(0.0f, 0.0f, takeoff_altitude_);
 		return true;
 	}
 	else
@@ -343,7 +343,7 @@ bool DroneControl::requestHover()
 {
 	if (agent_.status == AgentStatus::ACTIVE)
 	{
-		mavros_comm_->setLocalPosition(agent_.local_position.point.x, agent_.local_position.point.y, agent_.local_position.point.z);
+		autopilot_comm_->setLocalPosition(agent_.local_position.point.x, agent_.local_position.point.y, agent_.local_position.point.z);
 		return true;
 	}
 	else
@@ -357,7 +357,7 @@ bool DroneControl::requestSetpoint()
 		const std::string& local_frame = node_->getAgentLocalFrame(agent_id_);
 		const PointStampedMsg local_setpoint = node_->transformPoint(agent_.setpoint, local_frame);
 
-		mavros_comm_->setLocalPosition(local_setpoint.point.x, local_setpoint.point.y, local_setpoint.point.z);
+		autopilot_comm_->setLocalPosition(local_setpoint.point.x, local_setpoint.point.y, local_setpoint.point.z);
 		RCLCPP_DEBUG(node_->get_logger(), "Drone control: Setpoint sent to agent %s",
 			agent_id_.c_str());
 		RCLCPP_DEBUG(node_->get_logger(), "Drone control: Setpoint: %f, %f, %f",
@@ -371,7 +371,7 @@ bool DroneControl::requestSetpoint()
 bool DroneControl::requestLand()
 {
 	if (agent_.status == AgentStatus::ACTIVE || agent_.status == AgentStatus::ERROR)
-		return mavros_comm_->land();
+		return autopilot_comm_->land();
 	else
 		return false;
 }
