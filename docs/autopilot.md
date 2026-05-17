@@ -103,5 +103,20 @@ docker run --rm --network host micro-xrce-dds-agent udp4 -p 8888
 
 Once PX4 is built and the Micro-XRCE-DDS Agent image exists, the FlyChams launch scripts handle autopilot startup automatically. See [launch.md](launch.md) for the full launch reference.
 
-- `scripts/launch_px4.sh {i}` — starts a `PX4-{i}` container running PX4 SITL for agent index `i`.
+- `scripts/launch_px4.sh {i} {AGENT_ID}` — starts a `flychams-px4-{i}` container running PX4 SITL for agent index `i` with the given agent ID as the uXRCE-DDS namespace.
 - The Micro-XRCE-DDS Agent is started alongside PX4 to expose uORB topics on the ROS2 network.
+
+### Topic Namespacing
+
+Each PX4 instance is started with `PX4_UXRCE_DDS_NS=<AGENT_ID>`, which prefixes all uXRCE-DDS topics with the agent ID. For example, launching with `AGENT_ID=AGENT00` produces:
+
+```
+/AGENT00/fmu/out/home_position
+/AGENT00/fmu/out/vehicle_odometry
+/AGENT00/fmu/out/vehicle_status
+/AGENT00/fmu/in/offboard_control_mode
+/AGENT00/fmu/in/trajectory_setpoint
+/AGENT00/fmu/in/vehicle_command
+```
+
+This allows multiple PX4 instances to coexist on the same ROS2 network without topic collisions.
