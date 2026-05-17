@@ -1,4 +1,4 @@
-#include "flychams_agent/px4/autopilot_communication.hpp"
+#include "flychams_agent/autopilot/autopilot_communication.hpp"
 
 #include <limits>
 
@@ -11,12 +11,16 @@ using namespace flychams::agent;
 
 void AutopilotCommunication::onModuleInit()
 {
+    rclcpp::QoS qos_pub = rclcpp::QoS(rclcpp::KeepLast(1))
+        .reliability(rclcpp::ReliabilityPolicy::BestEffort)
+        .durability(rclcpp::DurabilityPolicy::TransientLocal);
+
     vehicle_command_pub_ = node_->create_publisher<px4_msgs::msg::VehicleCommand>(
-        "/" + agent_id_ + "/fmu/in/vehicle_command", 10);
+        "/" + agent_id_ + "/fmu/in/vehicle_command", qos_pub);
     offboard_control_mode_pub_ = node_->create_publisher<px4_msgs::msg::OffboardControlMode>(
-        "/" + agent_id_ + "/fmu/in/offboard_control_mode", 10);
+        "/" + agent_id_ + "/fmu/in/offboard_control_mode", qos_pub);
     trajectory_setpoint_pub_ = node_->create_publisher<px4_msgs::msg::TrajectorySetpoint>(
-        "/" + agent_id_ + "/fmu/in/trajectory_setpoint", 10);
+        "/" + agent_id_ + "/fmu/in/trajectory_setpoint", qos_pub);
 }
 
 void AutopilotCommunication::onModuleShutdown()
@@ -34,7 +38,9 @@ SubscriberPtr<px4_msgs::msg::HomePosition> AutopilotCommunication::subscribeHome
     const std::function<void(const px4_msgs::msg::HomePosition::SharedPtr)>& callback,
     const rclcpp::SubscriptionOptions& options)
 {
-    rclcpp::QoS qos = rclcpp::QoS(rclcpp::KeepLast(10)).best_effort();
+    rclcpp::QoS qos = rclcpp::QoS(rclcpp::KeepLast(1))
+        .reliability(rclcpp::ReliabilityPolicy::BestEffort)
+        .durability(rclcpp::DurabilityPolicy::Volatile);
     return node_->create_subscription<px4_msgs::msg::HomePosition>(
         "/" + agent_id_ + "/fmu/out/home_position", qos, callback, options);
 }
@@ -43,7 +49,9 @@ SubscriberPtr<px4_msgs::msg::VehicleStatus> AutopilotCommunication::subscribeVeh
     const std::function<void(const px4_msgs::msg::VehicleStatus::SharedPtr)>& callback,
     const rclcpp::SubscriptionOptions& options)
 {
-    rclcpp::QoS qos = rclcpp::QoS(rclcpp::KeepLast(10)).best_effort();
+    rclcpp::QoS qos = rclcpp::QoS(rclcpp::KeepLast(1))
+        .reliability(rclcpp::ReliabilityPolicy::BestEffort)
+        .durability(rclcpp::DurabilityPolicy::Volatile);
     return node_->create_subscription<px4_msgs::msg::VehicleStatus>(
         "/" + agent_id_ + "/fmu/out/vehicle_status", qos, callback, options);
 }
@@ -52,7 +60,9 @@ SubscriberPtr<px4_msgs::msg::VehicleOdometry> AutopilotCommunication::subscribeL
     const std::function<void(const px4_msgs::msg::VehicleOdometry::SharedPtr)>& callback,
     const rclcpp::SubscriptionOptions& options)
 {
-    rclcpp::QoS qos = rclcpp::QoS(rclcpp::KeepLast(10)).best_effort();
+    rclcpp::QoS qos = rclcpp::QoS(rclcpp::KeepLast(1))
+        .reliability(rclcpp::ReliabilityPolicy::BestEffort)
+        .durability(rclcpp::DurabilityPolicy::Volatile);
     return node_->create_subscription<px4_msgs::msg::VehicleOdometry>(
         "/" + agent_id_ + "/fmu/out/vehicle_odometry", qos, callback, options);
 }
@@ -125,9 +135,14 @@ void AutopilotCommunication::setLocalPosition(const float& x, const float& y, co
     offboard_msg.acceleration = false;
     offboard_control_mode_pub_->publish(offboard_msg);
 
+    // Input is ENU (local frame) — convert to NED for PX4 TrajectorySetpoint
+    const Vector3r ned = FrameUtils::pointToNED(Vector3r(x, y, z));
+
     px4_msgs::msg::TrajectorySetpoint setpoint_msg{};
     setpoint_msg.timestamp = node_->now().nanoseconds() / 1000;
-    setpoint_msg.position = {x, y, z};
+    setpoint_msg.position[0] = static_cast<float>(ned.x());
+    setpoint_msg.position[1] = static_cast<float>(ned.y());
+    setpoint_msg.position[2] = static_cast<float>(ned.z());
     setpoint_msg.yaw = std::numeric_limits<float>::quiet_NaN();
     trajectory_setpoint_pub_->publish(setpoint_msg);
 }
