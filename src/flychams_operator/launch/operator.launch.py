@@ -7,38 +7,6 @@ from ament_index_python.packages import get_package_share_directory
 import os
 import yaml
 
-def launch_foxglove_bridge():
-    port = int(os.environ.get('FOXGLOVE_PORT', 8765))
-    return [
-        Node(
-            package='foxglove_bridge',
-            executable='foxglove_bridge',
-            name='foxglove_bridge',
-            output='screen',
-            namespace='foxglove',
-            arguments=['--ros-args', '--log-level', 'info'],
-            parameters=[{
-                'port': port,
-                'address': '0.0.0.0',
-                'tls': False,
-                'topic_whitelist': [
-                    '^/flychams/(?!coordinator/(start_mission|pause_mission|abort_mission|arm_all|return_home|land_all)).*',
-                    '/rosout',
-                ],
-                'client_publish_topic_whitelist': [
-                    '/flychams/coordinator/start_mission',
-                    '/flychams/coordinator/pause_mission',
-                    '/flychams/coordinator/abort_mission',
-                    '/flychams/coordinator/arm_all',
-                    '/flychams/coordinator/return_home',
-                    '/flychams/coordinator/land_all',
-                ],
-                'send_buffer_limit': 10000000,
-                'num_threads': 4,
-            }]
-        )
-    ]
-
 def generate_launch_description():
     # Resolve config directories
     common_core_dir = os.path.join(
@@ -112,11 +80,7 @@ def generate_launch_description():
             )
             nodes.append(node)
 
-    # Launch Foxglove Bridge
-    foxglove_nodes = launch_foxglove_bridge()
-
     return LaunchDescription([
         mission_yaml,
-        *nodes,
-        *foxglove_nodes,
+        *nodes
     ])

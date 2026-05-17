@@ -107,6 +107,9 @@ void AgentBridge::publishGimbalAngleCmd()
             continue;
         }
 
+        // Set vehicle name
+        msg.vehicle_name = agent_id_;
+
         // Add camera name
         msg.camera_names.push_back(agent_.observation_setpoints.ids[i]);
 
@@ -146,6 +149,9 @@ void AgentBridge::publishCameraFovCmd()
 
         // Get camera ID
         const ID& camera_id = agent_.observation_setpoints.ids[i];
+
+        // Set vehicle name
+        msg.vehicle_name = agent_id_;
 
         // Add camera name
         msg.camera_names.push_back(camera_id);

@@ -7,23 +7,6 @@ from ament_index_python.packages import get_package_share_directory
 import os
 import yaml
 
-def launch_airsim():
-    return [
-        Node(
-            package='airsim_wrapper',
-            executable='airsim_node',
-            name='airsim_node',
-            output='screen',
-            namespace='airsim',
-            arguments=['--ros-args', '--log-level', 'info'],
-            parameters=[{
-                'update_sim_clock_every_n_sec': 0.01,
-                'host_ip': 'localhost',
-                'host_port': 41451
-            }]
-        )
-    ]
-
 def generate_launch_description():
     # Resolve config directories
     common_core_dir = os.path.join(
@@ -104,11 +87,7 @@ def generate_launch_description():
             )
             nodes.append(node)
 
-    # Launch AirSim wrapper
-    airsim_node = launch_airsim()
-
     return LaunchDescription([
         mission_yaml,
-        *nodes,
-        *airsim_node
+        *nodes
     ])
