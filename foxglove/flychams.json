@@ -84,16 +84,6 @@
       "inactiveText": "Abort",
       "foxglovePanelTitle": "Abort"
     },
-    "button.Button!landall": {
-      "outputMode": "publisher",
-      "name": "/flychams/coordinator/land_all",
-      "buttonMode": "push",
-      "activeColor": "#f59e0b",
-      "inactiveColor": "#d97706",
-      "activeText": "Land All",
-      "inactiveText": "Land All",
-      "foxglovePanelTitle": "Land All"
-    },
     "button.Button!armall": {
       "outputMode": "publisher",
       "name": "/flychams/coordinator/arm_all",
@@ -103,6 +93,16 @@
       "activeText": "Armed",
       "inactiveText": "Disarmed",
       "foxglovePanelTitle": "Arm All"
+    },
+    "button.Button!landall": {
+      "outputMode": "publisher",
+      "name": "/flychams/coordinator/land_all",
+      "buttonMode": "push",
+      "activeColor": "#f59e0b",
+      "inactiveColor": "#d97706",
+      "activeText": "Land All",
+      "inactiveText": "Land All",
+      "foxglovePanelTitle": "Land All"
     },
     "button.Button!rth": {
       "outputMode": "publisher",
@@ -416,7 +416,7 @@
     "Image!a1c0": {
       "synchronize": false,
       "imageMode": {
-        "imageTopic": "/flychams/agent/AGENT01/MULTICAMERA00/image"
+        "imageTopic": "/flychams/agent/AGENT01/MULTICAMERA03/image"
       },
       "foxglovePanelTitle": "AGENT01 — Central",
       "cameraState": {
@@ -464,7 +464,7 @@
     "Image!a1c1": {
       "synchronize": false,
       "imageMode": {
-        "imageTopic": "/flychams/agent/AGENT01/MULTICAMERA01/image"
+        "imageTopic": "/flychams/agent/AGENT01/MULTICAMERA04/image"
       },
       "foxglovePanelTitle": "AGENT01 — Tracking 1",
       "cameraState": {
@@ -510,7 +510,7 @@
     "Image!a1c2": {
       "synchronize": false,
       "imageMode": {
-        "imageTopic": "/flychams/agent/AGENT01/MULTICAMERA02/image"
+        "imageTopic": "/flychams/agent/AGENT01/MULTICAMERA05/image"
       },
       "foxglovePanelTitle": "AGENT01 — Tracking 2",
       "cameraState": {
@@ -648,7 +648,7 @@
     "Image!a2c0": {
       "synchronize": false,
       "imageMode": {
-        "imageTopic": "/flychams/agent/AGENT02/MULTICAMERA00/image"
+        "imageTopic": "/flychams/agent/AGENT02/MULTICAMERA06/image"
       },
       "foxglovePanelTitle": "AGENT02 — Central",
       "cameraState": {
@@ -694,7 +694,7 @@
     "Image!a2c1": {
       "synchronize": false,
       "imageMode": {
-        "imageTopic": "/flychams/agent/AGENT02/MULTICAMERA01/image"
+        "imageTopic": "/flychams/agent/AGENT02/MULTICAMERA07/image"
       },
       "foxglovePanelTitle": "AGENT02 — Tracking 1",
       "cameraState": {
@@ -740,7 +740,7 @@
     "Image!a2c2": {
       "synchronize": false,
       "imageMode": {
-        "imageTopic": "/flychams/agent/AGENT02/MULTICAMERA02/image"
+        "imageTopic": "/flychams/agent/AGENT02/MULTICAMERA08/image"
       },
       "foxglovePanelTitle": "AGENT02 — Tracking 2",
       "cameraState": {

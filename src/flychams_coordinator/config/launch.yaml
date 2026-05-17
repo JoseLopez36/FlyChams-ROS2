@@ -1,6 +1,6 @@
 # Node launch configuration:
 # - node_allowlist allows only the listed nodes to be launched
-# - node_log_levels overrides per-node log level; default is 'info'
+# - node_log_levels overrides per-node log level; default is 'error'
 
 # Node allowlist: Only launch these nodes
 node_allowlist:

@@ -1,6 +1,6 @@
 # Node launch configuration:
 # - node_allowlist allows only the listed nodes to be launched
-# - node_log_levels overrides per-node log level; default is 'info'
+# - node_log_levels overrides per-node log level; default is 'error'
 
 # Node allowlist: Only launch these nodes
 node_allowlist:
@@ -10,7 +10,7 @@ node_allowlist:
   - agent_analysis
   - agent_positioning
   - agent_tracking
-  # - agent_stream
+  - agent_stream
 
 # Per-node log level overrides
 node_log_levels:
