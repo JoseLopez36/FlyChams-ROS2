@@ -71,10 +71,7 @@
       height: 240
     # Stream parameters
     jpeg_quality: 80
-    rtsp_latency_ms: 100
-    reconnect_delay_ms: 2000
-    stream_start_delay_ms: 500
+    stream_open_delay_ms: 1000
     output_encoding: jpg
-    # GPU vendor for hardware video decoding
-    # Options: "auto" (detect from env), "nvidia", "amd", "intel", "none"
-    gpu_vendor: auto
+    # Enable hardware-accelerated video decoding via FFmpeg hwaccel (VAAPI, NVDEC, etc.)
+    hw_acceleration: true

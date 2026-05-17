@@ -107,8 +107,8 @@ void DroneState::update()
     }
     else
     {
-        // Armed: check if flying above takeoff altitude
-        is_flying = altitude >= takeoff_altitude_;
+        // Armed: check if flying
+        is_flying = altitude >= takeoff_altitude_ / 3.0f;
         if (is_flying)
         {
             status = AgentStatus::ACTIVE;
