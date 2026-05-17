@@ -1,0 +1,30 @@
+#####
+#
+# This file maps all the topics that are to be used on the uXRCE-DDS client.
+#
+#####
+publications:
+
+  - topic: /fmu/out/home_position
+    type: px4_msgs::msg::HomePosition
+
+  - topic: /fmu/out/vehicle_odometry
+    type: px4_msgs::msg::VehicleOdometry
+
+  - topic: /fmu/out/vehicle_status
+    type: px4_msgs::msg::VehicleStatus
+
+# Create uORB::Publication
+subscriptions:
+
+  - topic: /fmu/in/offboard_control_mode
+    type: px4_msgs::msg::OffboardControlMode
+
+  - topic: /fmu/in/trajectory_setpoint
+    type: px4_msgs::msg::TrajectorySetpoint
+
+  - topic: /fmu/in/vehicle_command
+    type: px4_msgs::msg::VehicleCommand
+
+# Create uORB::PublicationMulti
+subscriptions_multi:

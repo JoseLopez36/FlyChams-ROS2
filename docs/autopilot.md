@@ -42,7 +42,18 @@ PX4 SITL is compiled and run inside the official NuttX toolchain container:
 docker pull px4io/px4-dev-nuttx-focal:2022-08-12
 ```
 
-### 3. Build PX4 SITL
+### 3. Copy the FlyChams DDS topic configuration
+
+FlyChams uses a minimal `dds_topics.yaml` that restricts the uXRCE-DDS client to only the topics required by the stack. Copy it into the PX4 source tree before building so the firmware is compiled with only the necessary uORB bridges:
+
+```bash
+cp src/flychams_agent/config/dds_topics.yaml \
+   $PX4_AUTOPILOT_PATH/src/modules/uxrce_dds_client/dds_topics.yaml
+```
+
+The file enables three publications (`home_position`, `vehicle_odometry`, `vehicle_status`) and three subscriptions (`offboard_control_mode`, `trajectory_setpoint`, `vehicle_command`), reducing uXRCE-DDS client CPU and memory overhead compared to the PX4 default.
+
+### 4. Build PX4 SITL
 
 Use the provided `docker_run.sh` helper script inside the PX4 source tree to build with the correct toolchain:
 
@@ -51,7 +62,7 @@ cd $PX4_AUTOPILOT_PATH
 ./Tools/docker_run.sh "make px4_sitl_default none_iris"
 ```
 
-This compiles the SITL firmware targeting the Iris quadrotor model. Once complete, PX4 is ready to be launched by the FlyChams scripts.
+This compiles the SITL firmware targeting the Iris quadrotor model with the FlyChams DDS topic set. Once complete, PX4 is ready to be launched by the FlyChams scripts.
 
 ---
 
