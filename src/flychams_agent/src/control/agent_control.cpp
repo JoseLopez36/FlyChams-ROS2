@@ -59,13 +59,13 @@ void DroneControl::onModuleInit()
 		std::bind(&DroneControl::setpointPositionCallback, this, std::placeholders::_1), node_->getSubscriptionOptions());
 	arm_all_sub_ = node_->create_subscription<BoolMsg>(
 		"/flychams/coordinator/arm_all", 10,
-		std::bind(&DroneControl::armAllCallback, this, std::placeholders::_1));
+		std::bind(&DroneControl::armAllCallback, this, std::placeholders::_1), node_->getSubscriptionOptions());
 	land_all_sub_ = node_->create_subscription<BoolMsg>(
 		"/flychams/coordinator/land_all", 10,
-		std::bind(&DroneControl::landAllCallback, this, std::placeholders::_1));
+		std::bind(&DroneControl::landAllCallback, this, std::placeholders::_1), node_->getSubscriptionOptions());
 	return_home_sub_ = node_->create_subscription<BoolMsg>(
 		"/flychams/coordinator/return_home", 10,
-		std::bind(&DroneControl::returnHomeCallback, this, std::placeholders::_1));
+		std::bind(&DroneControl::returnHomeCallback, this, std::placeholders::_1), node_->getSubscriptionOptions());
 
 	// Set update timer
 	last_update_time_ = node_->now();
@@ -120,9 +120,12 @@ void DroneControl::armAllCallback(const BoolMsg::SharedPtr msg)
 		return;
 	}
 
-	RCLCPP_INFO(node_->get_logger(), "Drone control: Arm all command received for %s", agent_id_.c_str());
-	arm_all_ = true;
-	command_counter_ = 0;
+	if (!arm_all_)
+	{
+		RCLCPP_INFO(node_->get_logger(), "Drone control: Arm all command received for %s", agent_id_.c_str());
+		arm_all_ = true;
+		command_counter_ = 0;
+	}
 }
 
 void DroneControl::landAllCallback(const BoolMsg::SharedPtr msg)

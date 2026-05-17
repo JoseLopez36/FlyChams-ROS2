@@ -184,7 +184,7 @@ Four push buttons in a 2×2 grid. Each publishes `{ data: true }` on press:
 
 Two panels side-by-side:
 
-| Panel | Topic | Button mode | Label | Purpose |
+| Panel | Topic | Button mode | Active / Inactive label | Purpose |
 |---|---|---|---|---|
-| Arm All | `/flychams/coordinator/arm_all` | push | `🔓  Arm All` | Publishes `{ data: true }` once; activates the arm-and-takeoff sequence for all agents |
-| Return to Home | `/flychams/coordinator/return_home` | push | `🏠  Home` | Command all agents to return to home |
+| Arm All | `/flychams/coordinator/arm_all` | toggle | `Armed` / `Disarmed` | Publishes `true` on arm (activates takeoff sequence), `false` on disarm (cancels it) |
+| Return to Home | `/flychams/coordinator/return_home` | push | `Home All` | Command all agents to return to home |

@@ -97,11 +97,11 @@
     "button.Button!armall": {
       "outputMode": "publisher",
       "name": "/flychams/coordinator/arm_all",
-      "buttonMode": "push",
+      "buttonMode": "toggle",
       "activeColor": "#10B981",
-      "inactiveColor": "#10B981",
-      "activeText": "Arm All",
-      "inactiveText": "Arm All",
+      "inactiveColor": "#EF4444",
+      "activeText": "Armed",
+      "inactiveText": "Disarmed",
       "foxglovePanelTitle": "Arm All"
     },
     "button.Button!rth": {

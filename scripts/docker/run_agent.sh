@@ -35,6 +35,7 @@ docker run ${RUN_FLAGS} \
     -e NVIDIA_VISIBLE_DEVICES=all \
     -e XDG_RUNTIME_DIR=/tmp \
     -e AGENT_ID="$AGENT_ID" \
+    -e AGENT_IDX="${AGENT_IDX:-0}" \
     -e ROS_DOMAIN_ID="${ROS_DOMAIN_ID}" \
     -e FASTDDS_BUILTIN_TRANSPORTS="${FASTDDS_BUILTIN_TRANSPORTS}" \
     -v "$PROJECT_ROOT:/home/testuser/FlyChams-ROS2" \

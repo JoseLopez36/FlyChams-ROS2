@@ -30,9 +30,8 @@ def launch_sim(agent_ids: list):
     print("=== Simulation mode ===")
 
     # One PX4 container per agent
-    for agent_id in agent_ids:
-        agent_idx = agent_ids.index(agent_id)
-        run(f"DETACH=true {SCRIPT_DIR}/launch_px4.sh {agent_idx} {agent_id}")
+    for i, agent_id in enumerate(agent_ids):
+        run(f"DETACH=true {SCRIPT_DIR}/launch_px4.sh {i} {agent_id}")
         time.sleep(1)
 
     # Micro-XRCE-DDS Agent
@@ -52,8 +51,8 @@ def launch_sim(agent_ids: list):
     time.sleep(1)
 
     # One agent container per agent
-    for agent_id in agent_ids:
-        run(f"DETACH=true {SCRIPT_DIR}/launch_agent.sh {agent_id}")
+    for i, agent_id in enumerate(agent_ids):
+        run(f"AGENT_IDX={i} DETACH=true {SCRIPT_DIR}/launch_agent.sh {agent_id}")
         time.sleep(1)
 
 # ------------------------------------------------------------------
