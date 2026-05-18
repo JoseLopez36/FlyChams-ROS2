@@ -29,31 +29,31 @@ def run(cmd, **kwargs):
 def launch_sim(agent_ids: list):
     print("=== Simulation mode ===")
 
-    # One PX4 container per agent
-    for i, agent_id in enumerate(agent_ids):
-        run(f"DETACH=true {SCRIPT_DIR}/launch_px4.sh {i} {agent_id}")
-        time.sleep(1)
+    # Operator
+    run(f"DETACH=true {SCRIPT_DIR}/launch_operator.sh")
+    time.sleep(1)
 
     # Micro-XRCE-DDS Agent
     run(f"DETACH=true {SCRIPT_DIR}/launch_micro_xrce_dds.sh")
     time.sleep(1)
 
+    # One PX4 container per agent
+    for i, agent_id in enumerate(agent_ids):
+        run(f"DETACH=true {SCRIPT_DIR}/launch_px4.sh {i} {agent_id}")
+        time.sleep(1)
+
     # Coordinator
     run(f"DETACH=true {SCRIPT_DIR}/launch_coordinator.sh")
-    time.sleep(1)
-
-    # Simulation
-    run(f"DETACH=true {SCRIPT_DIR}/launch_simulation.sh")
-    time.sleep(1)
-    
-    # Operator
-    run(f"DETACH=true {SCRIPT_DIR}/launch_operator.sh")
     time.sleep(1)
 
     # One agent container per agent
     for i, agent_id in enumerate(agent_ids):
         run(f"AGENT_IDX={i} DETACH=true {SCRIPT_DIR}/launch_agent.sh {agent_id}")
         time.sleep(1)
+
+    # Simulation
+    run(f"DETACH=true {SCRIPT_DIR}/launch_simulation.sh")
+    time.sleep(1)
 
 # ------------------------------------------------------------------
 # Real mode

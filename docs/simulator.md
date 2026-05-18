@@ -54,3 +54,7 @@ Regenerate whenever the mission configuration changes:
 ```bash
 scripts/launch_settings.sh
 ```
+
+---
+
+For offscreen rendering and UE5 optimization flags see [performance.md](performance.md).

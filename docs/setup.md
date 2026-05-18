@@ -43,7 +43,8 @@ All containers inherit the following from the host (with defaults):
 | Variable | Default | Description |
 |---|---|---|
 | `ROS_DOMAIN_ID` | `0` | ROS2 DDS domain |
-| `FASTDDS_BUILTIN_TRANSPORTS` | `UDPv4` | FastDDS transport |
+| `FASTDDS_BUILTIN_TRANSPORTS` | `UDPv4` | FastDDS transport (ignored when `FASTRTPS_DEFAULT_PROFILES_FILE` is set) |
+| `FASTRTPS_DEFAULT_PROFILES_FILE` | — | Path to a FastDDS XML profile (see [performance.md](performance.md)) |
 | `PX4_AUTOPILOT_PATH` | — | Absolute path to the PX4 source tree (see [autopilot.md](autopilot.md)) |
 | `Micro_XRCE_DDS_AGENT_PATH` | — | Absolute path to the Micro-XRCE-DDS-Agent source tree (see [autopilot.md](autopilot.md)) |
 | `FOXGLOVE_PORT` | `8765` | WebSocket port for Foxglove Bridge |
@@ -67,3 +68,7 @@ ROS_DOMAIN_ID=5 scripts/flychams.py sim
 ---
 
 Once setup is complete, see [launch.md](launch.md) to start the system.
+
+---
+
+For UDP buffer tuning, FastDDS Shared Memory Transport, and other performance tips see [performance.md](performance.md).

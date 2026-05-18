@@ -8,6 +8,7 @@ if [ $# -lt 1 ]; then
 fi
 
 UE5_PATH="$1"
+shift
 SETTINGS_FILE="$PROJECT_ROOT/src/flychams_common/config/generated/airsim.json"
 
 if [ ! -f "$SETTINGS_FILE" ]; then
@@ -16,4 +17,14 @@ if [ ! -f "$SETTINGS_FILE" ]; then
     exit 1
 fi
 
-"$UE5_PATH/FlyChamsSim.sh" -settings="$SETTINGS_FILE"
+# Optimization flags (opt-in via environment variables)
+EXTRA_FLAGS=()
+
+[ "${OFFSCREEN:-false}" = "true" ]         && EXTRA_FLAGS+=("-RenderOffScreen")
+[ "${NO_SOUND:-false}" = "true" ]           && EXTRA_FLAGS+=("-NoSound")
+[ "${UNATTENDED:-false}" = "true" ]         && EXTRA_FLAGS+=("-Unattended")
+[ "${NO_SPLASH:-false}" = "true" ]          && EXTRA_FLAGS+=("-nosplash")
+[ "${NO_TEXTURE_STREAMING:-false}" = "true" ] && EXTRA_FLAGS+=("-NoTextureStreaming")
+[ "${NULL_RHI:-false}" = "true" ]           && EXTRA_FLAGS+=("-NullRHI")
+
+"$UE5_PATH/FlyChamsSim.sh" -settings="$SETTINGS_FILE" "${EXTRA_FLAGS[@]}" "$@"
