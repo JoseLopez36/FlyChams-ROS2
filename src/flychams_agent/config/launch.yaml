@@ -10,13 +10,13 @@ node_allowlist:
   - agent_analysis
   - agent_positioning
   - agent_tracking
-  # - agent_stream
+  - agent_stream
 
 # Per-node log level overrides
 node_log_levels:
-  agent_frames: "info"
-  agent_state: "info"
-  agent_control: "info"
+  agent_frames: "error"
+  agent_state: "error"
+  agent_control: "error"
   agent_analysis: "error"
   agent_positioning: "error"
   agent_tracking: "error"

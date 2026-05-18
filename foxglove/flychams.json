@@ -186,9 +186,9 @@
     "Image!a0c0": {
       "synchronize": false,
       "imageMode": {
-        "imageTopic": "/flychams/agent/AGENT00/MULTICAMERA00/image/compressed",
+        "imageTopic": "/flychams/agent/AGENT01/MULTICAMERA03/image/compressed",
         "annotations": {
-          "/flychams/agent/AGENT00/MULTICAMERA00/annotations": { "visible": true }
+          "/flychams/agent/AGENT01/MULTICAMERA03/annotations": { "visible": true }
         }
       },
       "foxglovePanelTitle": "AGENT00 - Central",
@@ -235,12 +235,12 @@
     "Image!a0c1": {
       "synchronize": false,
       "imageMode": {
-        "imageTopic": "/flychams/agent/AGENT00/MULTICAMERA01/image/compressed",
+        "imageTopic": "/flychams/agent/AGENT01/MULTIWINDOW00/image/compressed",
         "annotations": {
-          "/flychams/agent/AGENT00/MULTICAMERA01/annotations": { "visible": true }
+          "/flychams/agent/AGENT01/MULTIWINDOW00/annotations": { "visible": true }
         }
       },
-      "foxglovePanelTitle": "AGENT00 - Tracking 1",
+      "foxglovePanelTitle": "AGENT01 - Tracking 1",
       "cameraState": {
         "distance": 20,
         "perspective": true,
@@ -284,12 +284,12 @@
     "Image!a0c2": {
       "synchronize": false,
       "imageMode": {
-        "imageTopic": "/flychams/agent/AGENT00/MULTICAMERA02/image/compressed",
+        "imageTopic": "/flychams/agent/AGENT01/MULTIWINDOW01/image/compressed",
         "annotations": {
-          "/flychams/agent/AGENT00/MULTICAMERA02/annotations": { "visible": true }
+          "/flychams/agent/AGENT01/MULTIWINDOW01/annotations": { "visible": true }
         }
       },
-      "foxglovePanelTitle": "AGENT00 - Tracking 2",
+      "foxglovePanelTitle": "AGENT01 - Tracking 2",
       "cameraState": {
         "distance": 20,
         "perspective": true,

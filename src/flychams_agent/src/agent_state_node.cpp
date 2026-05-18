@@ -33,8 +33,8 @@ public: // Constructor/Destructor
         agent_id_ = getParameter<std::string>("agent_id");
 
         // Initialize TF
-        node_->initTf();
-        
+        initTf();
+
         // Create drone state
         drone_state_ = std::make_shared<DroneState>(agent_id_, sharedFromThis());
 
