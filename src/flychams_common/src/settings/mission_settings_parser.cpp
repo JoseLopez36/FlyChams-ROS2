@@ -477,17 +477,17 @@ void MissionSettingsParser::parseTopicParameters(const NodePtr& node, MissionCon
 	node->get_parameter<std::string>("agent_topics.agent_clusters", config_ptr->topics.agent_clusters);
 	node->get_parameter<std::string>("agent_topics.agent_position_setpoint", config_ptr->topics.agent_position_setpoint);
 	node->get_parameter<std::string>("agent_topics.observation_setpoints", config_ptr->topics.observation_setpoints);
-	node->get_parameter<std::string>("agent_topics.multi_camera_image", config_ptr->topics.agent_multi_camera_image);
-	node->get_parameter<std::string>("agent_topics.multi_window_image", config_ptr->topics.agent_multi_window_image);
+	node->get_parameter<std::string>("agent_topics.agent_image", config_ptr->topics.agent_image);
 
 	// Operator topics
 	node->get_parameter<std::string>("operator_topics.mission_metrics", config_ptr->topics.mission_metrics);
 	node->get_parameter<std::string>("operator_topics.agent_metrics", config_ptr->topics.agent_metrics);
 	node->get_parameter<std::string>("operator_topics.target_metrics", config_ptr->topics.target_metrics);
 	node->get_parameter<std::string>("operator_topics.cluster_metrics", config_ptr->topics.cluster_metrics);
-	node->get_parameter<std::string>("operator_topics.agent_markers", config_ptr->topics.agent_markers);
-	node->get_parameter<std::string>("operator_topics.target_markers", config_ptr->topics.target_markers);
-	node->get_parameter<std::string>("operator_topics.cluster_markers", config_ptr->topics.cluster_markers);
+	node->get_parameter<std::string>("operator_topics.agent_scene", config_ptr->topics.agent_scene);
+	node->get_parameter<std::string>("operator_topics.target_scene", config_ptr->topics.target_scene);
+	node->get_parameter<std::string>("operator_topics.cluster_scene", config_ptr->topics.cluster_scene);
+	node->get_parameter<std::string>("operator_topics.agent_annotations", config_ptr->topics.agent_annotations);
 }
 
 void MissionSettingsParser::parseFrameParameters(const NodePtr& node, MissionConfigPtr& config_ptr)

@@ -15,6 +15,7 @@ find_package(sensor_msgs REQUIRED)
 find_package(image_transport REQUIRED)
 find_package(geographic_msgs REQUIRED)
 find_package(visualization_msgs REQUIRED)
+find_package(foxglove_msgs REQUIRED)
 find_package(Eigen3 REQUIRED)
 find_package(tf2 REQUIRED)
 find_package(tf2_ros REQUIRED)
@@ -92,6 +93,7 @@ ament_target_dependencies(${PROJECT_NAME}
   image_transport
   geographic_msgs
   visualization_msgs
+  foxglove_msgs
   Eigen3
   tf2
   tf2_ros
@@ -181,6 +183,7 @@ ament_export_dependencies(
   image_transport
   geographic_msgs
   visualization_msgs
+  foxglove_msgs
   Eigen3
   tf2
   tf2_ros

@@ -75,9 +75,10 @@ namespace flychams::common
             std::string agent_metrics_pattern;
             std::string target_metrics_pattern;
             std::string cluster_metrics_pattern;
-            std::string agent_markers_pattern;
-            std::string target_markers_pattern;
-            std::string cluster_markers_pattern;
+            std::string agent_scene_pattern;
+            std::string target_scene_pattern;
+            std::string cluster_scene_pattern;
+            std::string agent_annotations_pattern;
         };
         // Frame structures
         struct AgentFrames
@@ -149,9 +150,10 @@ namespace flychams::common
         std::string getAgentMetricsTopic(const ID& agent_id);
         std::string getTargetMetricsTopic(const ID& target_id);
         std::string getClusterMetricsTopic(const ID& cluster_id);
-        std::string getAgentMarkersTopic(const ID& agent_id);
-        std::string getTargetMarkersTopic(const ID& target_id);
-        std::string getClusterMarkersTopic(const ID& cluster_id);
+        std::string getAgentSceneTopic(const ID& agent_id);
+        std::string getTargetSceneTopic(const ID& target_id);
+        std::string getClusterSceneTopic(const ID& cluster_id);
+        std::string getAgentAnnotationsTopic(const ID& agent_id, const ID& unit_id);
 
     public: // Publisher creation
         PublisherPtr<RegistrationMsg> createRegistrationPublisher();
@@ -168,15 +170,15 @@ namespace flychams::common
         PublisherPtr<AgentClustersMsg> createAgentClustersPublisher(const ID& agent_id);
         PublisherPtr<PointStampedMsg> createAgentPositionSetpointPublisher(const ID& agent_id);
         PublisherPtr<ObservationSetpointsMsg> createObservationSetpointsPublisher(const ID& agent_id);
-        ImagePublisher createAgentMultiCameraImagePublisher(const ID& agent_id, const ID& camera_id);
-        ImagePublisher createAgentMultiWindowImagePublisher(const ID& agent_id, const ID& window_id);
+        ImagePublisher createAgentImagePublisher(const ID& agent_id, const ID& camera_id);
         PublisherPtr<MissionMetricsMsg> createMissionMetricsPublisher();
         PublisherPtr<AgentMetricsMsg> createAgentMetricsPublisher(const ID& agent_id);
         PublisherPtr<TargetMetricsMsg> createTargetMetricsPublisher(const ID& target_id);
         PublisherPtr<ClusterMetricsMsg> createClusterMetricsPublisher(const ID& cluster_id);
-        PublisherPtr<MarkerArrayMsg> createAgentMarkersPublisher(const ID& agent_id);
-        PublisherPtr<MarkerArrayMsg> createTargetMarkersPublisher(const ID& target_id);
-        PublisherPtr<MarkerArrayMsg> createClusterMarkersPublisher(const ID& cluster_id);
+        PublisherPtr<FoxSceneUpdateMsg> createAgentScenePublisher(const ID& agent_id);
+        PublisherPtr<FoxSceneUpdateMsg> createTargetScenePublisher(const ID& target_id);
+        PublisherPtr<FoxSceneUpdateMsg> createClusterScenePublisher(const ID& cluster_id);
+        PublisherPtr<FoxImageAnnotationsMsg> createAgentAnnotationsPublisher(const ID& agent_id, const ID& unit_id);
 
     public: // Subscriber creation
         SubscriberPtr<RegistrationMsg> createRegistrationSubscriber(std::function<void(const RegistrationMsg::SharedPtr)> callback, const rclcpp::SubscriptionOptions& options = rclcpp::SubscriptionOptions());
@@ -199,9 +201,6 @@ namespace flychams::common
         SubscriberPtr<AgentMetricsMsg> createAgentMetricsSubscriber(const ID& agent_id, std::function<void(const AgentMetricsMsg::SharedPtr)> callback, const rclcpp::SubscriptionOptions& options = rclcpp::SubscriptionOptions());
         SubscriberPtr<TargetMetricsMsg> createTargetMetricsSubscriber(const ID& target_id, std::function<void(const TargetMetricsMsg::SharedPtr)> callback, const rclcpp::SubscriptionOptions& options = rclcpp::SubscriptionOptions());
         SubscriberPtr<ClusterMetricsMsg> createClusterMetricsSubscriber(const ID& cluster_id, std::function<void(const ClusterMetricsMsg::SharedPtr)> callback, const rclcpp::SubscriptionOptions& options = rclcpp::SubscriptionOptions());
-        SubscriberPtr<MarkerArrayMsg> createAgentMarkersSubscriber(const ID& agent_id, std::function<void(const MarkerArrayMsg::SharedPtr)> callback, const rclcpp::SubscriptionOptions& options = rclcpp::SubscriptionOptions());
-        SubscriberPtr<MarkerArrayMsg> createTargetMarkersSubscriber(const ID& target_id, std::function<void(const MarkerArrayMsg::SharedPtr)> callback, const rclcpp::SubscriptionOptions& options = rclcpp::SubscriptionOptions());
-        SubscriberPtr<MarkerArrayMsg> createClusterMarkersSubscriber(const ID& cluster_id, std::function<void(const MarkerArrayMsg::SharedPtr)> callback, const rclcpp::SubscriptionOptions& options = rclcpp::SubscriptionOptions());
 
     public: // Transform frame getters
         std::string getGlobalFrame();

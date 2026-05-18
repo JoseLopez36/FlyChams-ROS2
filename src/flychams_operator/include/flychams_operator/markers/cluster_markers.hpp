@@ -13,14 +13,14 @@ namespace flychams::operator_pkg
      * @brief Per-cluster marker publisher for Foxglove visualization
      *
      * @details
-     * Subscribes to a cluster's geometry topic. On each timer tick it
-     * publishes a MarkerArray containing a SPHERE marker representing
-     * the cluster bounding sphere and a LINE_LIST marker tracing
-     * its radius, plus a TEXT marker with the cluster ID.
-     *
+     * Publishes a foxglove_msgs/SceneUpdate with:
+     *   - Transparent volume sphere
+     *   - Solid equatorial ring
+     *   - Dashed radius line
+     *   - Text label with ID and radius
      * ════════════════════════════════════════════════════════════════
      * @author Jose Francisco Lopez Ruiz
-     * @date 2025-05-14
+     * @date 2026-05-18
      * ════════════════════════════════════════════════════════════════
      */
     class ClusterMarkers : public common::BaseModule
@@ -40,19 +40,9 @@ namespace flychams::operator_pkg
         using SharedPtr = std::shared_ptr<ClusterMarkers>;
         struct ClusterData
         {
-            // Latest geometry
             common::PointMsg center;
-            float radius;
-            bool has_geometry;
-            // Publisher
-            common::PublisherPtr<common::MarkerArrayMsg> markers_pub;
-            // Subscribers
-            common::SubscriberPtr<common::ClusterGeometryMsg> geometry_sub;
-            // Constructor
-            ClusterData()
-                : center(), radius(0.0f), has_geometry(false), markers_pub(), geometry_sub()
-            {
-            }
+            float radius = 0.0f;
+            bool has_geometry = false;
         };
 
     private: // Parameters
@@ -63,14 +53,16 @@ namespace flychams::operator_pkg
         ClusterData cluster_;
 
     private: // Callbacks
-        void clusterGeometryCallback(const common::ClusterGeometryMsg::SharedPtr msg);
+        void geometryCallback(const common::ClusterGeometryMsg::SharedPtr msg);
 
     private: // Update
         void update();
-        bool checkStatus();
+        bool isDataValid() const;
 
     private: // ROS components
         common::TimerPtr update_timer_;
+        common::PublisherPtr<common::FoxSceneUpdateMsg> scene_pub_;
+        common::SubscriberPtr<common::ClusterGeometryMsg> geometry_sub_;
     };
 
 } // namespace flychams::operator_pkg

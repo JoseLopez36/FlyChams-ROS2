@@ -57,6 +57,10 @@ def generate_launch_description():
         'markers_generator': {
             'executable': 'markers_generator_node',
             'name': 'markers_generator_node'
+        },
+        'annotations_generator': {
+            'executable': 'annotations_generator_node',
+            'name': 'annotations_generator_node'
         }
     }
 

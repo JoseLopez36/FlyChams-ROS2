@@ -22,6 +22,8 @@ set(OPERATOR_SRC
   src/markers/agent_markers.cpp
   src/markers/target_markers.cpp
   src/markers/cluster_markers.cpp
+  # Annotations
+  src/annotations/agent_annotations.cpp
 )
 add_library(${PROJECT_NAME} SHARED ${OPERATOR_SRC})
 target_include_directories(${PROJECT_NAME} PUBLIC
@@ -49,6 +51,11 @@ add_executable(markers_generator_node src/markers_generator_node.cpp)
 target_link_libraries(markers_generator_node ${PROJECT_NAME})
 ament_target_dependencies(markers_generator_node rclcpp visualization_msgs flychams_common flychams_api)
 
+# Create executable for annotations node
+add_executable(annotations_generator_node src/annotations_generator_node.cpp)
+target_link_libraries(annotations_generator_node ${PROJECT_NAME})
+ament_target_dependencies(annotations_generator_node rclcpp flychams_common flychams_api)
+
 # Install targets and headers
 install(TARGETS ${PROJECT_NAME}
   EXPORT ${PROJECT_NAME}
@@ -58,7 +65,7 @@ install(TARGETS ${PROJECT_NAME}
   INCLUDES DESTINATION include
 )
 
-install(TARGETS metrics_creator_node markers_generator_node
+install(TARGETS metrics_creator_node markers_generator_node annotations_generator_node
   RUNTIME DESTINATION lib/${PROJECT_NAME}
 )
 

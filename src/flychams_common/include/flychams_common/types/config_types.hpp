@@ -82,17 +82,17 @@ namespace flychams::common
         std::string agent_clusters;
         std::string agent_position_setpoint;
         std::string observation_setpoints;
-        std::string agent_multi_camera_image;
-        std::string agent_multi_window_image;
+        std::string agent_image;
 
         // Operator topics
         std::string mission_metrics;
         std::string agent_metrics;
         std::string target_metrics;
         std::string cluster_metrics;
-        std::string agent_markers;
-        std::string target_markers;
-        std::string cluster_markers;
+        std::string agent_scene;
+        std::string target_scene;
+        std::string cluster_scene;
+        std::string agent_annotations;
     };
 
     struct FrameParameters

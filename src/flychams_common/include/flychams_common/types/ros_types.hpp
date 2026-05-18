@@ -52,6 +52,23 @@
 #include <tf2/LinearMath/Vector3.h>
 #include <tf2/utils.h>
 
+// Foxglove messages
+#include <foxglove_msgs/msg/scene_update.hpp>
+#include <foxglove_msgs/msg/scene_entity.hpp>
+#include <foxglove_msgs/msg/scene_entity_deletion.hpp>
+#include <foxglove_msgs/msg/sphere_primitive.hpp>
+#include <foxglove_msgs/msg/cylinder_primitive.hpp>
+#include <foxglove_msgs/msg/arrow_primitive.hpp>
+#include <foxglove_msgs/msg/line_primitive.hpp>
+#include <foxglove_msgs/msg/text_primitive.hpp>
+#include <foxglove_msgs/msg/color.hpp>
+#include <foxglove_msgs/msg/key_value_pair.hpp>
+#include <foxglove_msgs/msg/image_annotations.hpp>
+#include <foxglove_msgs/msg/circle_annotation.hpp>
+#include <foxglove_msgs/msg/points_annotation.hpp>
+#include <foxglove_msgs/msg/text_annotation.hpp>
+#include <foxglove_msgs/msg/point2.hpp>
+
 // Custom message types
 // Base messages
 #include "flychams_api/msg/element.hpp"
@@ -170,6 +187,28 @@ namespace flychams::common
     using TransformTf = tf2::Transform;
     // Vector3
     using Vector3Tf = tf2::Vector3;
+
+    // ════════════════════════════════════════════════════════════════
+    // FOXGLOVE MESSAGE TYPES: foxglove_msgs types
+    // ════════════════════════════════════════════════════════════════
+
+    // 3D scene
+    using FoxSceneUpdateMsg = foxglove_msgs::msg::SceneUpdate;
+    using FoxSceneEntityMsg = foxglove_msgs::msg::SceneEntity;
+    using FoxSceneEntityDeletionMsg = foxglove_msgs::msg::SceneEntityDeletion;
+    using FoxSpherePrimitiveMsg = foxglove_msgs::msg::SpherePrimitive;
+    using FoxCylinderPrimitiveMsg = foxglove_msgs::msg::CylinderPrimitive;
+    using FoxArrowPrimitiveMsg = foxglove_msgs::msg::ArrowPrimitive;
+    using FoxLinePrimitiveMsg = foxglove_msgs::msg::LinePrimitive;
+    using FoxTextPrimitiveMsg = foxglove_msgs::msg::TextPrimitive;
+    using FoxColorMsg = foxglove_msgs::msg::Color;
+    using FoxKeyValuePairMsg = foxglove_msgs::msg::KeyValuePair;
+    // Image annotations
+    using FoxImageAnnotationsMsg = foxglove_msgs::msg::ImageAnnotations;
+    using FoxCircleAnnotationMsg = foxglove_msgs::msg::CircleAnnotation;
+    using FoxPointsAnnotationMsg = foxglove_msgs::msg::PointsAnnotation;
+    using FoxTextAnnotationMsg = foxglove_msgs::msg::TextAnnotation;
+    using FoxPoint2Msg = foxglove_msgs::msg::Point2;
 
     // ════════════════════════════════════════════════════════════════
     // CUSTOM MESSAGE TYPES: FlyChams-specific message types

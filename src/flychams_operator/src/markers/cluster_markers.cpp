@@ -1,5 +1,9 @@
 #include "flychams_operator/markers/cluster_markers.hpp"
 
+#include <cmath>
+#include <sstream>
+#include <iomanip>
+
 using namespace flychams::common;
 
 using namespace flychams::operator_pkg;
@@ -17,11 +21,11 @@ void ClusterMarkers::onModuleInit()
     cluster_ = ClusterData();
 
     // Publishers
-    cluster_.markers_pub = node_->createClusterMarkersPublisher(cluster_id_);
+    scene_pub_ = node_->createClusterScenePublisher(cluster_id_);
 
     // Subscribers
-    cluster_.geometry_sub = node_->createClusterGeometrySubscriber(cluster_id_,
-        std::bind(&ClusterMarkers::clusterGeometryCallback, this, std::placeholders::_1),
+    geometry_sub_ = node_->createClusterGeometrySubscriber(cluster_id_,
+        std::bind(&ClusterMarkers::geometryCallback, this, std::placeholders::_1),
         node_->getSubscriptionOptions());
 
     // Update timer
@@ -30,16 +34,16 @@ void ClusterMarkers::onModuleInit()
 
 void ClusterMarkers::onModuleShutdown()
 {
-    cluster_.markers_pub.reset();
-    cluster_.geometry_sub.reset();
     update_timer_.reset();
+    scene_pub_.reset();
+    geometry_sub_.reset();
 }
 
 // ════════════════════════════════════════════════════════════════════════════
 // CALLBACKS
 // ════════════════════════════════════════════════════════════════════════════
 
-void ClusterMarkers::clusterGeometryCallback(const ClusterGeometryMsg::SharedPtr msg)
+void ClusterMarkers::geometryCallback(const ClusterGeometryMsg::SharedPtr msg)
 {
     cluster_.center = msg->center;
     cluster_.radius = msg->radius;
@@ -52,89 +56,140 @@ void ClusterMarkers::clusterGeometryCallback(const ClusterGeometryMsg::SharedPtr
 
 void ClusterMarkers::update()
 {
-    // Skip update if status is not valid
-    if (!checkStatus())
+    if (!isDataValid())
     {
-        RCLCPP_WARN(node_->get_logger(), "Cluster markers: Skipping update due to invalid status");
         return;
     }
+
     const std::string& frame = node_->getGlobalFrame();
-    auto stamp = node_->now();
+    const auto& c = cluster_.center;
     const float r = cluster_.radius > 0.0f ? cluster_.radius : 1.0f;
+    const auto stamp = node_->now().nanoseconds();
+    const auto lifetime = rclcpp::Duration::from_seconds(2.0 / update_rate_);
 
-    MarkerArrayMsg array;
+    // Cluster colors: vivid green
+    FoxColorMsg vol_color;
+    vol_color.r = 0.18f; vol_color.g = 1.0f; vol_color.b = 0.45f; vol_color.a = 0.10f;
+    FoxColorMsg ring_color;
+    ring_color.r = 0.18f; ring_color.g = 1.0f; ring_color.b = 0.45f; ring_color.a = 0.85f;
+    FoxColorMsg radius_color;
+    radius_color.r = 0.18f; radius_color.g = 0.80f; radius_color.b = 0.30f; radius_color.a = 0.60f;
+    FoxColorMsg label_color;
+    label_color.r = 0.3f; label_color.g = 1.0f; label_color.b = 0.55f; label_color.a = 0.95f;
 
-    // ── Sphere marker representing the cluster bounding volume ─────────────
-    MarkerMsg sphere;
-    sphere.header.frame_id = frame;
-    sphere.header.stamp = stamp;
-    sphere.ns = cluster_id_;
-    sphere.id = 0;
-    sphere.type = MarkerMsg::SPHERE;
-    sphere.action = MarkerMsg::ADD;
-    sphere.pose.position = cluster_.center;
-    sphere.pose.orientation.w = 1.0;
-    sphere.scale.x = r * 2.0f;
-    sphere.scale.y = r * 2.0f;
-    sphere.scale.z = r * 2.0f;
-    sphere.color.r = 0.2f; sphere.color.g = 1.0f; sphere.color.b = 0.4f; sphere.color.a = 0.25f;
-    array.markers.push_back(sphere);
+    // ── Build entity ───────────────────────────────────────────────────────
+    FoxSceneEntityMsg entity;
+    entity.timestamp.nanosec = static_cast<uint32_t>(stamp % 1000000000ULL);
+    entity.timestamp.sec     = static_cast<int32_t>(stamp / 1000000000ULL);
+    entity.frame_id = frame;
+    entity.id = cluster_id_;
+    entity.lifetime.sec = static_cast<int32_t>(lifetime.seconds());
+    entity.lifetime.nanosec = static_cast<uint32_t>(lifetime.nanoseconds() % 1000000000LL);
+    entity.frame_locked = false;
 
-    // ── Wireframe circle (LINE_STRIP) at cluster equator ──────────────────
-    MarkerMsg ring;
-    ring.header.frame_id = frame;
-    ring.header.stamp = stamp;
-    ring.ns = cluster_id_ + "_ring";
-    ring.id = 1;
-    ring.type = MarkerMsg::LINE_STRIP;
-    ring.action = MarkerMsg::ADD;
-    ring.pose.orientation.w = 1.0;
-    ring.scale.x = 0.1;
-    ring.color.r = 0.2f; ring.color.g = 1.0f; ring.color.b = 0.4f; ring.color.a = 0.8f;
-    constexpr int N_RING = 32;
-    for (int i = 0; i <= N_RING; ++i)
+    std::ostringstream oss;
+    oss << std::fixed << std::setprecision(1) << r;
+    FoxKeyValuePairMsg kv_r;
+    kv_r.key = "radius_m";
+    kv_r.value = oss.str();
+    entity.metadata = {kv_r};
+
+    // ── 1. Transparent bounding volume sphere ─────────────────────────────
     {
-        float angle = static_cast<float>(i) / static_cast<float>(N_RING) * 2.0f * M_PIf32;
-        PointMsg p;
-        p.x = cluster_.center.x + r * std::cos(angle);
-        p.y = cluster_.center.y + r * std::sin(angle);
-        p.z = cluster_.center.z;
-        ring.points.push_back(p);
+        FoxSpherePrimitiveMsg vol;
+        vol.pose.position = c;
+        vol.pose.orientation.w = 1.0;
+        vol.size.x = r * 2.0;
+        vol.size.y = r * 2.0;
+        vol.size.z = r * 2.0;
+        vol.color = vol_color;
+        entity.spheres.push_back(vol);
     }
-    array.markers.push_back(ring);
 
-    // ── Text label ─────────────────────────────────────────────────────────
-    MarkerMsg label;
-    label.header.frame_id = frame;
-    label.header.stamp = stamp;
-    label.ns = cluster_id_ + "_label";
-    label.id = 2;
-    label.type = MarkerMsg::TEXT_VIEW_FACING;
-    label.action = MarkerMsg::ADD;
-    label.pose.position = cluster_.center;
-    label.pose.position.z += r + 0.5f;
-    label.pose.orientation.w = 1.0;
-    label.scale.z = 0.7;
-    label.color.r = 0.2f; label.color.g = 1.0f; label.color.b = 0.4f; label.color.a = 1.0f;
-    label.text = cluster_id_;
-    array.markers.push_back(label);
+    // ── 2. Equatorial ring (LINE_LOOP) ────────────────────────────────────
+    {
+        FoxLinePrimitiveMsg ring;
+        ring.type = FoxLinePrimitiveMsg::LINE_LOOP;
+        ring.pose.position = c;
+        ring.pose.orientation.w = 1.0;
+        ring.thickness = 0.12f;
+        ring.color = ring_color;
+        constexpr int N = 48;
+        for (int i = 0; i < N; ++i)
+        {
+            const double angle = 2.0 * M_PI * i / N;
+            PointMsg p;
+            p.x = r * std::cos(angle);
+            p.y = r * std::sin(angle);
+            p.z = 0.0;
+            ring.points.push_back(p);
+        }
+        entity.lines.push_back(ring);
+    }
 
-    cluster_.markers_pub->publish(array);
+    // ── 3. Vertical meridian ring ─────────────────────────────────────────
+    {
+        FoxLinePrimitiveMsg meridian;
+        meridian.type = FoxLinePrimitiveMsg::LINE_LOOP;
+        meridian.pose.position = c;
+        meridian.pose.orientation.w = 1.0;
+        meridian.thickness = 0.06f;
+        meridian.color = radius_color;
+        constexpr int N = 48;
+        for (int i = 0; i < N; ++i)
+        {
+            const double angle = 2.0 * M_PI * i / N;
+            PointMsg p;
+            p.x = r * std::cos(angle);
+            p.y = 0.0;
+            p.z = r * std::sin(angle);
+            meridian.points.push_back(p);
+        }
+        entity.lines.push_back(meridian);
+    }
+
+    // ── 4. Radius indicator line (center → equator) ───────────────────────
+    {
+        FoxLinePrimitiveMsg rad;
+        rad.type = FoxLinePrimitiveMsg::LINE_STRIP;
+        rad.pose.position = c;
+        rad.pose.orientation.w = 1.0;
+        rad.thickness = 0.08f;
+        rad.color = radius_color;
+        PointMsg p0; p0.x = 0.0; p0.y = 0.0; p0.z = 0.0;
+        PointMsg p1; p1.x = r;   p1.y = 0.0; p1.z = 0.0;
+        rad.points = {p0, p1};
+        entity.lines.push_back(rad);
+    }
+
+    // ── 5. Text label (ID + radius) ───────────────────────────────────────
+    {
+        FoxTextPrimitiveMsg text;
+        text.pose.position = c;
+        text.pose.position.z += r + 0.6;
+        text.pose.orientation.w = 1.0;
+        text.billboard = true;
+        text.font_size = 0.55f;
+        text.scale_invariant = false;
+        text.color = label_color;
+        text.text = cluster_id_ + "\nr=" + oss.str() + " m";
+        entity.texts.push_back(text);
+    }
+
+    FoxSceneUpdateMsg update_msg;
+    update_msg.entities.push_back(entity);
+    scene_pub_->publish(update_msg);
 }
 
 // ════════════════════════════════════════════════════════════════════════════
-// STATUS: Status check
+// STATUS CHECK
 // ════════════════════════════════════════════════════════════════════════════
 
-bool ClusterMarkers::checkStatus()
+bool ClusterMarkers::isDataValid() const
 {
-    // Check 1: Cluster must have a valid geometry
     if (!cluster_.has_geometry)
     {
-        RCLCPP_WARN(node_->get_logger(), "Cluster markers: Cluster %s has no geometry", cluster_id_.c_str());
         return false;
     }
-
-    // All checks passed
     return true;
 }

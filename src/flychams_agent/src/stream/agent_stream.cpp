@@ -49,7 +49,7 @@ void AgentStream::onModuleInit()
                 unit->crops_cache.resize(nw);
                 for (const auto& [window_id, window] : tracking_config.multi_window_set)
                 {
-                    unit->crop_pubs.push_back(node_->createAgentMultiWindowImagePublisher(agent_id_, window_id));
+                    unit->crop_pubs.push_back(node_->createAgentImagePublisher(agent_id_, window_id));
                 }
                 unit->crop_output_width = tracking_view_width;
                 unit->crop_output_height = tracking_view_height;
@@ -62,7 +62,7 @@ void AgentStream::onModuleInit()
             unit->enable_crops = false;
         }
 
-        unit->image_pub = node_->createAgentMultiCameraImagePublisher(agent_id_, camera_id);
+        unit->image_pub = node_->createAgentImagePublisher(agent_id_, camera_id);
         unit->running = true;
         unit->thread = std::thread(&AgentStream::streamPipeline, this, unit);
         stream_units_[camera_id] = unit;

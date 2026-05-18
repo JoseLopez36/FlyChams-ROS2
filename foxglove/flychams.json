@@ -186,7 +186,10 @@
     "Image!a0c0": {
       "synchronize": false,
       "imageMode": {
-        "imageTopic": "/flychams/agent/AGENT00/MULTICAMERA00/image/compressed"
+        "imageTopic": "/flychams/agent/AGENT00/MULTICAMERA00/image/compressed",
+        "annotations": {
+          "/flychams/agent/AGENT00/MULTICAMERA00/annotations": { "visible": true }
+        }
       },
       "foxglovePanelTitle": "AGENT00 - Central",
       "cameraState": {
@@ -232,7 +235,10 @@
     "Image!a0c1": {
       "synchronize": false,
       "imageMode": {
-        "imageTopic": "/flychams/agent/AGENT00/MULTICAMERA01/image/compressed"
+        "imageTopic": "/flychams/agent/AGENT00/MULTICAMERA01/image/compressed",
+        "annotations": {
+          "/flychams/agent/AGENT00/MULTICAMERA01/annotations": { "visible": true }
+        }
       },
       "foxglovePanelTitle": "AGENT00 - Tracking 1",
       "cameraState": {
@@ -278,7 +284,10 @@
     "Image!a0c2": {
       "synchronize": false,
       "imageMode": {
-        "imageTopic": "/flychams/agent/AGENT00/MULTICAMERA02/image/compressed"
+        "imageTopic": "/flychams/agent/AGENT00/MULTICAMERA02/image/compressed",
+        "annotations": {
+          "/flychams/agent/AGENT00/MULTICAMERA02/annotations": { "visible": true }
+        }
       },
       "foxglovePanelTitle": "AGENT00 - Tracking 2",
       "cameraState": {
@@ -416,7 +425,10 @@
     "Image!a1c0": {
       "synchronize": false,
       "imageMode": {
-        "imageTopic": "/flychams/agent/AGENT01/MULTICAMERA03/image/compressed"
+        "imageTopic": "/flychams/agent/AGENT01/MULTICAMERA03/image/compressed",
+        "annotations": {
+          "/flychams/agent/AGENT01/MULTICAMERA03/annotations": { "visible": true }
+        }
       },
       "foxglovePanelTitle": "AGENT01 — Central",
       "cameraState": {
@@ -464,7 +476,10 @@
     "Image!a1c1": {
       "synchronize": false,
       "imageMode": {
-        "imageTopic": "/flychams/agent/AGENT01/MULTICAMERA04/image/compressed"
+        "imageTopic": "/flychams/agent/AGENT01/MULTICAMERA04/image/compressed",
+        "annotations": {
+          "/flychams/agent/AGENT01/MULTICAMERA04/annotations": { "visible": true }
+        }
       },
       "foxglovePanelTitle": "AGENT01 — Tracking 1",
       "cameraState": {
@@ -510,7 +525,10 @@
     "Image!a1c2": {
       "synchronize": false,
       "imageMode": {
-        "imageTopic": "/flychams/agent/AGENT01/MULTICAMERA05/image/compressed"
+        "imageTopic": "/flychams/agent/AGENT01/MULTICAMERA05/image/compressed",
+        "annotations": {
+          "/flychams/agent/AGENT01/MULTICAMERA05/annotations": { "visible": true }
+        }
       },
       "foxglovePanelTitle": "AGENT01 — Tracking 2",
       "cameraState": {
@@ -648,7 +666,10 @@
     "Image!a2c0": {
       "synchronize": false,
       "imageMode": {
-        "imageTopic": "/flychams/agent/AGENT02/MULTICAMERA06/image/compressed"
+        "imageTopic": "/flychams/agent/AGENT02/MULTICAMERA06/image/compressed",
+        "annotations": {
+          "/flychams/agent/AGENT02/MULTICAMERA06/annotations": { "visible": true }
+        }
       },
       "foxglovePanelTitle": "AGENT02 — Central",
       "cameraState": {
@@ -694,7 +715,10 @@
     "Image!a2c1": {
       "synchronize": false,
       "imageMode": {
-        "imageTopic": "/flychams/agent/AGENT02/MULTICAMERA07/image/compressed"
+        "imageTopic": "/flychams/agent/AGENT02/MULTICAMERA07/image/compressed",
+        "annotations": {
+          "/flychams/agent/AGENT02/MULTICAMERA07/annotations": { "visible": true }
+        }
       },
       "foxglovePanelTitle": "AGENT02 — Tracking 1",
       "cameraState": {
@@ -740,7 +764,10 @@
     "Image!a2c2": {
       "synchronize": false,
       "imageMode": {
-        "imageTopic": "/flychams/agent/AGENT02/MULTICAMERA08/image/compressed"
+        "imageTopic": "/flychams/agent/AGENT02/MULTICAMERA08/image/compressed",
+        "annotations": {
+          "/flychams/agent/AGENT02/MULTICAMERA08/annotations": { "visible": true }
+        }
       },
       "foxglovePanelTitle": "AGENT02 — Tracking 2",
       "cameraState": {
@@ -1089,37 +1116,46 @@
       },
       "transforms": {},
       "topics": {
-        "/flychams/operator/AGENT00/agent_markers": {
+        "/flychams/operator/AGENT00/agent_scene": {
           "visible": true
         },
-        "/flychams/operator/AGENT01/agent_markers": {
+        "/flychams/operator/AGENT01/agent_scene": {
           "visible": true
         },
-        "/flychams/operator/AGENT02/agent_markers": {
+        "/flychams/operator/AGENT02/agent_scene": {
           "visible": true
         },
-        "/flychams/operator/TARGET02COUNT00/target_markers": {
+        "/flychams/operator/TARGET02COUNT00/target_scene": {
           "visible": true
         },
-        "/flychams/operator/TARGET02COUNT01/target_markers": {
+        "/flychams/operator/TARGET02COUNT01/target_scene": {
           "visible": true
         },
-        "/flychams/operator/TARGET02COUNT02/target_markers": {
+        "/flychams/operator/TARGET02COUNT02/target_scene": {
           "visible": true
         },
-        "/flychams/operator/TARGET02COUNT03/target_markers": {
+        "/flychams/operator/TARGET02COUNT03/target_scene": {
           "visible": true
         },
-        "/flychams/operator/TARGET02COUNT04/target_markers": {
+        "/flychams/operator/TARGET02COUNT04/target_scene": {
           "visible": true
         },
-        "/flychams/operator/TARGET02COUNT05/target_markers": {
+        "/flychams/operator/TARGET02COUNT05/target_scene": {
           "visible": true
         },
-        "/flychams/operator/TARGET02COUNT06/target_markers": {
+        "/flychams/operator/TARGET02COUNT06/target_scene": {
           "visible": true
         },
-        "/flychams/operator/TARGET02COUNT07/target_markers": {
+        "/flychams/operator/TARGET02COUNT07/target_scene": {
+          "visible": true
+        },
+        "/flychams/operator/CLUSTER00/cluster_scene": {
+          "visible": true
+        },
+        "/flychams/operator/CLUSTER01/cluster_scene": {
+          "visible": true
+        },
+        "/flychams/operator/CLUSTER02/cluster_scene": {
           "visible": true
         }
       },

@@ -13,13 +13,14 @@ namespace flychams::operator_pkg
      * @brief Per-target marker publisher for Foxglove visualization
      *
      * @details
-     * Subscribes to a target's position topic. On each timer tick it
-     * publishes a MarkerArray containing a CYLINDER marker representing
-     * the target body and a TEXT marker with its ID.
-     *
+     * Publishes a foxglove_msgs/SceneUpdate with:
+     *   - Cylinder body (human silhouette)
+     *   - Semi-transparent glow shell
+     *   - Ground-plane detection ring
+     *   - Text label with ID
      * ════════════════════════════════════════════════════════════════
      * @author Jose Francisco Lopez Ruiz
-     * @date 2025-05-14
+     * @date 2026-05-18
      * ════════════════════════════════════════════════════════════════
      */
     class TargetMarkers : public common::BaseModule
@@ -39,18 +40,8 @@ namespace flychams::operator_pkg
         using SharedPtr = std::shared_ptr<TargetMarkers>;
         struct TargetData
         {
-            // Latest position
             common::PointMsg position;
-            bool has_position;
-            // Publisher
-            common::PublisherPtr<common::MarkerArrayMsg> markers_pub;
-            // Subscribers
-            common::SubscriberPtr<common::PointStampedMsg> position_sub;
-            // Constructor
-            TargetData()
-                : position(), has_position(false), markers_pub(), position_sub()
-            {
-            }
+            bool has_position = false;
         };
 
     private: // Parameters
@@ -63,12 +54,19 @@ namespace flychams::operator_pkg
     private: // Callbacks
         void positionCallback(const common::PointStampedMsg::SharedPtr msg);
 
-    private: // Update
+    private: // Update methods
         void update();
-        bool checkStatus();
+
+    private: // Status check methods
+        bool isDataValid() const;
 
     private: // ROS components
+        // Timer
         common::TimerPtr update_timer_;
+        // Publishers
+        common::PublisherPtr<common::FoxSceneUpdateMsg> scene_pub_;
+        // Subscribers
+        common::SubscriberPtr<common::PointStampedMsg> position_sub_;
     };
 
 } // namespace flychams::operator_pkg

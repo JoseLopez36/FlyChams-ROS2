@@ -5,6 +5,7 @@ FROM ros:humble-ros-base
 RUN apt-get update && \
     apt-get install -y \
     ros-$ROS_DISTRO-rmw-cyclonedds-cpp \
+    ros-$ROS_DISTRO-foxglove-msgs \
     ros-$ROS_DISTRO-tf2-sensor-msgs \
     ros-$ROS_DISTRO-tf2-geometry-msgs \
     ros-$ROS_DISTRO-vision-opencv \

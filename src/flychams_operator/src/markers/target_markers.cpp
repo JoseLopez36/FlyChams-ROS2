@@ -1,5 +1,8 @@
 #include "flychams_operator/markers/target_markers.hpp"
 
+#include <sstream>
+#include <iomanip>
+
 using namespace flychams::common;
 
 using namespace flychams::operator_pkg;
@@ -17,10 +20,10 @@ void TargetMarkers::onModuleInit()
     target_ = TargetData();
 
     // Publishers
-    target_.markers_pub = node_->createTargetMarkersPublisher(target_id_);
+    scene_pub_ = node_->createTargetScenePublisher(target_id_);
 
     // Subscribers
-    target_.position_sub = node_->createTargetPositionSubscriber(target_id_,
+    position_sub_ = node_->createTargetPositionSubscriber(target_id_,
         std::bind(&TargetMarkers::positionCallback, this, std::placeholders::_1),
         node_->getSubscriptionOptions());
 
@@ -30,9 +33,9 @@ void TargetMarkers::onModuleInit()
 
 void TargetMarkers::onModuleShutdown()
 {
-    target_.markers_pub.reset();
-    target_.position_sub.reset();
     update_timer_.reset();
+    scene_pub_.reset();
+    position_sub_.reset();
 }
 
 // ════════════════════════════════════════════════════════════════════════════
@@ -45,72 +48,130 @@ void TargetMarkers::positionCallback(const PointStampedMsg::SharedPtr msg)
     target_.has_position = true;
 }
 
+
 // ════════════════════════════════════════════════════════════════════════════
 // UPDATE
 // ════════════════════════════════════════════════════════════════════════════
 
 void TargetMarkers::update()
 {
-    // Skip update if status is not valid
-    if (!checkStatus())
+    if (!isDataValid())
     {
-        RCLCPP_WARN(node_->get_logger(), "Target markers: Skipping update due to invalid status");
         return;
     }
 
     const std::string& frame = node_->getGlobalFrame();
-    auto stamp = node_->now();
+    const auto& pos = target_.position;
+    const auto stamp = node_->now().nanoseconds();
+    const auto lifetime = rclcpp::Duration::from_seconds(2.0 / update_rate_);
 
-    MarkerArrayMsg array;
+    // Target colors: warm red body, soft coral glow
+    FoxColorMsg body_color;
+    body_color.r = 1.0f; body_color.g = 0.22f; body_color.b = 0.18f; body_color.a = 1.0f;
+    FoxColorMsg glow_color;
+    glow_color.r = 1.0f; glow_color.g = 0.30f; glow_color.b = 0.10f; glow_color.a = 0.16f;
+    FoxColorMsg ring_color;
+    ring_color.r = 1.0f; ring_color.g = 0.55f; ring_color.b = 0.0f;  ring_color.a = 0.80f;
 
-    // ── Cylinder marker representing the target body ───────────────────────
-    MarkerMsg body;
-    body.header.frame_id = frame;
-    body.header.stamp = stamp;
-    body.ns = target_id_;
-    body.id = 0;
-    body.type = MarkerMsg::CYLINDER;
-    body.action = MarkerMsg::ADD;
-    body.pose.position = target_.position;
-    body.pose.orientation.w = 1.0;
-    body.scale.x = 0.5;
-    body.scale.y = 0.5;
-    body.scale.z = 1.8;
-    body.color.r = 1.0f; body.color.g = 0.2f; body.color.b = 0.2f; body.color.a = 1.0f;
-    array.markers.push_back(body);
+    // ── Build entity ───────────────────────────────────────────────────────
+    FoxSceneEntityMsg entity;
+    entity.timestamp.nanosec = static_cast<uint32_t>(stamp % 1000000000ULL);
+    entity.timestamp.sec     = static_cast<int32_t>(stamp / 1000000000ULL);
+    entity.frame_id = frame;
+    entity.id = target_id_;
+    entity.lifetime.sec = static_cast<int32_t>(lifetime.seconds());
+    entity.lifetime.nanosec = static_cast<uint32_t>(lifetime.nanoseconds() % 1000000000LL);
+    entity.frame_locked = false;
 
-    // ── Text label ─────────────────────────────────────────────────────────
-    MarkerMsg label;
-    label.header.frame_id = frame;
-    label.header.stamp = stamp;
-    label.ns = target_id_ + "_label";
-    label.id = 1;
-    label.type = MarkerMsg::TEXT_VIEW_FACING;
-    label.action = MarkerMsg::ADD;
-    label.pose.position = target_.position;
-    label.pose.position.z += 2.2;
-    label.pose.orientation.w = 1.0;
-    label.scale.z = 0.6;
-    label.color.r = 1.0f; label.color.g = 1.0f; label.color.b = 1.0f; label.color.a = 1.0f;
-    label.text = target_id_;
-    array.markers.push_back(label);
+    std::ostringstream oss;
+    oss << std::fixed << std::setprecision(1) << pos.z;
+    FoxKeyValuePairMsg kv_alt;
+    kv_alt.key = "alt_m";
+    kv_alt.value = oss.str();
+    entity.metadata = {kv_alt};
 
-    target_.markers_pub->publish(array);
+    // ── 1. Human-shaped cylinder body ─────────────────────────────────────
+    {
+        FoxCylinderPrimitiveMsg body;
+        body.pose.position = pos;
+        body.pose.position.z += 0.9;
+        body.pose.orientation.w = 1.0;
+        body.size.x = 0.5;
+        body.size.y = 0.5;
+        body.size.z = 1.8;
+        body.color = body_color;
+        body.top_scale = 1.0f;
+        body.bottom_scale = 1.0f;
+        entity.cylinders.push_back(body);
+    }
+
+    // ── 2. Transparent glow shell ──────────────────────────────────────────
+    {
+        FoxCylinderPrimitiveMsg glow;
+        glow.pose.position = pos;
+        glow.pose.position.z += 0.9;
+        glow.pose.orientation.w = 1.0;
+        glow.size.x = 1.4;
+        glow.size.y = 1.4;
+        glow.size.z = 2.4;
+        glow.color = glow_color;
+        glow.top_scale = 1.0f;
+        glow.bottom_scale = 1.0f;
+        entity.cylinders.push_back(glow);
+    }
+
+    // ── 3. Ground-plane detection ring (LinePrimitive loop) ───────────────
+    {
+        FoxLinePrimitiveMsg ring;
+        ring.type = FoxLinePrimitiveMsg::LINE_LOOP;
+        ring.pose.position = pos;
+        ring.pose.orientation.w = 1.0;
+        ring.thickness = 0.06f;
+        ring.color = ring_color;
+        constexpr int N = 32;
+        constexpr double R = 1.0;
+        for (int i = 0; i < N; ++i)
+        {
+            const double angle = 2.0 * M_PI * i / N;
+            PointMsg p;
+            p.x = R * std::cos(angle);
+            p.y = R * std::sin(angle);
+            p.z = 0.02;
+            ring.points.push_back(p);
+        }
+        entity.lines.push_back(ring);
+    }
+
+    // ── 4. Text label (ID) ─────────────────────────────────────────────────
+    {
+        FoxTextPrimitiveMsg text;
+        text.pose.position = pos;
+        text.pose.position.z += 2.4;
+        text.pose.orientation.w = 1.0;
+        text.billboard = true;
+        text.font_size = 0.50f;
+        text.scale_invariant = false;
+        FoxColorMsg white;
+        white.r = 1.0f; white.g = 1.0f; white.b = 1.0f; white.a = 0.95f;
+        text.color = white;
+        text.text = target_id_;
+        entity.texts.push_back(text);
+    }
+
+    FoxSceneUpdateMsg update_msg;
+    update_msg.entities.push_back(entity);
+    scene_pub_->publish(update_msg);
 }
 
 // ════════════════════════════════════════════════════════════════════════════
-// STATUS: Status check
+// STATUS CHECK
 // ════════════════════════════════════════════════════════════════════════════
 
-bool TargetMarkers::checkStatus()
+bool TargetMarkers::isDataValid() const
 {
-    // Check 1: Target must have a valid position
     if (!target_.has_position)
     {
-        RCLCPP_WARN(node_->get_logger(), "Target markers: Target %s has no position", target_id_.c_str());
         return false;
     }
-
-    // All checks passed
     return true;
 }

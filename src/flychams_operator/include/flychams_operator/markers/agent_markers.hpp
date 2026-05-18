@@ -10,17 +10,17 @@ namespace flychams::operator_pkg
 {
     /**
      * ════════════════════════════════════════════════════════════════
-     * @brief Per-agent marker publisher for Foxglove visualization
+     * @brief Module that publishes high-quality agent scene markers
      *
      * @details
-     * Subscribes to an agent's local position and status topics.
-     * On each timer tick it publishes a MarkerArray containing an
-     * ARROW marker representing the agent's drone body and a TEXT
-     * marker with its ID and status.
-     *
+     * Publishes a foxglove_msgs/SceneUpdate with:
+     *   - Solid body sphere (color-coded by status)
+     *   - Semi-transparent outer glow shell
+     *   - Upward orientation arrow
+     *   - Text label with ID and altitude
      * ════════════════════════════════════════════════════════════════
      * @author Jose Francisco Lopez Ruiz
-     * @date 2025-05-14
+     * @date 2026-05-18
      * ════════════════════════════════════════════════════════════════
      */
     class AgentMarkers : public common::BaseModule
@@ -38,25 +38,14 @@ namespace flychams::operator_pkg
 
     public: // Types
         using SharedPtr = std::shared_ptr<AgentMarkers>;
+
+    private: // Agent data
         struct AgentData
         {
-            // Latest position
             common::PointMsg position;
-            bool has_position;
-            // Latest status
-            uint8_t status;
-            bool has_status;
-            // Publisher
-            common::PublisherPtr<common::MarkerArrayMsg> markers_pub;
-            // Subscribers
-            common::SubscriberPtr<common::PointStampedMsg> local_position_sub;
-            common::SubscriberPtr<common::AgentStatusMsg> status_sub;
-            // Constructor
-            AgentData()
-                : position(), has_position(false), status(0), has_status(false),
-                  markers_pub(), local_position_sub(), status_sub()
-            {
-            }
+            bool has_position = false;
+            uint8_t status = 0;
+            bool has_status = false;
         };
 
     private: // Parameters
@@ -67,15 +56,18 @@ namespace flychams::operator_pkg
         AgentData agent_;
 
     private: // Callbacks
-        void localPositionCallback(const common::PointStampedMsg::SharedPtr msg);
+        void positionCallback(const common::PointStampedMsg::SharedPtr msg);
         void statusCallback(const common::AgentStatusMsg::SharedPtr msg);
 
     private: // Update
         void update();
-        bool checkStatus();
+        bool isDataValid() const;
 
     private: // ROS components
         common::TimerPtr update_timer_;
+        common::PublisherPtr<common::FoxSceneUpdateMsg> scene_pub_;
+        common::SubscriberPtr<common::PointStampedMsg> position_sub_;
+        common::SubscriberPtr<common::AgentStatusMsg> status_sub_;
     };
 
 } // namespace flychams::operator_pkg

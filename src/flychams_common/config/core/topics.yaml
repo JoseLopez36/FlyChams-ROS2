@@ -28,6 +28,7 @@
       agent_metrics: "/flychams/operator/AGENTID/agent_metrics" # AgentMetrics.msg (custom)
       target_metrics: "/flychams/operator/TARGETID/target_metrics" # TargetMetrics.msg (custom)
       cluster_metrics: "/flychams/operator/CLUSTERID/cluster_metrics" # ClusterMetrics.msg (custom)
-      agent_markers: "/flychams/operator/AGENTID/agent_markers" # MarkerArray.msg
-      target_markers: "/flychams/operator/TARGETID/target_markers" # MarkerArray.msg
-      cluster_markers: "/flychams/operator/CLUSTERID/cluster_markers" # MarkerArray.msg
+      agent_scene: "/flychams/operator/AGENTID/agent_scene" # foxglove_msgs/SceneUpdate
+      target_scene: "/flychams/operator/TARGETID/target_scene" # foxglove_msgs/SceneUpdate
+      cluster_scene: "/flychams/operator/CLUSTERID/cluster_scene" # foxglove_msgs/SceneUpdate
+      agent_annotations: "/flychams/agent/AGENTID/UNITID/annotations" # foxglove_msgs/ImageAnnotations
