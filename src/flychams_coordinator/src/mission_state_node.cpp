@@ -79,15 +79,21 @@ private: // Components
 
 int main(int argc, char** argv)
 {
+    // Initialize ROS
     rclcpp::init(argc, argv);
+    // Create node options
     rclcpp::NodeOptions options;
     options.allow_undeclared_parameters(true);
     options.automatically_declare_parameters_from_overrides(true);
-    auto node = std::make_shared<MissionStateNode>("mission_status_node", options);
+    // Create node
+    auto node = std::make_shared<MissionStateNode>("mission_state_node", options);
     node->init();
+    // Create executor and add node
     rclcpp::executors::SingleThreadedExecutor executor;
     executor.add_node(node);
+    // Spin node
     executor.spin();
+    // Shutdown
     rclcpp::shutdown();
     return 0;
 }

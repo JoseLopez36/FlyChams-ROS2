@@ -35,28 +35,55 @@ public: // Constructor/Destructor
 
     void onDiscoveryInit() override
     {
+        // Clear all annotation generators
         agent_annotations_.clear();
     }
 
     void onDiscoveryShutdown() override
     {
+        // Clear all annotation generators
         agent_annotations_.clear();
     }
 
 private: // Element management
     void onAddAgent(const ID& agent_id) override
     {
-        agent_annotations_.insert({agent_id, std::make_shared<AgentAnnotations>(agent_id, sharedFromThis())});
+        // Initialize agent annotation generator
+        auto agent_annotation = std::make_shared<AgentAnnotations>(agent_id, sharedFromThis());
+        agent_annotations_.insert(std::make_pair(agent_id, agent_annotation));
+
         RCLCPP_INFO(node_->get_logger(), "Annotations node: agent annotations created for %s", agent_id.c_str());
     }
 
     void onRemoveAgent(const ID& agent_id) override
     {
+        // Remove agent annotation generator
         agent_annotations_.erase(agent_id);
         RCLCPP_INFO(node_->get_logger(), "Annotations node: agent annotations destroyed for %s", agent_id.c_str());
     }
 
+    void onAddTarget(const ID& target_id) override
+    {
+        // Targets are not handled by this node
+    }
+
+    void onRemoveTarget(const ID& target_id) override
+    {
+        // Targets are not handled by this node
+    }
+
+    void onAddCluster(const ID& cluster_id) override
+    {
+        // Clusters are not handled by this node
+    }
+
+    void onRemoveCluster(const ID& cluster_id) override
+    {
+        // Clusters are not handled by this node
+    }
+
 private: // Components
+    // Agent annotations generator
     std::unordered_map<ID, AgentAnnotations::SharedPtr> agent_annotations_;
 };
 

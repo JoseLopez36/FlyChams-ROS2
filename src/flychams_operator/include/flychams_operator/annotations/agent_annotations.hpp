@@ -50,8 +50,8 @@ namespace flychams::operator_pkg
 
     private: // Parameters
         common::ID agent_id_;
-        float annotation_rate_;
-        // View dimensions used to compute annotation coordinates
+        float update_rate_;
+        // View dimensions
         int central_view_width_;
         int central_view_height_;
         int tracking_view_width_;

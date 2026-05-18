@@ -15,7 +15,8 @@ using namespace flychams::operator_pkg;
 void AgentAnnotations::onModuleInit()
 {
     // Get parameters
-    annotation_rate_ = node_->getParameterOr<float>("annotation_rate", 10.0f);
+    update_rate_ = node_->getParameterOr<float>("annotation_rate", 10.0f);
+    // View dimensions
     central_view_width_   = node_->getParameterOr<int>("central_view.width", 854);
     central_view_height_  = node_->getParameterOr<int>("central_view.height", 480);
     tracking_view_width_  = node_->getParameterOr<int>("tracking_view.width", 427);
@@ -27,7 +28,7 @@ void AgentAnnotations::onModuleInit()
         node_->getSubscriptionOptions());
 
     // Update timer
-    update_timer_ = node_->createTimer(annotation_rate_, std::bind(&AgentAnnotations::update, this));
+    update_timer_ = node_->createTimer(update_rate_, std::bind(&AgentAnnotations::update, this));
 }
 
 void AgentAnnotations::onModuleShutdown()

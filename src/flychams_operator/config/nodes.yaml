@@ -10,9 +10,9 @@
 
 /**/annotations_generator_node:
   ros__parameters:
-    # Annotation publish rate (Hz)
-    annotation_rate: 10.0
-    # View dimensions (must match agent stream settings)
+    # Update rate (Hz)
+    update_rate: 10.0
+    # View dimensions
     central_view:
       width: 854
       height: 480

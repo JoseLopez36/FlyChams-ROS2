@@ -558,9 +558,10 @@ void SettingsTools::printSettings() const
     RCLCPP_DEBUG(node_->get_logger(), "    Agent Metrics: %s", config_ptr_->topics.agent_metrics.c_str());
     RCLCPP_DEBUG(node_->get_logger(), "    Target Metrics: %s", config_ptr_->topics.target_metrics.c_str());
     RCLCPP_DEBUG(node_->get_logger(), "    Cluster Metrics: %s", config_ptr_->topics.cluster_metrics.c_str());
-    RCLCPP_DEBUG(node_->get_logger(), "    Agent Markers: %s", config_ptr_->topics.agent_markers.c_str());
-    RCLCPP_DEBUG(node_->get_logger(), "    Target Markers: %s", config_ptr_->topics.target_markers.c_str());
-    RCLCPP_DEBUG(node_->get_logger(), "    Cluster Markers: %s", config_ptr_->topics.cluster_markers.c_str());
+    RCLCPP_DEBUG(node_->get_logger(), "    Agent Scene: %s", config_ptr_->topics.agent_scene.c_str());
+    RCLCPP_DEBUG(node_->get_logger(), "    Target Scene: %s", config_ptr_->topics.target_scene.c_str());
+    RCLCPP_DEBUG(node_->get_logger(), "    Cluster Scene: %s", config_ptr_->topics.cluster_scene.c_str());
+    RCLCPP_DEBUG(node_->get_logger(), "    Agent Annotations: %s", config_ptr_->topics.agent_annotations.c_str());
 
     // Frame Parameters
     RCLCPP_DEBUG(node_->get_logger(), "\n[FRAMES]");
