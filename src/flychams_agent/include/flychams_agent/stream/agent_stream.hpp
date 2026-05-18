@@ -50,6 +50,7 @@ namespace flychams::agent
             bool enable_crops;
             // Crop data
             std::vector<common::CropMsg> crops;
+            std::vector<common::CropMsg> crops_cache;
             int crop_output_width;
             int crop_output_height;
             std::mutex crops_mutex;

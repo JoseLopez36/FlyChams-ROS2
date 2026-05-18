@@ -164,8 +164,7 @@ std::string AgentStream::buildSourcePipeline(const std::string& rtsp_url) const
 void AgentStream::streamPipeline(const std::shared_ptr<StreamUnit>& unit)
 {
     cv::VideoCapture capture;
-    cv::UMat gpu_frame, gpu_low_res, gpu_low_res_crop;
-    cv::Mat  low_res_frame, low_res_crop;
+    cv::Mat  frame, low_res_frame, low_res_crop;
 
     RCLCPP_INFO(node_->get_logger(), "Agent stream: Opening stream for camera %s: %s",
         unit->config->id.c_str(), unit->pipeline.c_str());
@@ -192,34 +191,33 @@ void AgentStream::streamPipeline(const std::shared_ptr<StreamUnit>& unit)
 
     while (unit->running)
     {
-        if (!capture.read(gpu_frame) || gpu_frame.empty())
+        if (!capture.read(frame) || frame.empty())
             break;
 
-        // Downscale on GPU, download only the small result
-        cv::resize(gpu_frame, gpu_low_res, cv::Size(unit->output_width, unit->output_height));
-        gpu_low_res.copyTo(low_res_frame);
+        // Downscale: INTER_AREA gives best quality for shrinking and avoids aliasing
+        cv::resize(frame, low_res_frame, cv::Size(unit->output_width, unit->output_height), 0, 0, cv::INTER_AREA);
         unit->image_pub.publish(makeImage(low_res_frame, unit->frame_id));
 
-        // Crop on GPU, resize on GPU, download only the small result
         if (unit->enable_crops)
         {
-            std::vector<CropMsg> crops;
+            // Update crops cache only when the mutex is immediately available
+            if (unit->crops_mutex.try_lock())
             {
-                std::lock_guard<std::mutex> lock(unit->crops_mutex);
-                crops = unit->crops;
+                unit->crops_cache = unit->crops;
+                unit->crops_mutex.unlock();
             }
 
-            for (size_t i = 0; i < crops.size(); i++)
+            const cv::Rect frame_rect(0, 0, frame.cols, frame.rows);
+            for (size_t i = 0; i < unit->crops_cache.size(); i++)
             {
-                const auto& crop = crops[i];
+                const auto& crop = unit->crops_cache[i];
 
                 cv::Rect rect(crop.x, crop.y, crop.w, crop.h);
-                rect = rect & cv::Rect(0, 0, gpu_frame.cols, gpu_frame.rows);
+                rect &= frame_rect;
                 if (rect.width <= 0 || rect.height <= 0)
                     continue;
 
-                cv::resize(gpu_frame(rect), gpu_low_res_crop, cv::Size(unit->crop_output_width, unit->crop_output_height));
-                gpu_low_res_crop.copyTo(low_res_crop);
+                cv::resize(frame(rect), low_res_crop, cv::Size(unit->crop_output_width, unit->crop_output_height), 0, 0, cv::INTER_AREA);
                 unit->crop_pubs[i].publish(makeImage(low_res_crop, unit->frame_id));
             }
         }
