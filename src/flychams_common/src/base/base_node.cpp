@@ -478,13 +478,13 @@ std::string BaseNode::getAgentBodyFrame(const ID& agent_id)
 std::string BaseNode::getCameraBodyFrame(const ID& agent_id, const ID& camera_id)
 {
     std::string pattern = replace(agent_frames_.camera_body_pattern_, "AGENTID", agent_id);
-    return replace(pattern, "HEADID", camera_id);
+    return replace(pattern, "MULTICAMERAID", camera_id);
 }
 
 std::string BaseNode::getCameraOpticalFrame(const ID& agent_id, const ID& camera_id)
 {
     std::string pattern = replace(agent_frames_.camera_optical_pattern_, "AGENTID", agent_id);
-    return replace(pattern, "HEADID", camera_id);
+    return replace(pattern, "MULTICAMERAID", camera_id);
 }
 
 // ════════════════════════════════════════════════════════════════════════════

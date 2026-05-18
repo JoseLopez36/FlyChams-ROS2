@@ -38,9 +38,6 @@ void AgentAssignment::onModuleInit()
     // Get Nesterov parameters
     position_solver_params_.lipschitz_constant = node_->getParameterOr<float>("positioning.lipschitz_constant", 0.0f);
 
-    // Initialize TF
-    node_->initTf();
-
     // Initialize data
     agents_.clear();
     A_.clear();

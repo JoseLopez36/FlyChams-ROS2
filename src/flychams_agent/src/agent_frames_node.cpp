@@ -29,9 +29,12 @@ public: // Constructor/Destructor
     }
 
     void onStatusInit() override
-    {
+    {    
         // Get agent ID
         agent_id_ = getParameter<std::string>("agent_id");
+
+        // Initialize TF
+        node_->initTf();
 
         // Create drone frames
         drone_frames_ = std::make_shared<DroneFrames>(agent_id_, sharedFromThis());

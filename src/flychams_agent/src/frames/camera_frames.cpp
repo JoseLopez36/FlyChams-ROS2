@@ -14,9 +14,6 @@ void CameraFrames::onModuleInit()
     // Get update rate
     update_rate_ = node_->getParameterOr<float>("update_rate", 30.0f);
 
-    // Initialize TF
-    node_->initTf();
-
     // Initialize data
     agent_ = Agent();
 
@@ -105,19 +102,14 @@ void CameraFrames::update()
     // Skip update if status is not valid
     if (!checkStatus())
     {
-        RCLCPP_WARN(node_->get_logger(), "Camera frames: Skipping update due to invalid status");
-        return;
-    }
+        RCLCPP_WARN(node_->get_logger(), "Camera frames: Defaulting update due to invalid status");
 
-    // If no observation setpoints, update with default values
-    if (!agent_.has_observation_setpoints)
-    {
+        // Set default orientation
         QuaternionMsg orientation_msg;
         orientation_msg.x = 0.0;
         orientation_msg.y = 0.0;
         orientation_msg.z = 0.0;
         orientation_msg.w = 1.0;
-
         for (const auto& [camera_id, camera_config_ptr] : node_->getSettings()->getMultiCameraSet(agent_id_))
         {
             PointMsg position_msg;
@@ -176,6 +168,13 @@ void CameraFrames::update()
 
 bool CameraFrames::checkStatus()
 {
+    // Check 1: Agent must have a valid observation setpoints
+    if (!agent_.has_observation_setpoints)
+    {
+        RCLCPP_WARN(node_->get_logger(), "Camera frames: Agent %s has no observation setpoints", agent_id_.c_str());
+        return false;
+    }
+
     // All checks passed
     return true;
 }
@@ -193,7 +192,7 @@ void CameraFrames::updateCameraBodyFrame(const ID camera_id, const PointMsg& pos
 
     // Lookup body pose in world using TF
     PoseStampedMsg pose;
-    pose.header = node_->createHeader(node_->getGlobalFrame());
+    pose.header = node_->createHeader(body_frame);
     pose.pose.position = PointMsg();
     pose.pose.orientation = QuaternionMsg();
     pose.pose.orientation.w = 1.0;

@@ -33,6 +33,9 @@ public: // Constructor/Destructor
         // Get agent ID
         agent_id_ = getParameter<std::string>("agent_id");
 
+        // Initialize TF
+        node_->initTf();
+
         // Create agent positioning
         agent_positioning_ = std::make_shared<AgentPositioning>(agent_id_, sharedFromThis());
 

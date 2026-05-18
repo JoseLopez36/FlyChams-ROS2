@@ -30,6 +30,9 @@ public: // Constructor/Destructor
 
     void onDiscoveryInit() override
     {
+        // Initialize TF
+        node_->initTf();
+        
         // Initialize agent assignment system
         agent_assignment_ = std::make_shared<AgentAssignment>(sharedFromThis());
 

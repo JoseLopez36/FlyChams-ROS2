@@ -14,9 +14,6 @@ void AgentTracking::onModuleInit()
     // Get update rate
     update_rate_ = node_->getParameterOr<float>("tracking_rate", 20.0f);
 
-    // Initialize TF
-    node_->initTf();
-
     // Initialize data
     agent_ = Agent();
     solvers_.clear();

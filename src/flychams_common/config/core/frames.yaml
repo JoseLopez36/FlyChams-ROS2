@@ -8,5 +8,5 @@
     agent_frames:
       agent_local: "AGENTID/local"
       agent_body: "AGENTID/body"
-      camera_body: "AGENTID/HEADID/body"
-      camera_optical: "AGENTID/HEADID/optical"
+      camera_body: "AGENTID/MULTICAMERAID/body"
+      camera_optical: "AGENTID/MULTICAMERAID/optical"

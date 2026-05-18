@@ -51,7 +51,7 @@ class TargetDetection:
         # Get relevant frames from parameters
         self.source_frame = self.node.get_parameter('global_frames.world').get_parameter_value().string_value
         self.target_frame_template = self.node.get_parameter('agent_frames.camera_optical').get_parameter_value().string_value
-        self.target_frame = self.target_frame_template.replace('AGENTID', self.agent_id).replace('HEADID', self.camera_id)
+        self.target_frame = self.target_frame_template.replace('AGENTID', self.agent_id).replace('MULTICAMERAID', self.camera_id)
 
         # TF Listener
         self.tf_buffer = Buffer()

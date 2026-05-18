@@ -17,9 +17,6 @@ void DroneState::onModuleInit()
     takeoff_altitude_ = node_->getParameterOr<float>("takeoff_altitude", 3.0f);
     landing_altitude_ = node_->getParameterOr<float>("landing_altitude", 0.5f);
 
-    // Initialize TF
-    node_->initTf();
-
     // Initialize data
     agent_ = Agent();
 

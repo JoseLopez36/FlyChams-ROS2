@@ -33,6 +33,9 @@ public: // Constructor/Destructor
         // Get agent ID
         agent_id_ = getParameter<std::string>("agent_id");
 
+        // Initialize TF
+        node_->initTf();
+        
         // Create agent tracking
         agent_tracking_ = std::make_shared<AgentTracking>(agent_id_, sharedFromThis());
 
