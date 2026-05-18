@@ -4,6 +4,7 @@
     <General>
       <Interfaces>
         <NetworkInterface autodetermine="false" name="lo" priority="default" multicast="default" />
+        <NetworkInterface name="docker0" />
       </Interfaces>
       <AllowMulticast>default</AllowMulticast>
       <MaxMessageSize>65500B</MaxMessageSize>

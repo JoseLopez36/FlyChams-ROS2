@@ -22,7 +22,6 @@ echo "Starting coordinator container: $CONTAINER_NAME"
 docker run ${RUN_FLAGS} \
     --name "$CONTAINER_NAME" \
     --network host \
-    --user $(id -u):$(id -g) \
     -e XDG_RUNTIME_DIR=/tmp \
     -e ROS_DOMAIN_ID="${ROS_DOMAIN_ID}" \
     -e RMW_IMPLEMENTATION="${RMW_IMPLEMENTATION}" \
