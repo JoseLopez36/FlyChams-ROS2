@@ -46,6 +46,7 @@ void AgentStream::onModuleInit()
             {
                 unit->enable_crops = true;
                 unit->crops.resize(nw);
+                unit->crops_cache.resize(nw);
                 for (const auto& [window_id, window] : tracking_config.multi_window_set)
                 {
                     unit->crop_pubs.push_back(node_->createAgentMultiWindowImagePublisher(agent_id_, window_id));
@@ -108,11 +109,17 @@ void AgentStream::observationSetpointsCallback(const ObservationSetpointsMsg::Sh
     // Get central stream unit
     std::shared_ptr<StreamUnit> unit = stream_units_[central_camera_id_];
 
-    // Iterate through the crops in the message
-    const size_t n = msg->crops.size();
-    for (size_t i = 0; i < n; ++i)
+    // Check if crops are enabled
+    if (!unit->enable_crops)
     {
-        const auto& crop = msg->crops[i];
+        return;
+    }
+
+    // Iterate through the crops in the message
+    const size_t nw = msg->crops.size() - 1; // Exclude the central camera
+    for (size_t i = 0, j = 1; i < nw; ++i, ++j)
+    {
+        const auto& crop = msg->crops[j];
         
         // Only update if it's not out of bounds
         if (!crop.is_out_of_bounds)
@@ -208,7 +215,8 @@ void AgentStream::streamPipeline(const std::shared_ptr<StreamUnit>& unit)
             }
 
             const cv::Rect frame_rect(0, 0, frame.cols, frame.rows);
-            for (size_t i = 0; i < unit->crops_cache.size(); i++)
+            const size_t n_crops = std::min(unit->crops_cache.size(), unit->crop_pubs.size());
+            for (size_t i = 0; i < n_crops; i++)
             {
                 const auto& crop = unit->crops_cache[i];
 
