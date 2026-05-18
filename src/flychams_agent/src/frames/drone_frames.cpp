@@ -14,6 +14,9 @@ void DroneFrames::onModuleInit()
     // Get update rate
     update_rate_ = node_->getParameterOr<float>("update_rate", 30.0f);
 
+    // Initialize TF
+    node_->initTf();
+
     // Initialize data
     agent_ = Agent();
 

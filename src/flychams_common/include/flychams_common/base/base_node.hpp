@@ -98,6 +98,9 @@ namespace flychams::common
             return std::dynamic_pointer_cast<BaseNode>(shared_from_this());
         }
 
+    public: // TF initialization
+        void initTf();
+
     protected: // Settings data
         SettingsTools::SharedPtr settings_;
 

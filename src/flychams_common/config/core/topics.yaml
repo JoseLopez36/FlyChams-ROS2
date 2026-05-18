@@ -19,8 +19,7 @@
       agent_clusters: "/flychams/agent/AGENTID/clusters" # AgentClusters.msg (custom)
       agent_position_setpoint: "/flychams/agent/AGENTID/position_setpoint" # PointStamped.msg
       observation_setpoints: "/flychams/agent/AGENTID/observation_setpoints" # ObservationSetpoints.msg (custom)
-      multi_camera_image: "/flychams/agent/AGENTID/MULTICAMERAID/image" # Image.msg
-      multi_window_image: "/flychams/agent/AGENTID/MULTIWINDOWID/image" # Image.msg
+      agent_image: "/flychams/agent/AGENTID/UNITID/image" # Image.msg
 
     # Operator topics
     operator_topics:

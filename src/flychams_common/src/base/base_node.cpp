@@ -57,12 +57,6 @@ void BaseNode::init()
     operator_topics_.cluster_scene_pattern = topic_config.cluster_scene;
     operator_topics_.agent_annotations_pattern = topic_config.agent_annotations;
 
-    // Initialize TF2 components
-    tf_buffer_ = std::make_shared<tf2_ros::Buffer>(node_->get_clock());
-    tf_listener_ = std::make_shared<tf2_ros::TransformListener>(*tf_buffer_);
-    tf_broadcaster_ = std::make_shared<tf2_ros::TransformBroadcaster>(node_);
-    static_tf_broadcaster_ = std::make_shared<tf2_ros::StaticTransformBroadcaster>(node_);
-    
     // Get frame config
     const auto& frame_config = settings_->getFrames();
     world_frame_ = frame_config.world;
@@ -96,6 +90,19 @@ void BaseNode::shutdown()
     static_tf_broadcaster_.reset();
     // Destroy settings tools
     settings_.reset();
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+// TF INITIALIZATION
+// ════════════════════════════════════════════════════════════════════════════
+
+void BaseNode::initTf()
+{
+    // Initialize TF2 components
+    tf_buffer_ = std::make_shared<tf2_ros::Buffer>(node_->get_clock());
+    tf_listener_ = std::make_shared<tf2_ros::TransformListener>(*tf_buffer_);
+    tf_broadcaster_ = std::make_shared<tf2_ros::TransformBroadcaster>(node_);
+    static_tf_broadcaster_ = std::make_shared<tf2_ros::StaticTransformBroadcaster>(node_);
 }
 
 // ════════════════════════════════════════════════════════════════════════════

@@ -14,6 +14,9 @@ void CameraFrames::onModuleInit()
     // Get update rate
     update_rate_ = node_->getParameterOr<float>("update_rate", 30.0f);
 
+    // Initialize TF
+    node_->initTf();
+
     // Initialize data
     agent_ = Agent();
 
@@ -106,6 +109,28 @@ void CameraFrames::update()
         return;
     }
 
+    // If no observation setpoints, update with default values
+    if (!agent_.has_observation_setpoints)
+    {
+        QuaternionMsg orientation_msg;
+        orientation_msg.x = 0.0;
+        orientation_msg.y = 0.0;
+        orientation_msg.z = 0.0;
+        orientation_msg.w = 1.0;
+
+        for (const auto& [camera_id, camera_config_ptr] : node_->getSettings()->getMultiCameraSet(agent_id_))
+        {
+            PointMsg position_msg;
+            position_msg.x = camera_config_ptr->position.x();
+            position_msg.y = camera_config_ptr->position.y();
+            position_msg.z = camera_config_ptr->position.z();
+
+            updateCameraBodyFrame(camera_id, position_msg, orientation_msg);
+        }
+
+        return;
+    }
+
     // Iterate through all observation units
     for (int i = 0; i < agent_.observation_setpoints.n_o; ++i)
     {
@@ -151,13 +176,6 @@ void CameraFrames::update()
 
 bool CameraFrames::checkStatus()
 {
-    // Check 1: Agent must have a valid observation setpoints
-    if (!agent_.has_observation_setpoints)
-    {
-        RCLCPP_WARN(node_->get_logger(), "Camera frames: Agent %s has no observation setpoints", agent_id_.c_str());
-        return false;
-    }
-
     // All checks passed
     return true;
 }

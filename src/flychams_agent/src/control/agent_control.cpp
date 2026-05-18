@@ -20,6 +20,9 @@ void DroneControl::onModuleInit()
 	// Get flight parameters
 	takeoff_altitude_ = node_->getParameterOr<float>("takeoff_altitude", 1.5f);
 
+    // Initialize TF
+    node_->initTf();
+
 	// Get space constraints
 	const auto& config_ptr = node_->getSettings()->getConfig();
 	const auto& agent_ptr = node_->getSettings()->getAgent(agent_id_);
