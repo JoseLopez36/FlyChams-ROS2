@@ -70,8 +70,4 @@
       width: 427
       height: 240
     # Stream parameters
-    jpeg_quality: 80
-    stream_open_delay_ms: 1000
-    output_encoding: jpg
-    # Enable hardware-accelerated video decoding via FFmpeg hwaccel (VAAPI, NVDEC, etc.)
-    hw_acceleration: true
+    stream_delay_ms: 500

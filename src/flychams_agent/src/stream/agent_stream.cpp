@@ -17,22 +17,21 @@ void AgentStream::onModuleInit()
     tracking_view_width = node_->getParameterOr<int>("tracking_view.width", 427);
     tracking_view_height = node_->getParameterOr<int>("tracking_view.height", 240);
     // Stream parameters
-    jpeg_quality_ = node_->getParameterOr<int>("jpeg_quality", 80);
-    stream_open_delay_ms_ = node_->getParameterOr<int>("stream_open_delay_ms", 1000);
-    output_encoding_ = node_->getParameterOr<std::string>("output_encoding", "jpg");
-    hw_acceleration_ = node_->getParameterOr<bool>("hw_acceleration", true);
+    stream_delay_ms_ = node_->getParameterOr<int>("stream_delay_ms", 500);
+
+    // Get hardware vendor from environment variable
+    hw_vendor_ = std::getenv("HW_VENDOR") ? std::getenv("HW_VENDOR") : "none";
 
     // Initialize stream variables
     stream_units_.clear();
 
     // Get observation units config
     const TrackingConfig& tracking_config = node_->getSettings()->getTracking(agent_id_);
-    bool first = true;
     for (const auto& [camera_id, camera] : tracking_config.multi_camera_set)
     {
         std::shared_ptr<StreamUnit> unit = std::make_shared<StreamUnit>();
         unit->config = camera;
-        unit->pipeline = camera->source_stream_url + "?rtsp_transport=tcp";
+        unit->pipeline = camera->source_stream_url;
         unit->frame_id = node_->getCameraOpticalFrame(agent_id_, camera_id);
         if (camera->role == ObservationRole::Central)
         {
@@ -64,11 +63,14 @@ void AgentStream::onModuleInit()
 
         unit->image_pub = node_->createAgentMultiCameraImagePublisher(agent_id_, camera_id);
         unit->running = true;
-        if (!first)
-            std::this_thread::sleep_for(std::chrono::milliseconds(stream_open_delay_ms_));
-        first = false;
         unit->thread = std::thread(&AgentStream::streamPipeline, this, unit);
         stream_units_[camera_id] = unit;
+
+        // Delay before starting next stream
+        if (stream_delay_ms_ > 0)
+        {
+            std::this_thread::sleep_for(std::chrono::milliseconds(stream_delay_ms_));
+        }
     }
 
     // Subscribe to GUI setpoints topic
@@ -122,42 +124,83 @@ void AgentStream::observationSetpointsCallback(const ObservationSetpointsMsg::Sh
 }
 
 // ════════════════════════════════════════════════════════════════════════════
+// STREAM CONFIGURATION
+// ════════════════════════════════════════════════════════════════════════════
+
+std::string AgentStream::buildSourcePipeline(const std::string& rtsp_url) const
+{
+    const std::string source =
+        "rtspsrc location=" + rtsp_url + " latency=0 protocols=tcp "
+        "! rtph265depay ! h265parse ";
+
+    if (hw_vendor_ == "nvidia")
+    {
+        // NVDEC hardware-accelerated H.265 decode
+        return source +
+            "! nvv4l2decoder ! nvvidconv ! video/x-raw,format=BGRx "
+            "! videoconvert ! video/x-raw,format=BGR "
+            "! appsink drop=true max-buffers=1 sync=false";
+    }
+    else if (hw_vendor_ == "amd")
+    {
+        // VA-API hardware-accelerated H.265 decode
+        return source +
+            "! vah265dec ! vapostproc ! videoconvert ! video/x-raw,format=BGR "
+            "! appsink drop=true max-buffers=1 sync=false";
+    }
+    else
+    {
+        // Software decode H.265 decode
+        return source +
+            "! avdec_h265 ! videoconvert ! video/x-raw,format=BGR "
+            "! appsink drop=true max-buffers=1 sync=false";
+    }
+}
+
+// ════════════════════════════════════════════════════════════════════════════
 // STREAM MANAGEMENT
 // ════════════════════════════════════════════════════════════════════════════
 
 void AgentStream::streamPipeline(const std::shared_ptr<StreamUnit>& unit)
 {
     cv::VideoCapture capture;
-    cv::Mat frame;
+    cv::UMat gpu_frame, gpu_low_res, gpu_low_res_crop;
+    cv::Mat  low_res_frame, low_res_crop;
 
     RCLCPP_INFO(node_->get_logger(), "Agent stream: Opening stream for camera %s: %s",
         unit->config->id.c_str(), unit->pipeline.c_str());
 
-    capture.open(unit->pipeline, cv::CAP_FFMPEG, std::vector<int>{
-        cv::CAP_PROP_HW_ACCELERATION, hw_acceleration_ ? cv::VIDEO_ACCELERATION_ANY : cv::VIDEO_ACCELERATION_NONE
-    });
+    const std::string gst_pipeline = buildSourcePipeline(unit->pipeline);
+    RCLCPP_INFO(node_->get_logger(), "Agent stream: GStreamer pipeline: %s", gst_pipeline.c_str());
 
-    if (!capture.isOpened())
+    while (unit->running && !capture.isOpened())
     {
-        RCLCPP_ERROR(node_->get_logger(), "Agent stream: Could not open stream for camera %s",
-            unit->config->id.c_str());
-        return;
+        capture.open(gst_pipeline, cv::CAP_GSTREAMER);
+        if (!capture.isOpened())
+        {
+            RCLCPP_WARN(node_->get_logger(), "Agent stream: Could not open stream for camera %s, retrying in 5s...",
+                unit->config->id.c_str());
+            std::this_thread::sleep_for(std::chrono::seconds(5));
+        }
     }
 
-    RCLCPP_INFO(node_->get_logger(), "Agent stream: Stream opened for camera %s", unit->config->id.c_str());
-    capture.set(cv::CAP_PROP_BUFFERSIZE, 1);
+    if (!capture.isOpened())
+        return;
+
+    RCLCPP_INFO(node_->get_logger(), "Agent stream: Stream opened for camera %s",
+        unit->config->id.c_str());
 
     while (unit->running)
     {
-        if (!capture.read(frame) || frame.empty())
+        if (!capture.read(gpu_frame) || gpu_frame.empty())
             break;
 
-        // Downscale on CPU (nearest neighbor for speed)
-        cv::Mat low_res_frame;
-        cv::resize(frame, low_res_frame, cv::Size(unit->output_width, unit->output_height), 0, 0, cv::INTER_NEAREST);
-        unit->image_pub->publish(makeCompressedImage(low_res_frame, unit->frame_id));
+        // Downscale on GPU, download only the small result
+        cv::resize(gpu_frame, gpu_low_res, cv::Size(unit->output_width, unit->output_height));
+        gpu_low_res.copyTo(low_res_frame);
+        unit->image_pub.publish(makeImage(low_res_frame, unit->frame_id));
 
-        // Crop on CPU (zero-copy in RAM)
+        // Crop on GPU, resize on GPU, download only the small result
         if (unit->enable_crops)
         {
             std::vector<CropMsg> crops;
@@ -171,16 +214,13 @@ void AgentStream::streamPipeline(const std::shared_ptr<StreamUnit>& unit)
                 const auto& crop = crops[i];
 
                 cv::Rect rect(crop.x, crop.y, crop.w, crop.h);
-                rect = rect & cv::Rect(0, 0, frame.cols, frame.rows);
+                rect = rect & cv::Rect(0, 0, gpu_frame.cols, gpu_frame.rows);
                 if (rect.width <= 0 || rect.height <= 0)
-                {
                     continue;
-                }
 
-                cv::Mat crop_frame = frame(rect);
-                cv::Mat low_res_crop;
-                cv::resize(crop_frame, low_res_crop, cv::Size(unit->crop_output_width, unit->crop_output_height), 0, 0, cv::INTER_NEAREST);
-                unit->crop_pubs[i]->publish(makeCompressedImage(low_res_crop, unit->frame_id));
+                cv::resize(gpu_frame(rect), gpu_low_res_crop, cv::Size(unit->crop_output_width, unit->crop_output_height));
+                gpu_low_res_crop.copyTo(low_res_crop);
+                unit->crop_pubs[i].publish(makeImage(low_res_crop, unit->frame_id));
             }
         }
     }
@@ -192,24 +232,10 @@ void AgentStream::streamPipeline(const std::shared_ptr<StreamUnit>& unit)
 // IMAGE UTILITIES
 // ════════════════════════════════════════════════════════════════════════════
 
-CompressedImageMsg AgentStream::makeCompressedImage(const cv::Mat& image, const std::string& frame_id) const
+ImageMsg::SharedPtr AgentStream::makeImage(const cv::Mat& image, const std::string& frame_id) const
 {
-    CompressedImageMsg msg;
-    msg.header.stamp = node_->now();
-    msg.header.frame_id = frame_id;
-    msg.format = output_encoding_;
-
-    std::vector<int> params;
-    std::string extension = "." + output_encoding_;
-
-    if (output_encoding_ == "jpg" || output_encoding_ == "jpeg")
-    {
-        params = {cv::IMWRITE_JPEG_QUALITY, std::clamp(jpeg_quality_, 1, 100)};
-        extension = ".jpg";
-        msg.format = "jpeg";
-    }
-
-    cv::imencode(extension, image, msg.data, params);
-
-    return msg;
+    std_msgs::msg::Header header;
+    header.stamp = node_->now();
+    header.frame_id = frame_id;
+    return cv_bridge::CvImage(header, "bgr8", image).toImageMsg();
 }

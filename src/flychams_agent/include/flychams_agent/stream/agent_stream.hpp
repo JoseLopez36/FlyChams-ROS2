@@ -1,13 +1,11 @@
 #pragma once
 
-// Utils include
+// Standard includes
 #include <atomic>
 #include <mutex>
 #include <thread>
-#include <algorithm>
-#include <chrono>
-#include <unordered_map>
-#include <opencv2/opencv.hpp>
+
+// OpenCV includes
 #include <cv_bridge/cv_bridge.h>
 
 // Base module include
@@ -78,8 +76,8 @@ namespace flychams::agent
         int tracking_view_width;
         int tracking_view_height;
         // Stream parameters
-        int stream_open_delay_ms_;
-        bool hw_acceleration_;
+        int stream_delay_ms_;
+        std::string hw_vendor_;
 
     private: // Data
         // Stream units
@@ -87,6 +85,9 @@ namespace flychams::agent
 
     private: // Callbacks
         void observationSetpointsCallback(const common::ObservationSetpointsMsg::SharedPtr msg);
+
+    private: // Stream configuration
+        std::string buildSourcePipeline(const std::string& rtsp_url) const;
 
     private: // Stream management
         void streamPipeline(const std::shared_ptr<StreamUnit>& unit);
