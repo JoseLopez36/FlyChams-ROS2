@@ -6,7 +6,7 @@ Tuning guidelines to improve throughput and latency in the FlyChams stack.
 
 ## 1. Increase OS UDP Buffer Limits
 
-ROS2 DDS (FastDDS) relies on UDP sockets. The default Linux kernel buffer sizes are often too small for high-frequency, multi-agent traffic and will cause silently dropped messages.
+ROS2 DDS (CycloneDDS) relies on UDP sockets. The default Linux kernel buffer sizes are often too small for high-frequency, multi-agent traffic and will cause silently dropped messages.
 
 ### Apply permanently (recommended)
 
@@ -58,61 +58,97 @@ The desktop app should automatically use hardware acceleration. If you're experi
 
 ---
 
-## 3. Shared Memory Transport in FastDDS
+## 3. Enable Multicast on Loopback Interface
 
-When all communicating ROS2 nodes run on the **same host** (e.g. all containers with `--network host`), FastDDS Shared Memory Transport (SHM) eliminates the UDP copy overhead and significantly reduces latency and CPU usage for large messages such as compressed images.
+CycloneDDS uses multicast for discovery. The loopback interface (`lo`) must have multicast enabled.
 
-### Enable via environment variable
-
-```bash
-export FASTDDS_BUILTIN_TRANSPORTS=SHM
-```
-
-Pass it to the containers before launching:
+### Temporary (until reboot)
 
 ```bash
-FASTDDS_BUILTIN_TRANSPORTS=SHM scripts/flychams.py sim
+sudo ip link set lo multicast on
 ```
 
-Or set it in the shell that sources the containers so all `docker run` calls inherit it (see [setup.md](setup.md) — *Environment Variables*).
+### Permanent (systemd service)
 
-> **Note:** SHM requires all nodes to share the same Linux kernel. All `docker/run_*.sh` scripts already set `--network host` and `--ipc=host`, which gives every container access to the same `/dev/shm` namespace — required for SHM to work across containers. For fine-grained control over buffer sizes use the FastDDS XML profile described in section 4 below.
+Create the service file:
+
+```bash
+sudo nano /etc/systemd/system/multicast-lo.service
+```
+
+Paste the following:
+
+```
+[Unit]
+Description=Enable Multicast on Loopback
+
+[Service]
+Type=oneshot
+ExecStart=/usr/sbin/ip link set lo multicast on
+
+[Install]
+WantedBy=multi-user.target
+```
+
+Enable and start the service:
+
+```bash
+sudo systemctl daemon-reload
+sudo systemctl enable multicast-lo.service
+sudo systemctl start multicast-lo.service
+```
+
+### Verify
+
+```bash
+ip link show lo
+```
+
+The output should include `MULTICAST`:
+
+```
+1: lo: <LOOPBACK,MULTICAST,UP,LOWER_UP> mtu 65536 ...
+```
 
 ---
 
-## 4. FastDDS XML Profile (SHM + UDP)
+## 4. CycloneDDS XML Configuration
 
-The FlyChams FastDDS profile is located at:
+The FlyChams CycloneDDS profile is located at:
 
 ```
-src/flychams_common/config/core/fastdds.xml
+src/flychams_common/config/core/cyclonedds.xml
 ```
 
-It configures two transports:
+It configures:
 
-| Transport | Purpose |
+| Setting | Purpose |
 |---|---|
-| `shm_transport` | Shared memory — zero-copy for all intra-host traffic (compressed images, metrics) |
-| `udp_transport` | UDPv4 — used for PX4/Micro-XRCE-DDS agent communication and cross-host discovery |
+| `lo` interface | Loopback for local communication |
+| `MaxMessageSize` | 65500B for large messages |
+| `ParticipantIndex=none` | Avoids participant index limits on ROS 2 Jazzy |
+| `SocketReceiveBufferSize` | 10MB minimum buffer |
 
 ### Activate
 
-Point FastDDS to the profile before launching. The project root is mounted at `/home/testuser/FlyChams-ROS2` inside every container, so the path is fixed:
+Set the RMW implementation and point CycloneDDS to the profile before launching:
 
 ```bash
-export FASTRTPS_DEFAULT_PROFILES_FILE=/home/testuser/FlyChams-ROS2/src/flychams_common/config/core/fastdds.xml
+export RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
+export CYCLONEDDS_URI=file:///home/testuser/FlyChams-ROS2/src/flychams_common/config/core/cyclonedds.xml
 ```
 
-All `docker/run_*.sh` scripts default to this path and forward the variable into the container automatically. To override, pass a different path before calling `flychams.py` or any individual launch script:
+The project root is mounted at `/home/testuser/FlyChams-ROS2` inside every container, so the path is fixed.
+
+All `docker/run_*.sh` scripts forward these variables into the container automatically. To override, pass different values before calling `flychams.py` or any individual launch script:
 
 ```bash
-FASTRTPS_DEFAULT_PROFILES_FILE=/path/to/custom_fastdds.xml \
+RMW_IMPLEMENTATION=rmw_cyclonedds_cpp \
+CYCLONEDDS_URI=file:///path/to/custom_cyclonedds.xml \
     scripts/flychams.py sim
 ```
 
-Or export it once in your shell session before running any launch scripts.
-
-> **Note:** When `FASTRTPS_DEFAULT_PROFILES_FILE` is set, FastDDS ignores `FASTDDS_BUILTIN_TRANSPORTS`. The two variables are mutually exclusive — set one or the other, not both.
+Or export them once in your shell session before running any launch scripts.
 
 ---
 

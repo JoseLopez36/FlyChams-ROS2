@@ -107,7 +107,7 @@ All containers use:
   - **AMD**: `--device /dev/kfd --device /dev/dri --group-add video --group-add render -e ROCR_VISIBLE_DEVICES=all`
   - **Intel**: `--device /dev/dri --group-add video -e LIBVA_DRIVER_NAME=iHD`
 - Project root mounted at `/home/testuser/FlyChams-ROS2`.
-- `ROS_DOMAIN_ID` and `FASTDDS_BUILTIN_TRANSPORTS` forwarded from the host.
+- `ROS_DOMAIN_ID`, `RMW_IMPLEMENTATION`, and `CYCLONEDDS_URI` forwarded from the host.
 
 The agent container additionally receives `AGENT_ID` as an environment variable. The operator container does not require GPU access.
 

@@ -9,6 +9,7 @@ endif()
 find_package(ament_cmake REQUIRED)
 find_package(ament_cmake_python REQUIRED)
 find_package(rclcpp REQUIRED)
+find_package(cv_bridge REQUIRED)
 find_package(px4_msgs REQUIRED)
 find_package(flychams_common REQUIRED)
 find_package(flychams_api REQUIRED)
@@ -46,7 +47,7 @@ target_include_directories(${PROJECT_NAME} PUBLIC
 
 # Export dependencies
 ament_target_dependencies(${PROJECT_NAME}
-  rclcpp px4_msgs flychams_common flychams_api
+  rclcpp cv_bridge px4_msgs flychams_common flychams_api
 )
 
 # Link to required libraries
@@ -88,7 +89,7 @@ ament_target_dependencies(agent_tracking_node rclcpp flychams_common flychams_ap
 # Create executable for agent stream node
 add_executable(agent_stream_node src/agent_stream_node.cpp)
 target_link_libraries(agent_stream_node ${PROJECT_NAME})
-ament_target_dependencies(agent_stream_node rclcpp flychams_common flychams_api)
+ament_target_dependencies(agent_stream_node rclcpp cv_bridge flychams_common flychams_api)
 
 # Install Python package
 ament_python_install_package(${PROJECT_NAME})
@@ -133,6 +134,7 @@ ament_export_targets(${PROJECT_NAME} HAS_LIBRARY_TARGET)
 ament_export_dependencies(
   rclcpp
   rclpy
+  cv_bridge
   px4_msgs
   flychams_common
   flychams_api

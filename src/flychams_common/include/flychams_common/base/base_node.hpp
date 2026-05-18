@@ -122,6 +122,8 @@ namespace flychams::common
         ListenerPtr tf_listener_;
         BroadcasterPtr tf_broadcaster_;
         StaticBroadcasterPtr static_tf_broadcaster_;
+        // Image transport
+        ImageTransportPtr image_transport_;
 
     public: // Settings getters
         SettingsTools::SharedPtr getSettings() { return settings_; }
@@ -166,8 +168,8 @@ namespace flychams::common
         PublisherPtr<AgentClustersMsg> createAgentClustersPublisher(const ID& agent_id);
         PublisherPtr<PointStampedMsg> createAgentPositionSetpointPublisher(const ID& agent_id);
         PublisherPtr<ObservationSetpointsMsg> createObservationSetpointsPublisher(const ID& agent_id);
-        PublisherPtr<CompressedImageMsg> createAgentMultiCameraImagePublisher(const ID& agent_id, const ID& camera_id);
-        PublisherPtr<CompressedImageMsg> createAgentMultiWindowImagePublisher(const ID& agent_id, const ID& window_id);
+        ImagePublisher createAgentMultiCameraImagePublisher(const ID& agent_id, const ID& camera_id);
+        ImagePublisher createAgentMultiWindowImagePublisher(const ID& agent_id, const ID& window_id);
         PublisherPtr<MissionMetricsMsg> createMissionMetricsPublisher();
         PublisherPtr<AgentMetricsMsg> createAgentMetricsPublisher(const ID& agent_id);
         PublisherPtr<TargetMetricsMsg> createTargetMetricsPublisher(const ID& target_id);
@@ -191,8 +193,8 @@ namespace flychams::common
         SubscriberPtr<AgentClustersMsg> createAgentClustersSubscriber(const ID& agent_id, std::function<void(const AgentClustersMsg::SharedPtr)> callback, const rclcpp::SubscriptionOptions& options = rclcpp::SubscriptionOptions());
         SubscriberPtr<PointStampedMsg> createAgentPositionSetpointSubscriber(const ID& agent_id, std::function<void(const PointStampedMsg::SharedPtr)> callback, const rclcpp::SubscriptionOptions& options = rclcpp::SubscriptionOptions());
         SubscriberPtr<ObservationSetpointsMsg> createObservationSetpointsSubscriber(const ID& agent_id, std::function<void(const ObservationSetpointsMsg::SharedPtr)> callback, const rclcpp::SubscriptionOptions& options = rclcpp::SubscriptionOptions());
-        SubscriberPtr<CompressedImageMsg> createAgentMultiCameraImageSubscriber(const ID& agent_id, const ID& camera_id, std::function<void(const CompressedImageMsg::SharedPtr)> callback, const rclcpp::SubscriptionOptions& options = rclcpp::SubscriptionOptions());
-        SubscriberPtr<CompressedImageMsg> createAgentMultiWindowImageSubscriber(const ID& agent_id, const ID& window_id, std::function<void(const CompressedImageMsg::SharedPtr)> callback, const rclcpp::SubscriptionOptions& options = rclcpp::SubscriptionOptions());
+        SubscriberPtr<ImageMsg> createAgentMultiCameraImageSubscriber(const ID& agent_id, const ID& camera_id, std::function<void(const ImageMsg::SharedPtr)> callback, const rclcpp::SubscriptionOptions& options = rclcpp::SubscriptionOptions());
+        SubscriberPtr<ImageMsg> createAgentMultiWindowImageSubscriber(const ID& agent_id, const ID& window_id, std::function<void(const ImageMsg::SharedPtr)> callback, const rclcpp::SubscriptionOptions& options = rclcpp::SubscriptionOptions());
         SubscriberPtr<MissionMetricsMsg> createGlobalMetricsSubscriber(std::function<void(const MissionMetricsMsg::SharedPtr)> callback, const rclcpp::SubscriptionOptions& options = rclcpp::SubscriptionOptions());
         SubscriberPtr<AgentMetricsMsg> createAgentMetricsSubscriber(const ID& agent_id, std::function<void(const AgentMetricsMsg::SharedPtr)> callback, const rclcpp::SubscriptionOptions& options = rclcpp::SubscriptionOptions());
         SubscriberPtr<TargetMetricsMsg> createTargetMetricsSubscriber(const ID& target_id, std::function<void(const TargetMetricsMsg::SharedPtr)> callback, const rclcpp::SubscriptionOptions& options = rclcpp::SubscriptionOptions());

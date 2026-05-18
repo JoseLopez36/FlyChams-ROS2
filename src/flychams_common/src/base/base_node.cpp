@@ -71,6 +71,9 @@ void BaseNode::init()
     agent_frames_.camera_body_pattern_ = frame_config.camera_body;
     agent_frames_.camera_optical_pattern_ = frame_config.camera_optical;
 
+    // Initialize image transport
+    image_transport_ = std::make_shared<image_transport::ImageTransport>(node_);
+
     // Call on init overridable method
     onNodeInit();
     RCLCPP_INFO(node_->get_logger(), "%s node running", node_name_.c_str());
@@ -295,14 +298,14 @@ PublisherPtr<ObservationSetpointsMsg> BaseNode::createObservationSetpointsPublis
     return node_->create_publisher<ObservationSetpointsMsg>(getObservationSetpointsTopic(agent_id), 10);
 }
 
-PublisherPtr<CompressedImageMsg> BaseNode::createAgentMultiCameraImagePublisher(const ID& agent_id, const ID& camera_id)
+ImagePublisher BaseNode::createAgentMultiCameraImagePublisher(const ID& agent_id, const ID& camera_id)
 {
-    return node_->create_publisher<CompressedImageMsg>(getAgentMultiCameraImageTopic(agent_id, camera_id), 10);
+    return image_transport_->advertise(getAgentMultiCameraImageTopic(agent_id, camera_id), 1);
 }
 
-PublisherPtr<CompressedImageMsg> BaseNode::createAgentMultiWindowImagePublisher(const ID& agent_id, const ID& window_id)
+ImagePublisher BaseNode::createAgentMultiWindowImagePublisher(const ID& agent_id, const ID& window_id)
 {
-    return node_->create_publisher<CompressedImageMsg>(getAgentMultiWindowImageTopic(agent_id, window_id), 10);
+    return image_transport_->advertise(getAgentMultiWindowImageTopic(agent_id, window_id), 1);
 }
 
 PublisherPtr<MissionMetricsMsg> BaseNode::createMissionMetricsPublisher()
@@ -421,14 +424,14 @@ SubscriberPtr<ObservationSetpointsMsg> BaseNode::createObservationSetpointsSubsc
     return node_->create_subscription<ObservationSetpointsMsg>(getObservationSetpointsTopic(agent_id), 10, std::move(callback), options);
 }
 
-SubscriberPtr<CompressedImageMsg> BaseNode::createAgentMultiCameraImageSubscriber(const ID& agent_id, const ID& camera_id, std::function<void(const CompressedImageMsg::SharedPtr)> callback, const rclcpp::SubscriptionOptions& options)
+SubscriberPtr<ImageMsg> BaseNode::createAgentMultiCameraImageSubscriber(const ID& agent_id, const ID& camera_id, std::function<void(const ImageMsg::SharedPtr)> callback, const rclcpp::SubscriptionOptions& options)
 {
-    return node_->create_subscription<CompressedImageMsg>(getAgentMultiCameraImageTopic(agent_id, camera_id), 10, std::move(callback), options);
+    return node_->create_subscription<ImageMsg>(getAgentMultiCameraImageTopic(agent_id, camera_id), rclcpp::SensorDataQoS(), std::move(callback), options);
 }
 
-SubscriberPtr<CompressedImageMsg> BaseNode::createAgentMultiWindowImageSubscriber(const ID& agent_id, const ID& window_id, std::function<void(const CompressedImageMsg::SharedPtr)> callback, const rclcpp::SubscriptionOptions& options)
+SubscriberPtr<ImageMsg> BaseNode::createAgentMultiWindowImageSubscriber(const ID& agent_id, const ID& window_id, std::function<void(const ImageMsg::SharedPtr)> callback, const rclcpp::SubscriptionOptions& options)
 {
-    return node_->create_subscription<CompressedImageMsg>(getAgentMultiWindowImageTopic(agent_id, window_id), 10, std::move(callback), options);
+    return node_->create_subscription<ImageMsg>(getAgentMultiWindowImageTopic(agent_id, window_id), rclcpp::SensorDataQoS(), std::move(callback), options);
 }
 
 SubscriberPtr<MissionMetricsMsg> BaseNode::createGlobalMetricsSubscriber(std::function<void(const MissionMetricsMsg::SharedPtr)> callback, const rclcpp::SubscriptionOptions& options)

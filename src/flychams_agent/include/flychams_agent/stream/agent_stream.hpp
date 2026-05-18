@@ -8,6 +8,7 @@
 #include <chrono>
 #include <unordered_map>
 #include <opencv2/opencv.hpp>
+#include <cv_bridge/cv_bridge.h>
 
 // Base module include
 #include "flychams_common/base/base_module.hpp"
@@ -55,8 +56,8 @@ namespace flychams::agent
             int crop_output_height;
             std::mutex crops_mutex;
             // Publisher
-            common::PublisherPtr<common::CompressedImageMsg> image_pub;
-            std::vector<common::PublisherPtr<common::CompressedImageMsg>> crop_pubs;
+            common::ImagePublisher image_pub;
+            std::vector<common::ImagePublisher> crop_pubs;
             // Runtime
             std::atomic_bool running;
             std::thread thread;
@@ -77,9 +78,7 @@ namespace flychams::agent
         int tracking_view_width;
         int tracking_view_height;
         // Stream parameters
-        int jpeg_quality_;
         int stream_open_delay_ms_;
-        std::string output_encoding_;
         bool hw_acceleration_;
 
     private: // Data
@@ -93,7 +92,7 @@ namespace flychams::agent
         void streamPipeline(const std::shared_ptr<StreamUnit>& unit);
 
     private: // Image utilities
-        common::CompressedImageMsg makeCompressedImage(const cv::Mat& image, const std::string& frame_id) const;
+        common::ImageMsg::SharedPtr makeImage(const cv::Mat& image, const std::string& frame_id) const;
 
     private: // ROS components
         // Subscriber

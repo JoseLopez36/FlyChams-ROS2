@@ -28,7 +28,10 @@
 
 // Sensor messages
 #include <sensor_msgs/msg/nav_sat_fix.hpp>
-#include <sensor_msgs/msg/compressed_image.hpp>
+#include <sensor_msgs/msg/image.hpp>
+
+// Image transport
+#include <image_transport/image_transport.hpp>
 
 // Geographic messages
 #include <geographic_msgs/msg/geo_point.hpp>
@@ -95,6 +98,8 @@ namespace flychams::common
     using ListenerPtr = std::shared_ptr<tf2_ros::TransformListener>;
     using BroadcasterPtr = std::shared_ptr<tf2_ros::TransformBroadcaster>;
     using StaticBroadcasterPtr = std::shared_ptr<tf2_ros::StaticTransformBroadcaster>;
+    // Image transport
+    using ImageTransportPtr = std::shared_ptr<image_transport::ImageTransport>;
     // Time
     using Time = rclcpp::Time;
     using TimerPtr = rclcpp::TimerBase::SharedPtr;
@@ -138,8 +143,10 @@ namespace flychams::common
     using OdometryMsg = nav_msgs::msg::Odometry;
     // NavSatFix
     using NavSatFixMsg = sensor_msgs::msg::NavSatFix;
-    // CompressedImage
-    using CompressedImageMsg = sensor_msgs::msg::CompressedImage;
+    // Image
+    using ImageMsg = sensor_msgs::msg::Image;
+    // Image transport
+    using ImagePublisher = image_transport::Publisher;
     // Geographic
     using GeoPointMsg = geographic_msgs::msg::GeoPoint;
     using GeoPointStampedMsg = geographic_msgs::msg::GeoPointStamped;

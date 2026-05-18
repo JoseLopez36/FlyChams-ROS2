@@ -186,7 +186,7 @@
     "Image!a0c0": {
       "synchronize": false,
       "imageMode": {
-        "imageTopic": "/flychams/agent/AGENT00/MULTICAMERA00/image"
+        "imageTopic": "/flychams/agent/AGENT00/MULTICAMERA00/image/compressed"
       },
       "foxglovePanelTitle": "AGENT00 - Central",
       "cameraState": {
@@ -232,7 +232,7 @@
     "Image!a0c1": {
       "synchronize": false,
       "imageMode": {
-        "imageTopic": "/flychams/agent/AGENT00/MULTICAMERA01/image"
+        "imageTopic": "/flychams/agent/AGENT00/MULTICAMERA01/image/compressed"
       },
       "foxglovePanelTitle": "AGENT00 - Tracking 1",
       "cameraState": {
@@ -278,7 +278,7 @@
     "Image!a0c2": {
       "synchronize": false,
       "imageMode": {
-        "imageTopic": "/flychams/agent/AGENT00/MULTICAMERA02/image"
+        "imageTopic": "/flychams/agent/AGENT00/MULTICAMERA02/image/compressed"
       },
       "foxglovePanelTitle": "AGENT00 - Tracking 2",
       "cameraState": {
@@ -416,7 +416,7 @@
     "Image!a1c0": {
       "synchronize": false,
       "imageMode": {
-        "imageTopic": "/flychams/agent/AGENT01/MULTICAMERA03/image"
+        "imageTopic": "/flychams/agent/AGENT01/MULTICAMERA03/image/compressed"
       },
       "foxglovePanelTitle": "AGENT01 — Central",
       "cameraState": {
@@ -464,7 +464,7 @@
     "Image!a1c1": {
       "synchronize": false,
       "imageMode": {
-        "imageTopic": "/flychams/agent/AGENT01/MULTICAMERA04/image"
+        "imageTopic": "/flychams/agent/AGENT01/MULTICAMERA04/image/compressed"
       },
       "foxglovePanelTitle": "AGENT01 — Tracking 1",
       "cameraState": {
@@ -510,7 +510,7 @@
     "Image!a1c2": {
       "synchronize": false,
       "imageMode": {
-        "imageTopic": "/flychams/agent/AGENT01/MULTICAMERA05/image"
+        "imageTopic": "/flychams/agent/AGENT01/MULTICAMERA05/image/compressed"
       },
       "foxglovePanelTitle": "AGENT01 — Tracking 2",
       "cameraState": {
@@ -648,7 +648,7 @@
     "Image!a2c0": {
       "synchronize": false,
       "imageMode": {
-        "imageTopic": "/flychams/agent/AGENT02/MULTICAMERA06/image"
+        "imageTopic": "/flychams/agent/AGENT02/MULTICAMERA06/image/compressed"
       },
       "foxglovePanelTitle": "AGENT02 — Central",
       "cameraState": {
@@ -694,7 +694,7 @@
     "Image!a2c1": {
       "synchronize": false,
       "imageMode": {
-        "imageTopic": "/flychams/agent/AGENT02/MULTICAMERA07/image"
+        "imageTopic": "/flychams/agent/AGENT02/MULTICAMERA07/image/compressed"
       },
       "foxglovePanelTitle": "AGENT02 — Tracking 1",
       "cameraState": {
@@ -740,7 +740,7 @@
     "Image!a2c2": {
       "synchronize": false,
       "imageMode": {
-        "imageTopic": "/flychams/agent/AGENT02/MULTICAMERA08/image"
+        "imageTopic": "/flychams/agent/AGENT02/MULTICAMERA08/image/compressed"
       },
       "foxglovePanelTitle": "AGENT02 — Tracking 2",
       "cameraState": {
