@@ -144,8 +144,7 @@ std::string AgentStream::buildSourcePipeline(const std::string& rtsp_url) const
     {
         // NVDEC hardware-accelerated H.265 decode
         return source +
-            "! nvv4l2decoder ! nvvidconv ! video/x-raw,format=BGRx "
-            "! videoconvert ! video/x-raw,format=BGR "
+            "! nvh265dec ! videoconvert ! video/x-raw,format=BGR "
             "! appsink drop=true max-buffers=1 sync=false";
     }
     else if (hw_vendor_ == "amd")
@@ -201,8 +200,8 @@ void AgentStream::streamPipeline(const std::shared_ptr<StreamUnit>& unit)
         if (!capture.read(frame) || frame.empty())
             break;
 
-        // Downscale: INTER_AREA gives best quality for shrinking and avoids aliasing
-        cv::resize(frame, low_res_frame, cv::Size(unit->output_width, unit->output_height), 0, 0, cv::INTER_AREA);
+        // Downscale frame
+        cv::resize(frame, low_res_frame, cv::Size(unit->output_width, unit->output_height), 0, 0, cv::INTER_LINEAR);
         unit->image_pub.publish(makeImage(low_res_frame, unit->frame_id));
 
         if (unit->enable_crops)
@@ -214,6 +213,7 @@ void AgentStream::streamPipeline(const std::shared_ptr<StreamUnit>& unit)
                 unit->crops_mutex.unlock();
             }
 
+            // Get and create crop rectangles
             const cv::Rect frame_rect(0, 0, frame.cols, frame.rows);
             const size_t n_crops = std::min(unit->crops_cache.size(), unit->crop_pubs.size());
             for (size_t i = 0; i < n_crops; i++)
@@ -225,7 +225,8 @@ void AgentStream::streamPipeline(const std::shared_ptr<StreamUnit>& unit)
                 if (rect.width <= 0 || rect.height <= 0)
                     continue;
 
-                cv::resize(frame(rect), low_res_crop, cv::Size(unit->crop_output_width, unit->crop_output_height), 0, 0, cv::INTER_AREA);
+                // Scale crop
+                cv::resize(frame(rect), low_res_crop, cv::Size(unit->crop_output_width, unit->crop_output_height), 0, 0, cv::INTER_LINEAR);
                 unit->crop_pubs[i].publish(makeImage(low_res_crop, unit->frame_id));
             }
         }
