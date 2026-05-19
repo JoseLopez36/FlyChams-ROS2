@@ -26,8 +26,8 @@ namespace flychams::operator_pkg
     class ClusterMarkers : public common::BaseModule
     {
     public: // Constructor/Destructor
-        ClusterMarkers(const common::ID& cluster_id, common::BaseNode::SharedPtr node)
-            : BaseModule(node), cluster_id_(cluster_id)
+        ClusterMarkers(const common::ID& cluster_id, const common::ID& element_id, common::BaseNode::SharedPtr node)
+            : BaseModule(node), cluster_id_(cluster_id), element_id_(element_id)
         {
             init();
         }
@@ -47,6 +47,7 @@ namespace flychams::operator_pkg
 
     private: // Parameters
         common::ID cluster_id_;
+        common::ID element_id_;
         float update_rate_;
 
     private: // Data

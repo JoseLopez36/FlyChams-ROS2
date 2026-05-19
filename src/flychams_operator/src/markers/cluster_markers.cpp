@@ -21,7 +21,7 @@ void ClusterMarkers::onModuleInit()
     cluster_ = ClusterData();
 
     // Publishers
-    scene_pub_ = node_->createClusterScenePublisher(cluster_id_);
+    scene_pub_ = node_->createScenePublisher(element_id_);
 
     // Subscribers
     geometry_sub_ = node_->createClusterGeometrySubscriber(cluster_id_,

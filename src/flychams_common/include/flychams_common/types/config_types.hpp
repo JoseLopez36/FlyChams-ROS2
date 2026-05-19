@@ -67,8 +67,8 @@ namespace flychams::common
     {
         // Coordinator topics
         std::string registration;
-        std::string fleet_status;
         std::string mission_status;
+        std::string fleet_status;
         std::string global_origin;
         std::string target_position;
         std::string cluster_assignment;
@@ -82,17 +82,21 @@ namespace flychams::common
         std::string agent_clusters;
         std::string agent_position_setpoint;
         std::string observation_setpoints;
-        std::string agent_image;
 
         // Operator topics
+        std::string image;
+        std::string annotations;
+        std::string scene;
+        std::string start_mission;
+        std::string pause_mission;
+        std::string abort_mission;
+        std::string arm_all;
+        std::string land_all;
+        std::string return_home;
         std::string mission_metrics;
         std::string agent_metrics;
         std::string target_metrics;
         std::string cluster_metrics;
-        std::string agent_scene;
-        std::string target_scene;
-        std::string cluster_scene;
-        std::string agent_annotations;
     };
 
     struct FrameParameters

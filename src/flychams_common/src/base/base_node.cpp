@@ -45,17 +45,21 @@ void BaseNode::init()
     agent_topics_.clusters_pattern = topic_config.agent_clusters;
     agent_topics_.position_setpoint_pattern = topic_config.agent_position_setpoint;
     agent_topics_.observation_setpoints_pattern = topic_config.observation_setpoints;
-    agent_topics_.image_pattern = topic_config.agent_image;
 
     // Operator topics
+    operator_topics_.image_pattern = topic_config.image;
+    operator_topics_.annotations_pattern = topic_config.annotations;
+    operator_topics_.scene_pattern = topic_config.scene;
+    operator_topics_.start_mission = topic_config.start_mission;
+    operator_topics_.pause_mission = topic_config.pause_mission;
+    operator_topics_.abort_mission = topic_config.abort_mission;
+    operator_topics_.arm_all = topic_config.arm_all;
+    operator_topics_.land_all = topic_config.land_all;
+    operator_topics_.return_home = topic_config.return_home;
     operator_topics_.metrics = topic_config.mission_metrics;
     operator_topics_.agent_metrics_pattern = topic_config.agent_metrics;
     operator_topics_.target_metrics_pattern = topic_config.target_metrics;
     operator_topics_.cluster_metrics_pattern = topic_config.cluster_metrics;
-    operator_topics_.agent_scene_pattern = topic_config.agent_scene;
-    operator_topics_.target_scene_pattern = topic_config.target_scene;
-    operator_topics_.cluster_scene_pattern = topic_config.cluster_scene;
-    operator_topics_.agent_annotations_pattern = topic_config.agent_annotations;
 
     // Get frame config
     const auto& frame_config = settings_->getFrames();
@@ -179,14 +183,54 @@ std::string BaseNode::getObservationSetpointsTopic(const ID& agent_id)
     return replace(agent_topics_.observation_setpoints_pattern, "AGENTID", agent_id);
 }
 
-std::string BaseNode::getAgentImageTopic(const ID& agent_id, const ID& unit_id)
+std::string BaseNode::getImageTopic(const ID& element_id, const ID& view_id)
 {
-    return replace(replace(agent_topics_.image_pattern, "AGENTID", agent_id), "UNITID", unit_id);
+    return replace(replace(operator_topics_.image_pattern, "ELEMENTID", element_id), "VIEWID", view_id);
+}
+
+std::string BaseNode::getAnnotationsTopic(const ID& element_id, const ID& view_id)
+{
+    return replace(replace(operator_topics_.annotations_pattern, "ELEMENTID", element_id), "VIEWID", view_id);
+}
+
+std::string BaseNode::getSceneTopic(const ID& element_id)
+{
+    return replace(operator_topics_.scene_pattern, "ELEMENTID", element_id);
 }
 
 std::string BaseNode::getGlobalMetricsTopic()
 {
     return operator_topics_.metrics;
+}
+
+std::string BaseNode::getStartMissionTopic() 
+{ 
+    return operator_topics_.start_mission; 
+}
+
+std::string BaseNode::getPauseMissionTopic() 
+{ 
+    return operator_topics_.pause_mission; 
+}
+
+std::string BaseNode::getAbortMissionTopic() 
+{ 
+    return operator_topics_.abort_mission; 
+}
+
+std::string BaseNode::getArmAllTopic() 
+{ 
+    return operator_topics_.arm_all; 
+}
+
+std::string BaseNode::getLandAllTopic() 
+{ 
+    return operator_topics_.land_all; 
+}
+
+std::string BaseNode::getReturnHomeTopic() 
+{ 
+    return operator_topics_.return_home; 
 }
 
 std::string BaseNode::getAgentMetricsTopic(const ID& agent_id)
@@ -202,26 +246,6 @@ std::string BaseNode::getTargetMetricsTopic(const ID& target_id)
 std::string BaseNode::getClusterMetricsTopic(const ID& cluster_id)
 {
     return replace(operator_topics_.cluster_metrics_pattern, "CLUSTERID", cluster_id);
-}
-
-std::string BaseNode::getAgentSceneTopic(const ID& agent_id)
-{
-    return replace(operator_topics_.agent_scene_pattern, "AGENTID", agent_id);
-}
-
-std::string BaseNode::getTargetSceneTopic(const ID& target_id)
-{
-    return replace(operator_topics_.target_scene_pattern, "TARGETID", target_id);
-}
-
-std::string BaseNode::getClusterSceneTopic(const ID& cluster_id)
-{
-    return replace(operator_topics_.cluster_scene_pattern, "CLUSTERID", cluster_id);
-}
-
-std::string BaseNode::getAgentAnnotationsTopic(const ID& agent_id, const ID& unit_id)
-{
-    return replace(replace(operator_topics_.agent_annotations_pattern, "AGENTID", agent_id), "UNITID", unit_id);
 }
 
 // ════════════════════════════════════════════════════════════════════════════
@@ -305,9 +329,49 @@ PublisherPtr<ObservationSetpointsMsg> BaseNode::createObservationSetpointsPublis
     return node_->create_publisher<ObservationSetpointsMsg>(getObservationSetpointsTopic(agent_id), 10);
 }
 
-ImagePublisher BaseNode::createAgentImagePublisher(const ID& agent_id, const ID& unit_id)
+ImagePublisher BaseNode::createImagePublisher(const ID& element_id, const ID& view_id)
 {
-    return image_transport_->advertise(getAgentImageTopic(agent_id, unit_id), 1);
+    return image_transport_->advertise(getImageTopic(element_id, view_id), 1);
+}
+
+PublisherPtr<FoxImageAnnotationsMsg> BaseNode::createAnnotationsPublisher(const ID& element_id, const ID& view_id)
+{
+    return node_->create_publisher<FoxImageAnnotationsMsg>(getAnnotationsTopic(element_id, view_id), 10);
+}
+
+PublisherPtr<FoxSceneUpdateMsg> BaseNode::createScenePublisher(const ID& element_id)
+{
+    return node_->create_publisher<FoxSceneUpdateMsg>(getSceneTopic(element_id), 10);
+}
+
+PublisherPtr<BoolMsg> BaseNode::createStartMissionPublisher()
+{
+    return node_->create_publisher<BoolMsg>(getStartMissionTopic(), 10);
+}
+
+PublisherPtr<BoolMsg> BaseNode::createPauseMissionPublisher()
+{
+    return node_->create_publisher<BoolMsg>(getPauseMissionTopic(), 10);
+}
+
+PublisherPtr<BoolMsg> BaseNode::createAbortMissionPublisher()
+{
+    return node_->create_publisher<BoolMsg>(getAbortMissionTopic(), 10);
+}
+
+PublisherPtr<BoolMsg> BaseNode::createArmAllPublisher()
+{
+    return node_->create_publisher<BoolMsg>(getArmAllTopic(), 10);
+}
+
+PublisherPtr<BoolMsg> BaseNode::createLandAllPublisher()
+{
+    return node_->create_publisher<BoolMsg>(getLandAllTopic(), 10);
+}
+
+PublisherPtr<BoolMsg> BaseNode::createReturnHomePublisher()
+{
+    return node_->create_publisher<BoolMsg>(getReturnHomeTopic(), 10);
 }
 
 PublisherPtr<MissionMetricsMsg> BaseNode::createMissionMetricsPublisher()
@@ -328,26 +392,6 @@ PublisherPtr<TargetMetricsMsg> BaseNode::createTargetMetricsPublisher(const ID& 
 PublisherPtr<ClusterMetricsMsg> BaseNode::createClusterMetricsPublisher(const ID& cluster_id)
 {
     return node_->create_publisher<ClusterMetricsMsg>(getClusterMetricsTopic(cluster_id), 10);
-}
-
-PublisherPtr<FoxSceneUpdateMsg> BaseNode::createAgentScenePublisher(const ID& agent_id)
-{
-    return node_->create_publisher<FoxSceneUpdateMsg>(getAgentSceneTopic(agent_id), 10);
-}
-
-PublisherPtr<FoxSceneUpdateMsg> BaseNode::createTargetScenePublisher(const ID& target_id)
-{
-    return node_->create_publisher<FoxSceneUpdateMsg>(getTargetSceneTopic(target_id), 10);
-}
-
-PublisherPtr<FoxSceneUpdateMsg> BaseNode::createClusterScenePublisher(const ID& cluster_id)
-{
-    return node_->create_publisher<FoxSceneUpdateMsg>(getClusterSceneTopic(cluster_id), 10);
-}
-
-PublisherPtr<FoxImageAnnotationsMsg> BaseNode::createAgentAnnotationsPublisher(const ID& agent_id, const ID& unit_id)
-{
-    return node_->create_publisher<FoxImageAnnotationsMsg>(getAgentAnnotationsTopic(agent_id, unit_id), 10);
 }
 
 // ════════════════════════════════════════════════════════════════════════════
@@ -431,9 +475,39 @@ SubscriberPtr<ObservationSetpointsMsg> BaseNode::createObservationSetpointsSubsc
     return node_->create_subscription<ObservationSetpointsMsg>(getObservationSetpointsTopic(agent_id), 10, std::move(callback), options);
 }
 
-SubscriberPtr<ImageMsg> BaseNode::createAgentImageSubscriber(const ID& agent_id, const ID& unit_id, std::function<void(const ImageMsg::SharedPtr)> callback, const rclcpp::SubscriptionOptions& options)
+SubscriberPtr<ImageMsg> BaseNode::createImageSubscriber(const ID& element_id, const ID& view_id, std::function<void(const ImageMsg::SharedPtr)> callback, const rclcpp::SubscriptionOptions& options)
 {
-    return node_->create_subscription<ImageMsg>(getAgentImageTopic(agent_id, unit_id), rclcpp::SensorDataQoS(), std::move(callback), options);
+    return node_->create_subscription<ImageMsg>(getImageTopic(element_id, view_id), rclcpp::SensorDataQoS(), std::move(callback), options);
+}
+
+SubscriberPtr<BoolMsg> BaseNode::createStartMissionSubscriber(std::function<void(const BoolMsg::SharedPtr)> callback, const rclcpp::SubscriptionOptions& options)
+{
+    return node_->create_subscription<BoolMsg>(getStartMissionTopic(), 10, std::move(callback), options);
+}
+
+SubscriberPtr<BoolMsg> BaseNode::createPauseMissionSubscriber(std::function<void(const BoolMsg::SharedPtr)> callback, const rclcpp::SubscriptionOptions& options)
+{
+    return node_->create_subscription<BoolMsg>(getPauseMissionTopic(), 10, std::move(callback), options);
+}
+
+SubscriberPtr<BoolMsg> BaseNode::createAbortMissionSubscriber(std::function<void(const BoolMsg::SharedPtr)> callback, const rclcpp::SubscriptionOptions& options)
+{
+    return node_->create_subscription<BoolMsg>(getAbortMissionTopic(), 10, std::move(callback), options);
+}
+
+SubscriberPtr<BoolMsg> BaseNode::createArmAllSubscriber(std::function<void(const BoolMsg::SharedPtr)> callback, const rclcpp::SubscriptionOptions& options)
+{
+    return node_->create_subscription<BoolMsg>(getArmAllTopic(), 10, std::move(callback), options);
+}
+
+SubscriberPtr<BoolMsg> BaseNode::createLandAllSubscriber(std::function<void(const BoolMsg::SharedPtr)> callback, const rclcpp::SubscriptionOptions& options)
+{
+    return node_->create_subscription<BoolMsg>(getLandAllTopic(), 10, std::move(callback), options);
+}
+
+SubscriberPtr<BoolMsg> BaseNode::createReturnHomeSubscriber(std::function<void(const BoolMsg::SharedPtr)> callback, const rclcpp::SubscriptionOptions& options)
+{
+    return node_->create_subscription<BoolMsg>(getReturnHomeTopic(), 10, std::move(callback), options);
 }
 
 SubscriberPtr<MissionMetricsMsg> BaseNode::createGlobalMetricsSubscriber(std::function<void(const MissionMetricsMsg::SharedPtr)> callback, const rclcpp::SubscriptionOptions& options)

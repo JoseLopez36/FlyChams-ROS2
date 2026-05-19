@@ -66,18 +66,22 @@ namespace flychams::common
             std::string clusters_pattern;
             std::string position_setpoint_pattern;
             std::string observation_setpoints_pattern;
-            std::string image_pattern;
         };
         struct OperatorTopics
         {
+            std::string image_pattern;
+            std::string annotations_pattern;
+            std::string scene_pattern;
+            std::string start_mission;
+            std::string pause_mission;
+            std::string abort_mission;
+            std::string arm_all;
+            std::string land_all;
+            std::string return_home;
             std::string metrics;
             std::string agent_metrics_pattern;
             std::string target_metrics_pattern;
             std::string cluster_metrics_pattern;
-            std::string agent_scene_pattern;
-            std::string target_scene_pattern;
-            std::string cluster_scene_pattern;
-            std::string agent_annotations_pattern;
         };
         // Frame structures
         struct AgentFrames
@@ -146,15 +150,19 @@ namespace flychams::common
         std::string getAgentClustersTopic(const ID& agent_id);
         std::string getAgentPositionSetpointTopic(const ID& agent_id);
         std::string getObservationSetpointsTopic(const ID& agent_id);
-        std::string getAgentImageTopic(const ID& agent_id, const ID& unit_id);
+        std::string getImageTopic(const ID& element_id, const ID& view_id);
+        std::string getAnnotationsTopic(const ID& element_id, const ID& view_id);
+        std::string getSceneTopic(const ID& element_id);
+        std::string getStartMissionTopic();
+        std::string getPauseMissionTopic();
+        std::string getAbortMissionTopic();
+        std::string getArmAllTopic();
+        std::string getLandAllTopic();
+        std::string getReturnHomeTopic();
         std::string getGlobalMetricsTopic();
         std::string getAgentMetricsTopic(const ID& agent_id);
         std::string getTargetMetricsTopic(const ID& target_id);
         std::string getClusterMetricsTopic(const ID& cluster_id);
-        std::string getAgentSceneTopic(const ID& agent_id);
-        std::string getTargetSceneTopic(const ID& target_id);
-        std::string getClusterSceneTopic(const ID& cluster_id);
-        std::string getAgentAnnotationsTopic(const ID& agent_id, const ID& unit_id);
 
     public: // Publisher creation
         PublisherPtr<RegistrationMsg> createRegistrationPublisher();
@@ -171,15 +179,19 @@ namespace flychams::common
         PublisherPtr<AgentClustersMsg> createAgentClustersPublisher(const ID& agent_id);
         PublisherPtr<PointStampedMsg> createAgentPositionSetpointPublisher(const ID& agent_id);
         PublisherPtr<ObservationSetpointsMsg> createObservationSetpointsPublisher(const ID& agent_id);
-        ImagePublisher createAgentImagePublisher(const ID& agent_id, const ID& unit_id);
+        ImagePublisher createImagePublisher(const ID& element_id, const ID& view_id);
+        PublisherPtr<FoxImageAnnotationsMsg> createAnnotationsPublisher(const ID& element_id, const ID& view_id);
+        PublisherPtr<FoxSceneUpdateMsg> createScenePublisher(const ID& element_id);
+        PublisherPtr<BoolMsg> createStartMissionPublisher();
+        PublisherPtr<BoolMsg> createPauseMissionPublisher();
+        PublisherPtr<BoolMsg> createAbortMissionPublisher();
+        PublisherPtr<BoolMsg> createArmAllPublisher();
+        PublisherPtr<BoolMsg> createLandAllPublisher();
+        PublisherPtr<BoolMsg> createReturnHomePublisher();
         PublisherPtr<MissionMetricsMsg> createMissionMetricsPublisher();
         PublisherPtr<AgentMetricsMsg> createAgentMetricsPublisher(const ID& agent_id);
         PublisherPtr<TargetMetricsMsg> createTargetMetricsPublisher(const ID& target_id);
         PublisherPtr<ClusterMetricsMsg> createClusterMetricsPublisher(const ID& cluster_id);
-        PublisherPtr<FoxSceneUpdateMsg> createAgentScenePublisher(const ID& agent_id);
-        PublisherPtr<FoxSceneUpdateMsg> createTargetScenePublisher(const ID& target_id);
-        PublisherPtr<FoxSceneUpdateMsg> createClusterScenePublisher(const ID& cluster_id);
-        PublisherPtr<FoxImageAnnotationsMsg> createAgentAnnotationsPublisher(const ID& agent_id, const ID& unit_id);
 
     public: // Subscriber creation
         SubscriberPtr<RegistrationMsg> createRegistrationSubscriber(std::function<void(const RegistrationMsg::SharedPtr)> callback, const rclcpp::SubscriptionOptions& options = rclcpp::SubscriptionOptions());
@@ -196,7 +208,13 @@ namespace flychams::common
         SubscriberPtr<AgentClustersMsg> createAgentClustersSubscriber(const ID& agent_id, std::function<void(const AgentClustersMsg::SharedPtr)> callback, const rclcpp::SubscriptionOptions& options = rclcpp::SubscriptionOptions());
         SubscriberPtr<PointStampedMsg> createAgentPositionSetpointSubscriber(const ID& agent_id, std::function<void(const PointStampedMsg::SharedPtr)> callback, const rclcpp::SubscriptionOptions& options = rclcpp::SubscriptionOptions());
         SubscriberPtr<ObservationSetpointsMsg> createObservationSetpointsSubscriber(const ID& agent_id, std::function<void(const ObservationSetpointsMsg::SharedPtr)> callback, const rclcpp::SubscriptionOptions& options = rclcpp::SubscriptionOptions());
-        SubscriberPtr<ImageMsg> createAgentImageSubscriber(const ID& agent_id, const ID& unit_id, std::function<void(const ImageMsg::SharedPtr)> callback, const rclcpp::SubscriptionOptions& options = rclcpp::SubscriptionOptions());
+        SubscriberPtr<ImageMsg> createImageSubscriber(const ID& element_id, const ID& view_id, std::function<void(const ImageMsg::SharedPtr)> callback, const rclcpp::SubscriptionOptions& options = rclcpp::SubscriptionOptions());
+        SubscriberPtr<BoolMsg> createStartMissionSubscriber(std::function<void(const BoolMsg::SharedPtr)> callback, const rclcpp::SubscriptionOptions& options = rclcpp::SubscriptionOptions());
+        SubscriberPtr<BoolMsg> createPauseMissionSubscriber(std::function<void(const BoolMsg::SharedPtr)> callback, const rclcpp::SubscriptionOptions& options = rclcpp::SubscriptionOptions());
+        SubscriberPtr<BoolMsg> createAbortMissionSubscriber(std::function<void(const BoolMsg::SharedPtr)> callback, const rclcpp::SubscriptionOptions& options = rclcpp::SubscriptionOptions());
+        SubscriberPtr<BoolMsg> createArmAllSubscriber(std::function<void(const BoolMsg::SharedPtr)> callback, const rclcpp::SubscriptionOptions& options = rclcpp::SubscriptionOptions());
+        SubscriberPtr<BoolMsg> createLandAllSubscriber(std::function<void(const BoolMsg::SharedPtr)> callback, const rclcpp::SubscriptionOptions& options = rclcpp::SubscriptionOptions());
+        SubscriberPtr<BoolMsg> createReturnHomeSubscriber(std::function<void(const BoolMsg::SharedPtr)> callback, const rclcpp::SubscriptionOptions& options = rclcpp::SubscriptionOptions());
         SubscriberPtr<MissionMetricsMsg> createGlobalMetricsSubscriber(std::function<void(const MissionMetricsMsg::SharedPtr)> callback, const rclcpp::SubscriptionOptions& options = rclcpp::SubscriptionOptions());
         SubscriberPtr<AgentMetricsMsg> createAgentMetricsSubscriber(const ID& agent_id, std::function<void(const AgentMetricsMsg::SharedPtr)> callback, const rclcpp::SubscriptionOptions& options = rclcpp::SubscriptionOptions());
         SubscriberPtr<TargetMetricsMsg> createTargetMetricsSubscriber(const ID& target_id, std::function<void(const TargetMetricsMsg::SharedPtr)> callback, const rclcpp::SubscriptionOptions& options = rclcpp::SubscriptionOptions());

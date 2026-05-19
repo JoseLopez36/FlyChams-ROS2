@@ -26,8 +26,8 @@ namespace flychams::operator_pkg
     class TargetMarkers : public common::BaseModule
     {
     public: // Constructor/Destructor
-        TargetMarkers(const common::ID& target_id, common::BaseNode::SharedPtr node)
-            : BaseModule(node), target_id_(target_id)
+        TargetMarkers(const common::ID& target_id, const common::ID& element_id, common::BaseNode::SharedPtr node)
+            : BaseModule(node), target_id_(target_id), element_id_(element_id)
         {
             init();
         }
@@ -46,6 +46,7 @@ namespace flychams::operator_pkg
 
     private: // Parameters
         common::ID target_id_;
+        common::ID element_id_;
         float update_rate_;
 
     private: // Data

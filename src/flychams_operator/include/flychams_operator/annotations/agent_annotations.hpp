@@ -50,6 +50,7 @@ namespace flychams::operator_pkg
 
     private: // Parameters
         common::ID agent_id_;
+        common::ID element_id_;
         float update_rate_;
         // View dimensions
         int central_view_width_;

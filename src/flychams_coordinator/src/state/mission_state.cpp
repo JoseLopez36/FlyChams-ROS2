@@ -27,14 +27,11 @@ void MissionState::onModuleInit()
         std::bind(&MissionState::fleetStatusCallback, this, std::placeholders::_1), node_->getSubscriptionOptions());
 
     // Create mission command subscribers
-    start_mission_sub_ = node_->create_subscription<BoolMsg>(
-        "/flychams/coordinator/start_mission", 10,
+    start_mission_sub_ = node_->createStartMissionSubscriber(
         std::bind(&MissionState::startMissionCallback, this, std::placeholders::_1), node_->getSubscriptionOptions());
-    pause_mission_sub_ = node_->create_subscription<BoolMsg>(
-        "/flychams/coordinator/pause_mission", 10,
+    pause_mission_sub_ = node_->createPauseMissionSubscriber(
         std::bind(&MissionState::pauseMissionCallback, this, std::placeholders::_1), node_->getSubscriptionOptions());
-    abort_mission_sub_ = node_->create_subscription<BoolMsg>(
-        "/flychams/coordinator/abort_mission", 10,
+    abort_mission_sub_ = node_->createAbortMissionSubscriber(
         std::bind(&MissionState::abortMissionCallback, this, std::placeholders::_1), node_->getSubscriptionOptions());
 
     // Create mission status publisher

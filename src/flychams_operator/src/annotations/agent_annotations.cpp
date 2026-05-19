@@ -22,6 +22,12 @@ void AgentAnnotations::onModuleInit()
     tracking_view_width_  = node_->getParameterOr<int>("tracking_view.width", 427);
     tracking_view_height_ = node_->getParameterOr<int>("tracking_view.height", 240);
 
+    // Build element_id from AGENT_IDX environment variable
+    const int agent_idx = std::getenv("AGENT_IDX") ? std::stoi(std::getenv("AGENT_IDX")) : 0;
+    std::ostringstream element_ss;
+    element_ss << "ELEMENT" << std::setw(2) << std::setfill('0') << agent_idx;
+    element_id_ = element_ss.str();
+
     // Subscriber
     setpoints_sub_ = node_->createObservationSetpointsSubscriber(agent_id_,
         std::bind(&AgentAnnotations::observationSetpointsCallback, this, std::placeholders::_1),
@@ -55,8 +61,10 @@ void AgentAnnotations::observationSetpointsCallback(const ObservationSetpointsMs
         annotation_pubs_.reserve(n);
         for (size_t i = 0; i < n; ++i)
         {
+            std::ostringstream view_ss;
+            view_ss << "VIEW" << std::setw(2) << std::setfill('0') << i;
             annotation_pubs_.push_back(
-                node_->createAgentAnnotationsPublisher(agent_id_, msg->ids[i]));
+                node_->createAnnotationsPublisher(element_id_, view_ss.str()));
         }
     }
 }

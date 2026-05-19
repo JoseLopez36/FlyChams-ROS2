@@ -19,15 +19,19 @@
       agent_clusters: "/flychams/agent/AGENTID/clusters" # AgentClusters.msg (custom)
       agent_position_setpoint: "/flychams/agent/AGENTID/position_setpoint" # PointStamped.msg
       observation_setpoints: "/flychams/agent/AGENTID/observation_setpoints" # ObservationSetpoints.msg (custom)
-      agent_image: "/flychams/agent/AGENTID/UNITID/image" # Image.msg
-
+      
     # Operator topics
     operator_topics:
+      image: "/flychams/operator/ELEMENTID/VIEWID/image" # Image.msg
+      annotations: "/flychams/operator/ELEMENTID/VIEWID/annotations" # foxglove_msgs/ImageAnnotations
+      scene: "/flychams/operator/ELEMENTID/scene" # foxglove_msgs/SceneUpdate
+      start_mission: "/flychams/operator/start_mission" # std_msgs/Bool
+      pause_mission: "/flychams/operator/pause_mission" # std_msgs/Bool
+      abort_mission: "/flychams/operator/abort_mission" # std_msgs/Bool
+      arm_all: "/flychams/operator/arm_all" # std_msgs/Bool
+      land_all: "/flychams/operator/land_all" # std_msgs/Bool
+      return_home: "/flychams/operator/return_home" # std_msgs/Bool
       mission_metrics: "/flychams/operator/mission_metrics" # MissionMetrics.msg (custom)
       agent_metrics: "/flychams/operator/AGENTID/agent_metrics" # AgentMetrics.msg (custom)
       target_metrics: "/flychams/operator/TARGETID/target_metrics" # TargetMetrics.msg (custom)
       cluster_metrics: "/flychams/operator/CLUSTERID/cluster_metrics" # ClusterMetrics.msg (custom)
-      agent_scene: "/flychams/operator/AGENTID/agent_scene" # foxglove_msgs/SceneUpdate
-      target_scene: "/flychams/operator/TARGETID/target_scene" # foxglove_msgs/SceneUpdate
-      cluster_scene: "/flychams/operator/CLUSTERID/cluster_scene" # foxglove_msgs/SceneUpdate
-      agent_annotations: "/flychams/agent/AGENTID/UNITID/annotations" # foxglove_msgs/ImageAnnotations

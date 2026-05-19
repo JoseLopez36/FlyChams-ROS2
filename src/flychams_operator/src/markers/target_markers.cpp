@@ -20,7 +20,7 @@ void TargetMarkers::onModuleInit()
     target_ = TargetData();
 
     // Publishers
-    scene_pub_ = node_->createTargetScenePublisher(target_id_);
+    scene_pub_ = node_->createScenePublisher(element_id_);
 
     // Subscribers
     position_sub_ = node_->createTargetPositionSubscriber(target_id_,

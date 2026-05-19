@@ -26,8 +26,8 @@ namespace flychams::operator_pkg
     class AgentMarkers : public common::BaseModule
     {
     public: // Constructor/Destructor
-        AgentMarkers(const common::ID& agent_id, common::BaseNode::SharedPtr node)
-            : BaseModule(node), agent_id_(agent_id)
+        AgentMarkers(const common::ID& agent_id, const common::ID& element_id, common::BaseNode::SharedPtr node)
+            : BaseModule(node), agent_id_(agent_id), element_id_(element_id)
         {
             init();
         }
@@ -50,6 +50,7 @@ namespace flychams::operator_pkg
 
     private: // Parameters
         common::ID agent_id_;
+        common::ID element_id_;
         float update_rate_;
 
     private: // Data

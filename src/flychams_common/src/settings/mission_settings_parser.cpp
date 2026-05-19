@@ -462,8 +462,8 @@ void MissionSettingsParser::parseTopicParameters(const NodePtr& node, MissionCon
 {
 	// Coordinator topics
 	node->get_parameter<std::string>("coordinator_topics.registration", config_ptr->topics.registration);
-	node->get_parameter<std::string>("coordinator_topics.fleet_status", config_ptr->topics.fleet_status);
 	node->get_parameter<std::string>("coordinator_topics.mission_status", config_ptr->topics.mission_status);
+	node->get_parameter<std::string>("coordinator_topics.fleet_status", config_ptr->topics.fleet_status);
 	node->get_parameter<std::string>("coordinator_topics.global_origin", config_ptr->topics.global_origin);
 	node->get_parameter<std::string>("coordinator_topics.target_position", config_ptr->topics.target_position);
 	node->get_parameter<std::string>("coordinator_topics.cluster_assignment", config_ptr->topics.cluster_assignment);
@@ -477,17 +477,21 @@ void MissionSettingsParser::parseTopicParameters(const NodePtr& node, MissionCon
 	node->get_parameter<std::string>("agent_topics.agent_clusters", config_ptr->topics.agent_clusters);
 	node->get_parameter<std::string>("agent_topics.agent_position_setpoint", config_ptr->topics.agent_position_setpoint);
 	node->get_parameter<std::string>("agent_topics.observation_setpoints", config_ptr->topics.observation_setpoints);
-	node->get_parameter<std::string>("agent_topics.agent_image", config_ptr->topics.agent_image);
 
 	// Operator topics
+	node->get_parameter<std::string>("operator_topics.image", config_ptr->topics.image);
+	node->get_parameter<std::string>("operator_topics.annotations", config_ptr->topics.annotations);
+	node->get_parameter<std::string>("operator_topics.scene", config_ptr->topics.scene);
+	node->get_parameter<std::string>("operator_topics.start_mission", config_ptr->topics.start_mission);
+	node->get_parameter<std::string>("operator_topics.pause_mission", config_ptr->topics.pause_mission);
+	node->get_parameter<std::string>("operator_topics.abort_mission", config_ptr->topics.abort_mission);
+	node->get_parameter<std::string>("operator_topics.arm_all", config_ptr->topics.arm_all);
+	node->get_parameter<std::string>("operator_topics.land_all", config_ptr->topics.land_all);
+	node->get_parameter<std::string>("operator_topics.return_home", config_ptr->topics.return_home);
 	node->get_parameter<std::string>("operator_topics.mission_metrics", config_ptr->topics.mission_metrics);
 	node->get_parameter<std::string>("operator_topics.agent_metrics", config_ptr->topics.agent_metrics);
 	node->get_parameter<std::string>("operator_topics.target_metrics", config_ptr->topics.target_metrics);
 	node->get_parameter<std::string>("operator_topics.cluster_metrics", config_ptr->topics.cluster_metrics);
-	node->get_parameter<std::string>("operator_topics.agent_scene", config_ptr->topics.agent_scene);
-	node->get_parameter<std::string>("operator_topics.target_scene", config_ptr->topics.target_scene);
-	node->get_parameter<std::string>("operator_topics.cluster_scene", config_ptr->topics.cluster_scene);
-	node->get_parameter<std::string>("operator_topics.agent_annotations", config_ptr->topics.agent_annotations);
 }
 
 void MissionSettingsParser::parseFrameParameters(const NodePtr& node, MissionConfigPtr& config_ptr)

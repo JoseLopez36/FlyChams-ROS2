@@ -79,6 +79,7 @@ namespace flychams::agent
         // Stream parameters
         int stream_delay_ms_;
         std::string hw_vendor_;
+        int view_counter_ = 1;
 
     private: // Data
         // Stream units

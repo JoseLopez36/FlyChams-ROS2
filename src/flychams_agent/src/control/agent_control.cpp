@@ -59,14 +59,11 @@ void DroneControl::onModuleInit()
 		std::bind(&DroneControl::localPositionCallback, this, std::placeholders::_1), node_->getSubscriptionOptions());
 	agent_.setpoint_sub = node_->createAgentPositionSetpointSubscriber(agent_id_,
 		std::bind(&DroneControl::setpointPositionCallback, this, std::placeholders::_1), node_->getSubscriptionOptions());
-	arm_all_sub_ = node_->create_subscription<BoolMsg>(
-		"/flychams/coordinator/arm_all", 10,
+	arm_all_sub_ = node_->createArmAllSubscriber(
 		std::bind(&DroneControl::armAllCallback, this, std::placeholders::_1), node_->getSubscriptionOptions());
-	land_all_sub_ = node_->create_subscription<BoolMsg>(
-		"/flychams/coordinator/land_all", 10,
+	land_all_sub_ = node_->createLandAllSubscriber(
 		std::bind(&DroneControl::landAllCallback, this, std::placeholders::_1), node_->getSubscriptionOptions());
-	return_home_sub_ = node_->create_subscription<BoolMsg>(
-		"/flychams/coordinator/return_home", 10,
+	return_home_sub_ = node_->createReturnHomeSubscriber(
 		std::bind(&DroneControl::returnHomeCallback, this, std::placeholders::_1), node_->getSubscriptionOptions());
 
 	// Set update timer

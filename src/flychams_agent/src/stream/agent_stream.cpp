@@ -22,6 +22,12 @@ void AgentStream::onModuleInit()
     // Get hardware vendor from environment variable
     hw_vendor_ = std::getenv("HW_VENDOR") ? std::getenv("HW_VENDOR") : "none";
 
+    // Build element_id from AGENT_IDX environment variable
+    const int agent_idx = std::getenv("AGENT_IDX") ? std::stoi(std::getenv("AGENT_IDX")) : 0;
+    std::ostringstream element_ss;
+    element_ss << "ELEMENT" << std::setw(2) << std::setfill('0') << agent_idx;
+    const std::string element_id = element_ss.str();
+
     // Initialize stream variables
     stream_units_.clear();
 
@@ -47,9 +53,12 @@ void AgentStream::onModuleInit()
                 unit->enable_crops = true;
                 unit->crops.resize(nw);
                 unit->crops_cache.resize(nw);
+                int crop_idx = 1;
                 for (const auto& [window_id, window] : tracking_config.multi_window_set)
                 {
-                    unit->crop_pubs.push_back(node_->createAgentImagePublisher(agent_id_, window_id));
+                    std::ostringstream crop_view_ss;
+                    crop_view_ss << "VIEW" << std::setw(2) << std::setfill('0') << crop_idx++;
+                    unit->crop_pubs.push_back(node_->createImagePublisher(element_id, crop_view_ss.str()));
                 }
                 unit->crop_output_width = tracking_view_width;
                 unit->crop_output_height = tracking_view_height;
@@ -62,7 +71,15 @@ void AgentStream::onModuleInit()
             unit->enable_crops = false;
         }
 
-        unit->image_pub = node_->createAgentImagePublisher(agent_id_, camera_id);
+        // Central camera → VIEW00, tracking cameras → VIEW01, VIEW02, ...
+        std::ostringstream view_ss;
+        if (camera->role == ObservationRole::Central)
+            view_ss << "VIEW00";
+        else
+        {
+            view_ss << "VIEW" << std::setw(2) << std::setfill('0') << view_counter_++;
+        }
+        unit->image_pub = node_->createImagePublisher(element_id, view_ss.str());
         unit->running = true;
         unit->thread = std::thread(&AgentStream::streamPipeline, this, unit);
         stream_units_[camera_id] = unit;

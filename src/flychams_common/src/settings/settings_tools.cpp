@@ -540,6 +540,8 @@ void SettingsTools::printSettings() const
     RCLCPP_DEBUG(node_->get_logger(), "\n[TOPICS]");
     RCLCPP_DEBUG(node_->get_logger(), "  Coordinator Topics:");
     RCLCPP_DEBUG(node_->get_logger(), "    Registration: %s", config_ptr_->topics.registration.c_str());
+    RCLCPP_DEBUG(node_->get_logger(), "    Mission Status: %s", config_ptr_->topics.mission_status.c_str());
+    RCLCPP_DEBUG(node_->get_logger(), "    Fleet Status: %s", config_ptr_->topics.fleet_status.c_str());
     RCLCPP_DEBUG(node_->get_logger(), "    Global Origin: %s", config_ptr_->topics.global_origin.c_str());
     RCLCPP_DEBUG(node_->get_logger(), "    Target Position: %s", config_ptr_->topics.target_position.c_str());
     RCLCPP_DEBUG(node_->get_logger(), "    Cluster Assignment: %s", config_ptr_->topics.cluster_assignment.c_str());
@@ -552,16 +554,20 @@ void SettingsTools::printSettings() const
     RCLCPP_DEBUG(node_->get_logger(), "    Clusters: %s", config_ptr_->topics.agent_clusters.c_str());
     RCLCPP_DEBUG(node_->get_logger(), "    Position Setpoint: %s", config_ptr_->topics.agent_position_setpoint.c_str());
     RCLCPP_DEBUG(node_->get_logger(), "    Observation Setpoints: %s", config_ptr_->topics.observation_setpoints.c_str());
-    RCLCPP_DEBUG(node_->get_logger(), "    Image: %s", config_ptr_->topics.agent_image.c_str());
     RCLCPP_DEBUG(node_->get_logger(), "  Operator Topics:");
+    RCLCPP_DEBUG(node_->get_logger(), "    Image: %s", config_ptr_->topics.image.c_str());
+    RCLCPP_DEBUG(node_->get_logger(), "    Annotations: %s", config_ptr_->topics.annotations.c_str());
+    RCLCPP_DEBUG(node_->get_logger(), "    Scene: %s", config_ptr_->topics.scene.c_str());
+    RCLCPP_DEBUG(node_->get_logger(), "    Start Mission: %s", config_ptr_->topics.start_mission.c_str());
+    RCLCPP_DEBUG(node_->get_logger(), "    Pause Mission: %s", config_ptr_->topics.pause_mission.c_str());
+    RCLCPP_DEBUG(node_->get_logger(), "    Abort Mission: %s", config_ptr_->topics.abort_mission.c_str());
+    RCLCPP_DEBUG(node_->get_logger(), "    Arm All: %s", config_ptr_->topics.arm_all.c_str());
+    RCLCPP_DEBUG(node_->get_logger(), "    Land All: %s", config_ptr_->topics.land_all.c_str());
+    RCLCPP_DEBUG(node_->get_logger(), "    Return Home: %s", config_ptr_->topics.return_home.c_str());
     RCLCPP_DEBUG(node_->get_logger(), "    Mission Metrics: %s", config_ptr_->topics.mission_metrics.c_str());
     RCLCPP_DEBUG(node_->get_logger(), "    Agent Metrics: %s", config_ptr_->topics.agent_metrics.c_str());
     RCLCPP_DEBUG(node_->get_logger(), "    Target Metrics: %s", config_ptr_->topics.target_metrics.c_str());
     RCLCPP_DEBUG(node_->get_logger(), "    Cluster Metrics: %s", config_ptr_->topics.cluster_metrics.c_str());
-    RCLCPP_DEBUG(node_->get_logger(), "    Agent Scene: %s", config_ptr_->topics.agent_scene.c_str());
-    RCLCPP_DEBUG(node_->get_logger(), "    Target Scene: %s", config_ptr_->topics.target_scene.c_str());
-    RCLCPP_DEBUG(node_->get_logger(), "    Cluster Scene: %s", config_ptr_->topics.cluster_scene.c_str());
-    RCLCPP_DEBUG(node_->get_logger(), "    Agent Annotations: %s", config_ptr_->topics.agent_annotations.c_str());
 
     // Frame Parameters
     RCLCPP_DEBUG(node_->get_logger(), "\n[FRAMES]");

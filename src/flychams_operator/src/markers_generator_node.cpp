@@ -43,6 +43,7 @@ public: // Constructor/Destructor
         agent_markers_.clear();
         target_markers_.clear();
         cluster_markers_.clear();
+        element_idx_ = 0;
     }
 
     void onDiscoveryShutdown() override
@@ -57,7 +58,7 @@ private: // Element management
     void onAddAgent(const ID& agent_id) override
     {
         // Initialize agent marker generator
-        auto agent_marker = std::make_shared<AgentMarkers>(agent_id, sharedFromThis());
+        auto agent_marker = std::make_shared<AgentMarkers>(agent_id, makeElementId(element_idx_++), sharedFromThis());
         agent_markers_.insert(std::make_pair(agent_id, agent_marker));
 
         RCLCPP_INFO(node_->get_logger(), "Markers node: agent markers created for %s", agent_id.c_str());
@@ -73,7 +74,7 @@ private: // Element management
     void onAddTarget(const ID& target_id) override
     {
         // Initialize target marker generator
-        auto target_marker = std::make_shared<TargetMarkers>(target_id, sharedFromThis());
+        auto target_marker = std::make_shared<TargetMarkers>(target_id, makeElementId(element_idx_++), sharedFromThis());
         target_markers_.insert(std::make_pair(target_id, target_marker));
 
         RCLCPP_INFO(node_->get_logger(), "Markers node: target markers created for %s", target_id.c_str());
@@ -89,7 +90,7 @@ private: // Element management
     void onAddCluster(const ID& cluster_id) override
     {
         // Initialize cluster marker generator
-        auto cluster_marker = std::make_shared<ClusterMarkers>(cluster_id, sharedFromThis());
+        auto cluster_marker = std::make_shared<ClusterMarkers>(cluster_id, makeElementId(element_idx_++), sharedFromThis());
         cluster_markers_.insert(std::make_pair(cluster_id, cluster_marker));
 
         RCLCPP_INFO(node_->get_logger(), "Markers node: cluster markers created for %s", cluster_id.c_str());
@@ -102,7 +103,17 @@ private: // Element management
         RCLCPP_INFO(node_->get_logger(), "Markers node: cluster markers destroyed for %s", cluster_id.c_str());
     }
 
+private: // Helpers
+    static std::string makeElementId(int idx)
+    {
+        std::ostringstream ss;
+        ss << "ELEMENT" << std::setw(2) << std::setfill('0') << idx;
+        return ss.str();
+    }
+
 private: // Components
+    // Shared element ID counter
+    int element_idx_ = 0;
     // Marker generators
     std::unordered_map<ID, AgentMarkers::SharedPtr> agent_markers_;
     std::unordered_map<ID, TargetMarkers::SharedPtr> target_markers_;

@@ -21,7 +21,7 @@ void AgentMarkers::onModuleInit()
     agent_ = AgentData();
 
     // Publishers
-    scene_pub_ = node_->createAgentScenePublisher(agent_id_);
+    scene_pub_ = node_->createScenePublisher(element_id_);
 
     // Subscribers
     position_sub_ = node_->createAgentLocalPositionSubscriber(agent_id_,

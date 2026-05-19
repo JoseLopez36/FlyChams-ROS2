@@ -1,62 +1,8 @@
 {
   "configById": {
-    "RosOut!colog": {
-      "minLogLevel": 1,
-      "preload": false,
-      "searchTerms": [
-        "flychams.coordinator"
-      ],
-      "nameFilter": {},
-      "fontSize": 14
-    },
-    "RosOut!simlog": {
-      "minLogLevel": 1,
-      "preload": false,
-      "searchTerms": [
-        "flychams.simulation"
-      ],
-      "nameFilter": {},
-      "fontSize": 14
-    },
-    "RosOut!oplog": {
-      "minLogLevel": 1,
-      "preload": false,
-      "searchTerms": [
-        "flychams.operator"
-      ],
-      "nameFilter": {},
-      "fontSize": 14
-    },
-    "RosOut!a00log": {
-      "minLogLevel": 1,
-      "preload": false,
-      "searchTerms": [
-        "flychams.agent.AGENT00"
-      ],
-      "nameFilter": {},
-      "fontSize": 14
-    },
-    "RosOut!a01log": {
-      "minLogLevel": 1,
-      "preload": false,
-      "searchTerms": [
-        "flychams.agent.AGENT01"
-      ],
-      "nameFilter": {},
-      "fontSize": 14
-    },
-    "RosOut!a02log": {
-      "minLogLevel": 1,
-      "preload": false,
-      "searchTerms": [
-        "flychams.agent.AGENT02"
-      ],
-      "nameFilter": {},
-      "fontSize": 14
-    },
     "button.Button!mstart": {
       "outputMode": "publisher",
-      "name": "/flychams/coordinator/start_mission",
+      "name": "/flychams/operator/start_mission",
       "buttonMode": "toggle",
       "activeColor": "#34d399",
       "inactiveColor": "#10b981",
@@ -66,7 +12,7 @@
     },
     "button.Button!mpause": {
       "outputMode": "publisher",
-      "name": "/flychams/coordinator/pause_mission",
+      "name": "/flychams/operator/pause_mission",
       "buttonMode": "toggle",
       "activeColor": "#f59e0b",
       "inactiveColor": "#D97706",
@@ -76,7 +22,7 @@
     },
     "button.Button!mabort": {
       "outputMode": "publisher",
-      "name": "/flychams/coordinator/abort_mission",
+      "name": "/flychams/operator/abort_mission",
       "buttonMode": "toggle",
       "activeColor": "#f87171",
       "inactiveColor": "#DC2626",
@@ -86,7 +32,7 @@
     },
     "button.Button!armall": {
       "outputMode": "publisher",
-      "name": "/flychams/coordinator/arm_all",
+      "name": "/flychams/operator/arm_all",
       "buttonMode": "toggle",
       "activeColor": "#059669",
       "inactiveColor": "#DC2626",
@@ -96,7 +42,7 @@
     },
     "button.Button!landall": {
       "outputMode": "publisher",
-      "name": "/flychams/coordinator/land_all",
+      "name": "/flychams/operator/land_all",
       "buttonMode": "toggle",
       "activeColor": "#fbbf24",
       "inactiveColor": "#d97706",
@@ -106,7 +52,7 @@
     },
     "button.Button!rth": {
       "outputMode": "publisher",
-      "name": "/flychams/coordinator/return_home",
+      "name": "/flychams/operator/return_home",
       "buttonMode": "toggle",
       "activeColor": "#22d3ee",
       "inactiveColor": "#0891B2",
@@ -114,22 +60,22 @@
       "inactiveText": "Home All",
       "foxglovePanelTitle": "Home All"
     },
-    "Tab!cams": {
+    "Tab!cameras": {
       "activeTabIdx": 0,
       "tabs": [
         {
-          "title": "AGENT00",
+          "title": "Feed 0",
           "layout": {
-            "first": "Image!a0c0",
+            "first": "Image!tab00view00",
             "second": {
               "first": {
-                "first": "Image!a0c1",
-                "second": "Image!a0c2",
+                "first": "Image!tab00view01",
+                "second": "Image!tab00view02",
                 "direction": "row"
               },
               "second": {
-                "first": "Image!a0c3",
-                "second": "Image!a0c4",
+                "first": "Image!tab00view03",
+                "second": "Image!tab00view04",
                 "direction": "row"
               },
               "direction": "column"
@@ -139,40 +85,60 @@
           }
         },
         {
-          "title": "AGENT01",
+          "title": "Feed 1",
           "layout": {
-            "first": "Image!a1c0",
+            "first": "Image!tab01view00",
             "second": {
               "first": {
-                "first": "Image!a1c1",
-                "second": "Image!a1c2",
+                "first": "Image!tab01view01",
+                "second": "Image!tab01view02",
                 "direction": "row"
               },
               "second": {
-                "first": "Image!a1c3",
-                "second": "Image!a1c4",
+                "first": "Image!tab01view03",
+                "second": "Image!tab01view04",
                 "direction": "row"
               },
-              "direction": "column",
-              "splitPercentage": 49.83975487816963
+              "direction": "column"
             },
             "direction": "column",
             "splitPercentage": 50
           }
         },
         {
-          "title": "AGENT02",
+          "title": "Feed 2",
           "layout": {
-            "first": "Image!a2c0",
+            "first": "Image!tab02view00",
             "second": {
               "first": {
-                "first": "Image!a2c1",
-                "second": "Image!a2c2",
+                "first": "Image!tab02view01",
+                "second": "Image!tab02view02",
                 "direction": "row"
               },
               "second": {
-                "first": "Image!a2c3",
-                "second": "Image!a2c4",
+                "first": "Image!tab02view03",
+                "second": "Image!tab02view04",
+                "direction": "row"
+              },
+              "direction": "column"
+            },
+            "direction": "column",
+            "splitPercentage": 50
+          }
+        },
+        {
+          "title": "Feed 3",
+          "layout": {
+            "first": "Image!tab03view00",
+            "second": {
+              "first": {
+                "first": "Image!tab03view01",
+                "second": "Image!tab03view02",
+                "direction": "row"
+              },
+              "second": {
+                "first": "Image!tab03view03",
+                "second": "Image!tab03view04",
                 "direction": "row"
               },
               "direction": "column"
@@ -183,929 +149,215 @@
         }
       ]
     },
-    "Image!a0c0": {
+    "Image!tab00view00": {
       "synchronize": false,
       "imageMode": {
-        "imageTopic": "/flychams/agent/AGENT01/MULTICAMERA03/image/compressed",
+        "imageTopic": "/flychams/operator/ELEMENT00/VIEW00/image/compressed",
         "annotations": {
-          "/flychams/agent/AGENT01/MULTICAMERA03/annotations": { "visible": true }
+          "/flychams/operator/ELEMENT00/VIEW00/annotations": { "visible": true }
         }
       },
-      "foxglovePanelTitle": "AGENT00 - Central",
-      "cameraState": {
-        "distance": 20,
-        "perspective": true,
-        "phi": 60,
-        "target": [
-          0,
-          0,
-          0
-        ],
-        "targetOffset": [
-          0,
-          0,
-          0
-        ],
-        "targetOrientation": [
-          0,
-          0,
-          0,
-          1
-        ],
-        "thetaOffset": 60,
-        "fovy": 45,
-        "near": 0.5,
-        "far": 5000
-      },
-      "followMode": "follow-pose",
-      "scene": {},
-      "transforms": {},
-      "topics": {},
-      "layers": {},
-      "publish": {
-        "type": "point",
-        "poseTopic": "/move_base_simple/goal",
-        "pointTopic": "/clicked_point",
-        "poseEstimateTopic": "/initialpose",
-        "poseEstimateXDeviation": 0.5,
-        "poseEstimateYDeviation": 0.5,
-        "poseEstimateThetaDeviation": 0.26179939
-      }
+      "foxglovePanelTitle": "Central"
     },
-    "Image!a0c1": {
+    "Image!tab00view01": {
       "synchronize": false,
       "imageMode": {
-        "imageTopic": "/flychams/agent/AGENT01/MULTIWINDOW00/image/compressed",
+        "imageTopic": "/flychams/operator/ELEMENT00/VIEW01/image/compressed",
         "annotations": {
-          "/flychams/agent/AGENT01/MULTIWINDOW00/annotations": { "visible": true }
+          "/flychams/operator/ELEMENT00/VIEW01/annotations": { "visible": true }
         }
       },
-      "foxglovePanelTitle": "AGENT01 - Tracking 1",
-      "cameraState": {
-        "distance": 20,
-        "perspective": true,
-        "phi": 60,
-        "target": [
-          0,
-          0,
-          0
-        ],
-        "targetOffset": [
-          0,
-          0,
-          0
-        ],
-        "targetOrientation": [
-          0,
-          0,
-          0,
-          1
-        ],
-        "thetaOffset": 60,
-        "fovy": 45,
-        "near": 0.5,
-        "far": 5000
-      },
-      "followMode": "follow-pose",
-      "scene": {},
-      "transforms": {},
-      "topics": {},
-      "layers": {},
-      "publish": {
-        "type": "point",
-        "poseTopic": "/move_base_simple/goal",
-        "pointTopic": "/clicked_point",
-        "poseEstimateTopic": "/initialpose",
-        "poseEstimateXDeviation": 0.5,
-        "poseEstimateYDeviation": 0.5,
-        "poseEstimateThetaDeviation": 0.26179939
-      }
+      "foxglovePanelTitle": "Tracking 1"
     },
-    "Image!a0c2": {
+    "Image!tab00view02": {
       "synchronize": false,
       "imageMode": {
-        "imageTopic": "/flychams/agent/AGENT01/MULTIWINDOW01/image/compressed",
+        "imageTopic": "/flychams/operator/ELEMENT00/VIEW02/image/compressed",
         "annotations": {
-          "/flychams/agent/AGENT01/MULTIWINDOW01/annotations": { "visible": true }
+          "/flychams/operator/ELEMENT00/VIEW02/annotations": { "visible": true }
         }
       },
-      "foxglovePanelTitle": "AGENT01 - Tracking 2",
-      "cameraState": {
-        "distance": 20,
-        "perspective": true,
-        "phi": 60,
-        "target": [
-          0,
-          0,
-          0
-        ],
-        "targetOffset": [
-          0,
-          0,
-          0
-        ],
-        "targetOrientation": [
-          0,
-          0,
-          0,
-          1
-        ],
-        "thetaOffset": 60,
-        "fovy": 45,
-        "near": 0.5,
-        "far": 5000
-      },
-      "followMode": "follow-pose",
-      "scene": {},
-      "transforms": {},
-      "topics": {},
-      "layers": {},
-      "publish": {
-        "type": "point",
-        "poseTopic": "/move_base_simple/goal",
-        "pointTopic": "/clicked_point",
-        "poseEstimateTopic": "/initialpose",
-        "poseEstimateXDeviation": 0.5,
-        "poseEstimateYDeviation": 0.5,
-        "poseEstimateThetaDeviation": 0.26179939
-      }
+      "foxglovePanelTitle": "Tracking 2"
     },
-    "Image!a0c3": {
+    "Image!tab00view03": {
       "synchronize": false,
       "imageMode": {
-        "imageTopic": ""
-      },
-      "foxglovePanelTitle": "AGENT00 - Tracking 3",
-      "cameraState": {
-        "distance": 20,
-        "perspective": true,
-        "phi": 60,
-        "target": [
-          0,
-          0,
-          0
-        ],
-        "targetOffset": [
-          0,
-          0,
-          0
-        ],
-        "targetOrientation": [
-          0,
-          0,
-          0,
-          1
-        ],
-        "thetaOffset": 60,
-        "fovy": 45,
-        "near": 0.5,
-        "far": 5000
-      },
-      "followMode": "follow-pose",
-      "scene": {},
-      "transforms": {},
-      "topics": {},
-      "layers": {},
-      "publish": {
-        "type": "point",
-        "poseTopic": "/move_base_simple/goal",
-        "pointTopic": "/clicked_point",
-        "poseEstimateTopic": "/initialpose",
-        "poseEstimateXDeviation": 0.5,
-        "poseEstimateYDeviation": 0.5,
-        "poseEstimateThetaDeviation": 0.26179939
-      }
-    },
-    "Image!a0c4": {
-      "synchronize": false,
-      "imageMode": {
-        "imageTopic": ""
-      },
-      "foxglovePanelTitle": "AGENT00 - Tracking 4",
-      "cameraState": {
-        "distance": 20,
-        "perspective": true,
-        "phi": 60,
-        "target": [
-          0,
-          0,
-          0
-        ],
-        "targetOffset": [
-          0,
-          0,
-          0
-        ],
-        "targetOrientation": [
-          0,
-          0,
-          0,
-          1
-        ],
-        "thetaOffset": 60,
-        "fovy": 45,
-        "near": 0.5,
-        "far": 5000
-      },
-      "followMode": "follow-pose",
-      "scene": {},
-      "transforms": {},
-      "topics": {},
-      "layers": {},
-      "publish": {
-        "type": "point",
-        "poseTopic": "/move_base_simple/goal",
-        "pointTopic": "/clicked_point",
-        "poseEstimateTopic": "/initialpose",
-        "poseEstimateXDeviation": 0.5,
-        "poseEstimateYDeviation": 0.5,
-        "poseEstimateThetaDeviation": 0.26179939
-      }
-    },
-    "Image!a1c0": {
-      "synchronize": false,
-      "imageMode": {
-        "imageTopic": "/flychams/agent/AGENT01/MULTICAMERA03/image/compressed",
+        "imageTopic": "/flychams/operator/ELEMENT00/VIEW03/image/compressed",
         "annotations": {
-          "/flychams/agent/AGENT01/MULTICAMERA03/annotations": { "visible": true }
+          "/flychams/operator/ELEMENT00/VIEW03/annotations": { "visible": true }
         }
       },
-      "foxglovePanelTitle": "AGENT01 — Central",
-      "cameraState": {
-        "distance": 20,
-        "perspective": true,
-        "phi": 60,
-        "target": [
-          0,
-          0,
-          0
-        ],
-        "targetOffset": [
-          0,
-          0,
-          0
-        ],
-        "targetOrientation": [
-          0,
-          0,
-          0,
-          1
-        ],
-        "thetaOffset": 60,
-        "fovy": 45,
-        "near": 0.5,
-        "far": 5000
-      },
-      "followMode": "follow-pose",
-      "scene": {
-        "enableStats": false
-      },
-      "transforms": {},
-      "topics": {},
-      "layers": {},
-      "publish": {
-        "type": "point",
-        "poseTopic": "/move_base_simple/goal",
-        "pointTopic": "/clicked_point",
-        "poseEstimateTopic": "/initialpose",
-        "poseEstimateXDeviation": 0.5,
-        "poseEstimateYDeviation": 0.5,
-        "poseEstimateThetaDeviation": 0.26179939
-      }
+      "foxglovePanelTitle": "Tracking 3"
     },
-    "Image!a1c1": {
+    "Image!tab00view04": {
       "synchronize": false,
       "imageMode": {
-        "imageTopic": "/flychams/agent/AGENT01/MULTICAMERA04/image/compressed",
+        "imageTopic": "/flychams/operator/ELEMENT00/VIEW04/image/compressed",
         "annotations": {
-          "/flychams/agent/AGENT01/MULTICAMERA04/annotations": { "visible": true }
+          "/flychams/operator/ELEMENT00/VIEW04/annotations": { "visible": true }
         }
       },
-      "foxglovePanelTitle": "AGENT01 — Tracking 1",
-      "cameraState": {
-        "distance": 20,
-        "perspective": true,
-        "phi": 60,
-        "target": [
-          0,
-          0,
-          0
-        ],
-        "targetOffset": [
-          0,
-          0,
-          0
-        ],
-        "targetOrientation": [
-          0,
-          0,
-          0,
-          1
-        ],
-        "thetaOffset": 60,
-        "fovy": 45,
-        "near": 0.5,
-        "far": 5000
-      },
-      "followMode": "follow-pose",
-      "scene": {},
-      "transforms": {},
-      "topics": {},
-      "layers": {},
-      "publish": {
-        "type": "point",
-        "poseTopic": "/move_base_simple/goal",
-        "pointTopic": "/clicked_point",
-        "poseEstimateTopic": "/initialpose",
-        "poseEstimateXDeviation": 0.5,
-        "poseEstimateYDeviation": 0.5,
-        "poseEstimateThetaDeviation": 0.26179939
-      }
+      "foxglovePanelTitle": "Tracking 4"
     },
-    "Image!a1c2": {
+    "Image!tab01view00": {
       "synchronize": false,
       "imageMode": {
-        "imageTopic": "/flychams/agent/AGENT01/MULTICAMERA05/image/compressed",
+        "imageTopic": "/flychams/operator/ELEMENT01/VIEW00/image/compressed",
         "annotations": {
-          "/flychams/agent/AGENT01/MULTICAMERA05/annotations": { "visible": true }
+          "/flychams/operator/ELEMENT01/VIEW00/annotations": { "visible": true }
         }
       },
-      "foxglovePanelTitle": "AGENT01 — Tracking 2",
-      "cameraState": {
-        "distance": 20,
-        "perspective": true,
-        "phi": 60,
-        "target": [
-          0,
-          0,
-          0
-        ],
-        "targetOffset": [
-          0,
-          0,
-          0
-        ],
-        "targetOrientation": [
-          0,
-          0,
-          0,
-          1
-        ],
-        "thetaOffset": 60,
-        "fovy": 45,
-        "near": 0.5,
-        "far": 5000
-      },
-      "followMode": "follow-pose",
-      "scene": {},
-      "transforms": {},
-      "topics": {},
-      "layers": {},
-      "publish": {
-        "type": "point",
-        "poseTopic": "/move_base_simple/goal",
-        "pointTopic": "/clicked_point",
-        "poseEstimateTopic": "/initialpose",
-        "poseEstimateXDeviation": 0.5,
-        "poseEstimateYDeviation": 0.5,
-        "poseEstimateThetaDeviation": 0.26179939
-      }
+      "foxglovePanelTitle": "Central"
     },
-    "Image!a1c3": {
+    "Image!tab01view01": {
       "synchronize": false,
       "imageMode": {
-        "imageTopic": ""
-      },
-      "foxglovePanelTitle": "AGENT01 — Tracking 3",
-      "cameraState": {
-        "distance": 20,
-        "perspective": true,
-        "phi": 60,
-        "target": [
-          0,
-          0,
-          0
-        ],
-        "targetOffset": [
-          0,
-          0,
-          0
-        ],
-        "targetOrientation": [
-          0,
-          0,
-          0,
-          1
-        ],
-        "thetaOffset": 60,
-        "fovy": 45,
-        "near": 0.5,
-        "far": 5000
-      },
-      "followMode": "follow-pose",
-      "scene": {},
-      "transforms": {},
-      "topics": {},
-      "layers": {},
-      "publish": {
-        "type": "point",
-        "poseTopic": "/move_base_simple/goal",
-        "pointTopic": "/clicked_point",
-        "poseEstimateTopic": "/initialpose",
-        "poseEstimateXDeviation": 0.5,
-        "poseEstimateYDeviation": 0.5,
-        "poseEstimateThetaDeviation": 0.26179939
-      }
-    },
-    "Image!a1c4": {
-      "synchronize": false,
-      "imageMode": {
-        "imageTopic": ""
-      },
-      "foxglovePanelTitle": "AGENT01 — Tracking 4",
-      "cameraState": {
-        "distance": 20,
-        "perspective": true,
-        "phi": 60,
-        "target": [
-          0,
-          0,
-          0
-        ],
-        "targetOffset": [
-          0,
-          0,
-          0
-        ],
-        "targetOrientation": [
-          0,
-          0,
-          0,
-          1
-        ],
-        "thetaOffset": 60,
-        "fovy": 45,
-        "near": 0.5,
-        "far": 5000
-      },
-      "followMode": "follow-pose",
-      "scene": {},
-      "transforms": {},
-      "topics": {},
-      "layers": {},
-      "publish": {
-        "type": "point",
-        "poseTopic": "/move_base_simple/goal",
-        "pointTopic": "/clicked_point",
-        "poseEstimateTopic": "/initialpose",
-        "poseEstimateXDeviation": 0.5,
-        "poseEstimateYDeviation": 0.5,
-        "poseEstimateThetaDeviation": 0.26179939
-      }
-    },
-    "Image!a2c0": {
-      "synchronize": false,
-      "imageMode": {
-        "imageTopic": "/flychams/agent/AGENT02/MULTICAMERA06/image/compressed",
+        "imageTopic": "/flychams/operator/ELEMENT01/VIEW01/image/compressed",
         "annotations": {
-          "/flychams/agent/AGENT02/MULTICAMERA06/annotations": { "visible": true }
+          "/flychams/operator/ELEMENT01/VIEW01/annotations": { "visible": true }
         }
       },
-      "foxglovePanelTitle": "AGENT02 — Central",
-      "cameraState": {
-        "distance": 20,
-        "perspective": true,
-        "phi": 60,
-        "target": [
-          0,
-          0,
-          0
-        ],
-        "targetOffset": [
-          0,
-          0,
-          0
-        ],
-        "targetOrientation": [
-          0,
-          0,
-          0,
-          1
-        ],
-        "thetaOffset": 60,
-        "fovy": 45,
-        "near": 0.5,
-        "far": 5000
-      },
-      "followMode": "follow-pose",
-      "scene": {},
-      "transforms": {},
-      "topics": {},
-      "layers": {},
-      "publish": {
-        "type": "point",
-        "poseTopic": "/move_base_simple/goal",
-        "pointTopic": "/clicked_point",
-        "poseEstimateTopic": "/initialpose",
-        "poseEstimateXDeviation": 0.5,
-        "poseEstimateYDeviation": 0.5,
-        "poseEstimateThetaDeviation": 0.26179939
-      }
+      "foxglovePanelTitle": "Tracking 1"
     },
-    "Image!a2c1": {
+    "Image!tab01view02": {
       "synchronize": false,
       "imageMode": {
-        "imageTopic": "/flychams/agent/AGENT02/MULTICAMERA07/image/compressed",
+        "imageTopic": "/flychams/operator/ELEMENT01/VIEW02/image/compressed",
         "annotations": {
-          "/flychams/agent/AGENT02/MULTICAMERA07/annotations": { "visible": true }
+          "/flychams/operator/ELEMENT01/VIEW02/annotations": { "visible": true }
         }
       },
-      "foxglovePanelTitle": "AGENT02 — Tracking 1",
-      "cameraState": {
-        "distance": 20,
-        "perspective": true,
-        "phi": 60,
-        "target": [
-          0,
-          0,
-          0
-        ],
-        "targetOffset": [
-          0,
-          0,
-          0
-        ],
-        "targetOrientation": [
-          0,
-          0,
-          0,
-          1
-        ],
-        "thetaOffset": 60,
-        "fovy": 45,
-        "near": 0.5,
-        "far": 5000
-      },
-      "followMode": "follow-pose",
-      "scene": {},
-      "transforms": {},
-      "topics": {},
-      "layers": {},
-      "publish": {
-        "type": "point",
-        "poseTopic": "/move_base_simple/goal",
-        "pointTopic": "/clicked_point",
-        "poseEstimateTopic": "/initialpose",
-        "poseEstimateXDeviation": 0.5,
-        "poseEstimateYDeviation": 0.5,
-        "poseEstimateThetaDeviation": 0.26179939
-      }
+      "foxglovePanelTitle": "Tracking 2"
     },
-    "Image!a2c2": {
+    "Image!tab01view03": {
       "synchronize": false,
       "imageMode": {
-        "imageTopic": "/flychams/agent/AGENT02/MULTICAMERA08/image/compressed",
+        "imageTopic": "/flychams/operator/ELEMENT01/VIEW03/image/compressed",
         "annotations": {
-          "/flychams/agent/AGENT02/MULTICAMERA08/annotations": { "visible": true }
+          "/flychams/operator/ELEMENT01/VIEW03/annotations": { "visible": true }
         }
       },
-      "foxglovePanelTitle": "AGENT02 — Tracking 2",
-      "cameraState": {
-        "distance": 20,
-        "perspective": true,
-        "phi": 60,
-        "target": [
-          0,
-          0,
-          0
-        ],
-        "targetOffset": [
-          0,
-          0,
-          0
-        ],
-        "targetOrientation": [
-          0,
-          0,
-          0,
-          1
-        ],
-        "thetaOffset": 60,
-        "fovy": 45,
-        "near": 0.5,
-        "far": 5000
-      },
-      "followMode": "follow-pose",
-      "scene": {},
-      "transforms": {},
-      "topics": {},
-      "layers": {},
-      "publish": {
-        "type": "point",
-        "poseTopic": "/move_base_simple/goal",
-        "pointTopic": "/clicked_point",
-        "poseEstimateTopic": "/initialpose",
-        "poseEstimateXDeviation": 0.5,
-        "poseEstimateYDeviation": 0.5,
-        "poseEstimateThetaDeviation": 0.26179939
-      }
+      "foxglovePanelTitle": "Tracking 3"
     },
-    "Image!a2c3": {
+    "Image!tab01view04": {
       "synchronize": false,
       "imageMode": {
-        "imageTopic": ""
+        "imageTopic": "/flychams/operator/ELEMENT01/VIEW04/image/compressed",
+        "annotations": {
+          "/flychams/operator/ELEMENT01/VIEW04/annotations": { "visible": true }
+        }
       },
-      "foxglovePanelTitle": "AGENT02 — Tracking 3",
-      "cameraState": {
-        "distance": 20,
-        "perspective": true,
-        "phi": 60,
-        "target": [
-          0,
-          0,
-          0
-        ],
-        "targetOffset": [
-          0,
-          0,
-          0
-        ],
-        "targetOrientation": [
-          0,
-          0,
-          0,
-          1
-        ],
-        "thetaOffset": 60,
-        "fovy": 45,
-        "near": 0.5,
-        "far": 5000
-      },
-      "followMode": "follow-pose",
-      "scene": {},
-      "transforms": {},
-      "topics": {},
-      "layers": {},
-      "publish": {
-        "type": "point",
-        "poseTopic": "/move_base_simple/goal",
-        "pointTopic": "/clicked_point",
-        "poseEstimateTopic": "/initialpose",
-        "poseEstimateXDeviation": 0.5,
-        "poseEstimateYDeviation": 0.5,
-        "poseEstimateThetaDeviation": 0.26179939
-      }
+      "foxglovePanelTitle": "Tracking 4"
     },
-    "Image!a2c4": {
+    "Image!tab02view00": {
       "synchronize": false,
       "imageMode": {
-        "imageTopic": ""
+        "imageTopic": "/flychams/operator/ELEMENT02/VIEW00/image/compressed",
+        "annotations": {
+          "/flychams/operator/ELEMENT02/VIEW00/annotations": { "visible": true }
+        }
       },
-      "foxglovePanelTitle": "AGENT02 — Tracking 4",
-      "cameraState": {
-        "distance": 20,
-        "perspective": true,
-        "phi": 60,
-        "target": [
-          0,
-          0,
-          0
-        ],
-        "targetOffset": [
-          0,
-          0,
-          0
-        ],
-        "targetOrientation": [
-          0,
-          0,
-          0,
-          1
-        ],
-        "thetaOffset": 60,
-        "fovy": 45,
-        "near": 0.5,
-        "far": 5000
+      "foxglovePanelTitle": "Central"
+    },
+    "Image!tab02view01": {
+      "synchronize": false,
+      "imageMode": {
+        "imageTopic": "/flychams/operator/ELEMENT02/VIEW01/image/compressed",
+        "annotations": {
+          "/flychams/operator/ELEMENT02/VIEW01/annotations": { "visible": true }
+        }
       },
-      "followMode": "follow-pose",
-      "scene": {},
-      "transforms": {},
-      "topics": {},
-      "layers": {},
-      "publish": {
-        "type": "point",
-        "poseTopic": "/move_base_simple/goal",
-        "pointTopic": "/clicked_point",
-        "poseEstimateTopic": "/initialpose",
-        "poseEstimateXDeviation": 0.5,
-        "poseEstimateYDeviation": 0.5,
-        "poseEstimateThetaDeviation": 0.26179939
-      }
+      "foxglovePanelTitle": "Tracking 1"
     },
-    "Stack!agmetrics": {
-      "panels": [
-        {
-          "panelId": "Plot!speeds",
-          "size": 0.25
-        },
-        {
-          "panelId": "Plot!altitudes",
-          "size": 0.25
-        },
-        {
-          "panelId": "Plot!dtgoal",
-          "size": 0.25
-        },
-        {
-          "panelId": "Plot!optdur",
-          "size": 0.25
+    "Image!tab02view02": {
+      "synchronize": false,
+      "imageMode": {
+        "imageTopic": "/flychams/operator/ELEMENT02/VIEW02/image/compressed",
+        "annotations": {
+          "/flychams/operator/ELEMENT02/VIEW02/annotations": { "visible": true }
         }
-      ]
+      },
+      "foxglovePanelTitle": "Tracking 2"
     },
-    "Plot!speeds": {
-      "paths": [
-        {
-          "value": "/flychams/operator/AGENT00/agent_metrics.speed",
-          "enabled": true,
-          "timestampMethod": "receiveTime",
-          "label": "AGENT00"
-        },
-        {
-          "value": "/flychams/operator/AGENT01/agent_metrics.speed",
-          "enabled": true,
-          "timestampMethod": "receiveTime",
-          "label": "AGENT01"
-        },
-        {
-          "value": "/flychams/operator/AGENT02/agent_metrics.speed",
-          "enabled": true,
-          "timestampMethod": "receiveTime",
-          "label": "AGENT02"
+    "Image!tab02view03": {
+      "synchronize": false,
+      "imageMode": {
+        "imageTopic": "/flychams/operator/ELEMENT02/VIEW03/image/compressed",
+        "annotations": {
+          "/flychams/operator/ELEMENT02/VIEW03/annotations": { "visible": true }
         }
-      ],
-      "showLegend": true,
-      "isSynced": true,
-      "xAxisVal": "timestamp",
-      "title": "Agent Speeds (m/s)",
-      "foxglovePanelTitle": "Agent Speeds"
+      },
+      "foxglovePanelTitle": "Tracking 3"
     },
-    "Plot!altitudes": {
-      "paths": [
-        {
-          "value": "/flychams/agent/AGENT00/local_position.point.z",
-          "enabled": true,
-          "timestampMethod": "receiveTime",
-          "label": "AGENT00"
-        },
-        {
-          "value": "/flychams/agent/AGENT01/local_position.point.z",
-          "enabled": true,
-          "timestampMethod": "receiveTime",
-          "label": "AGENT01"
-        },
-        {
-          "value": "/flychams/agent/AGENT02/local_position.point.z",
-          "enabled": true,
-          "timestampMethod": "receiveTime",
-          "label": "AGENT02"
+    "Image!tab02view04": {
+      "synchronize": false,
+      "imageMode": {
+        "imageTopic": "/flychams/operator/ELEMENT02/VIEW04/image/compressed",
+        "annotations": {
+          "/flychams/operator/ELEMENT02/VIEW04/annotations": { "visible": true }
         }
-      ],
-      "showLegend": true,
-      "isSynced": true,
-      "xAxisVal": "timestamp",
-      "title": "Agent Altitudes (m)",
-      "foxglovePanelTitle": "Agent Altitudes"
+      },
+      "foxglovePanelTitle": "Tracking 4"
     },
-    "Plot!dtgoal": {
-      "paths": [
-        {
-          "value": "/flychams/operator/AGENT00/agent_metrics.distance_to_goal",
-          "enabled": true,
-          "timestampMethod": "receiveTime",
-          "label": "AGENT00"
-        },
-        {
-          "value": "/flychams/operator/AGENT01/agent_metrics.distance_to_goal",
-          "enabled": true,
-          "timestampMethod": "receiveTime",
-          "label": "AGENT01"
-        },
-        {
-          "value": "/flychams/operator/AGENT02/agent_metrics.distance_to_goal",
-          "enabled": true,
-          "timestampMethod": "receiveTime",
-          "label": "AGENT02"
+    "Image!tab03view00": {
+      "synchronize": false,
+      "imageMode": {
+        "imageTopic": "/flychams/operator/ELEMENT03/VIEW00/image/compressed",
+        "annotations": {
+          "/flychams/operator/ELEMENT03/VIEW00/annotations": { "visible": true }
         }
-      ],
-      "showLegend": true,
-      "isSynced": true,
-      "xAxisVal": "timestamp",
-      "title": "Distance to Goal (m)",
-      "foxglovePanelTitle": "Goal Distance"
+      },
+      "foxglovePanelTitle": "Central"
     },
-    "Plot!optdur": {
-      "paths": [
-        {
-          "value": "/flychams/operator/AGENT00/agent_metrics.optimization_duration",
-          "enabled": true,
-          "timestampMethod": "receiveTime",
-          "label": "AGENT00"
-        },
-        {
-          "value": "/flychams/operator/AGENT01/agent_metrics.optimization_duration",
-          "enabled": true,
-          "timestampMethod": "receiveTime",
-          "label": "AGENT01"
-        },
-        {
-          "value": "/flychams/operator/AGENT02/agent_metrics.optimization_duration",
-          "enabled": true,
-          "timestampMethod": "receiveTime",
-          "label": "AGENT02"
+    "Image!tab03view01": {
+      "synchronize": false,
+      "imageMode": {
+        "imageTopic": "/flychams/operator/ELEMENT03/VIEW01/image/compressed",
+        "annotations": {
+          "/flychams/operator/ELEMENT03/VIEW01/annotations": { "visible": true }
         }
-      ],
-      "showLegend": true,
-      "isSynced": true,
-      "xAxisVal": "timestamp",
-      "title": "Optimization Duration (ms)",
-      "foxglovePanelTitle": "Optimization Duration"
+      },
+      "foxglovePanelTitle": "Tracking 1"
     },
-    "Plot!global": {
-      "paths": [
-        {
-          "value": "/flychams/coordinator/mission_status.mission_time",
-          "enabled": true,
-          "timestampMethod": "receiveTime",
-          "label": "Mission Time (s)"
-        },
-        {
-          "value": "/flychams/operator/mission_metrics.total_agents",
-          "enabled": true,
-          "timestampMethod": "receiveTime",
-          "label": "Agents"
-        },
-        {
-          "value": "/flychams/operator/mission_metrics.total_targets",
-          "enabled": true,
-          "timestampMethod": "receiveTime",
-          "label": "Targets"
-        },
-        {
-          "value": "/flychams/operator/mission_metrics.total_clusters",
-          "enabled": true,
-          "timestampMethod": "receiveTime",
-          "label": "Clusters"
+    "Image!tab03view02": {
+      "synchronize": false,
+      "imageMode": {
+        "imageTopic": "/flychams/operator/ELEMENT03/VIEW02/image/compressed",
+        "annotations": {
+          "/flychams/operator/ELEMENT03/VIEW02/annotations": { "visible": true }
         }
-      ],
-      "showLegend": true,
-      "isSynced": true,
-      "xAxisVal": "timestamp",
-      "title": "Mission Overview",
-      "foxglovePanelTitle": "Mission Overview"
+      },
+      "foxglovePanelTitle": "Tracking 2"
     },
-    "StateTransitions!states": {
-      "paths": [
-        {
-          "value": "/flychams/agent/AGENT00/status.status",
-          "enabled": true,
-          "timestampMethod": "receiveTime"
-        },
-        {
-          "value": "/flychams/agent/AGENT01/status.status",
-          "enabled": true,
-          "timestampMethod": "receiveTime"
-        },
-        {
-          "value": "/flychams/agent/AGENT02/status.status",
-          "enabled": true,
-          "timestampMethod": "receiveTime"
+    "Image!tab03view03": {
+      "synchronize": false,
+      "imageMode": {
+        "imageTopic": "/flychams/operator/ELEMENT03/VIEW03/image/compressed",
+        "annotations": {
+          "/flychams/operator/ELEMENT03/VIEW03/annotations": { "visible": true }
         }
-      ],
-      "isSynced": true,
-      "foxglovePanelTitle": "Agent States"
+      },
+      "foxglovePanelTitle": "Tracking 3"
+    },
+    "Image!tab03view04": {
+      "synchronize": false,
+      "imageMode": {
+        "imageTopic": "/flychams/operator/ELEMENT03/VIEW04/image/compressed",
+        "annotations": {
+          "/flychams/operator/ELEMENT03/VIEW04/annotations": { "visible": true }
+        }
+      },
+      "foxglovePanelTitle": "Tracking 4"
     },
     "3D!scene": {
       "cameraState": {
         "perspective": true,
-        "distance": 399.99999999999966,
-        "phi": 19.999999999999993,
-        "thetaOffset": 60.000000000000036,
-        "targetOffset": [
-          0,
-          0,
-          0
-        ],
-        "target": [
-          0,
-          0,
-          0
-        ],
-        "targetOrientation": [
-          0,
-          0,
-          0,
-          1
-        ],
+        "distance": 400,
+        "phi": 20,
+        "thetaOffset": 60,
+        "targetOffset": [0, 0, 0],
+        "target": [0, 0, 0],
+        "targetOrientation": [0, 0, 0, 1],
         "fovy": 45,
         "near": 0.5,
         "far": 5000
@@ -1116,48 +368,31 @@
       },
       "transforms": {},
       "topics": {
-        "/flychams/operator/AGENT00/agent_scene": {
-          "visible": true
-        },
-        "/flychams/operator/AGENT01/agent_scene": {
-          "visible": true
-        },
-        "/flychams/operator/AGENT02/agent_scene": {
-          "visible": true
-        },
-        "/flychams/operator/TARGET02COUNT00/target_scene": {
-          "visible": true
-        },
-        "/flychams/operator/TARGET02COUNT01/target_scene": {
-          "visible": true
-        },
-        "/flychams/operator/TARGET02COUNT02/target_scene": {
-          "visible": true
-        },
-        "/flychams/operator/TARGET02COUNT03/target_scene": {
-          "visible": true
-        },
-        "/flychams/operator/TARGET02COUNT04/target_scene": {
-          "visible": true
-        },
-        "/flychams/operator/TARGET02COUNT05/target_scene": {
-          "visible": true
-        },
-        "/flychams/operator/TARGET02COUNT06/target_scene": {
-          "visible": true
-        },
-        "/flychams/operator/TARGET02COUNT07/target_scene": {
-          "visible": true
-        },
-        "/flychams/operator/CLUSTER00/cluster_scene": {
-          "visible": true
-        },
-        "/flychams/operator/CLUSTER01/cluster_scene": {
-          "visible": true
-        },
-        "/flychams/operator/CLUSTER02/cluster_scene": {
-          "visible": true
-        }
+        "/flychams/operator/ELEMENT00/scene": { "visible": true },
+        "/flychams/operator/ELEMENT01/scene": { "visible": true },
+        "/flychams/operator/ELEMENT02/scene": { "visible": true },
+        "/flychams/operator/ELEMENT03/scene": { "visible": true },
+        "/flychams/operator/ELEMENT04/scene": { "visible": true },
+        "/flychams/operator/ELEMENT05/scene": { "visible": true },
+        "/flychams/operator/ELEMENT06/scene": { "visible": true },
+        "/flychams/operator/ELEMENT07/scene": { "visible": true },
+        "/flychams/operator/ELEMENT08/scene": { "visible": true },
+        "/flychams/operator/ELEMENT09/scene": { "visible": true },
+        "/flychams/operator/ELEMENT10/scene": { "visible": true },
+        "/flychams/operator/ELEMENT11/scene": { "visible": true },
+        "/flychams/operator/ELEMENT12/scene": { "visible": true },
+        "/flychams/operator/ELEMENT13/scene": { "visible": true },
+        "/flychams/operator/ELEMENT14/scene": { "visible": true },
+        "/flychams/operator/ELEMENT15/scene": { "visible": true },
+        "/flychams/operator/ELEMENT16/scene": { "visible": true },
+        "/flychams/operator/ELEMENT17/scene": { "visible": true },
+        "/flychams/operator/ELEMENT18/scene": { "visible": true },
+        "/flychams/operator/ELEMENT19/scene": { "visible": true },
+        "/flychams/operator/ELEMENT20/scene": { "visible": true },
+        "/flychams/operator/ELEMENT21/scene": { "visible": true },
+        "/flychams/operator/ELEMENT22/scene": { "visible": true },
+        "/flychams/operator/ELEMENT23/scene": { "visible": true },
+        "/flychams/operator/ELEMENT24/scene": { "visible": true }
       },
       "layers": {
         "grid": {
@@ -1169,16 +404,8 @@
           "divisions": 30,
           "lineWidth": 1,
           "color": "#248eff",
-          "position": [
-            0,
-            0,
-            0
-          ],
-          "rotation": [
-            0,
-            0,
-            0
-          ]
+          "position": [0, 0, 0],
+          "rotation": [0, 0, 0]
         }
       },
       "publish": {
@@ -1194,36 +421,7 @@
       "imageMode": {},
       "foxglovePanelTitle": "Situational Awareness"
     },
-    "Tab!43q87u9": {
-      "tabs": [
-        {
-          "title": "Coordinator Log",
-          "layout": "RosOut!colog"
-        },
-        {
-          "title": "Simulation Log",
-          "layout": "RosOut!simlog"
-        },
-        {
-          "title": "Operator Log",
-          "layout": "RosOut!oplog"
-        },
-        {
-          "title": "AGENT00 Log",
-          "layout": "RosOut!a00log"
-        },
-        {
-          "title": "AGENT01 Log",
-          "layout": "RosOut!a01log"
-        },
-        {
-          "title": "AGENT02 Log",
-          "layout": "RosOut!a02log"
-        }
-      ],
-      "activeTabIdx": 0
-    },
-    "Tab!fleetctrl": {
+    "Tab!mission": {
       "activeTabIdx": 0,
       "tabs": [
         {
@@ -1238,7 +436,12 @@
             "direction": "column",
             "splitPercentage": 50
           }
-        },
+        }
+      ]
+    },
+    "Tab!fleet": {
+      "activeTabIdx": 0,
+      "tabs": [
         {
           "title": "Fleet",
           "layout": {
@@ -1248,28 +451,6 @@
               "direction": "row"
             },
             "second": "button.Button!rth",
-            "direction": "column",
-            "splitPercentage": 50
-          }
-        }
-      ]
-    },
-    "Tab!right": {
-      "activeTabIdx": 0,
-      "tabs": [
-        {
-          "title": "Cameras",
-          "layout": "Tab!cams"
-        },
-        {
-          "title": "Agent Metrics",
-          "layout": "Stack!agmetrics"
-        },
-        {
-          "title": "Mission Metrics",
-          "layout": {
-            "first": "Plot!global",
-            "second": "StateTransitions!states",
             "direction": "column",
             "splitPercentage": 50
           }
@@ -1286,15 +467,15 @@
     "first": {
       "first": "3D!scene",
       "second": {
-        "first": "Tab!43q87u9",
-        "second": "Tab!fleetctrl",
+        "first": "Tab!mission",
+        "second": "Tab!fleet",
         "direction": "row",
-        "splitPercentage": 55
+        "splitPercentage": 50
       },
       "direction": "column",
-      "splitPercentage": 69.98962368214747
+      "splitPercentage": 70
     },
-    "second": "Tab!right",
+    "second": "Tab!cameras",
     "direction": "row",
     "splitPercentage": 53.5
   }
