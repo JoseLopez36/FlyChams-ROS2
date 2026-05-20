@@ -60,6 +60,9 @@ namespace flychams::operator_pkg
         int central_view_height_;
         int tracking_view_width_;
         int tracking_view_height_;
+        // Original (source) camera resolution for crop coordinate scaling
+        int original_view_width_;
+        int original_view_height_;
 
     private: // Setpoints data
         common::ObservationSetpointsMsg::SharedPtr setpoints_;

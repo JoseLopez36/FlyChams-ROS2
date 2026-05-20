@@ -37,10 +37,20 @@ namespace flychams::operator_pkg
         // Semi-transparent text background
         constexpr float kBgR      = 0.00f, kBgG      = 0.00f, kBgB      = 0.00f, kBgA      = 0.50f;
         // Flags
-        constexpr bool  kShowBrackets   = true;
-        constexpr bool  kShowBadge      = true;
-        constexpr bool  kShowHud        = true;
-        constexpr bool  kShowZoomBar    = true;
+        constexpr bool  kShowBrackets         = true;
+        constexpr bool  kShowBadge            = true;
+        constexpr bool  kShowHud              = true;
+        constexpr bool  kShowZoomBar          = true;
+        constexpr bool  kShowWindowsOnCentral = true;
+        // Window-overlay style (drawn on the central image)
+        constexpr float kWinOverlayBoxThick  = 1.5f;
+        constexpr float kWinOverlayTickFrac  = 0.12f;
+        constexpr float kWinOverlayTickThick = 1.5f;
+        constexpr float kWinOverlayIdFontSz  = 9.0f;
+        // In-bounds window overlay: amber
+        constexpr float kWinR = 1.00f, kWinG = 0.85f, kWinB = 0.00f, kWinA = 0.80f;
+        // OOB window overlay: red
+        constexpr float kWinOobR = 1.00f, kWinOobG = 0.20f, kWinOobB = 0.00f, kWinOobA = 0.80f;
         // Zoom bar (drawn above HUD text)
         constexpr float kZoomBarW       = 80.0f;
         constexpr float kZoomBarH       = 4.0f;
@@ -55,6 +65,11 @@ namespace flychams::operator_pkg
     // ════════════════════════════════════════════════════════════════════════════
     namespace WindowAnnotations
     {
+        // Role badge (top-left of the window view)
+        constexpr bool  kShowBadge      = true;
+        constexpr float kBadgeFontSize  = 9.5f;
+        constexpr float kBadgeMarginX   = 5.0f;
+        constexpr float kBadgeMarginY   = 14.0f;
         // Bounding box
         constexpr float kBoxThick          = 2.0f;
         // Corner ticks

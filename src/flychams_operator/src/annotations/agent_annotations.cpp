@@ -17,6 +17,19 @@ void AgentAnnotations::onModuleInit()
     central_view_height_  = node_->getParameterOr<int>("central_view.height", 480);
     tracking_view_width_  = node_->getParameterOr<int>("tracking_view.width", 427);
     tracking_view_height_ = node_->getParameterOr<int>("tracking_view.height", 240);
+    // Resolve original camera resolution from the central camera config in settings
+    original_view_width_  = 1920;
+    original_view_height_ = 1080;
+    const auto& tracking_config = node_->getSettings()->getTracking(agent_id_);
+    for (const auto& [camera_id, camera] : tracking_config.multi_camera_set)
+    {
+        if (camera->role == ObservationRole::Central)
+        {
+            original_view_width_  = camera->camera.resolution(0);
+            original_view_height_ = camera->camera.resolution(1);
+            break;
+        }
+    }
 
     // Build element_id from AGENT_IDX environment variable
     const int agent_idx = std::getenv("AGENT_IDX") ? std::stoi(std::getenv("AGENT_IDX")) : 0;
@@ -153,6 +166,77 @@ void AgentAnnotations::publishCameraAnnotations(size_t idx, int view_w, int view
         msg.circles.push_back(dot);
     }
 
+    // ── Window crop overlays (central view only) ──────────────────────────
+    if (is_central && CameraAnnotations::kShowWindowsOnCentral)
+    {
+        const size_t n = sp.ids.size();
+        for (size_t j = 0; j < n; ++j)
+        {
+            const uint8_t wtype = j < sp.types.size() ? sp.types[j] : 0;
+            if (wtype != 2 /* Window */ || j >= sp.crops.size())
+            {
+                continue;
+            }
+
+            const auto& crop = sp.crops[j];
+            const float sx  = static_cast<float>(view_w) / static_cast<float>(original_view_width_);
+            const float sy  = static_cast<float>(view_h) / static_cast<float>(original_view_height_);
+            const float wx0 = static_cast<float>(crop.x)           * sx;
+            const float wy0 = static_cast<float>(crop.y)           * sy;
+            const float wx1 = static_cast<float>(crop.x + crop.w)  * sx;
+            const float wy1 = static_cast<float>(crop.y + crop.h)  * sy;
+
+            const FoxColorMsg win_color = crop.is_out_of_bounds
+                ? AnnotationHelpers::makeColor(CameraAnnotations::kWinOobR, CameraAnnotations::kWinOobG, CameraAnnotations::kWinOobB, CameraAnnotations::kWinOobA)
+                : AnnotationHelpers::makeColor(CameraAnnotations::kWinR,    CameraAnnotations::kWinG,    CameraAnnotations::kWinB,    CameraAnnotations::kWinA);
+
+            // Box
+            {
+                FoxPointsAnnotationMsg rect;
+                rect.type = FoxPointsAnnotationMsg::LINE_LOOP;
+                rect.timestamp = stamp;
+                rect.points = {
+                    AnnotationHelpers::pt(wx0, wy0), AnnotationHelpers::pt(wx1, wy0),
+                    AnnotationHelpers::pt(wx1, wy1), AnnotationHelpers::pt(wx0, wy1)
+                };
+                rect.outline_color = win_color;
+                rect.thickness = CameraAnnotations::kWinOverlayBoxThick;
+                msg.points.push_back(rect);
+            }
+
+            // Corner ticks
+            {
+                const float tick = std::min(wx1 - wx0, wy1 - wy0)
+                                   * CameraAnnotations::kWinOverlayTickFrac;
+                const float t = CameraAnnotations::kWinOverlayTickThick;
+                AnnotationHelpers::addLine(msg, stamp, AnnotationHelpers::pt(wx0, wy0 + tick), AnnotationHelpers::pt(wx0, wy0), win_color, t);
+                AnnotationHelpers::addLine(msg, stamp, AnnotationHelpers::pt(wx0, wy0), AnnotationHelpers::pt(wx0 + tick, wy0), win_color, t);
+                AnnotationHelpers::addLine(msg, stamp, AnnotationHelpers::pt(wx1 - tick, wy0), AnnotationHelpers::pt(wx1, wy0), win_color, t);
+                AnnotationHelpers::addLine(msg, stamp, AnnotationHelpers::pt(wx1, wy0), AnnotationHelpers::pt(wx1, wy0 + tick), win_color, t);
+                AnnotationHelpers::addLine(msg, stamp, AnnotationHelpers::pt(wx1, wy1 - tick), AnnotationHelpers::pt(wx1, wy1), win_color, t);
+                AnnotationHelpers::addLine(msg, stamp, AnnotationHelpers::pt(wx1, wy1), AnnotationHelpers::pt(wx1 - tick, wy1), win_color, t);
+                AnnotationHelpers::addLine(msg, stamp, AnnotationHelpers::pt(wx0 + tick, wy1), AnnotationHelpers::pt(wx0, wy1), win_color, t);
+                AnnotationHelpers::addLine(msg, stamp, AnnotationHelpers::pt(wx0, wy1), AnnotationHelpers::pt(wx0, wy1 - tick), win_color, t);
+            }
+
+            // Unit ID label (top-left of crop box)
+            {
+                const std::string unit_id = j < sp.ids.size() ? sp.ids[j] : "?";
+                FoxTextAnnotationMsg label;
+                label.timestamp = stamp;
+                label.position.x = wx0 + 3.0f;
+                label.position.y = wy0 - CameraAnnotations::kWinOverlayIdFontSz;
+                label.text = unit_id;
+                label.font_size = CameraAnnotations::kWinOverlayIdFontSz;
+                label.text_color = win_color;
+                label.background_color = AnnotationHelpers::makeColor(
+                    CameraAnnotations::kBgR, CameraAnnotations::kBgG,
+                    CameraAnnotations::kBgB, CameraAnnotations::kBgA);
+                msg.texts.push_back(label);
+            }
+        }
+    }
+
     // ── Corner brackets (L-shape at each image corner) ────────────────────
     if (CameraAnnotations::kShowBrackets)
     {
@@ -271,10 +355,11 @@ void AgentAnnotations::publishWindowAnnotations(size_t idx, int view_w, int view
     const auto& crop = sp.crops[idx];
     FoxImageAnnotationsMsg msg;
 
-    const float x0   = static_cast<float>(crop.x);
-    const float y0   = static_cast<float>(crop.y);
-    const float x1   = static_cast<float>(crop.x + crop.w);
-    const float y1   = static_cast<float>(crop.y + crop.h);
+    // The window view IS the extracted crop — coordinates are in display space (0,0)→(view_w,view_h)
+    const float x0   = 0.0f;
+    const float y0   = 0.0f;
+    const float x1   = static_cast<float>(view_w);
+    const float y1   = static_cast<float>(view_h);
     const float zoom = idx < sp.zoom_factors.size() ? sp.zoom_factors[idx] : 1.0f;
     const bool  oob  = crop.is_out_of_bounds;
 
@@ -286,6 +371,21 @@ void AgentAnnotations::publishWindowAnnotations(size_t idx, int view_w, int view
         : AnnotationHelpers::makeColor(WindowAnnotations::kTextR,   WindowAnnotations::kTextG,   WindowAnnotations::kTextB,   WindowAnnotations::kTextA);
     const FoxColorMsg tick_color = AnnotationHelpers::makeColor(WindowAnnotations::kTickR, WindowAnnotations::kTickG, WindowAnnotations::kTickB, WindowAnnotations::kTickA);
     const FoxColorMsg bg         = AnnotationHelpers::makeColor(WindowAnnotations::kBgR,   WindowAnnotations::kBgG,   WindowAnnotations::kBgB,   WindowAnnotations::kBgA);
+
+    // ── Role / unit ID badge (top-left of the window view) ───────────────
+    if (WindowAnnotations::kShowBadge)
+    {
+        const std::string unit_id = idx < sp.ids.size() ? sp.ids[idx] : "?";
+        FoxTextAnnotationMsg badge;
+        badge.timestamp = stamp;
+        badge.position.x = WindowAnnotations::kBadgeMarginX;
+        badge.position.y = WindowAnnotations::kBadgeMarginY;
+        badge.text = "WINDOW  " + unit_id + (oob ? "  [OOB]" : "");
+        badge.font_size = WindowAnnotations::kBadgeFontSize;
+        badge.text_color = text_color;
+        badge.background_color = bg;
+        msg.texts.push_back(badge);
+    }
 
     // ── Bounding box (LINE_LOOP) ───────────────────────────────────────────
     {
@@ -316,21 +416,7 @@ void AgentAnnotations::publishWindowAnnotations(size_t idx, int view_w, int view
         AnnotationHelpers::addLine(msg, stamp, AnnotationHelpers::pt(x0, y1),        AnnotationHelpers::pt(x0, y1 - tick), tick_color, t);
     }
 
-    // ── Unit ID label (above box top edge) ────────────────────────────────
-    {
-        const std::string unit_id = idx < sp.ids.size() ? sp.ids[idx] : "?";
-        FoxTextAnnotationMsg id_text;
-        id_text.timestamp = stamp;
-        id_text.position.x = x0 + 3.0f;
-        id_text.position.y = y0 - WindowAnnotations::kIdOffsetY;
-        id_text.text = unit_id + (oob ? "  [OOB]" : "");
-        id_text.font_size = WindowAnnotations::kIdFontSize;
-        id_text.text_color = text_color;
-        id_text.background_color = bg;
-        msg.texts.push_back(id_text);
-    }
-
-    // ── Info text (crop size + zoom, below box bottom edge) ───────────────
+    // ── Info text (crop size + zoom, bottom-left of view) ────────────────
     {
         std::ostringstream oss;
         oss << crop.w << "x" << crop.h
@@ -339,7 +425,7 @@ void AgentAnnotations::publishWindowAnnotations(size_t idx, int view_w, int view
         FoxTextAnnotationMsg info;
         info.timestamp = stamp;
         info.position.x = x0 + 3.0f;
-        info.position.y = y1 + WindowAnnotations::kInfoOffsetY + WindowAnnotations::kInfoFontSize;
+        info.position.y = y1 - WindowAnnotations::kInfoOffsetY;
         info.text = oss.str();
         info.font_size = WindowAnnotations::kInfoFontSize;
         info.text_color = text_color;
@@ -351,7 +437,7 @@ void AgentAnnotations::publishWindowAnnotations(size_t idx, int view_w, int view
     if (WindowAnnotations::kShowZoomBar)
     {
         const float bx    = x0;
-        const float by    = y1 + WindowAnnotations::kZoomBarMarginY;
+        const float by    = y1 - WindowAnnotations::kZoomBarMarginY;
         const float maxW  = x1 - x0;
         const float fill  = std::min(1.0f, zoom / WindowAnnotations::kZoomMax) * maxW;
         // Background track
