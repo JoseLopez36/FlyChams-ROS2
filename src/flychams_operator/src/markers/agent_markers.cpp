@@ -1,13 +1,8 @@
 #include "flychams_operator/markers/agent_markers.hpp"
 
-#include <cmath>
-
 using namespace flychams::common;
 
 using namespace flychams::operator_pkg;
-
-namespace AP = AgentParameters;
-namespace MH = MarkerHelpers;
 
 // ════════════════════════════════════════════════════════════════════════════
 // INIT / SHUTDOWN
@@ -82,23 +77,23 @@ void AgentMarkers::update()
     FoxColorMsg rotor_color;
     if (agent_.has_status && agent_.status == 1) // ACTIVE
     {
-        body_color  = MH::makeColor(AP::kActBodyR,  AP::kActBodyG,  AP::kActBodyB,  AP::kActBodyA);
-        rotor_color = MH::makeColor(AP::kActRotorR, AP::kActRotorG, AP::kActRotorB, AP::kRotorAlpha);
+        body_color  = MarkerHelpers::makeColor(AgentParameters::kActBodyR,  AgentParameters::kActBodyG,  AgentParameters::kActBodyB,  AgentParameters::kActBodyA);
+        rotor_color = MarkerHelpers::makeColor(AgentParameters::kActRotorR, AgentParameters::kActRotorG, AgentParameters::kActRotorB, AgentParameters::kRotorAlpha);
     }
     else if (agent_.has_status && agent_.status == 2) // ERROR
     {
-        body_color  = MH::makeColor(AP::kErrBodyR,  AP::kErrBodyG,  AP::kErrBodyB,  AP::kErrBodyA);
-        rotor_color = MH::makeColor(AP::kErrRotorR, AP::kErrRotorG, AP::kErrRotorB, AP::kRotorAlpha);
+        body_color  = MarkerHelpers::makeColor(AgentParameters::kErrBodyR,  AgentParameters::kErrBodyG,  AgentParameters::kErrBodyB,  AgentParameters::kErrBodyA);
+        rotor_color = MarkerHelpers::makeColor(AgentParameters::kErrRotorR, AgentParameters::kErrRotorG, AgentParameters::kErrRotorB, AgentParameters::kRotorAlpha);
     }
     else // IDLE
     {
-        body_color  = MH::makeColor(AP::kIdleBodyR,  AP::kIdleBodyG,  AP::kIdleBodyB,  AP::kIdleBodyA);
-        rotor_color = MH::makeColor(AP::kIdleRotorR, AP::kIdleRotorG, AP::kIdleRotorB, AP::kRotorAlpha);
+        body_color  = MarkerHelpers::makeColor(AgentParameters::kIdleBodyR,  AgentParameters::kIdleBodyG,  AgentParameters::kIdleBodyB,  AgentParameters::kIdleBodyA);
+        rotor_color = MarkerHelpers::makeColor(AgentParameters::kIdleRotorR, AgentParameters::kIdleRotorG, AgentParameters::kIdleRotorB, AgentParameters::kRotorAlpha);
     }
 
     // ── Build entity ───────────────────────────────────────────────────────
     FoxSceneEntityMsg entity;
-    MH::stampEntity(entity, stamp, lifetime);
+    MarkerHelpers::stampEntity(entity, stamp, lifetime);
     entity.frame_id = frame;
     entity.id = agent_id_;
 
@@ -118,9 +113,9 @@ void AgentMarkers::update()
         FoxCylinderPrimitiveMsg body;
         body.pose.position = pos;
         body.pose.orientation.w = 1.0;
-        body.size.x = AP::kBodyDiamXY;
-        body.size.y = AP::kBodyDiamXY;
-        body.size.z = AP::kBodyDiamZ;
+        body.size.x = AgentParameters::kBodyDiamXY;
+        body.size.y = AgentParameters::kBodyDiamXY;
+        body.size.z = AgentParameters::kBodyDiamZ;
         body.color = body_color;
         body.top_scale = 1.0f;
         body.bottom_scale = 1.0f;
@@ -133,11 +128,11 @@ void AgentMarkers::update()
     for (double angle : arm_angles)
     {
         // Midpoint of the arm (centre → rotor tip)
-        const double half = AP::kArmLength * 0.5;
+        const double half = AgentParameters::kArmLength * 0.5;
         const double cx = half * std::cos(angle);
         const double cy = half * std::sin(angle);
-        const double rx = AP::kArmLength * std::cos(angle);
-        const double ry = AP::kArmLength * std::sin(angle);
+        const double rx = AgentParameters::kArmLength * std::cos(angle);
+        const double ry = AgentParameters::kArmLength * std::sin(angle);
 
         // Quaternion rotating +Z onto arm direction
         const double qx = -std::sin(angle) * kSin45;
@@ -152,9 +147,9 @@ void AgentMarkers::update()
         arm.pose.orientation.y = qy;
         arm.pose.orientation.z = 0.0;
         arm.pose.orientation.w = kSin45;
-        arm.size.x = AP::kArmDiam;
-        arm.size.y = AP::kArmDiam;
-        arm.size.z = AP::kArmLength;
+        arm.size.x = AgentParameters::kArmDiam;
+        arm.size.y = AgentParameters::kArmDiam;
+        arm.size.z = AgentParameters::kArmLength;
         arm.color = rotor_color;
         arm.top_scale = 1.0f;
         arm.bottom_scale = 1.0f;
@@ -166,9 +161,9 @@ void AgentMarkers::update()
         rotor.pose.position.y = pos.y + ry;
         rotor.pose.position.z = pos.z;
         rotor.pose.orientation.w = 1.0;
-        rotor.size.x = AP::kRotorDiam;
-        rotor.size.y = AP::kRotorDiam;
-        rotor.size.z = AP::kRotorThickness;
+        rotor.size.x = AgentParameters::kRotorDiam;
+        rotor.size.y = AgentParameters::kRotorDiam;
+        rotor.size.z = AgentParameters::kRotorThickness;
         rotor.color = rotor_color;
         rotor.top_scale = 1.0f;
         rotor.bottom_scale = 1.0f;
@@ -176,31 +171,31 @@ void AgentMarkers::update()
     }
 
     // ── 3. Heading arrow ───────────────────────────
-    if (AP::kShowArrow)
+    if (AgentParameters::kShowArrow)
     {
         FoxArrowPrimitiveMsg arrow;
         arrow.pose.position = pos;
         // Default arrow primitive points along +X — no rotation needed
         arrow.pose.orientation.w = 1.0;
-        arrow.shaft_length   = AP::kArrowShaftLen;
-        arrow.shaft_diameter = AP::kArrowShaftDiam;
-        arrow.head_length    = AP::kArrowHeadLen;
-        arrow.head_diameter  = AP::kArrowHeadDiam;
+        arrow.shaft_length   = AgentParameters::kArrowShaftLen;
+        arrow.shaft_diameter = AgentParameters::kArrowShaftDiam;
+        arrow.head_length    = AgentParameters::kArrowHeadLen;
+        arrow.head_diameter  = AgentParameters::kArrowHeadDiam;
         arrow.color = body_color;
         entity.arrows.push_back(arrow);
     }
 
     // ── 4. Text label ─────────────────────────────────────────────────────
-    if (AP::kDisplayText)
+    if (AgentParameters::kDisplayText)
     {
         FoxTextPrimitiveMsg text;
         text.pose.position = pos;
-        text.pose.position.z += AP::kLabelZOffset;
+        text.pose.position.z += AgentParameters::kLabelZOffset;
         text.pose.orientation.w = 1.0;
         text.billboard = true;
-        text.font_size = AP::kFontSize;
+        text.font_size = AgentParameters::kFontSize;
         text.scale_invariant = false;
-        text.color = MH::white();
+        text.color = MarkerHelpers::white();
         text.text = agent_id_ + "\nh=" + oss.str() + " m";
         entity.texts.push_back(text);
     }

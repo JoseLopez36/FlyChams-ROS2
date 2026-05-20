@@ -1,5 +1,8 @@
 #pragma once
 
+// Utils include
+#include "flychams_operator/annotations/annotation_utils.hpp"
+
 // Base module include
 #include "flychams_common/base/base_module.hpp"
 
