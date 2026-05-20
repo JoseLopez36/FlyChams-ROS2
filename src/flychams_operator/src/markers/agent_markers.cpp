@@ -1,8 +1,13 @@
 #include "flychams_operator/markers/agent_markers.hpp"
 
+#include <cmath>
+
 using namespace flychams::common;
 
 using namespace flychams::operator_pkg;
+
+namespace AP = AgentParameters;
+namespace MH = MarkerHelpers;
 
 // ════════════════════════════════════════════════════════════════════════════
 // INIT / SHUTDOWN
@@ -72,25 +77,28 @@ void AgentMarkers::update()
     const auto stamp = node_->now().nanoseconds();
     const auto lifetime = rclcpp::Duration::from_seconds(2.0 / update_rate_);
 
-    // ── Determine status color ─────────────────────────────────────────────
-    // IDLE=0 → amber, ACTIVE=1 → cyan, ERROR=2 → red
+    // ── Status colors: IDLE, ACTIVE, ERROR ─────────────────
     FoxColorMsg body_color;
+    FoxColorMsg rotor_color;
     if (agent_.has_status && agent_.status == 1) // ACTIVE
     {
-        body_color = MarkerHelpers::makeColor(AgentParameters::kActBodyR, AgentParameters::kActBodyG, AgentParameters::kActBodyB, AgentParameters::kActBodyA);
+        body_color  = MH::makeColor(AP::kActBodyR,  AP::kActBodyG,  AP::kActBodyB,  AP::kActBodyA);
+        rotor_color = MH::makeColor(AP::kActRotorR, AP::kActRotorG, AP::kActRotorB, AP::kRotorAlpha);
     }
     else if (agent_.has_status && agent_.status == 2) // ERROR
     {
-        body_color = MarkerHelpers::makeColor(AgentParameters::kErrBodyR, AgentParameters::kErrBodyG, AgentParameters::kErrBodyB, AgentParameters::kErrBodyA);
+        body_color  = MH::makeColor(AP::kErrBodyR,  AP::kErrBodyG,  AP::kErrBodyB,  AP::kErrBodyA);
+        rotor_color = MH::makeColor(AP::kErrRotorR, AP::kErrRotorG, AP::kErrRotorB, AP::kRotorAlpha);
     }
     else // IDLE
     {
-        body_color = MarkerHelpers::makeColor(AgentParameters::kIdleBodyR, AgentParameters::kIdleBodyG, AgentParameters::kIdleBodyB, AgentParameters::kIdleBodyA);
+        body_color  = MH::makeColor(AP::kIdleBodyR,  AP::kIdleBodyG,  AP::kIdleBodyB,  AP::kIdleBodyA);
+        rotor_color = MH::makeColor(AP::kIdleRotorR, AP::kIdleRotorG, AP::kIdleRotorB, AP::kRotorAlpha);
     }
 
     // ── Build entity ───────────────────────────────────────────────────────
     FoxSceneEntityMsg entity;
-    MarkerHelpers::stampEntity(entity, stamp, lifetime);
+    MH::stampEntity(entity, stamp, lifetime);
     entity.frame_id = frame;
     entity.id = agent_id_;
 
@@ -105,29 +113,94 @@ void AgentMarkers::update()
     kv_alt.value = oss.str();
     entity.metadata = {kv_status, kv_alt};
 
-    // ── 1. Solid body sphere ───────────────────
+    // ── 1. Central fuselage disc ───────────────────────────────────────────
     {
-        FoxSpherePrimitiveMsg sphere;
-        sphere.pose.position = pos;
-        sphere.pose.orientation.w = 1.0;
-        sphere.size.x = AgentParameters::kBodyDiamXY;
-        sphere.size.y = AgentParameters::kBodyDiamXY;
-        sphere.size.z = AgentParameters::kBodyDiamZ;
-        sphere.color = body_color;
-        entity.spheres.push_back(sphere);
+        FoxCylinderPrimitiveMsg body;
+        body.pose.position = pos;
+        body.pose.orientation.w = 1.0;
+        body.size.x = AP::kBodyDiamXY;
+        body.size.y = AP::kBodyDiamXY;
+        body.size.z = AP::kBodyDiamZ;
+        body.color = body_color;
+        body.top_scale = 1.0f;
+        body.bottom_scale = 1.0f;
+        entity.cylinders.push_back(body);
     }
 
-    // ── 2. Text label ─────────────────────────────────────
-    if (AgentParameters::kDisplayText)
+    // ── 2. Motor arms + rotor discs ─────
+    constexpr double kSin45 = 0.7071067811865476;
+    constexpr double arm_angles[4] = { M_PI * 0.25, M_PI * 0.75, M_PI * 1.25, M_PI * 1.75 };
+    for (double angle : arm_angles)
+    {
+        // Midpoint of the arm (centre → rotor tip)
+        const double half = AP::kArmLength * 0.5;
+        const double cx = half * std::cos(angle);
+        const double cy = half * std::sin(angle);
+        const double rx = AP::kArmLength * std::cos(angle);
+        const double ry = AP::kArmLength * std::sin(angle);
+
+        // Quaternion rotating +Z onto arm direction
+        const double qx = -std::sin(angle) * kSin45;
+        const double qy =  std::cos(angle) * kSin45;
+
+        // Arm cylinder: spans from fuselage centre to rotor mount
+        FoxCylinderPrimitiveMsg arm;
+        arm.pose.position.x = pos.x + cx;
+        arm.pose.position.y = pos.y + cy;
+        arm.pose.position.z = pos.z;
+        arm.pose.orientation.x = qx;
+        arm.pose.orientation.y = qy;
+        arm.pose.orientation.z = 0.0;
+        arm.pose.orientation.w = kSin45;
+        arm.size.x = AP::kArmDiam;
+        arm.size.y = AP::kArmDiam;
+        arm.size.z = AP::kArmLength;
+        arm.color = rotor_color;
+        arm.top_scale = 1.0f;
+        arm.bottom_scale = 1.0f;
+        entity.cylinders.push_back(arm);
+
+        // Rotor disc: large, flat, semi-transparent cylinder at arm tip
+        FoxCylinderPrimitiveMsg rotor;
+        rotor.pose.position.x = pos.x + rx;
+        rotor.pose.position.y = pos.y + ry;
+        rotor.pose.position.z = pos.z;
+        rotor.pose.orientation.w = 1.0;
+        rotor.size.x = AP::kRotorDiam;
+        rotor.size.y = AP::kRotorDiam;
+        rotor.size.z = AP::kRotorThickness;
+        rotor.color = rotor_color;
+        rotor.top_scale = 1.0f;
+        rotor.bottom_scale = 1.0f;
+        entity.cylinders.push_back(rotor);
+    }
+
+    // ── 3. Heading arrow ───────────────────────────
+    if (AP::kShowArrow)
+    {
+        FoxArrowPrimitiveMsg arrow;
+        arrow.pose.position = pos;
+        // Default arrow primitive points along +X — no rotation needed
+        arrow.pose.orientation.w = 1.0;
+        arrow.shaft_length   = AP::kArrowShaftLen;
+        arrow.shaft_diameter = AP::kArrowShaftDiam;
+        arrow.head_length    = AP::kArrowHeadLen;
+        arrow.head_diameter  = AP::kArrowHeadDiam;
+        arrow.color = body_color;
+        entity.arrows.push_back(arrow);
+    }
+
+    // ── 4. Text label ─────────────────────────────────────────────────────
+    if (AP::kDisplayText)
     {
         FoxTextPrimitiveMsg text;
         text.pose.position = pos;
-        text.pose.position.z += AgentParameters::kLabelZOffset;
+        text.pose.position.z += AP::kLabelZOffset;
         text.pose.orientation.w = 1.0;
         text.billboard = true;
-        text.font_size = AgentParameters::kFontSize;
+        text.font_size = AP::kFontSize;
         text.scale_invariant = false;
-        text.color = MarkerHelpers::white();
+        text.color = MH::white();
         text.text = agent_id_ + "\nh=" + oss.str() + " m";
         entity.texts.push_back(text);
     }

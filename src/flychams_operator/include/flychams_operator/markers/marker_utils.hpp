@@ -10,21 +10,36 @@ namespace flychams::operator_pkg
     // ════════════════════════════════════════════════════════════════════════════
     namespace AgentParameters
     {
-        // Body sphere diameter (m)
-        constexpr double kBodyDiamXY   = 4.0;
-        constexpr double kBodyDiamZ    = 1.0;
+        // Central body disc
+        constexpr double kBodyDiamXY       = 2.5;
+        constexpr double kBodyDiamZ        = 0.5;
+        // Motor arms
+        constexpr double kArmLength        = 3.5;
+        constexpr double kArmDiam          = 0.35;
+        // Rotor discs
+        constexpr double kRotorDiam        = 2.0;
+        constexpr double kRotorThickness   = 0.12;
+        constexpr float  kRotorAlpha       = 0.50f;
+        // Heading arrow
+        constexpr bool   kShowArrow        = true;
+        constexpr double kArrowShaftLen    = 3.0;
+        constexpr double kArrowShaftDiam   = 0.20;
+        constexpr double kArrowHeadLen     = 0.80;
+        constexpr double kArrowHeadDiam    = 0.55;
         // Text label
         constexpr bool   kDisplayText      = true;
         constexpr float  kFontSize         = 1.5f;
-        constexpr double kLabelZOffset     = 4.5;
-
-        // Status colors ─────────────────────────────────────────────────────────
-        // IDLE  : warm amber
+        constexpr double kLabelZOffset     = 5.5;
+        // Status colors
+        // IDLE
         constexpr float kIdleBodyR = 1.00f, kIdleBodyG = 0.78f, kIdleBodyB = 0.00f, kIdleBodyA = 0.9f;
-        // ACTIVE: vivid cyan
+        constexpr float kIdleRotorR = 1.00f, kIdleRotorG = 0.65f, kIdleRotorB = 0.00f;
+        // ACTIVE
         constexpr float kActBodyR  = 0.00f, kActBodyG  = 0.85f, kActBodyB  = 1.00f, kActBodyA  = 0.9f;
-        // ERROR : vivid red
+        constexpr float kActRotorR = 0.00f, kActRotorG = 0.55f, kActRotorB = 1.00f;
+        // ERROR
         constexpr float kErrBodyR  = 1.00f, kErrBodyG  = 0.15f, kErrBodyB  = 0.10f, kErrBodyA  = 0.9f;
+        constexpr float kErrRotorR = 1.00f, kErrRotorG = 0.10f, kErrRotorB = 1.00f;
     }
 
     // ════════════════════════════════════════════════════════════════════════════
@@ -42,7 +57,7 @@ namespace flychams::operator_pkg
         constexpr bool   kDisplayText          = true;
         constexpr float  kFontSize             = 2.0f;
         constexpr double kLabelZExtraOffset    = 1.5;
-        // Base color: vivid green
+        // Base color
         constexpr float kR = 0.18f, kG = 1.00f, kB = 0.45f;
         constexpr int   kRingSegments          = 64;
     }
