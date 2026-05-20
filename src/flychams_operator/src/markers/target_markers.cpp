@@ -1,8 +1,5 @@
 #include "flychams_operator/markers/target_markers.hpp"
 
-#include <sstream>
-#include <iomanip>
-
 using namespace flychams::common;
 
 using namespace flychams::operator_pkg;
@@ -65,23 +62,16 @@ void TargetMarkers::update()
     const auto stamp = node_->now().nanoseconds();
     const auto lifetime = rclcpp::Duration::from_seconds(2.0 / update_rate_);
 
-    // Target colors: warm red body, soft coral glow
-    FoxColorMsg body_color;
-    body_color.r = 1.0f; body_color.g = 0.22f; body_color.b = 0.18f; body_color.a = 1.0f;
-    FoxColorMsg glow_color;
-    glow_color.r = 1.0f; glow_color.g = 0.30f; glow_color.b = 0.10f; glow_color.a = 0.16f;
-    FoxColorMsg ring_color;
-    ring_color.r = 1.0f; ring_color.g = 0.55f; ring_color.b = 0.0f;  ring_color.a = 0.80f;
+    // Target colors (see TargetParams)
+    const FoxColorMsg body_color = MarkerHelpers::makeColor(TargetParameters::kBodyR, TargetParameters::kBodyG, TargetParameters::kBodyB, TargetParameters::kBodyA);
+    const FoxColorMsg glow_color = MarkerHelpers::makeColor(TargetParameters::kGlowR, TargetParameters::kGlowG, TargetParameters::kGlowB, TargetParameters::kGlowA);
+    const FoxColorMsg ring_color = MarkerHelpers::makeColor(TargetParameters::kRingR, TargetParameters::kRingG, TargetParameters::kRingB, TargetParameters::kRingA);
 
     // ── Build entity ───────────────────────────────────────────────────────
     FoxSceneEntityMsg entity;
-    entity.timestamp.nanosec = static_cast<uint32_t>(stamp % 1000000000ULL);
-    entity.timestamp.sec     = static_cast<int32_t>(stamp / 1000000000ULL);
+    MarkerHelpers::stampEntity(entity, stamp, lifetime);
     entity.frame_id = frame;
     entity.id = target_id_;
-    entity.lifetime.sec = static_cast<int32_t>(lifetime.seconds());
-    entity.lifetime.nanosec = static_cast<uint32_t>(lifetime.nanoseconds() % 1000000000LL);
-    entity.frame_locked = false;
 
     std::ostringstream oss;
     oss << std::fixed << std::setprecision(1) << pos.z;
@@ -94,11 +84,11 @@ void TargetMarkers::update()
     {
         FoxCylinderPrimitiveMsg body;
         body.pose.position = pos;
-        body.pose.position.z += 0.9;
+        body.pose.position.z += TargetParameters::kBodyZOffset;
         body.pose.orientation.w = 1.0;
-        body.size.x = 0.5;
-        body.size.y = 0.5;
-        body.size.z = 1.8;
+        body.size.x = TargetParameters::kBodyDiamXY;
+        body.size.y = TargetParameters::kBodyDiamXY;
+        body.size.z = TargetParameters::kBodyHeight;
         body.color = body_color;
         body.top_scale = 1.0f;
         body.bottom_scale = 1.0f;
@@ -109,11 +99,11 @@ void TargetMarkers::update()
     {
         FoxCylinderPrimitiveMsg glow;
         glow.pose.position = pos;
-        glow.pose.position.z += 0.9;
+        glow.pose.position.z += TargetParameters::kGlowZOffset;
         glow.pose.orientation.w = 1.0;
-        glow.size.x = 1.4;
-        glow.size.y = 1.4;
-        glow.size.z = 2.4;
+        glow.size.x = TargetParameters::kGlowDiamXY;
+        glow.size.y = TargetParameters::kGlowDiamXY;
+        glow.size.z = TargetParameters::kGlowHeight;
         glow.color = glow_color;
         glow.top_scale = 1.0f;
         glow.bottom_scale = 1.0f;
@@ -126,16 +116,14 @@ void TargetMarkers::update()
         ring.type = FoxLinePrimitiveMsg::LINE_LOOP;
         ring.pose.position = pos;
         ring.pose.orientation.w = 1.0;
-        ring.thickness = 0.06f;
+        ring.thickness = TargetParameters::kRingThickness;
         ring.color = ring_color;
-        constexpr int N = 32;
-        constexpr double R = 1.0;
-        for (int i = 0; i < N; ++i)
+        for (int i = 0; i < TargetParameters::kRingSegments; ++i)
         {
-            const double angle = 2.0 * M_PI * i / N;
+            const double angle = 2.0 * M_PI * i / TargetParameters::kRingSegments;
             PointMsg p;
-            p.x = R * std::cos(angle);
-            p.y = R * std::sin(angle);
+            p.x = TargetParameters::kRingRadius * std::cos(angle);
+            p.y = TargetParameters::kRingRadius * std::sin(angle);
             p.z = 0.02;
             ring.points.push_back(p);
         }
@@ -146,14 +134,12 @@ void TargetMarkers::update()
     {
         FoxTextPrimitiveMsg text;
         text.pose.position = pos;
-        text.pose.position.z += 2.4;
+        text.pose.position.z += TargetParameters::kLabelZOffset;
         text.pose.orientation.w = 1.0;
         text.billboard = true;
-        text.font_size = 0.50f;
+        text.font_size = TargetParameters::kFontSize;
         text.scale_invariant = false;
-        FoxColorMsg white;
-        white.r = 1.0f; white.g = 1.0f; white.b = 1.0f; white.a = 0.95f;
-        text.color = white;
+        text.color = MarkerHelpers::white();
         text.text = target_id_;
         entity.texts.push_back(text);
     }

@@ -1,5 +1,8 @@
 #pragma once
 
+// Utils include
+#include "flychams_operator/markers/marker_utils.hpp"
+
 // Base module include
 #include "flychams_common/base/base_module.hpp"
 

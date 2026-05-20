@@ -1,9 +1,5 @@
 #include "flychams_operator/markers/agent_markers.hpp"
 
-#include <cmath>
-#include <sstream>
-#include <iomanip>
-
 using namespace flychams::common;
 
 using namespace flychams::operator_pkg;
@@ -77,34 +73,30 @@ void AgentMarkers::update()
     const auto lifetime = rclcpp::Duration::from_seconds(2.0 / update_rate_);
 
     // ── Determine status color ─────────────────────────────────────────────
-    // IDLE=0 → yellow-amber, ACTIVE=1 → bright cyan, ERROR=2 → red
+    // IDLE=0 → amber, ACTIVE=1 → cyan, ERROR=2 → red  (see AgentParams)
     FoxColorMsg body_color;
     FoxColorMsg glow_color;
     if (agent_.has_status && agent_.status == 1 /* ACTIVE */)
     {
-        body_color.r = 0.0f; body_color.g = 0.85f; body_color.b = 1.0f; body_color.a = 1.0f;
-        glow_color.r = 0.0f; glow_color.g = 0.65f; glow_color.b = 1.0f; glow_color.a = 0.18f;
+        body_color = MarkerHelpers::makeColor(AgentParameters::kActBodyR, AgentParameters::kActBodyG, AgentParameters::kActBodyB, AgentParameters::kActBodyA);
+        glow_color = MarkerHelpers::makeColor(AgentParameters::kActGlowR, AgentParameters::kActGlowG, AgentParameters::kActGlowB, AgentParameters::kActGlowA);
     }
     else if (agent_.has_status && agent_.status == 2 /* ERROR */)
     {
-        body_color.r = 1.0f; body_color.g = 0.15f; body_color.b = 0.1f; body_color.a = 1.0f;
-        glow_color.r = 1.0f; glow_color.g = 0.1f;  glow_color.b = 0.0f; glow_color.a = 0.22f;
+        body_color = MarkerHelpers::makeColor(AgentParameters::kErrBodyR, AgentParameters::kErrBodyG, AgentParameters::kErrBodyB, AgentParameters::kErrBodyA);
+        glow_color = MarkerHelpers::makeColor(AgentParameters::kErrGlowR, AgentParameters::kErrGlowG, AgentParameters::kErrGlowB, AgentParameters::kErrGlowA);
     }
     else // IDLE
     {
-        body_color.r = 1.0f; body_color.g = 0.78f; body_color.b = 0.0f; body_color.a = 1.0f;
-        glow_color.r = 1.0f; glow_color.g = 0.65f; glow_color.b = 0.0f; glow_color.a = 0.14f;
+        body_color = MarkerHelpers::makeColor(AgentParameters::kIdleBodyR, AgentParameters::kIdleBodyG, AgentParameters::kIdleBodyB, AgentParameters::kIdleBodyA);
+        glow_color = MarkerHelpers::makeColor(AgentParameters::kIdleGlowR, AgentParameters::kIdleGlowG, AgentParameters::kIdleGlowB, AgentParameters::kIdleGlowA);
     }
 
     // ── Build entity ───────────────────────────────────────────────────────
     FoxSceneEntityMsg entity;
-    entity.timestamp.nanosec = static_cast<uint32_t>(stamp % 1000000000ULL);
-    entity.timestamp.sec     = static_cast<int32_t>(stamp / 1000000000ULL);
+    MarkerHelpers::stampEntity(entity, stamp, lifetime);
     entity.frame_id = frame;
     entity.id = agent_id_;
-    entity.lifetime.sec = static_cast<int32_t>(lifetime.seconds());
-    entity.lifetime.nanosec = static_cast<uint32_t>(lifetime.nanoseconds() % 1000000000LL);
-    entity.frame_locked = false;
 
     // Metadata
     FoxKeyValuePairMsg kv_status;
@@ -117,14 +109,14 @@ void AgentMarkers::update()
     kv_alt.value = oss.str();
     entity.metadata = {kv_status, kv_alt};
 
-    // ── 1. Solid body sphere (1 m diameter, flattened UAV silhouette) ──────
+    // ── 1. Solid body sphere (flattened UAV silhouette) ───────────────────
     {
         FoxSpherePrimitiveMsg sphere;
         sphere.pose.position = pos;
         sphere.pose.orientation.w = 1.0;
-        sphere.size.x = 1.0;
-        sphere.size.y = 1.0;
-        sphere.size.z = 0.35;
+        sphere.size.x = AgentParameters::kBodyDiamXY;
+        sphere.size.y = AgentParameters::kBodyDiamXY;
+        sphere.size.z = AgentParameters::kBodyDiamZ;
         sphere.color = body_color;
         entity.spheres.push_back(sphere);
     }
@@ -134,9 +126,9 @@ void AgentMarkers::update()
         FoxSpherePrimitiveMsg glow;
         glow.pose.position = pos;
         glow.pose.orientation.w = 1.0;
-        glow.size.x = 2.0;
-        glow.size.y = 2.0;
-        glow.size.z = 0.9;
+        glow.size.x = AgentParameters::kGlowDiamXY;
+        glow.size.y = AgentParameters::kGlowDiamXY;
+        glow.size.z = AgentParameters::kGlowDiamZ;
         glow.color = glow_color;
         entity.spheres.push_back(glow);
     }
@@ -150,10 +142,10 @@ void AgentMarkers::update()
         arrow.pose.orientation.y = -0.7071068f;
         arrow.pose.orientation.z =  0.0;
         arrow.pose.orientation.w =  0.7071068f;
-        arrow.shaft_length = 1.5;
-        arrow.shaft_diameter = 0.10;
-        arrow.head_length = 0.35;
-        arrow.head_diameter = 0.28;
+        arrow.shaft_length   = AgentParameters::kArrowShaftLen;
+        arrow.shaft_diameter = AgentParameters::kArrowShaftDiam;
+        arrow.head_length    = AgentParameters::kArrowHeadLen;
+        arrow.head_diameter  = AgentParameters::kArrowHeadDiam;
         arrow.color = body_color;
         entity.arrows.push_back(arrow);
     }
@@ -162,14 +154,12 @@ void AgentMarkers::update()
     {
         FoxTextPrimitiveMsg text;
         text.pose.position = pos;
-        text.pose.position.z += 1.6;
+        text.pose.position.z += AgentParameters::kLabelZOffset;
         text.pose.orientation.w = 1.0;
         text.billboard = true;
-        text.font_size = 0.55f;
+        text.font_size = AgentParameters::kFontSize;
         text.scale_invariant = false;
-        FoxColorMsg white;
-        white.r = 1.0f; white.g = 1.0f; white.b = 1.0f; white.a = 0.95f;
-        text.color = white;
+        text.color = MarkerHelpers::white();
         text.text = agent_id_ + "\n" + oss.str() + " m";
         entity.texts.push_back(text);
     }

@@ -352,21 +352,31 @@
     "3D!scene": {
       "cameraState": {
         "perspective": true,
-        "distance": 400,
-        "phi": 20,
-        "thetaOffset": 60,
+        "distance": 150,
+        "phi": 30,
+        "thetaOffset": 45,
         "targetOffset": [0, 0, 0],
         "target": [0, 0, 0],
         "targetOrientation": [0, 0, 0, 1],
-        "fovy": 45,
+        "fovy": 60,
         "near": 0.5,
-        "far": 5000
+        "far": 10000
       },
       "followMode": "follow-none",
       "scene": {
-        "enableStats": false
+        "enableStats": false,
+        "backgroundColor": "#0a0e1a",
+        "labelScaleFactor": 1.0,
+        "ignoreColladaUpAxis": false,
+        "transforms": {
+          "enablePreloading": false
+        }
       },
-      "transforms": {},
+      "transforms": {
+        "world": {
+          "visible": true
+        }
+      },
       "topics": {
         "/flychams/operator/ELEMENT00/scene": { "visible": true },
         "/flychams/operator/ELEMENT01/scene": { "visible": true },
@@ -398,12 +408,12 @@
         "grid": {
           "visible": true,
           "drawBehind": true,
-          "instanceId": "flychams-grid-main",
+          "instanceId": "flychams",
           "layerId": "foxglove.Grid",
-          "size": 300,
-          "divisions": 30,
+          "size": 1000,
+          "divisions": 40,
           "lineWidth": 1,
-          "color": "#248eff",
+          "color": "#1e5fcf55",
           "position": [0, 0, 0],
           "rotation": [0, 0, 0]
         }
@@ -419,7 +429,9 @@
       },
       "synchronize": false,
       "imageMode": {},
-      "foxglovePanelTitle": "Situational Awareness"
+      "foxglovePanelTitle": "Situational Awareness",
+      "fixedFrame": "world",
+      "followTf": "world"
     },
     "Tab!mission": {
       "activeTabIdx": 0,

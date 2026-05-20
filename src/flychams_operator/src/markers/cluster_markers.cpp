@@ -1,9 +1,5 @@
 #include "flychams_operator/markers/cluster_markers.hpp"
 
-#include <cmath>
-#include <sstream>
-#include <iomanip>
-
 using namespace flychams::common;
 
 using namespace flychams::operator_pkg;
@@ -67,25 +63,17 @@ void ClusterMarkers::update()
     const auto stamp = node_->now().nanoseconds();
     const auto lifetime = rclcpp::Duration::from_seconds(2.0 / update_rate_);
 
-    // Cluster colors: vivid green
-    FoxColorMsg vol_color;
-    vol_color.r = 0.18f; vol_color.g = 1.0f; vol_color.b = 0.45f; vol_color.a = 0.10f;
-    FoxColorMsg ring_color;
-    ring_color.r = 0.18f; ring_color.g = 1.0f; ring_color.b = 0.45f; ring_color.a = 0.85f;
-    FoxColorMsg radius_color;
-    radius_color.r = 0.18f; radius_color.g = 0.80f; radius_color.b = 0.30f; radius_color.a = 0.60f;
-    FoxColorMsg label_color;
-    label_color.r = 0.3f; label_color.g = 1.0f; label_color.b = 0.55f; label_color.a = 0.95f;
+    // Cluster colors (see ClusterParams)
+    const FoxColorMsg vol_color    = MarkerHelpers::makeColor(ClusterParameters::kR, ClusterParameters::kG, ClusterParameters::kB, ClusterParameters::kVolumeAlpha);
+    const FoxColorMsg ring_color   = MarkerHelpers::makeColor(ClusterParameters::kR, ClusterParameters::kG, ClusterParameters::kB, ClusterParameters::kRingAlpha);
+    const FoxColorMsg radius_color = MarkerHelpers::makeColor(ClusterParameters::kR, ClusterParameters::kG * 0.8f, ClusterParameters::kB * 0.67f, ClusterParameters::kMeridianAlpha);
+    const FoxColorMsg label_color  = MarkerHelpers::makeColor(0.3f,  ClusterParameters::kG, 0.55f,  0.95f);
 
     // ── Build entity ───────────────────────────────────────────────────────
     FoxSceneEntityMsg entity;
-    entity.timestamp.nanosec = static_cast<uint32_t>(stamp % 1000000000ULL);
-    entity.timestamp.sec     = static_cast<int32_t>(stamp / 1000000000ULL);
+    MarkerHelpers::stampEntity(entity, stamp, lifetime);
     entity.frame_id = frame;
     entity.id = cluster_id_;
-    entity.lifetime.sec = static_cast<int32_t>(lifetime.seconds());
-    entity.lifetime.nanosec = static_cast<uint32_t>(lifetime.nanoseconds() % 1000000000LL);
-    entity.frame_locked = false;
 
     std::ostringstream oss;
     oss << std::fixed << std::setprecision(1) << r;
@@ -112,12 +100,11 @@ void ClusterMarkers::update()
         ring.type = FoxLinePrimitiveMsg::LINE_LOOP;
         ring.pose.position = c;
         ring.pose.orientation.w = 1.0;
-        ring.thickness = 0.12f;
+        ring.thickness = ClusterParameters::kEquatorialThickness;
         ring.color = ring_color;
-        constexpr int N = 48;
-        for (int i = 0; i < N; ++i)
+        for (int i = 0; i < ClusterParameters::kRingSegments; ++i)
         {
-            const double angle = 2.0 * M_PI * i / N;
+            const double angle = 2.0 * M_PI * i / ClusterParameters::kRingSegments;
             PointMsg p;
             p.x = r * std::cos(angle);
             p.y = r * std::sin(angle);
@@ -133,12 +120,11 @@ void ClusterMarkers::update()
         meridian.type = FoxLinePrimitiveMsg::LINE_LOOP;
         meridian.pose.position = c;
         meridian.pose.orientation.w = 1.0;
-        meridian.thickness = 0.06f;
+        meridian.thickness = ClusterParameters::kMeridianThickness;
         meridian.color = radius_color;
-        constexpr int N = 48;
-        for (int i = 0; i < N; ++i)
+        for (int i = 0; i < ClusterParameters::kRingSegments; ++i)
         {
-            const double angle = 2.0 * M_PI * i / N;
+            const double angle = 2.0 * M_PI * i / ClusterParameters::kRingSegments;
             PointMsg p;
             p.x = r * std::cos(angle);
             p.y = 0.0;
@@ -154,7 +140,7 @@ void ClusterMarkers::update()
         rad.type = FoxLinePrimitiveMsg::LINE_STRIP;
         rad.pose.position = c;
         rad.pose.orientation.w = 1.0;
-        rad.thickness = 0.08f;
+        rad.thickness = ClusterParameters::kRadiusThickness;
         rad.color = radius_color;
         PointMsg p0; p0.x = 0.0; p0.y = 0.0; p0.z = 0.0;
         PointMsg p1; p1.x = r;   p1.y = 0.0; p1.z = 0.0;
@@ -166,10 +152,10 @@ void ClusterMarkers::update()
     {
         FoxTextPrimitiveMsg text;
         text.pose.position = c;
-        text.pose.position.z += r + 0.6;
+        text.pose.position.z += r + ClusterParameters::kLabelZExtraOffset;
         text.pose.orientation.w = 1.0;
         text.billboard = true;
-        text.font_size = 0.55f;
+        text.font_size = ClusterParameters::kFontSize;
         text.scale_invariant = false;
         text.color = label_color;
         text.text = cluster_id_ + "\nr=" + oss.str() + " m";
