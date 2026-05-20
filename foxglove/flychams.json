@@ -369,7 +369,10 @@
         "labelScaleFactor": 1.0,
         "ignoreColladaUpAxis": false,
         "transforms": {
-          "enablePreloading": false
+          "enablePreloading": false,
+          "labelSize": 2,
+          "axisSize": 9,
+          "lineWidth": 0
         }
       },
       "transforms": {

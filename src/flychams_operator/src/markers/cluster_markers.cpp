@@ -63,10 +63,9 @@ void ClusterMarkers::update()
     const auto stamp = node_->now().nanoseconds();
     const auto lifetime = rclcpp::Duration::from_seconds(2.0 / update_rate_);
 
-    // Cluster colors (see ClusterParams)
+    // Cluster colors
     const FoxColorMsg vol_color    = MarkerHelpers::makeColor(ClusterParameters::kR, ClusterParameters::kG, ClusterParameters::kB, ClusterParameters::kVolumeAlpha);
     const FoxColorMsg ring_color   = MarkerHelpers::makeColor(ClusterParameters::kR, ClusterParameters::kG, ClusterParameters::kB, ClusterParameters::kRingAlpha);
-    const FoxColorMsg radius_color = MarkerHelpers::makeColor(ClusterParameters::kR, ClusterParameters::kG * 0.8f, ClusterParameters::kB * 0.67f, ClusterParameters::kMeridianAlpha);
     const FoxColorMsg label_color  = MarkerHelpers::makeColor(0.3f,  ClusterParameters::kG, 0.55f,  0.95f);
 
     // ── Build entity ───────────────────────────────────────────────────────
@@ -94,13 +93,13 @@ void ClusterMarkers::update()
         entity.spheres.push_back(vol);
     }
 
-    // ── 2. Equatorial ring (LINE_LOOP) ────────────────────────────────────
+    // ── 2. Equatorial ring ────────────────────────────────────
     {
         FoxLinePrimitiveMsg ring;
         ring.type = FoxLinePrimitiveMsg::LINE_LOOP;
         ring.pose.position = c;
         ring.pose.orientation.w = 1.0;
-        ring.thickness = ClusterParameters::kEquatorialThickness;
+        ring.thickness = ClusterParameters::kRingThickness;
         ring.color = ring_color;
         for (int i = 0; i < ClusterParameters::kRingSegments; ++i)
         {
@@ -114,41 +113,8 @@ void ClusterMarkers::update()
         entity.lines.push_back(ring);
     }
 
-    // ── 3. Vertical meridian ring ─────────────────────────────────────────
-    {
-        FoxLinePrimitiveMsg meridian;
-        meridian.type = FoxLinePrimitiveMsg::LINE_LOOP;
-        meridian.pose.position = c;
-        meridian.pose.orientation.w = 1.0;
-        meridian.thickness = ClusterParameters::kMeridianThickness;
-        meridian.color = radius_color;
-        for (int i = 0; i < ClusterParameters::kRingSegments; ++i)
-        {
-            const double angle = 2.0 * M_PI * i / ClusterParameters::kRingSegments;
-            PointMsg p;
-            p.x = r * std::cos(angle);
-            p.y = 0.0;
-            p.z = r * std::sin(angle);
-            meridian.points.push_back(p);
-        }
-        entity.lines.push_back(meridian);
-    }
-
-    // ── 4. Radius indicator line (center → equator) ───────────────────────
-    {
-        FoxLinePrimitiveMsg rad;
-        rad.type = FoxLinePrimitiveMsg::LINE_STRIP;
-        rad.pose.position = c;
-        rad.pose.orientation.w = 1.0;
-        rad.thickness = ClusterParameters::kRadiusThickness;
-        rad.color = radius_color;
-        PointMsg p0; p0.x = 0.0; p0.y = 0.0; p0.z = 0.0;
-        PointMsg p1; p1.x = r;   p1.y = 0.0; p1.z = 0.0;
-        rad.points = {p0, p1};
-        entity.lines.push_back(rad);
-    }
-
-    // ── 5. Text label (ID + radius) ───────────────────────────────────────
+    // ── 3. Text label ───────────────────────────────────────
+    if (ClusterParameters::kDisplayText)
     {
         FoxTextPrimitiveMsg text;
         text.pose.position = c;

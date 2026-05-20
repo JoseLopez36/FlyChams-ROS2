@@ -62,10 +62,9 @@ void TargetMarkers::update()
     const auto stamp = node_->now().nanoseconds();
     const auto lifetime = rclcpp::Duration::from_seconds(2.0 / update_rate_);
 
-    // Target colors (see TargetParams)
+    // Target colors
     const FoxColorMsg body_color = MarkerHelpers::makeColor(TargetParameters::kBodyR, TargetParameters::kBodyG, TargetParameters::kBodyB, TargetParameters::kBodyA);
     const FoxColorMsg glow_color = MarkerHelpers::makeColor(TargetParameters::kGlowR, TargetParameters::kGlowG, TargetParameters::kGlowB, TargetParameters::kGlowA);
-    const FoxColorMsg ring_color = MarkerHelpers::makeColor(TargetParameters::kRingR, TargetParameters::kRingG, TargetParameters::kRingB, TargetParameters::kRingA);
 
     // ── Build entity ───────────────────────────────────────────────────────
     FoxSceneEntityMsg entity;
@@ -80,7 +79,7 @@ void TargetMarkers::update()
     kv_alt.value = oss.str();
     entity.metadata = {kv_alt};
 
-    // ── 1. Human-shaped cylinder body ─────────────────────────────────────
+    // ── 1. Cylinder body ─────────────────────────────────────
     {
         FoxCylinderPrimitiveMsg body;
         body.pose.position = pos;
@@ -110,27 +109,8 @@ void TargetMarkers::update()
         entity.cylinders.push_back(glow);
     }
 
-    // ── 3. Ground-plane detection ring (LinePrimitive loop) ───────────────
-    {
-        FoxLinePrimitiveMsg ring;
-        ring.type = FoxLinePrimitiveMsg::LINE_LOOP;
-        ring.pose.position = pos;
-        ring.pose.orientation.w = 1.0;
-        ring.thickness = TargetParameters::kRingThickness;
-        ring.color = ring_color;
-        for (int i = 0; i < TargetParameters::kRingSegments; ++i)
-        {
-            const double angle = 2.0 * M_PI * i / TargetParameters::kRingSegments;
-            PointMsg p;
-            p.x = TargetParameters::kRingRadius * std::cos(angle);
-            p.y = TargetParameters::kRingRadius * std::sin(angle);
-            p.z = 0.02;
-            ring.points.push_back(p);
-        }
-        entity.lines.push_back(ring);
-    }
-
-    // ── 4. Text label (ID) ─────────────────────────────────────────────────
+    // ── 3. Text label ─────────────────────────────────────────────────
+    if (TargetParameters::kDisplayText)
     {
         FoxTextPrimitiveMsg text;
         text.pose.position = pos;

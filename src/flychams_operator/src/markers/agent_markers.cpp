@@ -73,23 +73,19 @@ void AgentMarkers::update()
     const auto lifetime = rclcpp::Duration::from_seconds(2.0 / update_rate_);
 
     // ── Determine status color ─────────────────────────────────────────────
-    // IDLE=0 → amber, ACTIVE=1 → cyan, ERROR=2 → red  (see AgentParams)
+    // IDLE=0 → amber, ACTIVE=1 → cyan, ERROR=2 → red
     FoxColorMsg body_color;
-    FoxColorMsg glow_color;
-    if (agent_.has_status && agent_.status == 1 /* ACTIVE */)
+    if (agent_.has_status && agent_.status == 1) // ACTIVE
     {
         body_color = MarkerHelpers::makeColor(AgentParameters::kActBodyR, AgentParameters::kActBodyG, AgentParameters::kActBodyB, AgentParameters::kActBodyA);
-        glow_color = MarkerHelpers::makeColor(AgentParameters::kActGlowR, AgentParameters::kActGlowG, AgentParameters::kActGlowB, AgentParameters::kActGlowA);
     }
-    else if (agent_.has_status && agent_.status == 2 /* ERROR */)
+    else if (agent_.has_status && agent_.status == 2) // ERROR
     {
         body_color = MarkerHelpers::makeColor(AgentParameters::kErrBodyR, AgentParameters::kErrBodyG, AgentParameters::kErrBodyB, AgentParameters::kErrBodyA);
-        glow_color = MarkerHelpers::makeColor(AgentParameters::kErrGlowR, AgentParameters::kErrGlowG, AgentParameters::kErrGlowB, AgentParameters::kErrGlowA);
     }
     else // IDLE
     {
         body_color = MarkerHelpers::makeColor(AgentParameters::kIdleBodyR, AgentParameters::kIdleBodyG, AgentParameters::kIdleBodyB, AgentParameters::kIdleBodyA);
-        glow_color = MarkerHelpers::makeColor(AgentParameters::kIdleGlowR, AgentParameters::kIdleGlowG, AgentParameters::kIdleGlowB, AgentParameters::kIdleGlowA);
     }
 
     // ── Build entity ───────────────────────────────────────────────────────
@@ -109,7 +105,7 @@ void AgentMarkers::update()
     kv_alt.value = oss.str();
     entity.metadata = {kv_status, kv_alt};
 
-    // ── 1. Solid body sphere (flattened UAV silhouette) ───────────────────
+    // ── 1. Solid body sphere ───────────────────
     {
         FoxSpherePrimitiveMsg sphere;
         sphere.pose.position = pos;
@@ -121,36 +117,8 @@ void AgentMarkers::update()
         entity.spheres.push_back(sphere);
     }
 
-    // ── 2. Semi-transparent glow shell ────────────────────────────────────
-    {
-        FoxSpherePrimitiveMsg glow;
-        glow.pose.position = pos;
-        glow.pose.orientation.w = 1.0;
-        glow.size.x = AgentParameters::kGlowDiamXY;
-        glow.size.y = AgentParameters::kGlowDiamXY;
-        glow.size.z = AgentParameters::kGlowDiamZ;
-        glow.color = glow_color;
-        entity.spheres.push_back(glow);
-    }
-
-    // ── 3. Upward orientation arrow ────────────────────────────────────────
-    {
-        FoxArrowPrimitiveMsg arrow;
-        arrow.pose.position = pos;
-        // Arrow points along local +Z; rotate from +X to +Z: 90° around -Y
-        arrow.pose.orientation.x =  0.0;
-        arrow.pose.orientation.y = -0.7071068f;
-        arrow.pose.orientation.z =  0.0;
-        arrow.pose.orientation.w =  0.7071068f;
-        arrow.shaft_length   = AgentParameters::kArrowShaftLen;
-        arrow.shaft_diameter = AgentParameters::kArrowShaftDiam;
-        arrow.head_length    = AgentParameters::kArrowHeadLen;
-        arrow.head_diameter  = AgentParameters::kArrowHeadDiam;
-        arrow.color = body_color;
-        entity.arrows.push_back(arrow);
-    }
-
-    // ── 4. Text label (ID + altitude) ─────────────────────────────────────
+    // ── 2. Text label ─────────────────────────────────────
+    if (AgentParameters::kDisplayText)
     {
         FoxTextPrimitiveMsg text;
         text.pose.position = pos;
@@ -160,7 +128,7 @@ void AgentMarkers::update()
         text.font_size = AgentParameters::kFontSize;
         text.scale_invariant = false;
         text.color = MarkerHelpers::white();
-        text.text = agent_id_ + "\n" + oss.str() + " m";
+        text.text = agent_id_ + "\nh=" + oss.str() + " m";
         entity.texts.push_back(text);
     }
 
