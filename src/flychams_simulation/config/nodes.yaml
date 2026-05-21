@@ -21,3 +21,24 @@
   ros__parameters:
     # Bridge update rate (Hz)
     bridge_update_rate: 20.0
+
+/**/simulation_stream_node:
+  ros__parameters:
+    # Stream parameters
+    stream_delay_ms: 500
+    # RTSP host (AirSim server address)
+    rtsp_host: "127.0.0.1"
+    # RTSP port (AirSim streaming port)
+    rtsp_port: 8554
+    # Scenario view resolution
+    scenario_view:
+      width: 1280
+      height: 720
+    # Agent view resolution
+    agent_view:
+      width: 854
+      height: 480
+    # Payload view resolution
+    payload_view:
+      width: 854
+      height: 480

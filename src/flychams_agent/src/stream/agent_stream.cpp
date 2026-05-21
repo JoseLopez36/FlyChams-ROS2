@@ -200,6 +200,7 @@ void AgentStream::streamPipeline(const std::shared_ptr<StreamUnit>& unit)
         capture.open(gst_pipeline, cv::CAP_GSTREAMER);
         if (!capture.isOpened())
         {
+            capture.release();
             RCLCPP_WARN(node_->get_logger(), "Agent stream: Could not open stream for camera %s, retrying in 5s...",
                 unit->config->id.c_str());
             std::this_thread::sleep_for(std::chrono::seconds(5));

@@ -8,6 +8,7 @@ endif()
 # Find dependencies
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
+find_package(cv_bridge REQUIRED)
 find_package(airsim_interfaces REQUIRED)
 find_package(flychams_common REQUIRED)
 find_package(flychams_api REQUIRED)
@@ -20,6 +21,8 @@ set(SIMULATION_SRC
   # Bridge
   src/bridge/simulation_bridge.cpp
   src/bridge/agent_bridge.cpp
+  # Stream
+  src/stream/simulation_stream.cpp
 )
 add_library(${PROJECT_NAME} SHARED ${SIMULATION_SRC})
 target_include_directories(${PROJECT_NAME} PUBLIC
@@ -29,7 +32,7 @@ target_include_directories(${PROJECT_NAME} PUBLIC
 
 # Export dependencies
 ament_target_dependencies(${PROJECT_NAME}
-  rclcpp airsim_interfaces flychams_common flychams_api
+  rclcpp cv_bridge airsim_interfaces flychams_common flychams_api
 )
 
 # Link to required libraries
@@ -61,7 +64,12 @@ install(TARGETS ${PROJECT_NAME}
   INCLUDES DESTINATION include
 )
 
-install(TARGETS target_state_node target_control_node agent_bridge_node
+# Create executable for simulation stream node
+add_executable(simulation_stream_node src/simulation_stream_node.cpp)
+target_link_libraries(simulation_stream_node ${PROJECT_NAME})
+ament_target_dependencies(simulation_stream_node rclcpp cv_bridge flychams_common flychams_api)
+
+install(TARGETS target_state_node target_control_node agent_bridge_node simulation_stream_node
   RUNTIME DESTINATION lib/${PROJECT_NAME}
 )
 
@@ -81,6 +89,7 @@ install(DIRECTORY launch/
 ament_export_targets(${PROJECT_NAME} HAS_LIBRARY_TARGET)
 ament_export_dependencies(
   rclcpp
+  cv_bridge
   airsim_interfaces
   flychams_common
   flychams_api

@@ -14,6 +14,7 @@
 
   <!-- Dependencies -->
   <depend>rclcpp</depend>
+  <depend>cv_bridge</depend>
   <depend>airsim_interfaces</depend>
   <depend>flychams_common</depend>
   <depend>flychams_api</depend>

@@ -8,7 +8,7 @@
       "inactiveColor": "#10b981",
       "activeText": "Starting",
       "inactiveText": "Start",
-      "foxglovePanelTitle": "Start"
+      "foxglovePanelTitle": "Mission: Start"
     },
     "button.Button!mpause": {
       "outputMode": "publisher",
@@ -18,7 +18,7 @@
       "inactiveColor": "#D97706",
       "activeText": "Paused",
       "inactiveText": "Pause",
-      "foxglovePanelTitle": "Pause"
+      "foxglovePanelTitle": "Mission: Pause"
     },
     "button.Button!mabort": {
       "outputMode": "publisher",
@@ -28,7 +28,7 @@
       "inactiveColor": "#DC2626",
       "activeText": "Aborting",
       "inactiveText": "Abort",
-      "foxglovePanelTitle": "Abort"
+      "foxglovePanelTitle": "Mission: Abort"
     },
     "button.Button!armall": {
       "outputMode": "publisher",
@@ -38,7 +38,7 @@
       "inactiveColor": "#DC2626",
       "activeText": "Armed",
       "inactiveText": "Disarmed",
-      "foxglovePanelTitle": "Arm All"
+      "foxglovePanelTitle": "Fleet: Arm"
     },
     "button.Button!landall": {
       "outputMode": "publisher",
@@ -48,7 +48,7 @@
       "inactiveColor": "#d97706",
       "activeText": "Landing",
       "inactiveText": "Land All",
-      "foxglovePanelTitle": "Land All"
+      "foxglovePanelTitle": "Fleet: Land"
     },
     "button.Button!rth": {
       "outputMode": "publisher",
@@ -58,7 +58,7 @@
       "inactiveColor": "#0891B2",
       "activeText": "Returning",
       "inactiveText": "Home All",
-      "foxglovePanelTitle": "Home All"
+      "foxglovePanelTitle": "Fleet: Home"
     },
     "Tab!cameras": {
       "activeTabIdx": 0,
@@ -440,41 +440,153 @@
       "fixedFrame": "world",
       "followTf": "world"
     },
-    "Tab!mission": {
+    "Tab!overview": {
       "activeTabIdx": 0,
       "tabs": [
         {
-          "title": "Mission",
+          "title": "3D Scene",
+          "layout": "3D!scene"
+        },
+        {
+          "title": "Simulation 0",
           "layout": {
-            "first": {
-              "first": "button.Button!mstart",
-              "second": "button.Button!mpause",
-              "direction": "row"
+            "first": "Image!simscenario",
+            "second": {
+              "first": "Image!simagent00",
+              "second": "Image!simpayload00",
+              "direction": "row",
+              "splitPercentage": 50
             },
-            "second": "button.Button!mabort",
             "direction": "column",
-            "splitPercentage": 50
+            "splitPercentage": 66.66
+          }
+        },
+        {
+          "title": "Simulation 1",
+          "layout": {
+            "first": "Image!simscenario",
+            "second": {
+              "first": "Image!simagent01",
+              "second": "Image!simpayload01",
+              "direction": "row",
+              "splitPercentage": 50
+            },
+            "direction": "column",
+            "splitPercentage": 66.66
+          }
+        },
+        {
+          "title": "Simulation 2",
+          "layout": {
+            "first": "Image!simscenario",
+            "second": {
+              "first": "Image!simagent02",
+              "second": "Image!simpayload02",
+              "direction": "row",
+              "splitPercentage": 50
+            },
+            "direction": "column",
+            "splitPercentage": 66.66
+          }
+        },
+        {
+          "title": "Simulation 3",
+          "layout": {
+            "first": "Image!simscenario",
+            "second": {
+              "first": "Image!simagent03",
+              "second": "Image!simpayload03",
+              "direction": "row",
+              "splitPercentage": 50
+            },
+            "direction": "column",
+            "splitPercentage": 66.66
           }
         }
       ]
     },
-    "Tab!fleet": {
-      "activeTabIdx": 0,
-      "tabs": [
-        {
-          "title": "Fleet",
-          "layout": {
-            "first": {
-              "first": "button.Button!armall",
-              "second": "button.Button!landall",
-              "direction": "row"
-            },
-            "second": "button.Button!rth",
-            "direction": "column",
-            "splitPercentage": 50
-          }
-        }
-      ]
+    "Image!simscenario": {
+      "synchronize": false,
+      "imageMode": {
+        "imageTopic": "/flychams/operator/SIMULATION/SCENARIOVIEW/image/compressed"
+      },
+      "foxglovePanelTitle": "Scenario"
+    },
+    "Image!simagent00": {
+      "synchronize": false,
+      "imageMode": {
+        "imageTopic": "/flychams/operator/ELEMENT00/AGENTVIEW/image/compressed"
+      },
+      "foxglovePanelTitle": "Agent 0"
+    },
+    "Image!simpayload00": {
+      "synchronize": false,
+      "imageMode": {
+        "imageTopic": "/flychams/operator/ELEMENT00/PAYLOADVIEW/image/compressed"
+      },
+      "foxglovePanelTitle": "Payload 0"
+    },
+    "Image!simagent01": {
+      "synchronize": false,
+      "imageMode": {
+        "imageTopic": "/flychams/operator/ELEMENT01/AGENTVIEW/image/compressed"
+      },
+      "foxglovePanelTitle": "Agent 1"
+    },
+    "Image!simpayload01": {
+      "synchronize": false,
+      "imageMode": {
+        "imageTopic": "/flychams/operator/ELEMENT01/PAYLOADVIEW/image/compressed"
+      },
+      "foxglovePanelTitle": "Payload 1"
+    },
+    "Image!simagent02": {
+      "synchronize": false,
+      "imageMode": {
+        "imageTopic": "/flychams/operator/ELEMENT02/AGENTVIEW/image/compressed"
+      },
+      "foxglovePanelTitle": "Agent 2"
+    },
+    "Image!simpayload02": {
+      "synchronize": false,
+      "imageMode": {
+        "imageTopic": "/flychams/operator/ELEMENT02/PAYLOADVIEW/image/compressed"
+      },
+      "foxglovePanelTitle": "Payload 2"
+    },
+    "Image!simagent03": {
+      "synchronize": false,
+      "imageMode": {
+        "imageTopic": "/flychams/operator/ELEMENT03/AGENTVIEW/image/compressed"
+      },
+      "foxglovePanelTitle": "Agent 3"
+    },
+    "Image!simpayload03": {
+      "synchronize": false,
+      "imageMode": {
+        "imageTopic": "/flychams/operator/ELEMENT03/PAYLOADVIEW/image/compressed"
+      },
+      "foxglovePanelTitle": "Payload 3"
+    },
+    "Group!mission": {
+      "first": {
+        "first": "button.Button!mstart",
+        "second": "button.Button!mpause",
+        "direction": "row"
+      },
+      "second": "button.Button!mabort",
+      "direction": "column",
+      "splitPercentage": 50
+    },
+    "Group!fleet": {
+      "first": {
+        "first": "button.Button!armall",
+        "second": "button.Button!landall",
+        "direction": "row"
+      },
+      "second": "button.Button!rth",
+      "direction": "column",
+      "splitPercentage": 50
     }
   },
   "globalVariables": {},
@@ -484,11 +596,31 @@
   },
   "layout": {
     "first": {
-      "first": "3D!scene",
+      "first": "Tab!overview",
       "second": {
-        "first": "Tab!mission",
-        "second": "Tab!fleet",
-        "direction": "row",
+        "first": {
+          "first": "button.Button!mstart",
+          "second": "button.Button!mpause",
+          "direction": "row",
+          "splitPercentage": 50
+        },
+        "second": {
+          "first": "button.Button!mabort",
+          "second": {
+            "first": "button.Button!armall",
+            "second": {
+              "first": "button.Button!landall",
+              "second": "button.Button!rth",
+              "direction": "row",
+              "splitPercentage": 50
+            },
+            "direction": "row",
+            "splitPercentage": 33.33
+          },
+          "direction": "row",
+          "splitPercentage": 25
+        },
+        "direction": "column",
         "splitPercentage": 50
       },
       "direction": "column",
@@ -496,6 +628,6 @@
     },
     "second": "Tab!cameras",
     "direction": "row",
-    "splitPercentage": 53.5
+    "splitPercentage": 50
   }
 }

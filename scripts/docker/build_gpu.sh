@@ -8,10 +8,10 @@ if [ "$GPU_VENDOR" = "auto" ]; then
     GPU_VENDOR=$($SCRIPT_DIR/detect_gpu.sh)
 fi
 
-echo "Building flychams-simulation image (GPU_VENDOR=$GPU_VENDOR)..."
+echo "Building flychams-gpu image (GPU_VENDOR=$GPU_VENDOR)..."
 docker build \
     --build-arg GPU_VENDOR="$GPU_VENDOR" \
-    -t flychams-simulation \
-    -f "$PROJECT_ROOT/docker/simulation.Dockerfile" \
+    -t flychams-gpu \
+    -f "$PROJECT_ROOT/docker/gpu.Dockerfile" \
     "$PROJECT_ROOT"
-echo "flychams-simulation built successfully"
+echo "flychams-gpu built successfully"

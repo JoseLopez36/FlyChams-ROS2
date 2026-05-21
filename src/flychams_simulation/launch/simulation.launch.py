@@ -61,6 +61,10 @@ def generate_launch_description():
         'agent_bridge': {
             'executable': 'agent_bridge_node',
             'name': 'agent_bridge_node'
+        },
+        'simulation_stream': {
+            'executable': 'simulation_stream_node',
+            'name': 'simulation_stream_node'
         }
     }
 

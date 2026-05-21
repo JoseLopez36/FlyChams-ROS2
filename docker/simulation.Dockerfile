@@ -1,5 +1,9 @@
 # Simulation Dockerfile
-FROM flychams-base
+FROM flychams-gpu
+
+# GPU vendor forwarded from flychams-gpu
+ARG GPU_VENDOR=nvidia
+ENV GPU_VENDOR=${GPU_VENDOR}
 
 # Clone FlyChams-Cosys-AirSim (flychams branch)
 RUN git clone --branch flychams --depth 1 \

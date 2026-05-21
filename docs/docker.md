@@ -8,9 +8,10 @@ FlyChams services run in Docker containers built from a layered image hierarchy.
 ros:humble-ros-base
   └── flychams-base              (docker/base.Dockerfile)
         ├── flychams-coordinator (docker/coordinator.Dockerfile)
-        ├── flychams-simulation  (docker/simulation.Dockerfile)
-        ├── flychams-agent       (docker/agent.Dockerfile)
-        └── flychams-operator    (docker/operator.Dockerfile)
+        ├── flychams-operator    (docker/operator.Dockerfile)
+        └── flychams-gpu         (docker/gpu.Dockerfile)
+              ├── flychams-simulation  (docker/simulation.Dockerfile)
+              └── flychams-agent       (docker/agent.Dockerfile)
 ```
 
 ## Images
@@ -28,13 +29,24 @@ Common foundation for all FlyChams services.
 
 Extends `flychams-base` with no additional layers.
 
+### flychams-gpu
+
+Extends `flychams-base` with GStreamer and GPU-accelerated video decode. Shared by `flychams-simulation` and `flychams-agent`.
+
+- **GStreamer**: `gstreamer1.0-tools`, plugins-base/good/bad/ugly, `libav`, dev headers
+- **NVIDIA**: `gstreamer1.0-plugins-bad` (nvh265dec)
+- **AMD**: `gstreamer1.0-vaapi`, `libva-dev`, `libva-drm2`, `libva-x11-2`, `mesa-va-drivers`
+
 ### flychams-simulation
 
-Extends `flychams-base` with no additional layers.
+Extends `flychams-gpu` with AirSim ROS2 integration and simulation view streaming.
+
+- **FlyChams-Cosys-AirSim**: Cloned from `flychams` branch, AirSim C++ libs built, `airsim_interfaces` and `airsim_wrapper` built into `/home/testuser/FlyChams-Cosys-AirSim/ros2`.
+- **simulation_stream_node**: Bridges AirSim RTSP streams (`SCENARIOCAM`, `AGENTCAM_<id>`, `PAYLOADCAM_<id>`) to ROS2 image topics via GStreamer.
 
 ### flychams-agent
 
-Extends `flychams-base` with agent-specific tooling.
+Extends `flychams-gpu` with agent-specific tooling.
 
 - **px4_msgs**: Built from source (`release/1.16` branch) into `/home/testuser/px4_msgs_ws` — provides PX4 uORB ROS2 message types.
 - **Ultralytics**: YOLO models via `ultralytics` + `lapx`.
@@ -83,6 +95,7 @@ Build images in dependency order (base must be built first).
 
 ```bash
 scripts/docker/build_base.sh         # flychams-base
+scripts/docker/build_gpu.sh          # flychams-gpu
 scripts/docker/build_coordinator.sh  # flychams-coordinator
 scripts/docker/build_simulation.sh   # flychams-simulation
 scripts/docker/build_agent.sh        # flychams-agent
@@ -109,7 +122,7 @@ All containers use:
 - Project root mounted at `/home/testuser/FlyChams-ROS2`.
 - `ROS_DOMAIN_ID`, `RMW_IMPLEMENTATION`, and `CYCLONEDDS_URI` forwarded from the host.
 
-The agent container additionally receives `AGENT_ID` as an environment variable. The operator container does not require GPU access.
+The agent container additionally receives `AGENT_ID` as an environment variable. The simulation and agent containers both receive `HW_VENDOR` for GStreamer hardware decode selection. The operator container does not require GPU access.
 
 ### GPU Vendor Selection
 
@@ -119,6 +132,14 @@ Override auto-detection by setting the `GPU_VENDOR` environment variable:
 GPU_VENDOR=nvidia scripts/docker/run_agent.sh AGENT00
 GPU_VENDOR=amd scripts/docker/run_agent.sh AGENT00
 GPU_VENDOR=none scripts/docker/run_agent.sh AGENT00   # CPU only
+```
+
+The `GPU_VENDOR` build arg is also respected by `build_gpu.sh`, `build_simulation.sh`, and `build_agent.sh`:
+
+```bash
+GPU_VENDOR=amd scripts/docker/build_gpu.sh
+GPU_VENDOR=amd scripts/docker/build_simulation.sh
+GPU_VENDOR=amd scripts/docker/build_agent.sh
 ```
 
 ### Exec
