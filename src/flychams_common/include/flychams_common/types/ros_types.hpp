@@ -29,6 +29,7 @@
 // Sensor messages
 #include <sensor_msgs/msg/nav_sat_fix.hpp>
 #include <sensor_msgs/msg/image.hpp>
+#include <sensor_msgs/msg/camera_info.hpp>
 
 // Image transport
 #include <image_transport/image_transport.hpp>
@@ -162,8 +163,10 @@ namespace flychams::common
     using NavSatFixMsg = sensor_msgs::msg::NavSatFix;
     // Image
     using ImageMsg = sensor_msgs::msg::Image;
+    // Camera info
+    using CameraInfoMsg = sensor_msgs::msg::CameraInfo;
     // Image transport
-    using ImagePublisher = image_transport::Publisher;
+    using CameraPublisher = image_transport::CameraPublisher;
     // Geographic
     using GeoPointMsg = geographic_msgs::msg::GeoPoint;
     using GeoPointStampedMsg = geographic_msgs::msg::GeoPointStamped;

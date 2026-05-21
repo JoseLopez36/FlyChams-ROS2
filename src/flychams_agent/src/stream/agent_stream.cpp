@@ -58,7 +58,7 @@ void AgentStream::onModuleInit()
                 {
                     std::ostringstream crop_view_ss;
                     crop_view_ss << "VIEW" << std::setw(2) << std::setfill('0') << crop_idx++;
-                    unit->crop_pubs.push_back(node_->createImagePublisher(element_id, crop_view_ss.str()));
+                    unit->crop_pubs.push_back(node_->createCameraPublisher(element_id, crop_view_ss.str()));
                 }
                 unit->crop_output_width = tracking_view_width;
                 unit->crop_output_height = tracking_view_height;
@@ -79,7 +79,8 @@ void AgentStream::onModuleInit()
         {
             view_ss << "VIEW" << std::setw(2) << std::setfill('0') << view_counter_++;
         }
-        unit->image_pub = node_->createImagePublisher(element_id, view_ss.str());
+        unit->camera_info = makeCameraInfo(camera, unit->output_width, unit->output_height, camera->ref_focal);
+        unit->image_pub = node_->createCameraPublisher(element_id, view_ss.str());
         unit->running = true;
         unit->thread = std::thread(&AgentStream::streamPipeline, this, unit);
         stream_units_[camera_id] = unit;
@@ -123,26 +124,39 @@ void AgentStream::onModuleShutdown()
 
 void AgentStream::observationSetpointsCallback(const ObservationSetpointsMsg::SharedPtr msg)
 {
-    // Get central stream unit
-    std::shared_ptr<StreamUnit> unit = stream_units_[central_camera_id_];
-
-    // Check if crops are enabled
-    if (!unit->enable_crops)
+    const size_t n = msg->ids.size();
+    for (size_t i = 0; i < n; ++i)
     {
-        return;
-    }
+        const auto& camera_id = msg->ids[i];
+        auto it = stream_units_.find(camera_id);
+        if (it == stream_units_.end())
+            continue;
 
-    // Iterate through the crops in the message
-    const size_t nw = msg->crops.size() - 1; // Exclude the central camera
-    for (size_t i = 0, j = 1; i < nw; ++i, ++j)
-    {
-        const auto& crop = msg->crops[j];
-        
-        // Only update if it's not out of bounds
-        if (!crop.is_out_of_bounds)
+        auto& unit = it->second;
+        const auto role = static_cast<ObservationRole>(msg->roles[i]);
+        const auto type = static_cast<ObservationType>(msg->types[i]);
+
+        // Update camera_info focal length for tracking cameras
+        if (type == ObservationType::Camera && role == ObservationRole::Tracking)
         {
-            std::lock_guard<std::mutex> lock(unit->crops_mutex);
-            unit->crops[i] = crop;
+            const float zoom = msg->zoom_factors[i];
+            std::lock_guard<std::mutex> lock(unit->camera_info_mutex);
+            unit->camera_info = makeCameraInfo(unit->config, unit->output_width, unit->output_height, zoom);
+        }
+
+        // Update crops for the central camera windows
+        if (role == ObservationRole::Central && unit->enable_crops)
+        {
+            const size_t nw = msg->crops.size() - 1;
+            for (size_t j = 0, k = 1; j < nw; ++j, ++k)
+            {
+                const auto& crop = msg->crops[k];
+                if (!crop.is_out_of_bounds)
+                {
+                    std::lock_guard<std::mutex> lock(unit->crops_mutex);
+                    unit->crops[j] = crop;
+                }
+            }
         }
     }
 }
@@ -220,7 +234,15 @@ void AgentStream::streamPipeline(const std::shared_ptr<StreamUnit>& unit)
 
         // Downscale frame
         cv::resize(frame, low_res_frame, cv::Size(unit->output_width, unit->output_height), 0, 0, cv::INTER_LINEAR);
-        unit->image_pub.publish(makeImage(low_res_frame, unit->frame_id));
+        auto img_msg = makeImage(low_res_frame, unit->frame_id);
+        CameraInfoMsg ci_snapshot;
+        {
+            std::lock_guard<std::mutex> lock(unit->camera_info_mutex);
+            ci_snapshot = unit->camera_info;
+        }
+        auto ci_msg = std::make_shared<CameraInfoMsg>(ci_snapshot);
+        ci_msg->header = img_msg->header;
+        unit->image_pub.publish(img_msg, ci_msg);
 
         if (unit->enable_crops)
         {
@@ -245,7 +267,12 @@ void AgentStream::streamPipeline(const std::shared_ptr<StreamUnit>& unit)
 
                 // Scale crop
                 cv::resize(frame(rect), low_res_crop, cv::Size(unit->crop_output_width, unit->crop_output_height), 0, 0, cv::INTER_LINEAR);
-                unit->crop_pubs[i].publish(makeImage(low_res_crop, unit->frame_id));
+                auto crop_img = makeImage(low_res_crop, unit->frame_id);
+                auto crop_ci = std::make_shared<CameraInfoMsg>(unit->camera_info);
+                crop_ci->header = crop_img->header;
+                crop_ci->width = unit->crop_output_width;
+                crop_ci->height = unit->crop_output_height;
+                unit->crop_pubs[i].publish(crop_img, crop_ci);
             }
         }
     }
@@ -263,4 +290,38 @@ ImageMsg::SharedPtr AgentStream::makeImage(const cv::Mat& image, const std::stri
     header.stamp = node_->now();
     header.frame_id = frame_id;
     return cv_bridge::CvImage(header, "bgr8", image).toImageMsg();
+}
+
+CameraInfoMsg AgentStream::makeCameraInfo(const MultiCameraConfigPtr& config, int width, int height, float focal) const
+{
+    CameraInfoMsg ci;
+    ci.width  = static_cast<uint32_t>(width);
+    ci.height = static_cast<uint32_t>(height);
+    ci.distortion_model = "plumb_bob";
+
+    const auto& cam   = config->camera;
+    const float sw    = cam.sensor_size(0);
+    const float sh    = cam.sensor_size(1);
+    const float rho_x = sw / static_cast<float>(cam.resolution(0));
+    const float rho_y = sh / static_cast<float>(cam.resolution(1));
+    const float fx    = focal / rho_x;
+    const float fy    = focal / rho_y;
+    const float cx    = static_cast<float>(width)  / 2.0f;
+    const float cy    = static_cast<float>(height) / 2.0f;
+
+    ci.k = {fx, 0.0, cx,
+             0.0, fy, cy,
+             0.0, 0.0, 1.0};
+    ci.r = {1.0, 0.0, 0.0,
+             0.0, 1.0, 0.0,
+             0.0, 0.0, 1.0};
+    ci.p = {fx, 0.0, cx, 0.0,
+             0.0, fy, cy, 0.0,
+             0.0, 0.0, 1.0, 0.0};
+    ci.d = {static_cast<double>(cam.distortion.K1),
+             static_cast<double>(cam.distortion.K2),
+             static_cast<double>(cam.distortion.P1),
+             static_cast<double>(cam.distortion.P2),
+             static_cast<double>(cam.distortion.K3)};
+    return ci;
 }

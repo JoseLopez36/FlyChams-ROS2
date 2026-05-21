@@ -54,16 +54,19 @@ namespace flychams::agent
             int crop_output_width;
             int crop_output_height;
             std::mutex crops_mutex;
+            // Camera info
+            common::CameraInfoMsg camera_info;
+            std::mutex camera_info_mutex;
             // Publisher
-            common::ImagePublisher image_pub;
-            std::vector<common::ImagePublisher> crop_pubs;
+            common::CameraPublisher image_pub;
+            std::vector<common::CameraPublisher> crop_pubs;
             // Runtime
             std::atomic_bool running;
             std::thread thread;
             // Constructor
             StreamUnit()
                 : config(), pipeline(), frame_id(), output_width(0), output_height(0), enable_crops(false),
-                crops(), crops_mutex(), image_pub(), crop_pubs(), running(false), thread()
+                crops(), crops_mutex(), camera_info(), camera_info_mutex(), image_pub(), crop_pubs(), running(false), thread()
             {
             }
         };
@@ -96,6 +99,7 @@ namespace flychams::agent
 
     private: // Image utilities
         common::ImageMsg::SharedPtr makeImage(const cv::Mat& image, const std::string& frame_id) const;
+        common::CameraInfoMsg makeCameraInfo(const common::MultiCameraConfigPtr& config, int width, int height, float focal) const;
 
     private: // ROS components
         // Subscriber

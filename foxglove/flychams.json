@@ -410,7 +410,27 @@
         "/flychams/operator/ELEMENT21/scene": { "visible": true },
         "/flychams/operator/ELEMENT22/scene": { "visible": true },
         "/flychams/operator/ELEMENT23/scene": { "visible": true },
-        "/flychams/operator/ELEMENT24/scene": { "visible": true }
+        "/flychams/operator/ELEMENT24/scene": { "visible": true },
+        "/flychams/operator/ELEMENT00/VIEW00/camera_info": { "visible": true, "distance": 6, "planarProjectionFactor": 0.5, "width": 0.03 },
+        "/flychams/operator/ELEMENT00/VIEW01/camera_info": { "visible": true, "distance": 6, "planarProjectionFactor": 0.5, "width": 0.03 },
+        "/flychams/operator/ELEMENT00/VIEW02/camera_info": { "visible": true, "distance": 6, "planarProjectionFactor": 0.5, "width": 0.03 },
+        "/flychams/operator/ELEMENT00/VIEW03/camera_info": { "visible": true, "distance": 6, "planarProjectionFactor": 0.5, "width": 0.03 },
+        "/flychams/operator/ELEMENT00/VIEW04/camera_info": { "visible": true, "distance": 6, "planarProjectionFactor": 0.5, "width": 0.03 },
+        "/flychams/operator/ELEMENT01/VIEW00/camera_info": { "visible": true, "distance": 6, "planarProjectionFactor": 0.5, "width": 0.03 },
+        "/flychams/operator/ELEMENT01/VIEW01/camera_info": { "visible": true, "distance": 6, "planarProjectionFactor": 0.5, "width": 0.03 },
+        "/flychams/operator/ELEMENT01/VIEW02/camera_info": { "visible": true, "distance": 6, "planarProjectionFactor": 0.5, "width": 0.03 },
+        "/flychams/operator/ELEMENT01/VIEW03/camera_info": { "visible": true, "distance": 6, "planarProjectionFactor": 0.5, "width": 0.03 },
+        "/flychams/operator/ELEMENT01/VIEW04/camera_info": { "visible": true, "distance": 6, "planarProjectionFactor": 0.5, "width": 0.03 },
+        "/flychams/operator/ELEMENT02/VIEW00/camera_info": { "visible": true, "distance": 6, "planarProjectionFactor": 0.5, "width": 0.03 },
+        "/flychams/operator/ELEMENT02/VIEW01/camera_info": { "visible": true, "distance": 6, "planarProjectionFactor": 0.5, "width": 0.03 },
+        "/flychams/operator/ELEMENT02/VIEW02/camera_info": { "visible": true, "distance": 6, "planarProjectionFactor": 0.5, "width": 0.03 },
+        "/flychams/operator/ELEMENT02/VIEW03/camera_info": { "visible": true, "distance": 6, "planarProjectionFactor": 0.5, "width": 0.03 },
+        "/flychams/operator/ELEMENT02/VIEW04/camera_info": { "visible": true, "distance": 6, "planarProjectionFactor": 0.5, "width": 0.03 },
+        "/flychams/operator/ELEMENT03/VIEW00/camera_info": { "visible": true, "distance": 6, "planarProjectionFactor": 0.5, "width": 0.03 },
+        "/flychams/operator/ELEMENT03/VIEW01/camera_info": { "visible": true, "distance": 6, "planarProjectionFactor": 0.5, "width": 0.03 },
+        "/flychams/operator/ELEMENT03/VIEW02/camera_info": { "visible": true, "distance": 6, "planarProjectionFactor": 0.5, "width": 0.03 },
+        "/flychams/operator/ELEMENT03/VIEW03/camera_info": { "visible": true, "distance": 6, "planarProjectionFactor": 0.5, "width": 0.03 },
+        "/flychams/operator/ELEMENT03/VIEW04/camera_info": { "visible": true, "distance": 6, "planarProjectionFactor": 0.5, "width": 0.03 }
       },
       "layers": {
         "grid": {

@@ -179,7 +179,7 @@ namespace flychams::common
         PublisherPtr<AgentClustersMsg> createAgentClustersPublisher(const ID& agent_id);
         PublisherPtr<PointStampedMsg> createAgentPositionSetpointPublisher(const ID& agent_id);
         PublisherPtr<ObservationSetpointsMsg> createObservationSetpointsPublisher(const ID& agent_id);
-        ImagePublisher createImagePublisher(const ID& element_id, const ID& view_id);
+        CameraPublisher createCameraPublisher(const ID& element_id, const ID& view_id);
         PublisherPtr<FoxImageAnnotationsMsg> createAnnotationsPublisher(const ID& element_id, const ID& view_id);
         PublisherPtr<FoxSceneUpdateMsg> createScenePublisher(const ID& element_id);
         PublisherPtr<BoolMsg> createStartMissionPublisher();

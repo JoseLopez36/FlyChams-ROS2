@@ -329,9 +329,9 @@ PublisherPtr<ObservationSetpointsMsg> BaseNode::createObservationSetpointsPublis
     return node_->create_publisher<ObservationSetpointsMsg>(getObservationSetpointsTopic(agent_id), 10);
 }
 
-ImagePublisher BaseNode::createImagePublisher(const ID& element_id, const ID& view_id)
+CameraPublisher BaseNode::createCameraPublisher(const ID& element_id, const ID& view_id)
 {
-    return image_transport_->advertise(getImageTopic(element_id, view_id), 1);
+    return image_transport_->advertiseCamera(getImageTopic(element_id, view_id), 1);
 }
 
 PublisherPtr<FoxImageAnnotationsMsg> BaseNode::createAnnotationsPublisher(const ID& element_id, const ID& view_id)

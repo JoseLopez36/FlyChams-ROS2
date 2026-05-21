@@ -8,7 +8,7 @@
 // OpenCV includes
 #include <cv_bridge/cv_bridge.h>
 
-// Standard includes (string stream for element_id derivation)
+// Standard includes
 #include <iomanip>
 #include <sstream>
 
@@ -60,15 +60,17 @@ namespace flychams::simulation
             // Output dimensions
             int output_width;
             int output_height;
+            // Camera info
+            common::CameraInfoMsg camera_info;
             // Publisher
-            common::ImagePublisher image_pub;
+            common::CameraPublisher image_pub;
             // Runtime
             std::atomic_bool running;
             std::thread thread;
             // Constructor
             StreamUnit()
                 : camera_id(), element_id(), view_id(), pipeline(),
-                  output_width(0), output_height(0), image_pub(), running(false), thread()
+                  output_width(0), output_height(0), camera_info(), image_pub(), running(false), thread()
             {
             }
         };
@@ -97,13 +99,17 @@ namespace flychams::simulation
         std::string buildSourcePipeline(const std::string& rtsp_url) const;
         void launchStreamUnit(const common::ID& camera_id, const common::ID& element_id,
                               const common::ID& view_id, const std::string& rtsp_url,
-                              int width, int height);
+                              int width, int height,
+                              const common::CameraInfoMsg& camera_info);
 
     private: // Stream management
         void streamPipeline(const std::shared_ptr<StreamUnit>& unit);
 
     private: // Image utilities
         common::ImageMsg::SharedPtr makeImage(const cv::Mat& image, const std::string& frame_id) const;
+        common::CameraInfoMsg makeCameraInfo(int width, int height,
+                                             float sensor_width, float sensor_height,
+                                             float fov_deg) const;
     };
 
 } // namespace flychams::simulation
