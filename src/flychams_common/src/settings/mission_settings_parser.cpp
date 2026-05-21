@@ -397,6 +397,13 @@ void MissionSettingsParser::parseSystemParameters(const NodePtr& node, MissionCo
 		config_ptr->system.scenario_camera_orientation.y() = MathUtils::degToRad(scenario_camera_orientation_vec[1]);
 		config_ptr->system.scenario_camera_orientation.z() = MathUtils::degToRad(scenario_camera_orientation_vec[2]);
 	}
+	std::vector<int64_t> scenario_camera_resolution_vec;
+	node->get_parameter<std::vector<int64_t>>("gui.scenario_camera_resolution", scenario_camera_resolution_vec);
+	if (scenario_camera_resolution_vec.size() >= 2)
+	{
+		config_ptr->system.scenario_camera_resolution(0) = static_cast<int>(scenario_camera_resolution_vec[0]);
+		config_ptr->system.scenario_camera_resolution(1) = static_cast<int>(scenario_camera_resolution_vec[1]);
+	}
 	// Agent view settings
 	node->get_parameter<ID>("gui.agent_view_id", config_ptr->system.agent_view_id);
 	node->get_parameter<ID>("gui.agent_camera_id", config_ptr->system.agent_camera_id);
@@ -415,6 +422,13 @@ void MissionSettingsParser::parseSystemParameters(const NodePtr& node, MissionCo
 		config_ptr->system.agent_camera_orientation.x() = MathUtils::degToRad(agent_camera_orientation_vec[0]);
 		config_ptr->system.agent_camera_orientation.y() = MathUtils::degToRad(agent_camera_orientation_vec[1]);
 		config_ptr->system.agent_camera_orientation.z() = MathUtils::degToRad(agent_camera_orientation_vec[2]);
+	}
+	std::vector<int64_t> agent_camera_resolution_vec;
+	node->get_parameter<std::vector<int64_t>>("gui.agent_camera_resolution", agent_camera_resolution_vec);
+	if (agent_camera_resolution_vec.size() >= 2)
+	{
+		config_ptr->system.agent_camera_resolution(0) = static_cast<int>(agent_camera_resolution_vec[0]);
+		config_ptr->system.agent_camera_resolution(1) = static_cast<int>(agent_camera_resolution_vec[1]);
 	}
 	// Payload view settings
 	node->get_parameter<ID>("gui.payload_view_id", config_ptr->system.payload_view_id);
@@ -435,27 +449,13 @@ void MissionSettingsParser::parseSystemParameters(const NodePtr& node, MissionCo
 		config_ptr->system.payload_camera_orientation.y() = MathUtils::degToRad(payload_camera_orientation_vec[1]);
 		config_ptr->system.payload_camera_orientation.z() = MathUtils::degToRad(payload_camera_orientation_vec[2]);
 	}
-	// Map view settings
-	node->get_parameter<ID>("gui.map_view_id", config_ptr->system.map_view_id);
-	node->get_parameter<ID>("gui.map_camera_id", config_ptr->system.map_camera_id);
-	std::vector<double> map_camera_position_vec;
-	node->get_parameter<std::vector<double>>("gui.map_camera_position", map_camera_position_vec);
-	if (map_camera_position_vec.size() >= 3)
+	std::vector<int64_t> payload_camera_resolution_vec;
+	node->get_parameter<std::vector<int64_t>>("gui.payload_camera_resolution", payload_camera_resolution_vec);
+	if (payload_camera_resolution_vec.size() >= 2)
 	{
-		config_ptr->system.map_camera_position.x() = map_camera_position_vec[0];
-		config_ptr->system.map_camera_position.y() = map_camera_position_vec[1];
-		config_ptr->system.map_camera_position.z() = map_camera_position_vec[2];
+		config_ptr->system.payload_camera_resolution(0) = static_cast<int>(payload_camera_resolution_vec[0]);
+		config_ptr->system.payload_camera_resolution(1) = static_cast<int>(payload_camera_resolution_vec[1]);
 	}
-	std::vector<double> map_camera_orientation_vec;
-	node->get_parameter<std::vector<double>>("gui.map_camera_orientation", map_camera_orientation_vec);
-	if (map_camera_orientation_vec.size() >= 3)
-	{
-		config_ptr->system.map_camera_orientation.x() = MathUtils::degToRad(map_camera_orientation_vec[0]);
-		config_ptr->system.map_camera_orientation.y() = MathUtils::degToRad(map_camera_orientation_vec[1]);
-		config_ptr->system.map_camera_orientation.z() = MathUtils::degToRad(map_camera_orientation_vec[2]);
-	}
-	// Tracking views settings
-	node->get_parameter<std::vector<ID>>("gui.tracking_view_ids", config_ptr->system.tracking_view_ids);
 }
 
 void MissionSettingsParser::parseTopicParameters(const NodePtr& node, MissionConfigPtr& config_ptr)

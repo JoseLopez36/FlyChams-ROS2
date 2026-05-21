@@ -41,7 +41,7 @@ namespace flychams::common
         static void writeVehiclesSection(const common::MissionConfigPtr& config_ptr, nlohmann::ordered_json& vehicles);
         static void writeSensorsSection(const common::ID& agent_id, const common::MissionConfigPtr& config_ptr, nlohmann::ordered_json& sensors);
         static void writeInternalCamerasSection(const common::ID& agent_id, const common::MissionConfigPtr& config_ptr, nlohmann::ordered_json& cameras);
-        static void writeExternalCamerasSection(const common::MissionConfigPtr& config_ptr, nlohmann::ordered_json& cameras);
+        static void writeExternalCamerasSection(const common::ID& agent_id, bool is_first_agent, const common::MissionConfigPtr& config_ptr, nlohmann::ordered_json& cameras);
         static void writeSubWindowsSection(const common::MissionConfigPtr& config_ptr, nlohmann::ordered_json& subwindows);
         static void writeStreamsSection(const common::MissionConfigPtr& config_ptr, nlohmann::ordered_json& streams);
     };

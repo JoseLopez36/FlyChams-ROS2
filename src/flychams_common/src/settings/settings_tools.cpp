@@ -532,9 +532,6 @@ void SettingsTools::printSettings() const
     RCLCPP_DEBUG(node_->get_logger(), "  Agent Camera ID: %s", config_ptr_->system.agent_camera_id.c_str());
     RCLCPP_DEBUG(node_->get_logger(), "  Payload View ID: %s", config_ptr_->system.payload_view_id.c_str());
     RCLCPP_DEBUG(node_->get_logger(), "  Payload Camera ID: %s", config_ptr_->system.payload_camera_id.c_str());
-    RCLCPP_DEBUG(node_->get_logger(), "  Map View ID: %s", config_ptr_->system.map_view_id.c_str());
-    RCLCPP_DEBUG(node_->get_logger(), "  Map Camera ID: %s", config_ptr_->system.map_camera_id.c_str());
-    RCLCPP_DEBUG(node_->get_logger(), "  Tracking View IDs: %zu", config_ptr_->system.tracking_view_ids.size());
 
     // Topic Parameters
     RCLCPP_DEBUG(node_->get_logger(), "\n[TOPICS]");

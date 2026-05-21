@@ -44,23 +44,19 @@ namespace flychams::common
         ID scenario_camera_id;
         Vector3r scenario_camera_position;
         Vector3r scenario_camera_orientation;
+        Vector2i scenario_camera_resolution;
         // Agent view settings
         ID agent_view_id;
         ID agent_camera_id;
         Vector3r agent_camera_position;
         Vector3r agent_camera_orientation;
+        Vector2i agent_camera_resolution;
         // Payload view settings
         ID payload_view_id;
         ID payload_camera_id;
         Vector3r payload_camera_position;
         Vector3r payload_camera_orientation;
-        // Map view settings
-        ID map_view_id;
-        ID map_camera_id;
-        Vector3r map_camera_position;
-        Vector3r map_camera_orientation;
-        // Tracking views settings
-        std::vector<ID> tracking_view_ids;
+        Vector2i payload_camera_resolution;
     };
 
     struct TopicParameters

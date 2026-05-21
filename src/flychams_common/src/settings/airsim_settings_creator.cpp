@@ -318,7 +318,7 @@ void AirsimSettingsCreator::writeVehiclesSection(const MissionConfigPtr& config_
         writeInternalCamerasSection(agent_id, config_ptr, vehicles[agent_id]["Cameras"]);
 
         // Add external cameras to the vehicle
-        writeExternalCamerasSection(config_ptr, vehicles[agent_id]["Cameras"]);
+        writeExternalCamerasSection(agent_id, instance == 0, config_ptr, vehicles[agent_id]["Cameras"]);
 
         instance++;
     }
@@ -426,27 +426,57 @@ void AirsimSettingsCreator::writeInternalCamerasSection(const ID& agent_id, cons
     }
 }
 
-void AirsimSettingsCreator::writeExternalCamerasSection(const MissionConfigPtr& config_ptr, nlohmann::ordered_json& cameras)
+void AirsimSettingsCreator::writeExternalCamerasSection(const ID& agent_id, bool is_first_agent, const MissionConfigPtr& config_ptr, nlohmann::ordered_json& cameras)
 {
-    // Get scenario view camera pose from config
-    const auto& scenario_view_pos = config_ptr->system.scenario_camera_position;
-    const auto& scenario_view_ori = config_ptr->system.scenario_camera_orientation;
+    // Scenario view camera (external, world-fixed — only registered once on the first agent)
+    if (is_first_agent)
+    {
+        const auto& scenario_view_pos = config_ptr->system.scenario_camera_position;
+        const auto& scenario_view_ori = config_ptr->system.scenario_camera_orientation;
+        const auto& scenario_res = config_ptr->system.scenario_camera_resolution;
 
-    cameras["SCENARIOCAM"] = {
-        {"X", scenario_view_pos.x()},
-        {"Y", -scenario_view_pos.y()},
-        {"Z", -scenario_view_pos.z()},
-        {"Roll", MathUtils::radToDeg(scenario_view_ori.x())},
-        {"Pitch", MathUtils::radToDeg(-scenario_view_ori.y())},
-        {"Yaw", MathUtils::radToDeg(-scenario_view_ori.z())},
-        {"External", true} };
+        cameras["SCENARIOCAM"] = {
+            {"CaptureSettings", {{
+                {"ImageType", 0},
+                {"Width", scenario_res(0)},
+                {"Height", scenario_res(1)},
+                {"SensorWidth", 0.0132f},
+                {"SensorHeight", 0.007425f},
+                {"FOV_Degrees", 90},
+                {"LumenGIEnable", false},
+                {"LumenReflectionEnable", false},
+                {"LumenFinalQuality", 0},
+                {"LumenSceneDetail", 0},
+                {"LumenSceneLightningDetail", 0}
+            }}},
+            {"X", scenario_view_pos.x()},
+            {"Y", -scenario_view_pos.y()},
+            {"Z", -scenario_view_pos.z()},
+            {"Roll", MathUtils::radToDeg(scenario_view_ori.x())},
+            {"Pitch", MathUtils::radToDeg(-scenario_view_ori.y())},
+            {"Yaw", MathUtils::radToDeg(-scenario_view_ori.z())},
+            {"External", true} };
+    }
 
-    // Get agent view camera pose from config
+    // Agent view camera (agent-relative, one per agent)
     const auto& agent_view_pos = config_ptr->system.agent_camera_position;
     const auto& agent_view_ori = config_ptr->system.agent_camera_orientation;
+    const auto& agent_res = config_ptr->system.agent_camera_resolution;
 
-    // Agent view camera
-    cameras["AGENTCAM"] = {
+    cameras["AGENTCAM_" + agent_id] = {
+        {"CaptureSettings", {{
+            {"ImageType", 0},
+            {"Width", agent_res(0)},
+            {"Height", agent_res(1)},
+            {"SensorWidth", 0.0132f},
+            {"SensorHeight", 0.007425f},
+            {"FOV_Degrees", 90},
+            {"LumenGIEnable", false},
+            {"LumenReflectionEnable", false},
+            {"LumenFinalQuality", 0},
+            {"LumenSceneDetail", 0},
+            {"LumenSceneLightningDetail", 0}
+        }}},
         {"X", agent_view_pos.x()},
         {"Y", -agent_view_pos.y()},
         {"Z", -agent_view_pos.z()},
@@ -454,12 +484,25 @@ void AirsimSettingsCreator::writeExternalCamerasSection(const MissionConfigPtr& 
         {"Pitch", MathUtils::radToDeg(-agent_view_ori.y())},
         {"Yaw", MathUtils::radToDeg(-agent_view_ori.z())} };
 
-    // Get payload view camera pose from config
+    // Payload view camera (agent-relative, one per agent)
     const auto& payload_view_pos = config_ptr->system.payload_camera_position;
     const auto& payload_view_ori = config_ptr->system.payload_camera_orientation;
+    const auto& payload_res = config_ptr->system.payload_camera_resolution;
 
-    // Payload view camera
-    cameras["PAYLOADCAM"] = {
+    cameras["PAYLOADCAM_" + agent_id] = {
+        {"CaptureSettings", {{
+            {"ImageType", 0},
+            {"Width", payload_res(0)},
+            {"Height", payload_res(1)},
+            {"SensorWidth", 0.0132f},
+            {"SensorHeight", 0.007425f},
+            {"FOV_Degrees", 90},
+            {"LumenGIEnable", false},
+            {"LumenReflectionEnable", false},
+            {"LumenFinalQuality", 0},
+            {"LumenSceneDetail", 0},
+            {"LumenSceneLightningDetail", 0}
+        }}},
         {"X", payload_view_pos.x()},
         {"Y", -payload_view_pos.y()},
         {"Z", -payload_view_pos.z()},
@@ -519,16 +562,38 @@ void AirsimSettingsCreator::writeStreamsSection(const MissionConfigPtr& config_p
 {
     streams = nlohmann::ordered_json::array();
 
-    // Iterate over all agents to stream their cameras
     int rtsp_port = 8554;
+    const auto& first_agent_id = config_ptr->agent_team.begin()->first;
+
+    // Scenario view stream (external camera, single instance on first agent)
+    streams.push_back({ {"CameraName", "SCENARIOCAM"},
+                        {"ImageType", 0},
+                        {"VehicleName", first_agent_id},
+                        {"RtspPort", rtsp_port} });
+
+    // Agent and payload view streams (per-agent)
+    for (const auto& [agent_id, agent_ptr] : config_ptr->agent_team)
+    {
+        streams.push_back({ {"CameraName", "AGENTCAM_" + agent_id},
+                            {"ImageType", 0},
+                            {"VehicleName", agent_id},
+                            {"RtspPort", rtsp_port} });
+
+        streams.push_back({ {"CameraName", "PAYLOADCAM_" + agent_id},
+                            {"ImageType", 0},
+                            {"VehicleName", agent_id},
+                            {"RtspPort", rtsp_port} });
+    }
+
+    // Tracking camera streams (per-agent)
     for (const auto& [agent_id, agent_ptr] : config_ptr->agent_team)
     {
         for (const auto& [camera_id, camera_ptr] : agent_ptr->tracking.multi_camera_set)
         {
             streams.push_back({ {"CameraName", camera_id},
-                                    {"ImageType", 0},
-                                    {"VehicleName", agent_id},
-                                    {"RtspPort", rtsp_port} });
+                                {"ImageType", 0},
+                                {"VehicleName", agent_id},
+                                {"RtspPort", rtsp_port} });
         }
     }
 }
