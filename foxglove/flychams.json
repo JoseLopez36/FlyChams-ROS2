@@ -352,32 +352,36 @@
     "3D!scene": {
       "cameraState": {
         "perspective": true,
-        "distance": 150,
-        "phi": 30,
-        "thetaOffset": 45,
+        "distance": 120,
+        "phi": 35,
+        "thetaOffset": 50,
         "targetOffset": [0, 0, 0],
         "target": [0, 0, 0],
         "targetOrientation": [0, 0, 0, 1],
-        "fovy": 60,
-        "near": 0.5,
-        "far": 10000
+        "fovy": 55,
+        "near": 0.1,
+        "far": 5000
       },
       "followMode": "follow-none",
       "scene": {
         "enableStats": false,
-        "backgroundColor": "#0a0e1a",
-        "labelScaleFactor": 1.0,
+        "backgroundColor": "#0d1117",
+        "labelScaleFactor": 0.8,
         "ignoreColladaUpAxis": false,
         "transforms": {
           "enablePreloading": false,
-          "labelSize": 2,
-          "axisSize": 9,
-          "lineWidth": 0
+          "labelSize": 1.5,
+          "axisSize": 6,
+          "lineWidth": 2
         }
       },
       "transforms": {
         "world": {
-          "visible": true
+          "visible": true,
+          "xAxisColor": "#00e6ff",
+          "yAxisColor": "#00c8ff",
+          "zAxisColor": "#00a8ff",
+          "lineWidth": 2
         }
       },
       "topics": {
@@ -413,10 +417,10 @@
           "drawBehind": true,
           "instanceId": "flychams",
           "layerId": "foxglove.Grid",
-          "size": 1000,
-          "divisions": 40,
-          "lineWidth": 1,
-          "color": "#1e5fcf55",
+          "size": 500,
+          "divisions": 50,
+          "lineWidth": 1.5,
+          "color": "#00e6ff33",
           "position": [0, 0, 0],
           "rotation": [0, 0, 0]
         }

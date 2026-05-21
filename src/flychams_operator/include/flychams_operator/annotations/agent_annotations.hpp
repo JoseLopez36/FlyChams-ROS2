@@ -19,17 +19,7 @@ namespace flychams::operator_pkg
      * @details
      * Subscribes to ObservationSetpoints for the agent. On each timer
      * tick it publishes one foxglove_msgs/ImageAnnotations message per
-     * observation unit containing:
-     *
-     *   Camera units
-     *   - A crosshair (two intersecting lines) at image centre showing
-     *     the locked aim point
-     *   - A text annotation showing zoom factor and rotation
-     *
-     *   Window units
-     *   - A rectangle outline drawn from the crop corners
-     *   - Corner tick marks for visual clarity
-     *   - A text annotation showing the crop dimensions and zoom factor
+     * observation unit.
      * ════════════════════════════════════════════════════════════════
      * @author Jose Francisco Lopez Ruiz
      * @date 2026-05-18
@@ -60,7 +50,7 @@ namespace flychams::operator_pkg
         int central_view_height_;
         int tracking_view_width_;
         int tracking_view_height_;
-        // Original (source) camera resolution for crop coordinate scaling
+        // Central camera resolution
         int original_view_width_;
         int original_view_height_;
 

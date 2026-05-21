@@ -64,7 +64,6 @@ void TargetMarkers::update()
 
     // Target colors
     const FoxColorMsg body_color = MarkerHelpers::makeColor(TargetParameters::kBodyR, TargetParameters::kBodyG, TargetParameters::kBodyB, TargetParameters::kBodyA);
-    const FoxColorMsg glow_color = MarkerHelpers::makeColor(TargetParameters::kGlowR, TargetParameters::kGlowG, TargetParameters::kGlowB, TargetParameters::kGlowA);
 
     // ── Build entity ───────────────────────────────────────────────────────
     FoxSceneEntityMsg entity;
@@ -94,22 +93,7 @@ void TargetMarkers::update()
         entity.cylinders.push_back(body);
     }
 
-    // ── 2. Transparent glow shell ──────────────────────────────────────────
-    {
-        FoxCylinderPrimitiveMsg glow;
-        glow.pose.position = pos;
-        glow.pose.position.z += TargetParameters::kGlowZOffset;
-        glow.pose.orientation.w = 1.0;
-        glow.size.x = TargetParameters::kGlowDiamXY;
-        glow.size.y = TargetParameters::kGlowDiamXY;
-        glow.size.z = TargetParameters::kGlowHeight;
-        glow.color = glow_color;
-        glow.top_scale = 1.0f;
-        glow.bottom_scale = 1.0f;
-        entity.cylinders.push_back(glow);
-    }
-
-    // ── 3. Text label ─────────────────────────────────────────────────
+    // ── 2. Text label ─────────────────────────────────────────────────
     if (TargetParameters::kDisplayText)
     {
         FoxTextPrimitiveMsg text;

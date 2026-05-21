@@ -190,6 +190,8 @@ void AgentMarkers::update()
     {
         FoxTextPrimitiveMsg text;
         text.pose.position = pos;
+        text.pose.position.x += AgentParameters::kLabelXOffset;
+        text.pose.position.y += AgentParameters::kLabelYOffset;
         text.pose.position.z += AgentParameters::kLabelZOffset;
         text.pose.orientation.w = 1.0;
         text.billboard = true;

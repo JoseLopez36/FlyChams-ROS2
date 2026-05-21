@@ -11,25 +11,27 @@ namespace flychams::operator_pkg
     namespace AgentParameters
     {
         // Central body disc
-        constexpr double kBodyDiamXY       = 2.5;
-        constexpr double kBodyDiamZ        = 0.5;
+        constexpr double kBodyDiamXY       = 0.45;
+        constexpr double kBodyDiamZ        = 0.12;
         // Motor arms
-        constexpr double kArmLength        = 3.5;
-        constexpr double kArmDiam          = 0.35;
+        constexpr double kArmLength        = 0.70;
+        constexpr double kArmDiam          = 0.05;
         // Rotor discs
-        constexpr double kRotorDiam        = 2.0;
-        constexpr double kRotorThickness   = 0.12;
+        constexpr double kRotorDiam        = 0.55;
+        constexpr double kRotorThickness   = 0.03;
         constexpr float  kRotorAlpha       = 0.50f;
         // Heading arrow
         constexpr bool   kShowArrow        = true;
-        constexpr double kArrowShaftLen    = 3.0;
-        constexpr double kArrowShaftDiam   = 0.20;
-        constexpr double kArrowHeadLen     = 0.80;
-        constexpr double kArrowHeadDiam    = 0.55;
+        constexpr double kArrowShaftLen    = 0.50;
+        constexpr double kArrowShaftDiam   = 0.04;
+        constexpr double kArrowHeadLen     = 0.15;
+        constexpr double kArrowHeadDiam    = 0.10;
         // Text label
         constexpr bool   kDisplayText      = true;
         constexpr float  kFontSize         = 1.5f;
-        constexpr double kLabelZOffset     = 5.5;
+        constexpr double kLabelXOffset     = -3.0;
+        constexpr double kLabelYOffset     = 3.0;
+        constexpr double kLabelZOffset     = 1.5;
         // Status colors
         // IDLE
         constexpr float kIdleBodyR = 1.00f, kIdleBodyG = 0.78f, kIdleBodyB = 0.00f, kIdleBodyA = 0.9f;
@@ -72,17 +74,12 @@ namespace flychams::operator_pkg
         constexpr double kBodyDiamXY       = 1.2;
         constexpr double kBodyHeight       = 1.8;
         constexpr double kBodyZOffset      = 0.9;
-        // Glow shell cylinder
-        constexpr double kGlowDiamXY       = 3.5;
-        constexpr double kGlowHeight       = 0.1;
-        constexpr double kGlowZOffset      = 0.9;
         // Text label
         constexpr bool   kDisplayText      = false;
         constexpr float  kFontSize         = 2.0f;
         constexpr double kLabelZOffset     = 4.0;
         // Colors
-        constexpr float kBodyR = 1.00f, kBodyG = 0.22f, kBodyB = 0.18f, kBodyA = 0.90f;
-        constexpr float kGlowR = 1.00f, kGlowG = 0.30f, kGlowB = 0.10f, kGlowA = 0.20f;
+        constexpr float kBodyR = 1.00f, kBodyG = 0.22f, kBodyB = 0.18f, kBodyA = 1.0f;
     }
 
     // ════════════════════════════════════════════════════════════════════════════
