@@ -26,36 +26,6 @@ namespace flychams::common
     {
     public:
         /**
-         * @brief Transform a point from ENU to NED frame
-         */
-        static Vector3r pointToNED(const Vector3r& enu);
-
-        /**
-         * @brief Transform a point from NED to ENU frame
-         */
-        static Vector3r pointFromNED(const Vector3r& ned);
-
-        /**
-         * @brief Transform orientation from ENU to NED frame
-         */
-        static Quaternionr quatToNED(const Quaternionr& q);
-
-        /**
-         * @brief Transform orientation from NED to ENU frame
-         */
-        static Quaternionr quatFromNED(const Quaternionr& q);
-
-        /**
-         * @brief Transform Euler angles (RPY) from ENU to NED frame
-         */
-        static Vector3r eulerToNED(const Vector3r& euler);
-
-        /**
-         * @brief Transform Euler angles (RPY) from NED to ENU frame
-         */
-        static Vector3r eulerFromNED(const Vector3r& euler);
-
-        /**
          * @brief Convert local cartesian coordinates (ENU) to global geographic coordinates (LLA)
          */
         static GeoPointMsg toGlobal(const double& x, const double& y, const double& z, const GeoPointMsg& origin);

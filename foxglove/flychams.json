@@ -369,6 +369,7 @@
         "labelScaleFactor": 0.8,
         "ignoreColladaUpAxis": false,
         "transforms": {
+          "visible": false,
           "enablePreloading": false,
           "labelSize": 1.5,
           "axisSize": 6,
@@ -381,7 +382,7 @@
           "xAxisColor": "#00e6ff",
           "yAxisColor": "#00c8ff",
           "zAxisColor": "#00a8ff",
-          "lineWidth": 2
+          "lineWidth": 0
         }
       },
       "topics": {

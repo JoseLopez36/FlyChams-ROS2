@@ -11,12 +11,9 @@ find_package(ament_cmake_python REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(cv_bridge REQUIRED)
 find_package(px4_msgs REQUIRED)
+find_package(px4_ros_com REQUIRED)
 find_package(flychams_common REQUIRED)
 find_package(flychams_api REQUIRED)
-
-# Find GeographicLib
-set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH};/usr/share/cmake/geographiclib")
-find_package(GeographicLib REQUIRED)
 
 # Create control library
 set(CONTROL_SRC
@@ -47,7 +44,7 @@ target_include_directories(${PROJECT_NAME} PUBLIC
 
 # Export dependencies
 ament_target_dependencies(${PROJECT_NAME}
-  rclcpp cv_bridge px4_msgs flychams_common flychams_api
+  rclcpp cv_bridge px4_msgs px4_ros_com flychams_common flychams_api
 )
 
 # Link to required libraries
@@ -136,6 +133,7 @@ ament_export_dependencies(
   rclpy
   cv_bridge
   px4_msgs
+  px4_ros_com
   flychams_common
   flychams_api
 )

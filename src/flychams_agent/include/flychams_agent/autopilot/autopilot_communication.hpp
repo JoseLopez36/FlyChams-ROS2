@@ -1,12 +1,15 @@
 #pragma once
 
-// PX4 includes
+// PX4 messages includes
 #include <px4_msgs/msg/home_position.hpp>
 #include <px4_msgs/msg/vehicle_status.hpp>
 #include <px4_msgs/msg/vehicle_odometry.hpp>
 #include <px4_msgs/msg/vehicle_command.hpp>
 #include <px4_msgs/msg/offboard_control_mode.hpp>
 #include <px4_msgs/msg/trajectory_setpoint.hpp>
+
+// Utils include
+#include "flychams_agent/autopilot/autopilot_utils.hpp"
 
 // Base module include
 #include "flychams_common/base/base_module.hpp"

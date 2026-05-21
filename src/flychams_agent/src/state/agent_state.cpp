@@ -167,7 +167,7 @@ void DroneState::updateLocalPosition(const px4_msgs::msg::VehicleOdometry& vehic
 {
     // Convert NED position to ENU
     const Vector3r ned_pos(vehicle_odom.position[0], vehicle_odom.position[1], vehicle_odom.position[2]);
-    const Vector3r enu_pos = FrameUtils::pointFromNED(ned_pos);
+    const Vector3r enu_pos = AutopilotUtils::pointFromNED(ned_pos);
 
     PointStampedMsg local_position_msg;
     local_position_msg.header.stamp = node_->now();
@@ -183,7 +183,7 @@ void DroneState::updateGlobalPosition(const px4_msgs::msg::VehicleOdometry& vehi
 {
     // Convert NED position to ENU
     const Vector3r ned_pos(vehicle_odom.position[0], vehicle_odom.position[1], vehicle_odom.position[2]);
-    const Vector3r enu_pos = FrameUtils::pointFromNED(ned_pos);
+    const Vector3r enu_pos = AutopilotUtils::pointFromNED(ned_pos);
 
     PointStampedMsg local_position_msg;
     local_position_msg.header.stamp = node_->now();

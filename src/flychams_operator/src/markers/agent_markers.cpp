@@ -20,12 +20,16 @@ void AgentMarkers::onModuleInit()
     scene_pub_ = node_->createScenePublisher(element_id_);
 
     // Subscribers
-    position_sub_ = node_->createAgentLocalPositionSubscriber(agent_id_,
+    position_sub_ = node_->createAgentGlobalPositionSubscriber(agent_id_,
         std::bind(&AgentMarkers::positionCallback, this, std::placeholders::_1),
         node_->getSubscriptionOptions());
 
     status_sub_ = node_->createAgentStatusSubscriber(agent_id_,
         std::bind(&AgentMarkers::statusCallback, this, std::placeholders::_1),
+        node_->getSubscriptionOptions());
+
+    setpoint_sub_ = node_->createAgentPositionSetpointSubscriber(agent_id_,
+        std::bind(&AgentMarkers::setpointCallback, this, std::placeholders::_1),
         node_->getSubscriptionOptions());
 
     // Update timer
@@ -38,6 +42,7 @@ void AgentMarkers::onModuleShutdown()
     scene_pub_.reset();
     position_sub_.reset();
     status_sub_.reset();
+    setpoint_sub_.reset();
 }
 
 // ════════════════════════════════════════════════════════════════════════════
@@ -56,6 +61,12 @@ void AgentMarkers::statusCallback(const AgentStatusMsg::SharedPtr msg)
     agent_.has_status = true;
 }
 
+void AgentMarkers::setpointCallback(const PointStampedMsg::SharedPtr msg)
+{
+    agent_.setpoint = msg->point;
+    agent_.has_setpoint = true;
+}
+
 // ════════════════════════════════════════════════════════════════════════════
 // UPDATE
 // ════════════════════════════════════════════════════════════════════════════
@@ -67,7 +78,10 @@ void AgentMarkers::update()
         return;
     }
 
-    const std::string& frame = node_->getGlobalFrame();
+    FoxSceneUpdateMsg update_msg;
+
+    const std::string frame = node_->getAgentBodyFrame(agent_id_);
+    const std::string global_frame = node_->getGlobalFrame();
     const auto& pos = agent_.position;
     const auto stamp = node_->now().nanoseconds();
     const auto lifetime = rclcpp::Duration::from_seconds(2.0 / update_rate_);
@@ -108,10 +122,16 @@ void AgentMarkers::update()
     kv_alt.value = oss.str();
     entity.metadata = {kv_status, kv_alt};
 
+    // Body origin relative to agent body frame
+    PointMsg body_pos;
+    body_pos.x = 0.0;
+    body_pos.y = 0.0;
+    body_pos.z = 0.0;
+
     // ── 1. Central fuselage disc ───────────────────────────────────────────
     {
         FoxCylinderPrimitiveMsg body;
-        body.pose.position = pos;
+        body.pose.position = body_pos;
         body.pose.orientation.w = 1.0;
         body.size.x = AgentParameters::kBodyDiamXY;
         body.size.y = AgentParameters::kBodyDiamXY;
@@ -140,9 +160,9 @@ void AgentMarkers::update()
 
         // Arm cylinder: spans from fuselage centre to rotor mount
         FoxCylinderPrimitiveMsg arm;
-        arm.pose.position.x = pos.x + cx;
-        arm.pose.position.y = pos.y + cy;
-        arm.pose.position.z = pos.z;
+        arm.pose.position.x = cx;
+        arm.pose.position.y = cy;
+        arm.pose.position.z = 0.0;
         arm.pose.orientation.x = qx;
         arm.pose.orientation.y = qy;
         arm.pose.orientation.z = 0.0;
@@ -157,9 +177,9 @@ void AgentMarkers::update()
 
         // Rotor disc: large, flat, semi-transparent cylinder at arm tip
         FoxCylinderPrimitiveMsg rotor;
-        rotor.pose.position.x = pos.x + rx;
-        rotor.pose.position.y = pos.y + ry;
-        rotor.pose.position.z = pos.z;
+        rotor.pose.position.x = rx;
+        rotor.pose.position.y = ry;
+        rotor.pose.position.z = 0.0;
         rotor.pose.orientation.w = 1.0;
         rotor.size.x = AgentParameters::kRotorDiam;
         rotor.size.y = AgentParameters::kRotorDiam;
@@ -174,7 +194,7 @@ void AgentMarkers::update()
     if (AgentParameters::kShowArrow)
     {
         FoxArrowPrimitiveMsg arrow;
-        arrow.pose.position = pos;
+        arrow.pose.position = body_pos;
         // Default arrow primitive points along +X — no rotation needed
         arrow.pose.orientation.w = 1.0;
         arrow.shaft_length   = AgentParameters::kArrowShaftLen;
@@ -189,7 +209,7 @@ void AgentMarkers::update()
     if (AgentParameters::kDisplayText)
     {
         FoxTextPrimitiveMsg text;
-        text.pose.position = pos;
+        text.pose.position = body_pos;
         text.pose.position.x += AgentParameters::kLabelXOffset;
         text.pose.position.y += AgentParameters::kLabelYOffset;
         text.pose.position.z += AgentParameters::kLabelZOffset;
@@ -202,8 +222,52 @@ void AgentMarkers::update()
         entity.texts.push_back(text);
     }
 
+    // ── 5. Setpoint ─────────────────────────────────────────────────────
+    if (AgentParameters::kShowSetpoint && agent_.has_setpoint)
+    {
+        FoxSceneEntityMsg setpoint_entity;
+        MarkerHelpers::stampEntity(setpoint_entity, stamp, lifetime);
+        setpoint_entity.frame_id = global_frame;
+        setpoint_entity.id = agent_id_ + "_setpoint";
+
+        // 1. Setpoint Sphere
+        {
+            FoxSpherePrimitiveMsg sphere;
+            sphere.pose.position = agent_.setpoint;
+            sphere.pose.orientation.w = 1.0;
+            sphere.size.x = AgentParameters::kSetpointDiam;
+            sphere.size.y = AgentParameters::kSetpointDiam;
+            sphere.size.z = AgentParameters::kSetpointDiam;
+            sphere.color = MarkerHelpers::makeColor(
+                AgentParameters::kSetpointR,
+                AgentParameters::kSetpointG,
+                AgentParameters::kSetpointB,
+                AgentParameters::kSetpointA
+            );
+            setpoint_entity.spheres.push_back(sphere);
+        }
+
+        // 2. Connecting line from drone to setpoint
+        {
+            FoxLinePrimitiveMsg line;
+            line.type = FoxLinePrimitiveMsg::LINE_STRIP;
+            line.pose.orientation.w = 1.0;
+            line.thickness = AgentParameters::kSetpointLineThickness;
+            line.color = MarkerHelpers::makeColor(
+                AgentParameters::kSetpointLineR,
+                AgentParameters::kSetpointLineG,
+                AgentParameters::kSetpointLineB,
+                AgentParameters::kSetpointLineA
+            );
+            line.points.push_back(pos);
+            line.points.push_back(agent_.setpoint);
+            setpoint_entity.lines.push_back(line);
+        }
+
+        update_msg.entities.push_back(setpoint_entity);
+    }
+
     // ── Publish SceneUpdate ────────────────────────────────────────────────
-    FoxSceneUpdateMsg update_msg;
     update_msg.entities.push_back(entity);
     scene_pub_->publish(update_msg);
 }

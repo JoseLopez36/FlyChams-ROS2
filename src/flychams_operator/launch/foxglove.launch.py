@@ -23,12 +23,12 @@ def generate_launch_description():
                 # QoS
                 'min_qos_depth': 1,
                 'max_qos_depth': 2,
-                # Force image topics to best_effort to avoid retransmit overhead
+                # Force image topics to best_effort
                 'best_effort_qos_topic_whitelist': [
                     '^/flychams/agent/.*/.*/(image|image/compressed)$',
                 ],
-                # Restrict advertised topics to /flychams namespace
-                'topic_whitelist': ['^/flychams/.*', '/rosout'],
+                # Restrict advertised topics
+                'topic_whitelist': ['^/flychams/.*', '/rosout', '/tf', '/tf_static'],
                 # Allow coordinator command publishers from Foxglove
                 'client_topic_whitelist': [
                     '/flychams/coordinator/start_mission',

@@ -1,8 +1,7 @@
 #include "flychams_agent/autopilot/autopilot_communication.hpp"
 
-#include <limits>
-
 using namespace flychams::common;
+
 using namespace flychams::agent;
 
 // ════════════════════════════════════════════════════════════════════════════
@@ -136,7 +135,7 @@ void AutopilotCommunication::setLocalPosition(const float& x, const float& y, co
     offboard_control_mode_pub_->publish(offboard_msg);
 
     // Input is ENU (local frame) — convert to NED for PX4 TrajectorySetpoint
-    const Vector3r ned = FrameUtils::pointToNED(Vector3r(x, y, z));
+    const Vector3r ned = AutopilotUtils::pointToNED(Vector3r(x, y, z));
 
     px4_msgs::msg::TrajectorySetpoint setpoint_msg{};
     setpoint_msg.timestamp = node_->now().nanoseconds() / 1000;

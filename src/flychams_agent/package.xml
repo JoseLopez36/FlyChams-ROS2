@@ -18,7 +18,7 @@
   <depend>rclpy</depend>
   <depend>cv_bridge</depend>
   <depend>px4_msgs</depend>
-  <depend>geographiclib</depend>
+  <depend>px4_ros_com</depend>
   <depend>flychams_common</depend>
   <depend>flychams_api</depend>
 

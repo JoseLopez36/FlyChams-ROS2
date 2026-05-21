@@ -49,6 +49,8 @@ namespace flychams::operator_pkg
             bool has_position = false;
             uint8_t status = 0;
             bool has_status = false;
+            common::PointMsg setpoint;
+            bool has_setpoint = false;
         };
 
     private: // Parameters
@@ -62,6 +64,7 @@ namespace flychams::operator_pkg
     private: // Callbacks
         void positionCallback(const common::PointStampedMsg::SharedPtr msg);
         void statusCallback(const common::AgentStatusMsg::SharedPtr msg);
+        void setpointCallback(const common::PointStampedMsg::SharedPtr msg);
 
     private: // Update
         void update();
@@ -72,6 +75,7 @@ namespace flychams::operator_pkg
         common::PublisherPtr<common::FoxSceneUpdateMsg> scene_pub_;
         common::SubscriberPtr<common::PointStampedMsg> position_sub_;
         common::SubscriberPtr<common::AgentStatusMsg> status_sub_;
+        common::SubscriberPtr<common::PointStampedMsg> setpoint_sub_;
     };
 
 } // namespace flychams::operator_pkg

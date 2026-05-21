@@ -32,6 +32,10 @@ namespace flychams::operator_pkg
         constexpr double kLabelXOffset     = -3.0;
         constexpr double kLabelYOffset     = 3.0;
         constexpr double kLabelZOffset     = 1.5;
+        // Setpoint
+        constexpr bool   kShowSetpoint          = true;
+        constexpr double kSetpointDiam          = 0.30;
+        constexpr double kSetpointLineThickness = 0.05;
         // Status colors
         // IDLE
         constexpr float kIdleBodyR = 1.00f, kIdleBodyG = 0.78f, kIdleBodyB = 0.00f, kIdleBodyA = 0.9f;
@@ -42,6 +46,9 @@ namespace flychams::operator_pkg
         // ERROR
         constexpr float kErrBodyR  = 1.00f, kErrBodyG  = 0.15f, kErrBodyB  = 0.10f, kErrBodyA  = 0.9f;
         constexpr float kErrRotorR = 1.00f, kErrRotorG = 0.10f, kErrRotorB = 1.00f;
+        // Setpoint colors
+        constexpr float kSetpointR = 0.00f, kSetpointG = 1.00f, kSetpointB = 0.00f, kSetpointA = 0.70f;
+        constexpr float kSetpointLineR = 0.00f, kSetpointLineG = 1.00f, kSetpointLineB = 0.00f, kSetpointLineA = 0.50f;
     }
 
     // ════════════════════════════════════════════════════════════════════════════

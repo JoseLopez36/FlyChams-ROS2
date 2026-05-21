@@ -28,6 +28,12 @@ void DroneFrames::onModuleInit()
     agent_.local_odom_sub = autopilot_comm_->subscribeLocalOdometry(
         std::bind(&DroneFrames::localOdomCallback, this, std::placeholders::_1), node_->getSubscriptionOptions());
 
+    // Publish default identity transform world -> local
+    std::string world_frame = node_->getGlobalFrame();
+    std::string local_frame = node_->getAgentLocalFrame(agent_id_);
+    node_->broadcastStaticTransform(world_frame, local_frame, Matrix4r::Identity());
+    RCLCPP_INFO(node_->get_logger(), "Drone frames: Published default identity transform %s -> %s", world_frame.c_str(), local_frame.c_str());
+
     // Set update timer
     update_timer_ = node_->createTimer(update_rate_, std::bind(&DroneFrames::update, this));
 }
@@ -97,13 +103,13 @@ void DroneFrames::localOdomCallback(const px4_msgs::msg::VehicleOdometry::Shared
 {
     // Store odometry data — PX4 VehicleOdometry is NED, convert to ENU
     const Vector3r ned_pos(msg->position[0], msg->position[1], msg->position[2]);
-    const Vector3r enu_pos = FrameUtils::pointFromNED(ned_pos);
+    const Vector3r enu_pos = AutopilotUtils::pointFromNED(ned_pos);
     agent_.local_position.x = enu_pos.x();
     agent_.local_position.y = enu_pos.y();
     agent_.local_position.z = enu_pos.z();
 
     const Quaternionr ned_q(msg->q[0], msg->q[1], msg->q[2], msg->q[3]);
-    const Quaternionr enu_q = FrameUtils::quatFromNED(ned_q);
+    const Quaternionr enu_q = AutopilotUtils::px4ToRosOrientation(ned_q);
     agent_.local_orientation.x = enu_q.x();
     agent_.local_orientation.y = enu_q.y();
     agent_.local_orientation.z = enu_q.z();

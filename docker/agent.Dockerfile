@@ -17,10 +17,12 @@ ENV GPU_VENDOR=${GPU_VENDOR}
 #         pip3 install --no-cache-dir ultralytics lapx; \
 #     fi
 
-# Setup px4_msgs
+# Setup PX4 dependencies
 RUN mkdir -p /home/${USER_NAME}/px4_msgs_ws/src && \
     git clone --branch release/1.16 https://github.com/PX4/px4_msgs.git \
         /home/${USER_NAME}/px4_msgs_ws/src/px4_msgs && \
+    git clone --branch main https://github.com/PX4/px4_ros_com.git \
+        /home/${USER_NAME}/px4_msgs_ws/src/px4_ros_com && \
     bash -c "source /opt/ros/humble/setup.bash && \
         cd /home/${USER_NAME}/px4_msgs_ws && \
         colcon build --cmake-args -DCMAKE_BUILD_TYPE=Release" && \
