@@ -26,11 +26,13 @@ def run(cmd, **kwargs):
 # Simulation mode
 # ------------------------------------------------------------------
 
-def launch_sim(agent_ids: list):
+def launch_sim(agent_ids: list, record: bool = False, record_dir: str = ""):
     print("=== Simulation mode ===")
 
     # Operator
-    run(f"DETACH=true {SCRIPT_DIR}/launch_operator.sh")
+    record_env = f"RECORD=true{' RECORD_DIR=' + record_dir if record_dir else ''}" if record else ""
+    operator_env = f"DETACH=true {record_env}".strip()
+    run(f"{operator_env} {SCRIPT_DIR}/launch_operator.sh")
     time.sleep(1)
 
     # Micro-XRCE-DDS Agent
@@ -84,6 +86,18 @@ def parse_args():
         metavar="AGENT_ID",
         help="Agent IDs to launch (e.g. AGENT00 AGENT01). Defaults to all agents in mission.yaml"
     )
+    parser.add_argument(
+        "--record",
+        action="store_true",
+        default=False,
+        help="Record all Foxglove-displayed topics to an MCAP bag (operator only)"
+    )
+    parser.add_argument(
+        "--record-dir",
+        default="",
+        metavar="DIR",
+        help="Output directory for the bag (default: recordings/ inside the project root)"
+    )
     return parser.parse_args()
 
 
@@ -91,6 +105,6 @@ if __name__ == "__main__":
     args = parse_args()
     agent_ids = args.agents if args.agents else load_agent_ids()
     if args.mode == "sim":
-        launch_sim(agent_ids)
+        launch_sim(agent_ids, record=args.record, record_dir=args.record_dir)
     else:
         launch(agent_ids)

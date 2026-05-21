@@ -13,3 +13,6 @@ log/
 
 # Ignore python cache
 __pycache__/
+
+# Ignore rosbag2 recordings
+recordings/

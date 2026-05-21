@@ -157,6 +157,61 @@ ROS console log viewer:
 
 ---
 
+## Topic Recording
+
+The operator image includes `rosbag2` with the MCAP storage plugin, enabling recordings that can be replayed directly in Foxglove Studio.
+
+### Recorded topics
+
+All topics matching `^/flychams/.*` plus `/rosout` are captured — this covers every topic rendered in the Foxglove layout:
+
+| Category | Pattern |
+|---|---|
+| 3D scene markers | `/flychams/operator/ELEMENT*/scene` |
+| Camera feeds (compressed) | `/flychams/operator/ELEMENT*/VIEW*/image/compressed` |
+| Detection annotations | `/flychams/operator/ELEMENT*/VIEW*/annotations` |
+| Agent metrics | `/flychams/operator/*/metrics` |
+| Agent status | `/flychams/control/*/status` |
+| Mission metrics | `/flychams/operator/global/metrics` |
+| System log | `/rosout` |
+
+Bags are saved to `recordings/` at the project root and use the **MCAP** format for native Foxglove compatibility.
+
+### Recording methods
+
+**Option A — Standalone script** (attach to a running operator container):
+
+```bash
+# Default output: $PROJECT_ROOT/recordings/flychams_<timestamp>/
+scripts/record_operator.sh
+
+# Custom output directory
+RECORD_DIR=/data/bags scripts/record_operator.sh
+```
+
+Press `Ctrl+C` to stop and finalize the bag.
+
+**Option B — Integrated with launch** (starts recording alongside the operator stack):
+
+```bash
+# Interactive, with recording
+RECORD=true scripts/launch_operator.sh
+
+# Detached, custom bag directory
+DETACH=true RECORD=true RECORD_DIR=/data/bags scripts/launch_operator.sh
+```
+
+### Replaying in Foxglove Studio
+
+1. Open [Foxglove Studio](https://foxglove.dev/studio).
+2. Click **Open local file** → select the `.mcap` file inside the recording directory.
+3. Import `foxglove/flychams.json` as the layout (**File → Import layout from file**).
+4. Use the playback controls to scrub through the recording.
+
+> Recordings are excluded from version control via `.gitignore`. Store long-term recordings outside the project root or on a dedicated data volume.
+
+---
+
 ### Fleet Control
 
 A tabbed panel placed to the right of System Log in the bottom-left area. Each button is a [**Button extension**](https://github.com/adityakamath/foxglove_extensions/tree/main/button) panel (`Kamath Robotics.button.Button`) that publishes `std_msgs/Bool` on a dedicated topic on press/toggle.
