@@ -112,7 +112,7 @@ void AgentTracking::update()
     // Skip update if status is not valid
     if (!checkStatus())
     {
-        RCLCPP_WARN(node_->get_logger(), "Agent tracking: Skipping update due to invalid status");
+        RCLCPP_INFO(node_->get_logger(), "Agent tracking: Skipping update due to invalid status");
         return;
     }
 
@@ -187,28 +187,28 @@ bool AgentTracking::checkStatus()
     // Check 1: Mission must be active
     if (!node_->isMissionActive())
     {
-        RCLCPP_WARN(node_->get_logger(), "Agent tracking: Mission is not active");
+        RCLCPP_INFO(node_->get_logger(), "Agent tracking: Mission is not active");
         return false;
     }
 
     // Check 2: Agent must have a valid status
     if (!agent_.has_status)
     {
-        RCLCPP_WARN(node_->get_logger(), "Agent tracking: Agent %s has no status", agent_id_.c_str());
+        RCLCPP_INFO(node_->get_logger(), "Agent tracking: Agent %s has no status", agent_id_.c_str());
         return false;
     }
 
     // Check 3: Agent must be in ACTIVE state
     if (agent_.status != AgentStatus::ACTIVE)
     {
-        RCLCPP_WARN(node_->get_logger(), "Agent tracking: Agent %s is not in ACTIVE state", agent_id_.c_str());
+        RCLCPP_INFO(node_->get_logger(), "Agent tracking: Agent %s is not in ACTIVE state", agent_id_.c_str());
         return false;
     }
 
     // Check 4: Agent must have cluster assignments
     if (!agent_.has_clusters)
     {
-        RCLCPP_WARN(node_->get_logger(), "Agent tracking: Agent %s has no clusters", agent_id_.c_str());
+        RCLCPP_INFO(node_->get_logger(), "Agent tracking: Agent %s has no clusters", agent_id_.c_str());
         return false;
     }
 

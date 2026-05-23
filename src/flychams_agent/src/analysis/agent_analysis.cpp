@@ -81,7 +81,7 @@ void AgentAnalysis::update()
     // Skip update if status is not valid
     if (!checkStatus())
     {
-        RCLCPP_WARN(node_->get_logger(), "Agent analysis: Skipping update due to invalid status");
+        RCLCPP_INFO(node_->get_logger(), "Agent analysis: Skipping update due to invalid status");
         return;
     }
 
@@ -125,14 +125,14 @@ bool AgentAnalysis::checkStatus()
     // Check 1: Mission must be active
     if (!node_->isMissionActive())
     {
-        RCLCPP_WARN(node_->get_logger(), "Agent analysis: Mission is not active");
+        RCLCPP_INFO(node_->get_logger(), "Agent analysis: Mission is not active");
         return false;
     }
 
     // Check 2: Agent must have a valid assignment
     if (!agent_.has_assignment)
     {
-        RCLCPP_WARN(node_->get_logger(), "Agent analysis: Agent %s has no assignment", agent_id_.c_str());
+        RCLCPP_INFO(node_->get_logger(), "Agent analysis: Agent %s has no assignment", agent_id_.c_str());
         return false;
     }
 
@@ -141,7 +141,7 @@ bool AgentAnalysis::checkStatus()
     {
         if (clusters_.find(cluster_id) == clusters_.end() || !clusters_[cluster_id].has_geometry)
         {
-            RCLCPP_WARN(node_->get_logger(), "Agent analysis: Cluster %s has no geometry", cluster_id.c_str());
+            RCLCPP_INFO(node_->get_logger(), "Agent analysis: Cluster %s has no geometry", cluster_id.c_str());
             return false;
         }
     }

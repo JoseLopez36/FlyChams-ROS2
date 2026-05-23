@@ -102,7 +102,7 @@ void CameraFrames::update()
     // Skip update if status is not valid
     if (!checkStatus())
     {
-        RCLCPP_WARN(node_->get_logger(), "Camera frames: Defaulting update due to invalid status");
+        RCLCPP_INFO(node_->get_logger(), "Camera frames: Defaulting update due to invalid status");
 
         // Set default orientation
         QuaternionMsg orientation_msg;
@@ -171,7 +171,7 @@ bool CameraFrames::checkStatus()
     // Check 1: Agent must have a valid observation setpoints
     if (!agent_.has_observation_setpoints)
     {
-        RCLCPP_WARN(node_->get_logger(), "Camera frames: Agent %s has no observation setpoints", agent_id_.c_str());
+        RCLCPP_INFO(node_->get_logger(), "Camera frames: Agent %s has no observation setpoints", agent_id_.c_str());
         return false;
     }
 

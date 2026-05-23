@@ -78,7 +78,7 @@ void DroneState::update()
     // Skip update if status is not valid
     if (!checkStatus())
     {
-        RCLCPP_WARN(node_->get_logger(), "Drone state: Skipping update due to invalid status");
+        RCLCPP_INFO(node_->get_logger(), "Drone state: Skipping update due to invalid status");
         return;
     }
 
@@ -144,14 +144,14 @@ bool DroneState::checkStatus()
     // Check 1: Agent must have a valid PX4 vehicle status
     if (!agent_.has_status)
     {
-        RCLCPP_WARN(node_->get_logger(), "Drone state: Agent %s has no vehicle status", agent_id_.c_str());
+        RCLCPP_INFO(node_->get_logger(), "Drone state: Agent %s has no vehicle status", agent_id_.c_str());
         return false;
     }
 
     // Check 2: Agent must have a valid PX4 local odometry
     if (!agent_.has_local_odom)
     {
-        RCLCPP_WARN(node_->get_logger(), "Drone state: Agent %s has no local odometry", agent_id_.c_str());
+        RCLCPP_INFO(node_->get_logger(), "Drone state: Agent %s has no local odometry", agent_id_.c_str());
         return false;
     }
 

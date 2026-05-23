@@ -74,7 +74,7 @@ void TargetState::update()
     // Skip update if status is not valid
     if (!checkStatus())
     {
-        RCLCPP_WARN(node_->get_logger(), "Target state: Skipping update due to invalid status");
+        RCLCPP_INFO(node_->get_logger(), "Target state: Skipping update due to invalid status");
         return;
     }
 
@@ -145,7 +145,7 @@ bool TargetState::checkStatus()
     // Check 1: Trajectory must have valid points
     if (trajectory_.num_points == 0)
     {
-        RCLCPP_WARN(node_->get_logger(), "Target state: No trajectory points available for target %s", target_id_.c_str());
+        RCLCPP_INFO(node_->get_logger(), "Target state: No trajectory points available for target %s", target_id_.c_str());
         return false;
     }
 

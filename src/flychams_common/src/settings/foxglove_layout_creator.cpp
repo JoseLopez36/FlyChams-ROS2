@@ -152,10 +152,10 @@ void FoxgloveLayoutCreator::writeCameraFeedTabs(const MissionConfigPtr& config_p
         // Build the panel ID list for this tab
         // Layout: central (view00) on top-left; tracking views in a 2x2 grid on the right
         const std::string v00 = "Image!" + tab + "view00";
-        const std::string v01 = nv > 1 ? "Image!" + tab + "view01" : v00;
-        const std::string v02 = nv > 2 ? "Image!" + tab + "view02" : v00;
-        const std::string v03 = nv > 3 ? "Image!" + tab + "view03" : v00;
-        const std::string v04 = nv > 4 ? "Image!" + tab + "view04" : v00;
+        const std::string v01 = "Image!" + tab + "view01";
+        const std::string v02 = "Image!" + tab + "view02";
+        const std::string v03 = "Image!" + tab + "view03";
+        const std::string v04 = "Image!" + tab + "view04";
 
         tabs.push_back({
             {"title", "ID: " + agent_id + " Feed"},
@@ -202,25 +202,41 @@ void FoxgloveLayoutCreator::writeImagePanels(const MissionConfigPtr& config_ptr,
         const std::string tab(tab_buf);
         const auto views = getViewIds(agent_ptr);
 
-        for (int vi = 0; vi < static_cast<int>(views.size()); ++vi)
+        const int nv = static_cast<int>(views.size());
+        for (int vi = 0; vi < 5; ++vi)
         {
             char view_buf[8];
             std::snprintf(view_buf, sizeof(view_buf), "view%02d", vi);
-            const std::string view_key(view_buf);
-            const std::string panel_id = "Image!" + tab + view_key;
-            const std::string agent_base = "/flychams/agent/" + agent_id + "/" + views[vi];
-            const std::string op_base    = "/flychams/operator/" + agent_id + "/" + views[vi];
+            const std::string panel_id = "Image!" + tab + view_buf;
 
-            cfg[panel_id] = {
-                {"synchronize", false},
-                {"imageMode", {
-                    {"imageTopic", agent_base + "/image/compressed"},
-                    {"annotations", {
-                        {op_base + "/annotations", { {"visible", true} }}
-                    }}
-                }},
-                {"foxglovePanelTitle", "ID: " + views[vi]}
-            };
+            if (vi < nv)
+            {
+                const std::string agent_base = "/flychams/agent/" + agent_id + "/" + views[vi];
+                const std::string op_base    = "/flychams/operator/" + agent_id + "/" + views[vi];
+                cfg[panel_id] = {
+                    {"synchronize", false},
+                    {"imageMode", {
+                        {"imageTopic", agent_base + "/image/compressed"},
+                        {"annotations", {
+                            {op_base + "/annotations", { {"visible", true} }}
+                        }}
+                    }},
+                    {"foxglovePanelTitle", "ID: " + views[vi]}
+                };
+            }
+            else
+            {
+                cfg[panel_id] = {
+                    {"synchronize", false},
+                    {"imageMode", {
+                        {"imageTopic", ""},
+                        {"annotations", {
+                            {"", { {"visible", false} }}
+                        }}
+                    }},
+                    {"foxglovePanelTitle", ""}
+                };
+            }
         }
 
         ++tab_idx;
@@ -529,7 +545,7 @@ std::vector<std::string> FoxgloveLayoutCreator::getViewIds(const AgentConfigPtr&
     {
         if (camera_ptr->role == ObservationRole::Central)
         {
-            views.insert(views.begin(), camera_id);
+            views.push_back(camera_id);
             break;
         }
     }
@@ -538,7 +554,9 @@ std::vector<std::string> FoxgloveLayoutCreator::getViewIds(const AgentConfigPtr&
     for (const auto& [camera_id, camera_ptr] : agent_ptr->tracking.multi_camera_set)
     {
         if (camera_ptr->role != ObservationRole::Central)
+        {
             views.push_back(camera_id);
+        }
     }
 
     // Then crop window IDs in map order

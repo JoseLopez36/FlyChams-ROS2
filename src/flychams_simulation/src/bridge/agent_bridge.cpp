@@ -61,7 +61,7 @@ void AgentBridge::update()
     // Skip update if status is not valid
     if (!checkStatus())
     {
-        RCLCPP_WARN(node_->get_logger(), "Agent bridge: Skipping update due to invalid status");
+        RCLCPP_INFO(node_->get_logger(), "Agent bridge: Skipping update due to invalid status");
         return;
     }
 

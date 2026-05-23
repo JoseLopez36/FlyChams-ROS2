@@ -125,7 +125,7 @@ void TargetClustering::update()
     // Skip update if status is not valid
     if (!checkStatus())
     {
-        RCLCPP_WARN(node_->get_logger(), "Target clustering: Skipping update due to invalid status");
+        RCLCPP_INFO(node_->get_logger(), "Target clustering: Skipping update due to invalid status");
         return;
     }
 
@@ -209,21 +209,21 @@ bool TargetClustering::checkStatus()
     // Check 1: Mission must be active
     if (!node_->isMissionActive())
     {
-        RCLCPP_WARN(node_->get_logger(), "Target clustering: Mission is not active");
+        RCLCPP_INFO(node_->get_logger(), "Target clustering: Mission is not active");
         return false;
     }
 
     // Check 2: Fleet must be active
     if (!node_->isFleetActive())
     {
-        RCLCPP_WARN(node_->get_logger(), "Target clustering: Fleet is not active");
+        RCLCPP_INFO(node_->get_logger(), "Target clustering: Fleet is not active");
         return false;
     }
 
 	// Check 3: There must be at least one cluster and one target
 	if (C_.empty() || T_.empty())
 	{
-		RCLCPP_WARN(node_->get_logger(), "Target clustering: No clusters or targets available");
+		RCLCPP_INFO(node_->get_logger(), "Target clustering: No clusters or targets available");
 		return false;
 	}
 
@@ -232,7 +232,7 @@ bool TargetClustering::checkStatus()
 	{
 		if (!target.has_position)
 		{
-			RCLCPP_WARN(node_->get_logger(), "Target clustering: Target %s has no position", target_id.c_str());
+			RCLCPP_INFO(node_->get_logger(), "Target clustering: Target %s has no position", target_id.c_str());
 			return false;
 		}
 	}

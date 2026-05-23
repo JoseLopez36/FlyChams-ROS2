@@ -173,7 +173,7 @@ void AgentAssignment::update()
     // Skip update if status is not valid
     if (!checkStatus())
     {
-        RCLCPP_WARN(node_->get_logger(), "Agent assignment: Skipping update due to invalid status");
+        RCLCPP_INFO(node_->get_logger(), "Agent assignment: Skipping update due to invalid status");
         return;
     }
 
@@ -260,14 +260,14 @@ bool AgentAssignment::checkStatus()
     // Check 1: Mission must be active
     if (!node_->isMissionActive())
     {
-        RCLCPP_WARN(node_->get_logger(), "Agent assignment: Mission is not active");
+        RCLCPP_INFO(node_->get_logger(), "Agent assignment: Mission is not active");
         return false;
     }
 
     // Check 2: Fleet must be active
     if (!node_->isFleetActive())
     {
-        RCLCPP_WARN(node_->get_logger(), "Agent assignment: Fleet is not active");
+        RCLCPP_INFO(node_->get_logger(), "Agent assignment: Fleet is not active");
         return false;
     }
 
@@ -276,7 +276,7 @@ bool AgentAssignment::checkStatus()
     {
         if (!agent.has_position)
         {
-            RCLCPP_WARN(node_->get_logger(), "Agent assignment: Agent %s has no position", agent_id.c_str());
+            RCLCPP_INFO(node_->get_logger(), "Agent assignment: Agent %s has no position", agent_id.c_str());
             return false;
         }
     }
@@ -286,7 +286,7 @@ bool AgentAssignment::checkStatus()
     {
         if (!cluster.has_geometry)
         {
-            RCLCPP_WARN(node_->get_logger(), "Agent assignment: Cluster %s has no geometry", cluster_id.c_str());
+            RCLCPP_INFO(node_->get_logger(), "Agent assignment: Cluster %s has no geometry", cluster_id.c_str());
             return false;
         }
     }

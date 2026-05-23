@@ -75,7 +75,7 @@ void FleetState::update()
     // Skip update if status is not valid
     if (!checkStatus())
     {
-        RCLCPP_WARN(node_->get_logger(), "Fleet state: Skipping update due to invalid status");
+        RCLCPP_INFO(node_->get_logger(), "Fleet state: Skipping update due to invalid status");
         return;
     }
 
@@ -122,7 +122,7 @@ bool FleetState::checkStatus()
 	{
 		if (!agent.has_status)
 		{
-			RCLCPP_WARN(node_->get_logger(), "Fleet state: Agent %s has no status", agent_id.c_str());
+			RCLCPP_INFO(node_->get_logger(), "Fleet state: Agent %s has no status", agent_id.c_str());
 			return false;
 		}
 	}

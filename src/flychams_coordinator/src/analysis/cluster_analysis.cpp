@@ -106,7 +106,7 @@ void ClusterAnalysis::update()
     // Skip update if status is not valid
     if (!checkStatus())
     {
-        RCLCPP_WARN(node_->get_logger(), "Cluster analysis: Skipping update due to invalid status");
+        RCLCPP_INFO(node_->get_logger(), "Cluster analysis: Skipping update due to invalid status");
         return;
     }
 
@@ -147,21 +147,21 @@ bool ClusterAnalysis::checkStatus()
 	// Check 1: Mission must be active
 	if (!node_->isMissionActive())
 	{
-		RCLCPP_WARN(node_->get_logger(), "Cluster analysis: Mission is not active");
+		RCLCPP_INFO(node_->get_logger(), "Cluster analysis: Mission is not active");
 		return false;
 	}
 
 	// Check 2: Fleet must be active
 	if (!node_->isFleetActive())
 	{
-		RCLCPP_WARN(node_->get_logger(), "Cluster analysis: Fleet is not active");
+		RCLCPP_INFO(node_->get_logger(), "Cluster analysis: Fleet is not active");
 		return false;
 	}
 
 	// Check 3: There must be at least one cluster and one target
 	if (clusters_.empty() || targets_.empty())
 	{
-		RCLCPP_WARN(node_->get_logger(), "Cluster analysis: No clusters or targets available");
+		RCLCPP_INFO(node_->get_logger(), "Cluster analysis: No clusters or targets available");
 		return false;
 	}
 
@@ -170,7 +170,7 @@ bool ClusterAnalysis::checkStatus()
 	{
 		if (!cluster.has_assignment)
 		{
-			RCLCPP_WARN(node_->get_logger(), "Cluster analysis: Cluster %s has no assignment", cluster_id.c_str());
+			RCLCPP_INFO(node_->get_logger(), "Cluster analysis: Cluster %s has no assignment", cluster_id.c_str());
 			return false;
 		}
 	}
@@ -180,7 +180,7 @@ bool ClusterAnalysis::checkStatus()
 	{
 		if (!target.has_position)
 		{
-			RCLCPP_WARN(node_->get_logger(), "Cluster analysis: Target %s has no position", target_id.c_str());
+			RCLCPP_INFO(node_->get_logger(), "Cluster analysis: Target %s has no position", target_id.c_str());
 			return false;
 		}
 	}

@@ -140,7 +140,7 @@ void TargetControl::update()
     // Skip update if status is not valid
     if (!checkStatus())
     {
-        RCLCPP_WARN(node_->get_logger(), "Target control: Skipping update due to invalid status");
+        RCLCPP_INFO(node_->get_logger(), "Target control: Skipping update due to invalid status");
         return;
     }
 
@@ -163,7 +163,7 @@ bool TargetControl::checkStatus()
     // Check 1: Simulation tools must be available
     if (!simulation_tools_)
     {
-        RCLCPP_WARN(node_->get_logger(), "Target control: Simulation tools not available");
+        RCLCPP_INFO(node_->get_logger(), "Target control: Simulation tools not available");
         return false;
     }
 
@@ -228,7 +228,7 @@ void TargetControl::updateTargets()
         // Check if we have a valid target position
         if (!target.has_position)
         {
-            RCLCPP_WARN(node_->get_logger(), "Target control: Target %s has no true position", target_id.c_str());
+            RCLCPP_INFO(node_->get_logger(), "Target control: Target %s has no true position", target_id.c_str());
             continue; // Skip if we don't have a valid target position
         }
 
@@ -258,7 +258,7 @@ void TargetControl::updateClusters()
         // Check if we have a valid cluster geometry
         if (!cluster.has_geometry)
         {
-            RCLCPP_WARN(node_->get_logger(), "Target control: Cluster %s has no geometry", cluster_id.c_str());
+            RCLCPP_INFO(node_->get_logger(), "Target control: Cluster %s has no geometry", cluster_id.c_str());
             continue; // Skip if we don't have a valid cluster geometry
         }
 

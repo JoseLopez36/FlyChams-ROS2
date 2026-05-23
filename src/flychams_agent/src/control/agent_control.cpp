@@ -149,7 +149,7 @@ void DroneControl::update()
     // Skip update if status is not valid
     if (!checkStatus())
     {
-        RCLCPP_WARN(node_->get_logger(), "Drone control: Skipping update due to invalid status");
+        RCLCPP_INFO(node_->get_logger(), "Drone control: Skipping update due to invalid status");
         return;
     }
 
@@ -279,14 +279,14 @@ bool DroneControl::checkStatus()
 	// Check 1: Agent must have a valid status
 	if (!agent_.has_status)
 	{
-		RCLCPP_WARN(node_->get_logger(), "Drone control: Agent %s has no status", agent_id_.c_str());
+		RCLCPP_INFO(node_->get_logger(), "Drone control: Agent %s has no status", agent_id_.c_str());
 		return false;
 	}
 
 	// Check 2: Agent must have a valid local position
 	if (!agent_.has_local_position)
 	{
-		RCLCPP_WARN(node_->get_logger(), "Drone control: Agent %s has no local position", agent_id_.c_str());
+		RCLCPP_INFO(node_->get_logger(), "Drone control: Agent %s has no local position", agent_id_.c_str());
 		return false;
 	}
 

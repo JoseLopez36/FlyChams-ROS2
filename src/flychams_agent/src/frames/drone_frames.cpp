@@ -156,7 +156,7 @@ void DroneFrames::update()
     // Skip update if status is not valid
     if (!checkStatus())
     {
-        RCLCPP_WARN(node_->get_logger(), "Drone frames: Skipping update due to invalid status");
+        RCLCPP_INFO(node_->get_logger(), "Drone frames: Skipping update due to invalid status");
         return;
     }
 
@@ -173,21 +173,21 @@ bool DroneFrames::checkStatus()
     // Check 1: Agent must have a valid global origin
     if (!agent_.has_global_origin)
     {
-        RCLCPP_WARN(node_->get_logger(), "Drone frames: Agent %s has no global origin", agent_id_.c_str());
+        RCLCPP_INFO(node_->get_logger(), "Drone frames: Agent %s has no global origin", agent_id_.c_str());
         return false;
     }
 
     // Check 2: Agent must have a valid home position
     if (!agent_.has_home_position)
     {
-        RCLCPP_WARN(node_->get_logger(), "Drone frames: Agent %s has no home position", agent_id_.c_str());
+        RCLCPP_INFO(node_->get_logger(), "Drone frames: Agent %s has no home position", agent_id_.c_str());
         return false;
     }
 
     // Check 3: Agent must have a valid local odometry
     if (!agent_.has_local_odom)
     {
-        RCLCPP_WARN(node_->get_logger(), "Drone frames: Agent %s has no local odometry", agent_id_.c_str());
+        RCLCPP_INFO(node_->get_logger(), "Drone frames: Agent %s has no local odometry", agent_id_.c_str());
         return false;
     }
 

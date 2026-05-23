@@ -11,7 +11,7 @@ node_allowlist:
 
 # Per-node log level overrides
 node_log_levels:
-  target_state: "info"
-  target_control: "info"
-  agent_bridge: "error"
-  simulation_stream: "info"
+  target_state: "warn"
+  target_control: "warn"
+  agent_bridge: "warn"
+  simulation_stream: "warn"

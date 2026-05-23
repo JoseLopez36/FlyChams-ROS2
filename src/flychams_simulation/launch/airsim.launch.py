@@ -10,7 +10,7 @@ def generate_launch_description():
             name='airsim_node',
             output='screen',
             namespace='airsim',
-            arguments=['--ros-args', '--log-level', 'info'],
+            arguments=['--ros-args', '--log-level', 'warn'],
             parameters=[{
                 'update_sim_clock_every_n_sec': 0.01,
                 'host_ip': 'localhost',

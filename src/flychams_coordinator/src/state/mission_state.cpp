@@ -148,7 +148,7 @@ void MissionState::update()
     // Skip update if status is not valid
     if (!checkStatus())
     {
-        RCLCPP_WARN(node_->get_logger(), "Mission state: Skipping update due to invalid status");
+        RCLCPP_INFO(node_->get_logger(), "Mission state: Skipping update due to invalid status");
         return;
     }
 
@@ -188,7 +188,7 @@ bool MissionState::checkStatus()
     // Check 1: Fleet status is valid
     if (!has_fleet_status_)
     {
-        RCLCPP_WARN(node_->get_logger(), "Mission state: Fleet status not received yet");
+        RCLCPP_INFO(node_->get_logger(), "Mission state: Fleet status not received yet");
         return false;
     }
     
