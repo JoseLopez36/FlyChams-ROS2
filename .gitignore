@@ -1,5 +1,5 @@
 # Ignore config files
-config/generated/
+generated/
 
 # Ignore ROS2 files
 build/
@@ -10,6 +10,7 @@ log/
 .vscode/
 .cursor/
 .windsurf/
+AGENTS.md
 
 # Ignore python cache
 __pycache__/
