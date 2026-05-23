@@ -5,6 +5,7 @@
 #include "flychams_common/settings/spreadsheet_parser.hpp"
 #include "flychams_common/settings/mission_settings_creator.hpp"
 #include "flychams_common/settings/airsim_settings_creator.hpp"
+#include "flychams_common/settings/foxglove_layout_creator.hpp"
 
 // Types includes
 #include "flychams_common/types/core_types.hpp"
@@ -75,6 +76,11 @@ int main(int argc, char** argv)
     std::string airsim_settings_path;
     node->get_parameter("path.airsim_settings_path", airsim_settings_path);
     AirsimSettingsCreator::createAirsimSettings(config_ptr, airsim_settings_path);
+
+    // Create Foxglove layout
+    std::string foxglove_layout_path;
+    node->get_parameter("path.foxglove_layout_path", foxglove_layout_path);
+    FoxgloveLayoutCreator::createFoxgloveLayout(config_ptr, foxglove_layout_path);
 
     // Finish the node
     RCLCPP_INFO(node->get_logger(), "Settings files created successfully");
