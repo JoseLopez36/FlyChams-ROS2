@@ -60,12 +60,18 @@ void DroneFrames::globalOriginCallback(const GeoPointStampedMsg::SharedPtr msg)
     agent_.global_origin = msg->position;
     agent_.has_global_origin = true;
 
-    // In simulation the global origin equals the home position.
-    // Use it as a fallback so frames can be created without waiting for PX4.
+    // Use it as a fallback so frames can be created without waiting for PX4 (only for simulation purposes)
     if (!agent_.has_home_position)
     {
-        RCLCPP_WARN(node_->get_logger(), "Drone frames: No home position data received. Using global origin as home position for agent %s", agent_id_.c_str());
-        agent_.home_position = msg->position;
+        // Offset global origin by the configured agent position to get per-agent home GPS
+        const auto agent_config = node_->getSettings()->getAgent(agent_id_);
+        const Vector3r& pos = agent_config->position;
+        // Config position is FLU (x=forward/north, y=left, z=up)
+        // toGlobal expects ENU (east, north, up): east = -pos.y(), north = pos.x(), up = pos.z()
+        agent_.home_position = FrameUtils::toGlobal(-pos.y(), pos.x(), pos.z(), agent_.global_origin);
+
+        RCLCPP_WARN(node_->get_logger(), "Drone frames: No home position data received. Using global origin + configured position as home for agent %s (lat=%.7f, lon=%.7f, alt=%.2f)",
+            agent_id_.c_str(), agent_.home_position.latitude, agent_.home_position.longitude, agent_.home_position.altitude);
         agent_.has_home_position = true;
 
         // Create local frame
