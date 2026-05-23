@@ -48,8 +48,8 @@ namespace flychams::operator_pkg
         constexpr double kLabelZOffset     = 1.5;
         // Setpoint
         constexpr bool   kShowSetpoint          = true;
-        constexpr double kSetpointDiam          = 0.30;
-        constexpr double kSetpointLineThickness = 0.05;
+        constexpr double kSetpointDiam          = 0.50;
+        constexpr double kSetpointLineThickness = 0.10;
         // Setpoint colors
         inline const Color kSetpoint     = withAlpha(Colors::kGreen, 0.90f);
         inline const Color kSetpointLine = withAlpha(Colors::kGreen, 0.50f);
@@ -78,15 +78,27 @@ namespace flychams::operator_pkg
     namespace TargetParameters
     {
         // Body cylinder
-        constexpr double kBodyDiamXY       = 1.2;
+        constexpr double kBodyDiamXY       = 1.0;
         constexpr double kBodyHeight       = 1.8;
         constexpr double kBodyZOffset      = 0.9;
+        // Outer glow sphere (transparent, slightly larger than body)
+        constexpr double kGlowDiam         = 2.2;
+        constexpr float  kGlowAlpha        = 0.12f;
+        // Equatorial ring
+        constexpr float  kRingThickness    = 0.15f;
+        constexpr int    kRingSegments     = 64;
+        constexpr float  kRingAlpha        = 0.85f;
+        // Ground disc (flat cylinder at ground level)
+        constexpr double kGroundDiam       = 3.0;
+        constexpr double kGroundHeight     = 0.04;
+        constexpr float  kGroundAlpha      = 0.20f;
         // Text label
         constexpr bool   kDisplayText      = false;
         constexpr float  kFontSize         = 2.0f;
-        constexpr double kLabelZOffset     = 4.0;
-        // Colors
-        inline const Color kBody = withAlpha(Colors::kScarlettRed, 1.00f);
+        constexpr double kLabelZOffset     = 3.2;
+        // Colors — use TargetColors palette (scarlett red, contrasts all agent colors)
+        inline const Color& kBody  = TargetColors::kBody;
+        inline const Color& kLabel = TargetColors::kLabel;
     }
 
     // ════════════════════════════════════════════════════════════════════════════

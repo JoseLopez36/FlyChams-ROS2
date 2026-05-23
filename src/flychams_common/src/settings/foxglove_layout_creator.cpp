@@ -249,23 +249,40 @@ void FoxgloveLayoutCreator::writeImagePanels(const MissionConfigPtr& config_ptr,
 
 void FoxgloveLayoutCreator::write3DScenePanel(const MissionConfigPtr& config_ptr, nlohmann::ordered_json& cfg)
 {
-    // Build camera_info topic subscriptions for every agent and view
+    // Agent palette hex colors — must match AgentColors::kPalette order in color_dictionary.hpp
+    static const char* kAgentHex[] = {
+        "#00d9ff",  // 0 kCyan
+        "#8c33ff",  // 1 kViolet
+        "#ffc700",  // 2 kAmber
+        "#00cca6",  // 3 kTeal
+        "#ff9966",  // 4 kPeach
+        "#008cff",  // 5 kSkyBlue
+        "#33cc66",  // 6 kLime
+        "#d900d9",  // 7 kMagenta
+    };
+    static constexpr int kPaletteSize = 8;
+
+    // Build camera_info topic subscriptions; assign per-agent frustum color
     nlohmann::ordered_json topics;
     topics["/flychams/operator/scene"] = { {"visible", true} };
 
+    int agent_idx = 0;
     for (const auto& [agent_id, agent_ptr] : config_ptr->agent_team)
     {
-        const auto views = getViewIds(agent_ptr);
-        for (const auto& view : views)
+        const std::string hex = kAgentHex[agent_idx % kPaletteSize];
+        // Only cameras have a physical frustum
+        for (const auto& [camera_id, camera_ptr] : agent_ptr->tracking.multi_camera_set)
         {
-            const std::string topic = "/flychams/agent/" + agent_id + "/" + view + "/camera_info";
+            const std::string topic = "/flychams/agent/" + agent_id + "/" + camera_id + "/camera_info";
             topics[topic] = {
                 {"visible", true},
                 {"distance", 6},
                 {"planarProjectionFactor", 0.5},
-                {"width", 0.03}
+                {"width", 0.03},
+                {"color", hex + "cc"}
             };
         }
+        ++agent_idx;
     }
 
     cfg["3D!scene"] = {
@@ -298,9 +315,9 @@ void FoxgloveLayoutCreator::write3DScenePanel(const MissionConfigPtr& config_ptr
         {"transforms", {
             {"world", {
                 {"visible", true},
-                {"xAxisColor", "#00e6ff"},
-                {"yAxisColor", "#00c8ff"},
-                {"zAxisColor", "#00a8ff"},
+                {"xAxisColor", "#ff4444"},
+                {"yAxisColor", "#44ff44"},
+                {"zAxisColor", "#4444ff"},
                 {"lineWidth", 0}
             }}
         }},
@@ -314,7 +331,7 @@ void FoxgloveLayoutCreator::write3DScenePanel(const MissionConfigPtr& config_ptr
                 {"size", 500},
                 {"divisions", 50},
                 {"lineWidth", 1.5},
-                {"color", "#00e6ff33"},
+                {"color", "#ffffff1a"},
                 {"position", {0, 0, 0}},
                 {"rotation", {0, 0, 0}}
             }}
@@ -424,55 +441,11 @@ void FoxgloveLayoutCreator::writeOverviewTab(const MissionConfigPtr& config_ptr,
 
 void FoxgloveLayoutCreator::writeLogPanels(const MissionConfigPtr& config_ptr, nlohmann::ordered_json& cfg)
 {
-    nlohmann::ordered_json tabs = nlohmann::ordered_json::array();
-
-    // System-wide log (all namespaces)
-    cfg["RosOut!logall"] = {
+    // System-wide log
+    cfg["RosOut!log"] = {
         {"minLogLevel", 1},
         {"searchTerms", nlohmann::ordered_json::array()},
-        {"foxglovePanelTitle", "Log: All"}
-    };
-    tabs.push_back({ {"title", "All"}, {"layout", "RosOut!logall"} });
-
-    // Coordinator namespace
-    cfg["RosOut!logcoordinator"] = {
-        {"minLogLevel", 1},
-        {"searchTerms", nlohmann::ordered_json::array({"flychams.coordinator"})},
-        {"foxglovePanelTitle", "Log: Coordinator"}
-    };
-    tabs.push_back({ {"title", "Coordinator"}, {"layout", "RosOut!logcoordinator"} });
-
-    // Per-agent namespace tabs
-    for (const auto& [agent_id, agent_ptr] : config_ptr->agent_team)
-    {
-        const std::string panel_id = "RosOut!log" + agent_id;
-        cfg[panel_id] = {
-            {"minLogLevel", 1},
-            {"searchTerms", nlohmann::ordered_json::array({"flychams.agent." + agent_id})},
-            {"foxglovePanelTitle", "Log: " + agent_id}
-        };
-        tabs.push_back({ {"title", agent_id}, {"layout", panel_id} });
-    }
-
-    // Operator namespace
-    cfg["RosOut!logoperator"] = {
-        {"minLogLevel", 1},
-        {"searchTerms", nlohmann::ordered_json::array({"flychams.operator"})},
-        {"foxglovePanelTitle", "Log: Operator"}
-    };
-    tabs.push_back({ {"title", "Operator"}, {"layout", "RosOut!logoperator"} });
-
-    // Simulation namespace
-    cfg["RosOut!logsimulation"] = {
-        {"minLogLevel", 1},
-        {"searchTerms", nlohmann::ordered_json::array({"flychams.simulation"})},
-        {"foxglovePanelTitle", "Log: Simulation"}
-    };
-    tabs.push_back({ {"title", "Simulation"}, {"layout", "RosOut!logsimulation"} });
-
-    cfg["Tab!logs"] = {
-        {"activeTabIdx", 0},
-        {"tabs", tabs}
+        {"foxglovePanelTitle", "System Logs"}
     };
 }
 
@@ -518,7 +491,7 @@ void FoxgloveLayoutCreator::writeLayout(nlohmann::ordered_json& root)
         {"first", {
             {"first", "Tab!overview"},
             {"second", {
-                {"first", "Tab!logs"},
+                {"first", "RosOut!log"},
                 {"second", control_col},
                 {"direction", "row"},
                 {"splitPercentage", 50}

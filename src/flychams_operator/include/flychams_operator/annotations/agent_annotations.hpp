@@ -13,16 +13,16 @@ namespace flychams::operator_pkg
 {
     /**
      * ════════════════════════════════════════════════════════════════
-     * @brief Module that publishes image annotations for each
-     *        observation unit based on its current setpoints
+     * @brief Per-agent image annotation generator for Foxglove
      *
      * @details
      * Subscribes to ObservationSetpoints for the agent. On each timer
      * tick it publishes one foxglove_msgs/ImageAnnotations message per
-     * observation unit.
+     * observation unit. The annotation color is derived from the agent's
+     * palette colour via the mission settings idx.
      * ════════════════════════════════════════════════════════════════
      * @author Jose Francisco Lopez Ruiz
-     * @date 2026-05-18
+     * @date 2026-05-23
      * ════════════════════════════════════════════════════════════════
      */
     class AgentAnnotations : public common::BaseModule
@@ -43,6 +43,7 @@ namespace flychams::operator_pkg
 
     private: // Parameters
         common::ID agent_id_;
+        int agent_idx_ = 0;
         float update_rate_;
         // View dimensions
         int central_view_width_;

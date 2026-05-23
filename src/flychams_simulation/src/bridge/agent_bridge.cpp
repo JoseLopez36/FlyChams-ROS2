@@ -79,8 +79,7 @@ bool AgentBridge::checkStatus()
     // Check 1: Agent must have valid observation setpoints
     if (!agent_.has_observation_setpoints)
     {
-        RCLCPP_WARN_THROTTLE(node_->get_logger(), *node_->get_clock(), 5000,
-            "Agent simulation bridge: Agent %s has no observation setpoints", agent_id_.c_str());
+        RCLCPP_INFO(node_->get_logger(), "Agent simulation bridge: Agent %s has no observation setpoints", agent_id_.c_str());
         return false;
     }
 

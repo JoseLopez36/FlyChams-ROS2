@@ -46,9 +46,7 @@ namespace flychams::operator_pkg
         constexpr float kWinOverlayIdFontSz   = 13.0f;
         constexpr float kWinOverlayIdFontMarginX = -1.0f;
         constexpr float kWinOverlayIdFontMarginY = -5.0f;
-        // Colors
-        inline const Color kCentral = withAlpha(Colors::kCyan,        0.95f);
-        inline const Color kTrack   = withAlpha(Colors::kAmber,       0.95f);
+        // Colors (agent color is used dynamically from AgentColors palette)
         inline const Color kBg      = withAlpha(Colors::kBlack,       0.50f);
         inline const Color kWin     = withAlpha(Colors::kCyan,        0.80f);
         inline const Color kWinOob  = withAlpha(Colors::kScarlettRed, 0.80f);
@@ -70,8 +68,6 @@ namespace flychams::operator_pkg
         constexpr float kHudMarginX     = 5.0f;
         constexpr float kHudMarginY     = 7.5f;
         // Colors
-        inline const Color kText    = withAlpha(Colors::kCyan,   0.95f);
-        inline const Color kOobText = withAlpha(Colors::kOrange, 0.95f);
         inline const Color kBg      = withAlpha(Colors::kBlack,  0.50f);
     }
 

@@ -12,6 +12,9 @@ void AgentAnnotations::onModuleInit()
 {
     // Get parameters
     update_rate_ = node_->getParameterOr<float>("annotation_rate", 10.0f);
+
+    // Resolve agent colour index from mission settings
+    agent_idx_ = node_->getSettings()->getAgent(agent_id_)->idx;
     // View dimensions
     central_view_width_   = node_->getParameterOr<int>("central_view.width", 854);
     central_view_height_  = node_->getParameterOr<int>("central_view.height", 480);
@@ -128,12 +131,8 @@ void AgentAnnotations::publishCameraAnnotations(size_t idx, int view_w, int view
     const float cy = H * 0.5f;
     const float side = std::min(W, H);
 
-    // Role-based color (Central = cyan, Tracking = amber)
-    const uint8_t role = idx < sp.roles.size() ? sp.roles[idx] : 0;
-    const bool is_central = (role == 1);
-    const FoxColorMsg hud_color = is_central
-        ? AnnotationHelpers::makeColor(CameraAnnotations::kCentral)
-        : AnnotationHelpers::makeColor(CameraAnnotations::kTrack);
+    // Agent color from palette
+    const FoxColorMsg hud_color = AnnotationHelpers::makeColor(AgentColors::get(agent_idx_));
     const FoxColorMsg bg     = AnnotationHelpers::makeColor(CameraAnnotations::kBg);
     const FoxColorMsg white  = AnnotationHelpers::makeColor(Colors::kWhite);
 
@@ -165,6 +164,8 @@ void AgentAnnotations::publishCameraAnnotations(size_t idx, int view_w, int view
     }
 
     // ── Window crop overlays (central view only) ──────────────────────────
+    const uint8_t role = idx < sp.roles.size() ? sp.roles[idx] : 0;
+    const bool is_central = (role == 1 /* Central */);
     if (is_central && CameraAnnotations::kShowWindowsOnCentral)
     {
         const size_t n = sp.ids.size();
@@ -184,9 +185,13 @@ void AgentAnnotations::publishCameraAnnotations(size_t idx, int view_w, int view
             const float wx1 = static_cast<float>(crop.x + crop.w)  * sx;
             const float wy1 = static_cast<float>(crop.y + crop.h)  * sy;
 
-            const FoxColorMsg win_color = crop.is_out_of_bounds
-                ? AnnotationHelpers::makeColor(CameraAnnotations::kWinOob)
-                : AnnotationHelpers::makeColor(CameraAnnotations::kWin);
+            // Window overlay: agent color normally, gray when OOB
+            Color win_base = AgentColors::get(agent_idx_);
+            if (crop.is_out_of_bounds)
+            {
+                win_base = Colors::kGray;
+            }
+            const FoxColorMsg win_color = AnnotationHelpers::makeColor(withAlpha(win_base, 0.80f));
 
             // Box
             {
@@ -222,13 +227,14 @@ void AgentAnnotations::publishCameraAnnotations(size_t idx, int view_w, int view
     if (CameraAnnotations::kShowBadge)
     {
         const std::string unit_id = idx < sp.ids.size() ? sp.ids[idx] : "?";
-        const std::string role_str = is_central ? "CENTRAL" : "TRACKING";
+        const uint8_t role = idx < sp.roles.size() ? sp.roles[idx] : 0;
+        const std::string role_str = (role == 1) ? "CENTRAL" : "TRACKING";
 
         FoxTextAnnotationMsg badge;
         badge.timestamp = stamp;
         badge.position.x = CameraAnnotations::kBadgeMarginX;
         badge.position.y = CameraAnnotations::kBadgeMarginY;
-        badge.text = role_str + " - " + unit_id;
+        badge.text = agent_id_ + " - " + role_str + " - " + unit_id;
         badge.font_size = CameraAnnotations::kBadgeFontSize;
         badge.text_color = hud_color;
         badge.background_color = bg;
@@ -281,9 +287,13 @@ void AgentAnnotations::publishWindowAnnotations(size_t idx, int view_w, int view
     const float zoom = idx < sp.zoom_factors.size() ? sp.zoom_factors[idx] : 1.0f;
     const bool  oob  = crop.is_out_of_bounds;
 
-    const FoxColorMsg text_color = oob
-        ? AnnotationHelpers::makeColor(WindowAnnotations::kOobText)
-        : AnnotationHelpers::makeColor(WindowAnnotations::kText);
+    // Agent color from palette (orange tint when out of bounds)
+    Color agent_color = AgentColors::get(agent_idx_);
+    if (oob)
+    {
+        agent_color = Colors::kOrange;
+    }
+    const FoxColorMsg text_color = AnnotationHelpers::makeColor(agent_color);
     const FoxColorMsg bg         = AnnotationHelpers::makeColor(WindowAnnotations::kBg);
 
     // ── Role / unit ID badge (top-left of the window view) ───────────────

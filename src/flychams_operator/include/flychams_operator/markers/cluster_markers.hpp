@@ -62,12 +62,6 @@ namespace flychams::operator_pkg
     private: // Callbacks
         void clustersCallback(const common::AgentClustersMsg::SharedPtr msg);
 
-    private: // Helpers
-        void buildClusterEntity(size_t entry_idx,
-                                const std::string& frame, int64_t stamp_ns,
-                                const rclcpp::Duration& lifetime,
-                                common::FoxSceneUpdateMsg& out) const;
-
     private: // ROS components
         common::SubscriberPtr<common::AgentClustersMsg> clusters_sub_;
     };

@@ -6,8 +6,11 @@
  *
  * @details
  * Defines the base color constants used across markers and
- * annotations, and the per-agent colour palette used to assign
- * a consistent colour to each agent and its associated clusters.
+ * annotations. Provides two named color sets:
+ * - AgentColors: per-agent palette (8 distinct colors, none red)
+ *   used for agent body, clusters and annotations.
+ * - TargetColors: fixed colors for target markers, chosen to
+ *   contrast clearly with all agent palette entries.
  * ════════════════════════════════════════════════════════════════
  * @author Jose Francisco Lopez Ruiz
  * @date 2026-05-23
@@ -44,6 +47,7 @@ namespace flychams::operator_pkg
         // ── Neutrals ──────────────────────────────────────────────────────────
         inline const Color kBlack       = makeColor(0.00f, 0.00f, 0.00f, 1.00f);
         inline const Color kWhite       = makeColor(1.00f, 1.00f, 1.00f, 1.00f);
+        inline const Color kGray        = makeColor(0.50f, 0.50f, 0.50f, 1.00f);
 
         // ── Blues / Cyans ─────────────────────────────────────────────────────
         inline const Color kCyan        = makeColor(0.00f, 0.85f, 1.00f, 1.00f);
@@ -76,18 +80,32 @@ namespace flychams::operator_pkg
 
     namespace AgentColors
     {
-        constexpr int kPaletteSize = 4;
+        constexpr int kPaletteSize = 8;
         inline const Color kPalette[kPaletteSize] = {
-            Colors::kPeach,     // 0
-            Colors::kViolet,    // 1
-            Colors::kGreen,     // 2
-            Colors::kLime,      // 3
+            Colors::kCyan,      // 0 — bright blue-cyan
+            Colors::kViolet,    // 1 — purple
+            Colors::kAmber,     // 2 — golden yellow
+            Colors::kTeal,      // 3 — blue-green
+            Colors::kPeach,     // 4 — warm orange
+            Colors::kSkyBlue,   // 5 — medium blue
+            Colors::kLime,      // 6 — lime green
+            Colors::kMagenta,   // 7 — magenta
         };
 
         inline const Color& get(int agent_idx)
         {
             return kPalette[agent_idx % kPaletteSize];
         }
+    }
+
+    // ════════════════════════════════════════════════════════════════════════════
+    // TARGET COLORS
+    // ════════════════════════════════════════════════════════════════════════════
+
+    namespace TargetColors
+    {
+        inline const Color kBody  = withAlpha(Colors::kScarlettRed, 1.00f);
+        inline const Color kLabel = withAlpha(Colors::kRed,         0.90f);
     }
 
 } // namespace flychams::operator_pkg

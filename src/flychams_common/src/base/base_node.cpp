@@ -606,7 +606,8 @@ PoseStampedMsg BaseNode::transformPose(const PoseStampedMsg& pose, const std::st
         tf2::doTransform(pose, transformed_pose, transform);
     }
     catch (const tf2::TransformException& ex) {
-        RCLCPP_WARN(node_->get_logger(), "Failed to transform pose from %s to %s: %s",
+        RCLCPP_WARN_THROTTLE(node_->get_logger(), *node_->get_clock(), 5000,
+            "Failed to transform pose from %s to %s: %s",
             from_frame.c_str(), to_frame.c_str(), ex.what());
     }
     return transformed_pose;
@@ -623,7 +624,8 @@ PointStampedMsg BaseNode::transformPoint(const PointStampedMsg& point, const std
         tf2::doTransform(point, transformed_point, transform);
     }
     catch (const tf2::TransformException& ex) {
-        RCLCPP_WARN(node_->get_logger(), "Failed to transform point from %s to %s: %s",
+        RCLCPP_WARN_THROTTLE(node_->get_logger(), *node_->get_clock(), 5000,
+            "Failed to transform point from %s to %s: %s",
             from_frame.c_str(), to_frame.c_str(), ex.what());
     }
     return transformed_point;

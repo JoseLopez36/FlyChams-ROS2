@@ -22,13 +22,10 @@ def generate_launch_description():
                 'num_threads': 16,
                 # QoS
                 'min_qos_depth': 1,
-                'max_qos_depth': 2,
-                # Force image topics to best_effort
-                'best_effort_qos_topic_whitelist': [
-                    '^/flychams/agent/.*/.*/(image|image/compressed)$',
-                ],
-                # Restrict advertised topics
-                'topic_whitelist': ['^/flychams/.*', '/rosout', '/tf', '/tf_static'],
+                'max_qos_depth': 30000,
+                # Restrict advertised topics and services to flychams namespace
+                'topic_whitelist': ['^/flychams/.*', '/clock', '/rosout', '/tf', '/tf_static'],
+                'service_whitelist': ['^/flychams/.*'],
                 # Allow coordinator command publishers from Foxglove
                 'client_topic_whitelist': [
                     '/flychams/coordinator/start_mission',
@@ -38,13 +35,8 @@ def generate_launch_description():
                     '/flychams/coordinator/return_home',
                     '/flychams/coordinator/land_all',
                 ],
-                # Send buffer: 100 MB is sufficient for 9 compressed streams
+                # Send buffer: 100 MB
                 'send_buffer_limit': 100000000,
-                # Push frames as fast as they arrive
-                'max_update_ms': 0,
-                # Disable unused diagnostics
-                'sysinfo': False,
-                'use_sim_time': False,
             }]
         )
     ])
