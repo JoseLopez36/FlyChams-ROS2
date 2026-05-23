@@ -55,9 +55,8 @@ namespace flychams::operator_pkg
         int central_view_height_;
         int tracking_view_width_;
         int tracking_view_height_;
-        // Central camera resolution
-        int original_view_width_;
-        int original_view_height_;
+        // Per-camera original resolution (for cluster projection scaling)
+        std::unordered_map<common::ID, std::pair<int, int>> original_resolutions_;
 
     private: // Setpoints data
         common::ObservationSetpointsMsg::SharedPtr setpoints_;

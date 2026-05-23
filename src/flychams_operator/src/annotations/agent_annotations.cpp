@@ -25,12 +25,14 @@ void AgentAnnotations::onModuleInit()
     const auto& tracking_config = node_->getSettings()->getTracking(agent_id_);
     for (const auto& [camera_id, camera] : tracking_config.multi_camera_set)
     {
+        // Cache original resolution for every camera (needed for cluster scaling)
+        original_resolutions_[camera_id] = {
+            camera->camera.resolution(0),
+            camera->camera.resolution(1)
+        };
+
         if (camera->role == ObservationRole::Central)
         {
-            // Resolve original resolution for window crop overlay scaling
-            original_view_width_  = camera->camera.resolution(0);
-            original_view_height_ = camera->camera.resolution(1);
-
             // Central camera publisher
             annotation_pubs_[camera_id] = node_->createAnnotationsPublisher(agent_id_, camera_id);
 
@@ -224,8 +226,13 @@ void AgentAnnotations::publishCameraAnnotations(size_t idx, int view_w, int view
             }
 
             const auto& crop = sp.crops[j];
-            const float sx  = static_cast<float>(view_w) / static_cast<float>(original_view_width_);
-            const float sy  = static_cast<float>(view_h) / static_cast<float>(original_view_height_);
+            // Use central camera resolution for window crop overlay scaling
+            const auto& central_id = sp.ids[idx];  // Current camera is central (role==1)
+            const auto res_it = original_resolutions_.find(central_id);
+            if (res_it == original_resolutions_.end())
+                continue;
+            const float sx  = static_cast<float>(view_w) / static_cast<float>(res_it->second.first);
+            const float sy  = static_cast<float>(view_h) / static_cast<float>(res_it->second.second);
             const float wx0 = static_cast<float>(crop.x)           * sx;
             const float wy0 = static_cast<float>(crop.y)           * sy;
             const float wx1 = static_cast<float>(crop.x + crop.w)  * sx;
@@ -422,8 +429,11 @@ void AgentAnnotations::appendClusterOverlays(FoxImageAnnotationsMsg& msg, const 
     const Matrix3r K   = buildK(it->second);
 
     // Scale: original camera resolution → display resolution
-    const float sx  = static_cast<float>(view_w) / static_cast<float>(original_view_width_);
-    const float sy  = static_cast<float>(view_h)  / static_cast<float>(original_view_height_);
+    const auto res_it = original_resolutions_.find(camera_id);
+    if (res_it == original_resolutions_.end())
+        return;
+    const float sx  = static_cast<float>(view_w) / static_cast<float>(res_it->second.first);
+    const float sy  = static_cast<float>(view_h)  / static_cast<float>(res_it->second.second);
     const float fvw = static_cast<float>(view_w);
     const float fvh = static_cast<float>(view_h);
 
@@ -567,16 +577,6 @@ Matrix3r AgentAnnotations::buildK(const AgentAnnotations::Intrinsics& intr) cons
 
 std::vector<FoxPoint2Msg> AgentAnnotations::projectRim(const Vector3r& wP, float radius, const Matrix4r& wTc, const Matrix3r& K, int n_pts) const
 {
-    // View direction: camera Z axis in world = third column of wTc rotation
-    const Vector3r view_dir = wTc.block<3, 1>(0, 2);
-
-    // Build two orthogonal axes in the plane perpendicular to view_dir
-    Vector3r u = view_dir.cross(Vector3r::UnitZ());
-    if (u.norm() < 1e-4f)
-        u = view_dir.cross(Vector3r::UnitX());
-    u.normalize();
-    const Vector3r v = view_dir.cross(u).normalized();
-
     std::vector<FoxPoint2Msg> rim;
     rim.reserve(n_pts);
 
@@ -584,7 +584,8 @@ std::vector<FoxPoint2Msg> AgentAnnotations::projectRim(const Vector3r& wP, float
     for (int i = 0; i < n_pts; ++i)
     {
         const float a        = static_cast<float>(i) * step;
-        const Vector3r wRim  = wP + radius * (std::cos(a) * u + std::sin(a) * v);
+        // Create circle in XY plane at cluster center
+        const Vector3r wRim  = wP + radius * Vector3r(std::cos(a), std::sin(a), 0.0f);
         const Vector2r px    = VisionUtils::projectPoint(wRim, wTc, K);
         FoxPoint2Msg p;
         p.x = px(0);
