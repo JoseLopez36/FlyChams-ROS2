@@ -18,21 +18,28 @@ void AgentAnnotations::onModuleInit()
     tracking_view_width_  = node_->getParameterOr<int>("tracking_view.width", 427);
     tracking_view_height_ = node_->getParameterOr<int>("tracking_view.height", 240);
 
-    // Build element_id from AGENT_IDX environment variable
-    const int agent_idx = std::getenv("AGENT_IDX") ? std::stoi(std::getenv("AGENT_IDX")) : 0;
-    std::ostringstream element_ss;
-    element_ss << "ELEMENT" << std::setw(2) << std::setfill('0') << agent_idx;
-    element_id_ = element_ss.str();
-
-    // Get central camera resolution from settings
+    // Create publishers from settings config
     const auto& tracking_config = node_->getSettings()->getTracking(agent_id_);
     for (const auto& [camera_id, camera] : tracking_config.multi_camera_set)
     {
         if (camera->role == ObservationRole::Central)
         {
+            // Resolve original resolution for window crop overlay scaling
             original_view_width_  = camera->camera.resolution(0);
             original_view_height_ = camera->camera.resolution(1);
-            break;
+
+            // Central camera publisher
+            annotation_pubs_[camera_id] = node_->createAnnotationsPublisher(agent_id_, camera_id);
+
+            // One publisher per crop window associated with this central camera
+            for (const auto& [window_id, _] : tracking_config.multi_window_set)
+            {
+                annotation_pubs_[window_id] = node_->createAnnotationsPublisher(agent_id_, window_id);
+            }
+        }
+        else if (camera->role == ObservationRole::Tracking)
+        {
+            annotation_pubs_[camera_id] = node_->createAnnotationsPublisher(agent_id_, camera_id);
         }
     }
 
@@ -60,21 +67,6 @@ void AgentAnnotations::observationSetpointsCallback(const ObservationSetpointsMs
 {
     setpoints_ = msg;
     has_setpoints_ = true;
-
-    // Lazily create publishers for each observation unit if needed
-    const size_t n = msg->ids.size();
-    if (annotation_pubs_.size() != n)
-    {
-        annotation_pubs_.clear();
-        annotation_pubs_.reserve(n);
-        for (size_t i = 0; i < n; ++i)
-        {
-            std::ostringstream view_ss;
-            view_ss << "VIEW" << std::setw(2) << std::setfill('0') << i;
-            annotation_pubs_.push_back(
-                node_->createAnnotationsPublisher(element_id_, view_ss.str()));
-        }
-    }
 }
 
 // ════════════════════════════════════════════════════════════════════════════
@@ -83,7 +75,7 @@ void AgentAnnotations::observationSetpointsCallback(const ObservationSetpointsMs
 
 void AgentAnnotations::update()
 {
-    if (!isDataValid())
+    if (!has_setpoints_)
     {
         return;
     }
@@ -91,8 +83,12 @@ void AgentAnnotations::update()
     const auto& sp = *setpoints_;
     const size_t n = sp.ids.size();
 
-    for (size_t i = 0; i < n && i < annotation_pubs_.size(); ++i)
+    for (size_t i = 0; i < n; ++i)
     {
+        const ID& unit_id = sp.ids[i];
+        if (annotation_pubs_.find(unit_id) == annotation_pubs_.end())
+            continue;
+
         const uint8_t type = i < sp.types.size() ? sp.types[i] : 0;
         const uint8_t role = i < sp.roles.size() ? sp.roles[i] : 0;
 
@@ -265,7 +261,7 @@ void AgentAnnotations::publishCameraAnnotations(size_t idx, int view_w, int view
         msg.texts.push_back(hud);
     }
 
-    annotation_pubs_[idx]->publish(msg);
+    annotation_pubs_.at(sp.ids[idx])->publish(msg);
 }
 
 void AgentAnnotations::publishWindowAnnotations(size_t idx, int view_w, int view_h) const
@@ -323,18 +319,5 @@ void AgentAnnotations::publishWindowAnnotations(size_t idx, int view_w, int view
         msg.texts.push_back(hud);
     }
 
-    annotation_pubs_[idx]->publish(msg);
-}
-
-// ════════════════════════════════════════════════════════════════════════════
-// STATUS CHECK
-// ════════════════════════════════════════════════════════════════════════════
-
-bool AgentAnnotations::isDataValid() const
-{
-    if (!has_setpoints_)
-    {
-        return false;
-    }
-    return true;
+    annotation_pubs_.at(sp.ids[idx])->publish(msg);
 }

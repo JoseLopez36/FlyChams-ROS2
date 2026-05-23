@@ -70,7 +70,7 @@ void TargetMetrics::update()
     // Skip update if status is not valid
     if (!checkStatus())
     {
-        RCLCPP_WARN(node_->get_logger(), "Target metrics: Skipping update due to invalid status");
+        RCLCPP_INFO(node_->get_logger(), "Target metrics: Skipping update due to invalid status");
         return;
     }
 
@@ -113,14 +113,14 @@ bool TargetMetrics::checkStatus()
     // Check 1: Mission must be active
     if (!node_->isMissionActive())
     {
-        RCLCPP_WARN(node_->get_logger(), "Target clustering: Mission is not active");
+        RCLCPP_INFO(node_->get_logger(), "Target clustering: Mission is not active");
         return false;
     }
 
     // Check 2: Target must have a valid position
     if (!target_.has_position)
     {
-        RCLCPP_WARN(node_->get_logger(), "Target metrics: Target %s has no position", target_id_.c_str());
+        RCLCPP_INFO(node_->get_logger(), "Target metrics: Target %s has no position", target_id_.c_str());
         return false;
     }
 

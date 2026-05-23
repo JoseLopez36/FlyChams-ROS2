@@ -13,13 +13,13 @@ def generate_launch_description():
             name='foxglove_bridge',
             output='screen',
             namespace='foxglove',
-            arguments=['--ros-args', '--log-level', 'info'],
+            arguments=['--ros-args', '--log-level', 'warn'],
             parameters=[{
                 'port': port,
                 'address': '0.0.0.0',
                 'tls': False,
-                # Threading: one thread per image stream (3 agents x 3 cameras = 9), plus margin
-                'num_threads': 12,
+                # Threading
+                'num_threads': 16,
                 # QoS
                 'min_qos_depth': 1,
                 'max_qos_depth': 2,

@@ -13,11 +13,11 @@ void AgentMarkers::onModuleInit()
     // Get parameters
     update_rate_ = node_->getParameterOr<float>("update_rate", 10.0f);
 
+    // Resolve agent colour index from mission settings
+    agent_idx_ = node_->getSettings()->getAgent(agent_id_)->idx;
+
     // Initialize data
     agent_ = AgentData();
-
-    // Publishers
-    scene_pub_ = node_->createScenePublisher(element_id_);
 
     // Subscribers
     position_sub_ = node_->createAgentGlobalPositionSubscriber(agent_id_,
@@ -31,15 +31,10 @@ void AgentMarkers::onModuleInit()
     setpoint_sub_ = node_->createAgentPositionSetpointSubscriber(agent_id_,
         std::bind(&AgentMarkers::setpointCallback, this, std::placeholders::_1),
         node_->getSubscriptionOptions());
-
-    // Update timer
-    update_timer_ = node_->createTimer(update_rate_, std::bind(&AgentMarkers::update, this));
 }
 
 void AgentMarkers::onModuleShutdown()
 {
-    update_timer_.reset();
-    scene_pub_.reset();
     position_sub_.reset();
     status_sub_.reset();
     setpoint_sub_.reset();
@@ -68,17 +63,15 @@ void AgentMarkers::setpointCallback(const PointStampedMsg::SharedPtr msg)
 }
 
 // ════════════════════════════════════════════════════════════════════════════
-// UPDATE
+// ENTITY COLLECTION
 // ════════════════════════════════════════════════════════════════════════════
 
-void AgentMarkers::update()
+void AgentMarkers::getEntities(FoxSceneUpdateMsg& out) const
 {
-    if (!isDataValid())
+    if (!agent_.has_position)
     {
         return;
     }
-
-    FoxSceneUpdateMsg update_msg;
 
     const std::string frame = node_->getAgentBodyFrame(agent_id_);
     const std::string global_frame = node_->getGlobalFrame();
@@ -86,44 +79,44 @@ void AgentMarkers::update()
     const auto stamp = node_->now().nanoseconds();
     const auto lifetime = rclcpp::Duration::from_seconds(2.0 / update_rate_);
 
-    // ── Agent color ───────────────────────────────────
+    // ── Agent color ───────────────────────────────────────────────────────
     const Color& base_color = AgentColors::get(agent_idx_);
     Color body_color, rotor_color;
     if (!agent_.has_status || agent_.status != 1) // ERROR: flash error red
     {
-        body_color  = Colors::kRed; body_color.a = kBodyAlpha;
-        rotor_color = Colors::kRed; rotor_color.a = kRotorAlpha;
+        body_color  = Colors::kRed; body_color.a = AgentParameters::kBodyAlpha;
+        rotor_color = Colors::kRed; rotor_color.a = AgentParameters::kRotorAlpha;
     }
-    else if (agent_.status == 1) // ACTIVE: full agent color
+    else // ACTIVE: full agent color
     {
-        body_color  = base_color; body_color.a = kBodyAlpha;
-        rotor_color = base_color; rotor_color.a = kRotorAlpha;
+        body_color  = base_color; body_color.a = AgentParameters::kBodyAlpha;
+        rotor_color = base_color; rotor_color.a = AgentParameters::kRotorAlpha;
     }
 
-    // ── Build entity ───────────────────────────────────────────────────────
+    // ── Build entity ──────────────────────────────────────────────────────
     FoxSceneEntityMsg entity;
     MarkerHelpers::stampEntity(entity, stamp, lifetime);
     entity.frame_id = frame;
     entity.id = agent_id_;
 
     // Metadata
+    std::ostringstream oss;
+    oss << std::fixed << std::setprecision(1) << pos.z;
     FoxKeyValuePairMsg kv_status;
     kv_status.key = "status";
     kv_status.value = std::to_string(agent_.status);
     FoxKeyValuePairMsg kv_alt;
     kv_alt.key = "alt_m";
-    std::ostringstream oss;
-    oss << std::fixed << std::setprecision(1) << pos.z;
     kv_alt.value = oss.str();
     entity.metadata = {kv_status, kv_alt};
 
-    // Body origin relative to agent body frame
+    // Body origin in the agent body frame
     PointMsg body_pos;
     body_pos.x = 0.0;
     body_pos.y = 0.0;
     body_pos.z = 0.0;
 
-    // ── 1. Central fuselage disc ───────────────────────────────────────────
+    // ── 1. Central fuselage disc ──────────────────────────────────────────
     {
         FoxCylinderPrimitiveMsg body;
         body.pose.position = body_pos;
@@ -137,12 +130,11 @@ void AgentMarkers::update()
         entity.cylinders.push_back(body);
     }
 
-    // ── 2. Motor arms + rotor discs ─────
+    // ── 2. Motor arms + rotor discs ───────────────────────────────────────
     constexpr double kSin45 = 0.7071067811865476;
     constexpr double arm_angles[4] = { M_PI * 0.25, M_PI * 0.75, M_PI * 1.25, M_PI * 1.75 };
     for (double angle : arm_angles)
     {
-        // Midpoint of the arm (centre → rotor tip)
         const double half = AgentParameters::kArmLength * 0.5;
         const double cx = half * std::cos(angle);
         const double cy = half * std::sin(angle);
@@ -185,7 +177,7 @@ void AgentMarkers::update()
         entity.cylinders.push_back(rotor);
     }
 
-    // ── 3. Heading arrow ───────────────────────────
+    // ── 3. Heading arrow ──────────────────────────────────────────────────
     if (AgentParameters::kShowArrow)
     {
         FoxArrowPrimitiveMsg arrow;
@@ -216,7 +208,9 @@ void AgentMarkers::update()
         entity.texts.push_back(text);
     }
 
-    // ── 5. Setpoint ─────────────────────────────────────────────────────
+    out.entities.push_back(entity);
+
+    // ── 5. Setpoint ───────────────────────────────────────────────────────
     if (AgentParameters::kShowSetpoint && agent_.has_setpoint)
     {
         FoxSceneEntityMsg setpoint_entity;
@@ -224,7 +218,7 @@ void AgentMarkers::update()
         setpoint_entity.frame_id = global_frame;
         setpoint_entity.id = agent_id_ + "_setpoint";
 
-        // Setpoint Sphere
+        // Setpoint sphere
         {
             FoxSpherePrimitiveMsg sphere;
             sphere.pose.position = agent_.setpoint;
@@ -248,23 +242,6 @@ void AgentMarkers::update()
             setpoint_entity.lines.push_back(line);
         }
 
-        update_msg.entities.push_back(setpoint_entity);
+        out.entities.push_back(setpoint_entity);
     }
-
-    // ── Publish SceneUpdate ────────────────────────────────────────────────
-    update_msg.entities.push_back(entity);
-    scene_pub_->publish(update_msg);
-}
-
-// ════════════════════════════════════════════════════════════════════════════
-// STATUS CHECK
-// ════════════════════════════════════════════════════════════════════════════
-
-bool AgentMarkers::isDataValid() const
-{
-    if (!agent_.has_position)
-    {
-        return false;
-    }
-    return true;
 }

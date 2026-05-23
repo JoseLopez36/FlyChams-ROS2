@@ -13,17 +13,23 @@ namespace flychams::operator_pkg
 {
     /**
      * ════════════════════════════════════════════════════════════════
-     * @brief Per-cluster marker publisher for Foxglove visualization
+     * @brief Per-agent cluster marker generator for Foxglove
+     *
+     * @details
+     * Subscribes to one agent's clusters topic. On each call to
+     * getEntities() it appends bounding-sphere and ring entities for
+     * every sub-cluster reported by that agent, coloured with the
+     * agent's palette colour derived from the mission settings idx.
      * ════════════════════════════════════════════════════════════════
      * @author Jose Francisco Lopez Ruiz
-     * @date 2026-05-18
+     * @date 2026-05-23
      * ════════════════════════════════════════════════════════════════
      */
     class ClusterMarkers : public common::BaseModule
     {
     public: // Constructor/Destructor
-        ClusterMarkers(const common::ID& cluster_id, const std::unordered_map<ID, int>& agent_index_map, const common::ID& element_id, common::BaseNode::SharedPtr node)
-            : BaseModule(node), cluster_id_(cluster_id), agent_index_map_(agent_index_map), element_id_(element_id)
+        ClusterMarkers(const common::ID& agent_id, common::BaseNode::SharedPtr node)
+            : BaseModule(node), agent_id_(agent_id)
         {
             init();
         }
@@ -40,38 +46,30 @@ namespace flychams::operator_pkg
             float radius  = 0.0f;
             common::ID unit_id;
         };
-        struct AgentClusterData
-        {
-            std::vector<ClusterData> clusters;
-            int  agent_idx = 0;
-            bool has_data  = false;
-        };
+
+    public: // Entity collection
+        void getEntities(common::FoxSceneUpdateMsg& out) const;
 
     private: // Parameters
-        common::ID cluster_id_;
-        std::unordered_map<ID, int> agent_index_map_;
-        common::ID element_id_;
+        common::ID agent_id_;
+        int agent_idx_ = 0;
         float update_rate_;
 
-    private: // Data
-        // Per-agent cluster data, keyed by agent_id
-        std::unordered_map<common::ID, AgentClusterData> agent_clusters_;
+    private: // State
+        std::vector<ClusterData> clusters_;
+        bool has_data_ = false;
 
     private: // Callbacks
-        void clustersCallback(const common::ID& agent_id, const common::AgentClustersMsg::SharedPtr msg);
+        void clustersCallback(const common::AgentClustersMsg::SharedPtr msg);
 
-    private: // Update
-        void update();
-        bool isDataValid() const;
-        void buildClusterEntity(const common::ID& agent_id, size_t entry_idx, const AgentClusterData& data,
+    private: // Helpers
+        void buildClusterEntity(size_t entry_idx,
                                 const std::string& frame, int64_t stamp_ns,
                                 const rclcpp::Duration& lifetime,
                                 common::FoxSceneUpdateMsg& out) const;
 
     private: // ROS components
-        common::TimerPtr update_timer_;
-        common::PublisherPtr<common::FoxSceneUpdateMsg> scene_pub_;
-        std::vector<common::SubscriberPtr<common::AgentClustersMsg>> clusters_subs_;
+        common::SubscriberPtr<common::AgentClustersMsg> clusters_sub_;
     };
 
 } // namespace flychams::operator_pkg

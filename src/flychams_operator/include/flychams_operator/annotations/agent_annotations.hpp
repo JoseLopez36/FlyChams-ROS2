@@ -43,7 +43,6 @@ namespace flychams::operator_pkg
 
     private: // Parameters
         common::ID agent_id_;
-        common::ID element_id_;
         float update_rate_;
         // View dimensions
         int central_view_width_;
@@ -63,7 +62,6 @@ namespace flychams::operator_pkg
 
     private: // Update methods
         void update();
-        bool isDataValid() const;
 
     private: // Annotation helpers
         void publishCameraAnnotations(size_t idx, int view_w, int view_h) const;
@@ -71,8 +69,8 @@ namespace flychams::operator_pkg
 
     private: // ROS components
         common::TimerPtr update_timer_;
-        // Per-unit publishers: indexed by observation unit position in setpoints
-        std::vector<common::PublisherPtr<common::FoxImageAnnotationsMsg>> annotation_pubs_;
+        // Per-unit publishers: keyed by observation unit ID
+        std::unordered_map<common::ID, common::PublisherPtr<common::FoxImageAnnotationsMsg>> annotation_pubs_;
         // Subscriber
         common::SubscriberPtr<common::ObservationSetpointsMsg> setpoints_sub_;
     };

@@ -21,7 +21,7 @@ using namespace flychams::operator_pkg;
  * destroys it when the agent is removed.
  * ════════════════════════════════════════════════════════════════
  * @author Jose Francisco Lopez Ruiz
- * @date 2026-05-18
+ * @date 2026-05-23
  * ════════════════════════════════════════════════════════════════
  */
 class AnnotationsGeneratorNode : public BaseDiscovererNode
@@ -35,29 +35,23 @@ public: // Constructor/Destructor
 
     void onDiscoveryInit() override
     {
-        // Clear all annotation generators
         agent_annotations_.clear();
     }
 
     void onDiscoveryShutdown() override
     {
-        // Clear all annotation generators
         agent_annotations_.clear();
     }
 
 private: // Element management
     void onAddAgent(const ID& agent_id) override
     {
-        // Initialize agent annotation generator
-        auto agent_annotation = std::make_shared<AgentAnnotations>(agent_id, sharedFromThis());
-        agent_annotations_.insert(std::make_pair(agent_id, agent_annotation));
-
+        agent_annotations_.emplace(agent_id, std::make_shared<AgentAnnotations>(agent_id, sharedFromThis()));
         RCLCPP_INFO(node_->get_logger(), "Annotations node: agent annotations created for %s", agent_id.c_str());
     }
 
     void onRemoveAgent(const ID& agent_id) override
     {
-        // Remove agent annotation generator
         agent_annotations_.erase(agent_id);
         RCLCPP_INFO(node_->get_logger(), "Annotations node: agent annotations destroyed for %s", agent_id.c_str());
     }
@@ -83,7 +77,6 @@ private: // Element management
     }
 
 private: // Components
-    // Agent annotations generator
     std::unordered_map<ID, AgentAnnotations::SharedPtr> agent_annotations_;
 };
 

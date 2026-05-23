@@ -19,6 +19,7 @@ set(OPERATOR_SRC
   src/metrics/target_metrics.cpp
   src/metrics/cluster_metrics.cpp
   # Markers
+  src/markers/markers_generator.cpp
   src/markers/agent_markers.cpp
   src/markers/target_markers.cpp
   src/markers/cluster_markers.cpp

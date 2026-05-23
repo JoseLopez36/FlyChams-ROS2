@@ -1,5 +1,19 @@
 #pragma once
 
+/**
+ * ════════════════════════════════════════════════════════════════
+ * @brief Centralised marker sizing, style and helper parameters
+ *
+ * @details
+ * Contains constexpr namespaces for each element type (Agent,
+ * Cluster, Target) and the MarkerHelpers utility for stamping
+ * Foxglove SceneEntity messages.
+ * ════════════════════════════════════════════════════════════════
+ * @author Jose Francisco Lopez Ruiz
+ * @date 2026-05-23
+ * ════════════════════════════════════════════════════════════════
+ */
+
 #include "flychams_operator/colors/color_dictionary.hpp"
 
 namespace flychams::operator_pkg
@@ -37,8 +51,8 @@ namespace flychams::operator_pkg
         constexpr double kSetpointDiam          = 0.30;
         constexpr double kSetpointLineThickness = 0.05;
         // Setpoint colors
-        constexpr Color kSetpoint     = { Colors::kGreen.r, Colors::kGreen.g, Colors::kGreen.b, 0.90f };
-        constexpr Color kSetpointLine = { Colors::kGreen.r, Colors::kGreen.g, Colors::kGreen.b, 0.50f };
+        inline const Color kSetpoint     = withAlpha(Colors::kGreen, 0.90f);
+        inline const Color kSetpointLine = withAlpha(Colors::kGreen, 0.50f);
     }
 
     // ════════════════════════════════════════════════════════════════════════════
@@ -72,7 +86,7 @@ namespace flychams::operator_pkg
         constexpr float  kFontSize         = 2.0f;
         constexpr double kLabelZOffset     = 4.0;
         // Colors
-        constexpr Color kBody = { Colors::kScarlettRed.r, Colors::kScarlettRed.g, Colors::kScarlettRed.b, 1.00f };
+        inline const Color kBody = withAlpha(Colors::kScarlettRed, 1.00f);
     }
 
     // ════════════════════════════════════════════════════════════════════════════

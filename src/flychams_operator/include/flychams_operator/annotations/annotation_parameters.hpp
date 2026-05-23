@@ -1,5 +1,19 @@
 #pragma once
 
+/**
+ * ════════════════════════════════════════════════════════════════
+ * @brief Centralised annotation style parameters and helpers
+ *
+ * @details
+ * Contains constexpr namespaces for camera and window annotation
+ * styles and the AnnotationHelpers utility for building common
+ * Foxglove ImageAnnotation primitives.
+ * ════════════════════════════════════════════════════════════════
+ * @author Jose Francisco Lopez Ruiz
+ * @date 2026-05-23
+ * ════════════════════════════════════════════════════════════════
+ */
+
 #include "flychams_common/types/ros_types.hpp"
 #include "flychams_operator/colors/color_dictionary.hpp"
 
@@ -33,11 +47,11 @@ namespace flychams::operator_pkg
         constexpr float kWinOverlayIdFontMarginX = -1.0f;
         constexpr float kWinOverlayIdFontMarginY = -5.0f;
         // Colors
-        constexpr Color kCentral = { Colors::kCyan.r,        Colors::kCyan.g,        Colors::kCyan.b,        0.95f };
-        constexpr Color kTrack   = { Colors::kAmber.r,       Colors::kAmber.g,       Colors::kAmber.b,       0.95f };
-        constexpr Color kBg      = { Colors::kBlack.r,       Colors::kBlack.g,       Colors::kBlack.b,       0.50f };
-        constexpr Color kWin     = { Colors::kCyan.r,        Colors::kCyan.g,        Colors::kCyan.b,        0.80f };
-        constexpr Color kWinOob  = { Colors::kScarlettRed.r, Colors::kScarlettRed.g, Colors::kScarlettRed.b, 0.80f };
+        inline const Color kCentral = withAlpha(Colors::kCyan,        0.95f);
+        inline const Color kTrack   = withAlpha(Colors::kAmber,       0.95f);
+        inline const Color kBg      = withAlpha(Colors::kBlack,       0.50f);
+        inline const Color kWin     = withAlpha(Colors::kCyan,        0.80f);
+        inline const Color kWinOob  = withAlpha(Colors::kScarlettRed, 0.80f);
     }
 
     // ════════════════════════════════════════════════════════════════════════════
@@ -56,9 +70,9 @@ namespace flychams::operator_pkg
         constexpr float kHudMarginX     = 5.0f;
         constexpr float kHudMarginY     = 7.5f;
         // Colors
-        constexpr Color kText    = { Colors::kCyan.r,        Colors::kCyan.g,        Colors::kCyan.b,        0.95f };
-        constexpr Color kOobText = { Colors::kOrange.r,      Colors::kOrange.g,      Colors::kOrange.b,      0.95f };
-        constexpr Color kBg      = { Colors::kBlack.r,       Colors::kBlack.g,       Colors::kBlack.b,       0.50f };
+        inline const Color kText    = withAlpha(Colors::kCyan,   0.95f);
+        inline const Color kOobText = withAlpha(Colors::kOrange, 0.95f);
+        inline const Color kBg      = withAlpha(Colors::kBlack,  0.50f);
     }
 
     // ════════════════════════════════════════════════════════════════════════════
@@ -83,6 +97,8 @@ namespace flychams::operator_pkg
             p.x = x; p.y = y;
             return p;
         }
+
+        inline common::FoxColorMsg makeColor(const Color& c) { return c; }
     }
 
 } // namespace flychams::operator_pkg

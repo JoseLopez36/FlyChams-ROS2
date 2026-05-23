@@ -13,17 +13,22 @@ namespace flychams::operator_pkg
 {
     /**
      * ════════════════════════════════════════════════════════════════
-     * @brief Per-target marker publisher for Foxglove visualization
+     * @brief Per-target marker generator for Foxglove visualization
+     *
+     * @details
+     * Subscribes to the target position topic. On each call to
+     * getEntities() it appends the target cylinder and optional label
+     * to the provided SceneUpdate message.
      * ════════════════════════════════════════════════════════════════
      * @author Jose Francisco Lopez Ruiz
-     * @date 2026-05-18
+     * @date 2026-05-23
      * ════════════════════════════════════════════════════════════════
      */
     class TargetMarkers : public common::BaseModule
     {
     public: // Constructor/Destructor
-        TargetMarkers(const common::ID& target_id, const common::ID& element_id, common::BaseNode::SharedPtr node)
-            : BaseModule(node), target_id_(target_id), element_id_(element_id)
+        TargetMarkers(const common::ID& target_id, common::BaseNode::SharedPtr node)
+            : BaseModule(node), target_id_(target_id)
         {
             init();
         }
@@ -34,6 +39,11 @@ namespace flychams::operator_pkg
 
     public: // Types
         using SharedPtr = std::shared_ptr<TargetMarkers>;
+
+    public: // Entity collection
+        void getEntities(common::FoxSceneUpdateMsg& out) const;
+
+    private: // Data
         struct TargetData
         {
             common::PointMsg position;
@@ -42,27 +52,15 @@ namespace flychams::operator_pkg
 
     private: // Parameters
         common::ID target_id_;
-        common::ID element_id_;
         float update_rate_;
 
-    private: // Data
+    private: // State
         TargetData target_;
 
     private: // Callbacks
         void positionCallback(const common::PointStampedMsg::SharedPtr msg);
 
-    private: // Update methods
-        void update();
-
-    private: // Status check methods
-        bool isDataValid() const;
-
     private: // ROS components
-        // Timer
-        common::TimerPtr update_timer_;
-        // Publishers
-        common::PublisherPtr<common::FoxSceneUpdateMsg> scene_pub_;
-        // Subscribers
         common::SubscriberPtr<common::PointStampedMsg> position_sub_;
     };
 

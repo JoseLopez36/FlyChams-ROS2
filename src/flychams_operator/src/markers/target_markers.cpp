@@ -16,22 +16,14 @@ void TargetMarkers::onModuleInit()
     // Initialize data
     target_ = TargetData();
 
-    // Publishers
-    scene_pub_ = node_->createScenePublisher(element_id_);
-
     // Subscribers
     position_sub_ = node_->createTargetPositionSubscriber(target_id_,
         std::bind(&TargetMarkers::positionCallback, this, std::placeholders::_1),
         node_->getSubscriptionOptions());
-
-    // Update timer
-    update_timer_ = node_->createTimer(update_rate_, std::bind(&TargetMarkers::update, this));
 }
 
 void TargetMarkers::onModuleShutdown()
 {
-    update_timer_.reset();
-    scene_pub_.reset();
     position_sub_.reset();
 }
 
@@ -45,14 +37,13 @@ void TargetMarkers::positionCallback(const PointStampedMsg::SharedPtr msg)
     target_.has_position = true;
 }
 
-
 // ════════════════════════════════════════════════════════════════════════════
-// UPDATE
+// ENTITY COLLECTION
 // ════════════════════════════════════════════════════════════════════════════
 
-void TargetMarkers::update()
+void TargetMarkers::getEntities(FoxSceneUpdateMsg& out) const
 {
-    if (!isDataValid())
+    if (!target_.has_position)
     {
         return;
     }
@@ -62,10 +53,7 @@ void TargetMarkers::update()
     const auto stamp = node_->now().nanoseconds();
     const auto lifetime = rclcpp::Duration::from_seconds(2.0 / update_rate_);
 
-    // Target colors
-    const FoxColorMsg base_color = TargetParameters::kBody;
-
-    // ── Build entity ───────────────────────────────────────────────────────
+    // ── Build entity ──────────────────────────────────────────────────────
     FoxSceneEntityMsg entity;
     MarkerHelpers::stampEntity(entity, stamp, lifetime);
     entity.frame_id = frame;
@@ -78,7 +66,7 @@ void TargetMarkers::update()
     kv_alt.value = oss.str();
     entity.metadata = {kv_alt};
 
-    // ── 1. Cylinder body ─────────────────────────────────────
+    // ── 1. Cylinder body ──────────────────────────────────────────────────
     {
         FoxCylinderPrimitiveMsg body;
         body.pose.position = pos;
@@ -87,13 +75,13 @@ void TargetMarkers::update()
         body.size.x = TargetParameters::kBodyDiamXY;
         body.size.y = TargetParameters::kBodyDiamXY;
         body.size.z = TargetParameters::kBodyHeight;
-        body.color = base_color;
+        body.color = TargetParameters::kBody;
         body.top_scale = 1.0f;
         body.bottom_scale = 1.0f;
         entity.cylinders.push_back(body);
     }
 
-    // ── 2. Text label ─────────────────────────────────────────────────
+    // ── 2. Text label ─────────────────────────────────────────────────────
     if (TargetParameters::kDisplayText)
     {
         FoxTextPrimitiveMsg text;
@@ -108,20 +96,5 @@ void TargetMarkers::update()
         entity.texts.push_back(text);
     }
 
-    FoxSceneUpdateMsg update_msg;
-    update_msg.entities.push_back(entity);
-    scene_pub_->publish(update_msg);
-}
-
-// ════════════════════════════════════════════════════════════════════════════
-// STATUS CHECK
-// ════════════════════════════════════════════════════════════════════════════
-
-bool TargetMarkers::isDataValid() const
-{
-    if (!target_.has_position)
-    {
-        return false;
-    }
-    return true;
+    out.entities.push_back(entity);
 }

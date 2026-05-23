@@ -71,7 +71,7 @@ void ClusterMetrics::update()
     // Skip update if status is not valid
     if (!checkStatus())
     {
-        RCLCPP_WARN(node_->get_logger(), "Cluster metrics: Skipping update due to invalid status");
+        RCLCPP_INFO(node_->get_logger(), "Cluster metrics: Skipping update due to invalid status");
         return;
     }
     // Compute dt
@@ -114,14 +114,14 @@ bool ClusterMetrics::checkStatus()
     // Check 1: Mission must be active
     if (!node_->isMissionActive())
     {
-        RCLCPP_WARN(node_->get_logger(), "Target clustering: Mission is not active");
+        RCLCPP_INFO(node_->get_logger(), "Target clustering: Mission is not active");
         return false;
     }
 
     // Check 2: Cluster must have a valid geometry
     if (!cluster_.has_geometry)
     {
-        RCLCPP_WARN(node_->get_logger(), "Cluster metrics: Cluster %s has no geometry", cluster_id_.c_str());
+        RCLCPP_INFO(node_->get_logger(), "Cluster metrics: Cluster %s has no geometry", cluster_id_.c_str());
         return false;
     }
 
