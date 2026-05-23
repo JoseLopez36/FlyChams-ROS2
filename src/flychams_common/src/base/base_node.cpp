@@ -492,6 +492,11 @@ SubscriberPtr<ImageMsg> BaseNode::createImageSubscriber(const ID& agent_id, cons
     return node_->create_subscription<ImageMsg>(getImageTopic(agent_id, unit_id), rclcpp::SensorDataQoS(), std::move(callback), options);
 }
 
+SubscriberPtr<CameraInfoMsg> BaseNode::createCameraInfoSubscriber(const ID& agent_id, const ID& unit_id, std::function<void(const CameraInfoMsg::SharedPtr)> callback, const rclcpp::SubscriptionOptions& options)
+{
+    return node_->create_subscription<CameraInfoMsg>(getCameraInfoTopic(agent_id, unit_id), rclcpp::SensorDataQoS(), std::move(callback), options);
+}
+
 SubscriberPtr<BoolMsg> BaseNode::createStartMissionSubscriber(std::function<void(const BoolMsg::SharedPtr)> callback, const rclcpp::SubscriptionOptions& options)
 {
     return node_->create_subscription<BoolMsg>(getStartMissionTopic(), 10, std::move(callback), options);

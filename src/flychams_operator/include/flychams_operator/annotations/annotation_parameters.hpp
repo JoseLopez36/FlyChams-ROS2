@@ -48,8 +48,8 @@ namespace flychams::operator_pkg
         constexpr float kWinOverlayIdFontMarginY = -5.0f;
         // Colors (agent color is used dynamically from AgentColors palette)
         inline const Color kBg      = withAlpha(Colors::kBlack,       0.50f);
-        inline const Color kWin     = withAlpha(Colors::kCyan,        0.80f);
-        inline const Color kWinOob  = withAlpha(Colors::kScarlettRed, 0.80f);
+        inline const Color kWin     = withAlpha(Colors::kCyan,        0.50f);
+        inline const Color kWinOob  = withAlpha(Colors::kScarlettRed, 0.50f);
     }
 
     // ════════════════════════════════════════════════════════════════════════════
@@ -72,6 +72,21 @@ namespace flychams::operator_pkg
     }
 
     // ════════════════════════════════════════════════════════════════════════════
+    // CLUSTER ANNOTATION PARAMETERS
+    // ════════════════════════════════════════════════════════════════════════════
+    namespace ClusterAnnotations
+    {
+        // Rim sampling
+        constexpr int   kRimPoints    = 64;
+        // Dashed polyline style
+        constexpr int   kNDashes      = 18;
+        constexpr float kDashFrac     = 0.50f;
+        constexpr float kThickness    = 2.0f;
+        // Color
+        inline const Color kDash = withAlpha(Colors::kWhite, 0.50f);
+    }
+
+    // ════════════════════════════════════════════════════════════════════════════
     // ANNOTATION HELPERS
     // ════════════════════════════════════════════════════════════════════════════
     namespace AnnotationHelpers
@@ -85,6 +100,33 @@ namespace flychams::operator_pkg
             line.outline_color = color;
             line.thickness = thickness;
             msg.points.push_back(line);
+        }
+
+        inline void addDashedPolyline(common::FoxImageAnnotationsMsg& msg, const rclcpp::Time& stamp, const std::vector<common::FoxPoint2Msg>& pts, common::FoxColorMsg color, float thickness, int n_dashes = 20, float dash_frac = 0.55f)
+        {
+            const int n = static_cast<int>(pts.size());
+            if (n < 2)
+                return;
+            const float pts_per_seg   = static_cast<float>(n) / static_cast<float>(n_dashes);
+            const int   dash_pts      = std::max(2, static_cast<int>(std::round(pts_per_seg * dash_frac)));
+            const int   seg_pts       = std::max(dash_pts + 1, static_cast<int>(std::round(pts_per_seg)));
+            int i = 0;
+            while (i < n)
+            {
+                // Collect dash_pts consecutive points (wrapping)
+                common::FoxPointsAnnotationMsg dash;
+                dash.type          = common::FoxPointsAnnotationMsg::LINE_STRIP;
+                dash.timestamp     = stamp;
+                dash.outline_color = color;
+                dash.thickness     = thickness;
+                for (int j = 0; j < dash_pts; ++j)
+                {
+                    dash.points.push_back(pts[(i + j) % n]);
+                }
+                msg.points.push_back(dash);
+                // Advance by full segment (dash + gap)
+                i += seg_pts;
+            }
         }
 
         inline common::FoxPoint2Msg pt(float x, float y)

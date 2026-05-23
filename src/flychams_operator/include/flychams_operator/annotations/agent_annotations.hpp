@@ -40,6 +40,11 @@ namespace flychams::operator_pkg
 
     public: // Types
         using SharedPtr = std::shared_ptr<AgentAnnotations>;
+        struct Intrinsics
+        {
+            double fx = 0.0, fy = 0.0, cx = 0.0, cy = 0.0;
+            bool valid = false;
+        };
 
     private: // Parameters
         common::ID agent_id_;
@@ -58,8 +63,23 @@ namespace flychams::operator_pkg
         common::ObservationSetpointsMsg::SharedPtr setpoints_;
         bool has_setpoints_ = false;
 
+    private: // Cluster data
+        struct ClusterData
+        {
+            common::PointMsg center;
+            float radius = 0.0f;
+            common::ID unit_id;
+        };
+        std::vector<ClusterData> clusters_;
+        bool has_clusters_ = false;
+
+    private: // Per-camera intrinsics cache
+        std::unordered_map<common::ID, Intrinsics> intrinsics_;
+
     private: // Callbacks
         void observationSetpointsCallback(const common::ObservationSetpointsMsg::SharedPtr msg);
+        void clustersCallback(const common::AgentClustersMsg::SharedPtr msg);
+        void cameraInfoCallback(const common::ID& camera_id, const common::CameraInfoMsg::SharedPtr msg);
 
     private: // Update methods
         void update();
@@ -67,13 +87,21 @@ namespace flychams::operator_pkg
     private: // Annotation helpers
         void publishCameraAnnotations(size_t idx, int view_w, int view_h) const;
         void publishWindowAnnotations(size_t idx, int view_w, int view_h) const;
+        void appendClusterOverlays(common::FoxImageAnnotationsMsg& msg, const rclcpp::Time& stamp, const common::ID& camera_id, int view_w, int view_h, bool only_show_assigned) const;
+        void appendClusterOverlaysWindow(common::FoxImageAnnotationsMsg& msg, const rclcpp::Time& stamp, const common::ID& camera_id, size_t sp_idx, int view_w, int view_h, bool only_show_assigned) const;
+        common::Matrix4r buildWTc(const common::TransformMsg& tf);
+        common::Matrix3r buildK(const Intrinsics& intr);
+        std::vector<common::FoxPoint2Msg> projectRim(const common::Vector3r& wP, float radius, const common::Matrix4r& wTc, const common::Matrix3r& K, int n_pts = 64);
 
     private: // ROS components
         common::TimerPtr update_timer_;
         // Per-unit publishers: keyed by observation unit ID
         std::unordered_map<common::ID, common::PublisherPtr<common::FoxImageAnnotationsMsg>> annotation_pubs_;
-        // Subscriber
+        // Subscribers
         common::SubscriberPtr<common::ObservationSetpointsMsg> setpoints_sub_;
+        common::SubscriberPtr<common::AgentClustersMsg> clusters_sub_;
+        // Per-camera camera_info subscribers (keyed by camera_id)
+        std::unordered_map<common::ID, common::SubscriberPtr<common::CameraInfoMsg>> camera_info_subs_;
     };
 
 } // namespace flychams::operator_pkg

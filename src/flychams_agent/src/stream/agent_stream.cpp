@@ -63,7 +63,7 @@ void AgentStream::onModuleInit()
         }
 
         // Create publisher for this camera
-        unit->camera_info = makeCameraInfo(camera, unit->output_width, unit->output_height, camera->ref_focal);
+        unit->camera_info = makeCameraInfo(camera, camera->camera.resolution(0), camera->camera.resolution(1), camera->ref_focal);
         unit->image_pub = node_->createCameraPublisher(agent_id_, camera_id);
         unit->running = true;
         unit->thread = std::thread(&AgentStream::streamPipeline, this, unit);

@@ -35,6 +35,10 @@ public: // Constructor/Destructor
 
     void onDiscoveryInit() override
     {
+        // Initialize TF
+        initTf();
+
+        // Initialize agent annotations
         agent_annotations_.clear();
     }
 

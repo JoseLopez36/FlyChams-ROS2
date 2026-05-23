@@ -46,10 +46,23 @@ void AgentAnnotations::onModuleInit()
         }
     }
 
-    // Subscriber
+    // Subscriber: observation setpoints
     setpoints_sub_ = node_->createObservationSetpointsSubscriber(agent_id_,
         std::bind(&AgentAnnotations::observationSetpointsCallback, this, std::placeholders::_1),
         node_->getSubscriptionOptions());
+
+    // Subscriber: agent clusters
+    clusters_sub_ = node_->createAgentClustersSubscriber(agent_id_,
+        std::bind(&AgentAnnotations::clustersCallback, this, std::placeholders::_1),
+        node_->getSubscriptionOptions());
+
+    // Subscribers: camera_info per camera (for live intrinsics)
+    for (const auto& [camera_id, camera] : tracking_config.multi_camera_set)
+    {
+        camera_info_subs_[camera_id] = node_->createCameraInfoSubscriber(agent_id_, camera_id,
+            [this, camera_id](const CameraInfoMsg::SharedPtr msg) { cameraInfoCallback(camera_id, msg); },
+            node_->getSubscriptionOptions());
+    }
 
     // Update timer
     update_timer_ = node_->createTimer(update_rate_, std::bind(&AgentAnnotations::update, this));
@@ -60,6 +73,8 @@ void AgentAnnotations::onModuleShutdown()
     update_timer_.reset();
     annotation_pubs_.clear();
     setpoints_sub_.reset();
+    clusters_sub_.reset();
+    camera_info_subs_.clear();
 }
 
 // ════════════════════════════════════════════════════════════════════════════
@@ -70,6 +85,37 @@ void AgentAnnotations::observationSetpointsCallback(const ObservationSetpointsMs
 {
     setpoints_ = msg;
     has_setpoints_ = true;
+}
+
+void AgentAnnotations::clustersCallback(const AgentClustersMsg::SharedPtr msg)
+{
+    if (msg->centers.empty())
+        return;
+
+    clusters_.clear();
+    const size_t n = msg->centers.size();
+    for (size_t i = 1; i < n; ++i)  // skip index 0 (global cluster)
+    {
+        ClusterData cluster;
+        cluster.center  = msg->centers[i];
+        cluster.radius  = msg->radii[i];
+        cluster.unit_id = msg->unit_ids[i];
+        clusters_.push_back(cluster);
+    }
+    has_clusters_ = true;
+}
+
+void AgentAnnotations::cameraInfoCallback(const ID& camera_id, const CameraInfoMsg::SharedPtr msg)
+{
+    Intrinsics& k = intrinsics_[camera_id];
+    // K = [fx, 0, cx, 0, fy, cy, 0, 0, 1]  (row-major, 9 elements)
+    if (msg->k.size() < 9)
+        return;
+    k.fx    = msg->k[0];
+    k.fy    = msg->k[4];
+    k.cx    = msg->k[2];
+    k.cy    = msg->k[5];
+    k.valid = (k.fx > 0.0 && k.fy > 0.0);
 }
 
 // ════════════════════════════════════════════════════════════════════════════
@@ -267,6 +313,13 @@ void AgentAnnotations::publishCameraAnnotations(size_t idx, int view_w, int view
         msg.texts.push_back(hud);
     }
 
+    // ── Cluster overlays ──────────────────────────────────────────────────
+    if (has_clusters_)
+    {
+        const ID& camera_id = sp.ids[idx];
+        appendClusterOverlays(msg, stamp, camera_id, view_w, view_h, !is_central);
+    }
+
     annotation_pubs_.at(sp.ids[idx])->publish(msg);
 }
 
@@ -329,5 +382,214 @@ void AgentAnnotations::publishWindowAnnotations(size_t idx, int view_w, int view
         msg.texts.push_back(hud);
     }
 
+    // ── Cluster overlays (projected into window crop space) ───────────────
+    if (has_clusters_)
+    {
+        // Find the central camera id (role==1) from setpoints to get intrinsics
+        ID central_camera_id;
+        for (size_t j = 0; j < sp.ids.size(); ++j)
+        {
+            if (j < sp.roles.size() && sp.roles[j] == 1 /* Central */)
+            {
+                central_camera_id = sp.ids[j];
+                break;
+            }
+        }
+        if (!central_camera_id.empty())
+        {
+            appendClusterOverlaysWindow(msg, stamp, central_camera_id, idx, view_w, view_h, true);
+        }
+    }
+
     annotation_pubs_.at(sp.ids[idx])->publish(msg);
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+// CLUSTER OVERLAY HELPERS
+// ════════════════════════════════════════════════════════════════════════════
+
+void AgentAnnotations::appendClusterOverlays(FoxImageAnnotationsMsg& msg, const rclcpp::Time& stamp, const ID& camera_id, int view_w, int view_h, bool only_show_assigned) const
+{
+    const auto it = intrinsics_.find(camera_id);
+    if (it == intrinsics_.end() || !it->second.valid)
+        return;
+
+    const std::string optical_frame = node_->getCameraOpticalFrame(agent_id_, camera_id);
+    const std::string world_frame   = node_->getGlobalFrame();
+
+    // Build projection matrices
+    const Matrix4r wTc = buildWTc(node_->getTransform(world_frame, optical_frame));
+    const Matrix3r K   = buildK(it->second);
+
+    // Scale: original camera resolution → display resolution
+    const float sx  = static_cast<float>(view_w) / static_cast<float>(original_view_width_);
+    const float sy  = static_cast<float>(view_h)  / static_cast<float>(original_view_height_);
+    const float fvw = static_cast<float>(view_w);
+    const float fvh = static_cast<float>(view_h);
+
+    const FoxColorMsg dash_color = ClusterAnnotations::kDash;
+
+    for (const auto& cluster : clusters_)
+    {
+        // Only show the cluster assigned to this camera unit
+        if (only_show_assigned && cluster.unit_id != camera_id)
+            continue;
+
+        const Vector3r wP(
+            static_cast<float>(cluster.center.x),
+            static_cast<float>(cluster.center.y),
+            static_cast<float>(cluster.center.z));
+
+        // Project 3D sphere rim → true ellipse in image space (original resolution)
+        std::vector<FoxPoint2Msg> rim = projectRim(wP, cluster.radius, wTc, K,
+                                                    ClusterAnnotations::kRimPoints);
+        if (rim.empty())
+            continue;
+
+        // Scale rim to display resolution and check bounds
+        bool out_of_bounds = false;
+        for (auto& p : rim)
+        {
+            p.x *= sx;
+            p.y *= sy;
+            if (p.x < 0.0f || p.x > fvw || p.y < 0.0f || p.y > fvh)
+            {
+                out_of_bounds = true;
+                break;
+            }
+        }
+        if (out_of_bounds)
+            continue;
+
+        AnnotationHelpers::addDashedPolyline(msg, stamp, rim, dash_color,
+                                             ClusterAnnotations::kThickness,
+                                             ClusterAnnotations::kNDashes,
+                                             ClusterAnnotations::kDashFrac);
+    }
+}
+
+void AgentAnnotations::appendClusterOverlaysWindow(FoxImageAnnotationsMsg& msg, const rclcpp::Time& stamp, const ID& camera_id, size_t sp_idx, int view_w, int view_h, bool only_show_assigned) const
+{
+    const auto it = intrinsics_.find(camera_id);
+    if (it == intrinsics_.end() || !it->second.valid)
+        return;
+
+    const auto& sp = *setpoints_;
+    if (sp_idx >= sp.crops.size())
+        return;
+
+    // Unit ID for this window — used to match the correct cluster
+    const ID window_id = sp_idx < sp.ids.size() ? sp.ids[sp_idx] : ID{};
+
+    const auto& crop = sp.crops[sp_idx];
+    const std::string optical_frame = node_->getCameraOpticalFrame(agent_id_, camera_id);
+    const std::string world_frame   = node_->getGlobalFrame();
+
+    // Build projection matrices (same central camera)
+    const Matrix4r wTc = buildWTc(node_->getTransform(world_frame, optical_frame));
+    const Matrix3r K   = buildK(it->second);
+
+    // Scale: original resolution → crop-local display pixels
+    const float crop_sx = static_cast<float>(view_w) / static_cast<float>(crop.w > 0 ? crop.w : 1);
+    const float crop_sy = static_cast<float>(view_h)  / static_cast<float>(crop.h > 0 ? crop.h : 1);
+    const float fvw     = static_cast<float>(view_w);
+    const float fvh     = static_cast<float>(view_h);
+
+    const FoxColorMsg dash_color = ClusterAnnotations::kDash;
+
+    for (const auto& cluster : clusters_)
+    {
+        // Only show the cluster assigned to this window unit
+        if (only_show_assigned && cluster.unit_id != window_id)
+            continue;
+
+        const Vector3r wP(
+            static_cast<float>(cluster.center.x),
+            static_cast<float>(cluster.center.y),
+            static_cast<float>(cluster.center.z));
+
+        // Project 3D sphere rim → true ellipse in original image space
+        std::vector<FoxPoint2Msg> rim = projectRim(wP, cluster.radius, wTc, K,
+                                                    ClusterAnnotations::kRimPoints);
+        if (rim.empty())
+            continue;
+
+        // Map rim from original image coords → crop-local display coords and check bounds
+        bool out_of_bounds = false;
+        for (auto& p : rim)
+        {
+            p.x = (p.x - static_cast<float>(crop.x)) * crop_sx;
+            p.y = (p.y - static_cast<float>(crop.y)) * crop_sy;
+            if (p.x < 0.0f || p.x > fvw || p.y < 0.0f || p.y > fvh)
+            {
+                out_of_bounds = true;
+                break;
+            }
+        }
+        if (out_of_bounds)
+            continue;
+
+        AnnotationHelpers::addDashedPolyline(msg, stamp, rim, dash_color,
+                                             ClusterAnnotations::kThickness,
+                                             ClusterAnnotations::kNDashes,
+                                             ClusterAnnotations::kDashFrac);
+    }
+}
+
+Matrix4r AgentAnnotations::buildWTc(const TransformMsg& tf)
+{
+    // Quaternion → rotation matrix (Eigen convention: w,x,y,z)
+    const auto& q = tf.rotation;
+    const auto& t = tf.translation;
+    Eigen::Quaternionf quat(
+        static_cast<float>(q.w),
+        static_cast<float>(q.x),
+        static_cast<float>(q.y),
+        static_cast<float>(q.z));
+    Matrix4r wTc = Matrix4r::Identity();
+    wTc.block<3, 3>(0, 0) = quat.normalized().toRotationMatrix();
+    wTc(0, 3) = static_cast<float>(t.x);
+    wTc(1, 3) = static_cast<float>(t.y);
+    wTc(2, 3) = static_cast<float>(t.z);
+    return wTc;
+}
+
+Matrix3r AgentAnnotations::buildK(const AgentAnnotations::Intrinsics& intr)
+{
+    Matrix3r K = Matrix3r::Zero();
+    K(0, 0) = static_cast<float>(intr.fx);
+    K(1, 1) = static_cast<float>(intr.fy);
+    K(0, 2) = static_cast<float>(intr.cx);
+    K(1, 2) = static_cast<float>(intr.cy);
+    K(2, 2) = 1.0f;
+    return K;
+}
+
+std::vector<FoxPoint2Msg> AgentAnnotations::projectRim(const Vector3r& wP, float radius, const Matrix4r& wTc, const Matrix3r& K, int n_pts = 64)
+{
+    // View direction: camera Z axis in world = third column of wTc rotation
+    const Vector3r view_dir = wTc.block<3, 1>(0, 2);
+
+    // Build two orthogonal axes in the plane perpendicular to view_dir
+    Vector3r u = view_dir.cross(Vector3r::UnitZ());
+    if (u.norm() < 1e-4f)
+        u = view_dir.cross(Vector3r::UnitX());
+    u.normalize();
+    const Vector3r v = view_dir.cross(u).normalized();
+
+    std::vector<FoxPoint2Msg> rim;
+    rim.reserve(n_pts);
+
+    const float step = 2.0f * static_cast<float>(M_PI) / static_cast<float>(n_pts);
+    for (int i = 0; i < n_pts; ++i)
+    {
+        const float a        = static_cast<float>(i) * step;
+        const Vector3r wRim  = wP + radius * (std::cos(a) * u + std::sin(a) * v);
+        const Vector2r px    = VisionUtils::projectPoint(wRim, wTc, K);
+        FoxPoint2Msg p;
+        p.x = px(0);
+        p.y = px(1);
+        rim.push_back(p);
+    }
+    return rim;
 }
