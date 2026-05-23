@@ -1,12 +1,12 @@
 #pragma once
 
 #include "flychams_common/types/ros_types.hpp"
+#include "flychams_operator/colors/color_dictionary.hpp"
 
 namespace flychams::operator_pkg
 {
     // ════════════════════════════════════════════════════════════════════════════
     // CAMERA ANNOTATION PARAMETERS
-    // Tune these to adjust the central / tracking camera overlays
     // ════════════════════════════════════════════════════════════════════════════
     namespace CameraAnnotations
     {
@@ -16,38 +16,32 @@ namespace flychams::operator_pkg
         constexpr float kCrosshairThick    = 2.0f;
         // Centre dot
         constexpr float kCentreDotDiam     = 7.5f;
-        // Role badge text (top-left corner)
+        // Role badge text
         constexpr bool  kShowBadge         = true;
         constexpr float kBadgeFontSize     = 15.0f;
         constexpr float kBadgeMarginX      = 5.0f;
         constexpr float kBadgeMarginY      = 20.0f;
-        // HUD text (bottom-left corner)
+        // HUD text
         constexpr bool  kShowHud           = true;
         constexpr float kHudFontSize       = 15.0f;
         constexpr float kHudMarginX        = 5.0f;
         constexpr float kHudMarginY        = 7.5f;
-        // Window-overlay style (drawn on the central image)
+        // Window-overlay style
         constexpr bool  kShowWindowsOnCentral = true;
         constexpr float kWinOverlayBoxThick   = 2.0f;
         constexpr float kWinOverlayIdFontSz   = 13.0f;
         constexpr float kWinOverlayIdFontMarginX = -1.0f;
         constexpr float kWinOverlayIdFontMarginY = -5.0f;
         // Colors
-        // Central
-        constexpr float kCentralR = 0.00f, kCentralG = 0.90f, kCentralB = 1.00f, kCentralA = 0.95f;
-        // Tracking
-        constexpr float kTrackR   = 1.00f, kTrackG   = 0.78f, kTrackB   = 0.00f, kTrackA   = 0.95f;
-        // Semi-transparent text background
-        constexpr float kBgR      = 0.00f, kBgG      = 0.00f, kBgB      = 0.00f, kBgA      = 0.50f;
-        // In-bounds window overlay: cyan
-        constexpr float kWinR = 0.00f, kWinG = 0.90f, kWinB = 1.00f, kWinA = 0.80f;
-        // OOB window overlay: red
-        constexpr float kWinOobR = 1.00f, kWinOobG = 0.20f, kWinOobB = 0.00f, kWinOobA = 0.80f;
+        constexpr Color kCentral = { Colors::kCyan.r,        Colors::kCyan.g,        Colors::kCyan.b,        0.95f };
+        constexpr Color kTrack   = { Colors::kAmber.r,       Colors::kAmber.g,       Colors::kAmber.b,       0.95f };
+        constexpr Color kBg      = { Colors::kBlack.r,       Colors::kBlack.g,       Colors::kBlack.b,       0.50f };
+        constexpr Color kWin     = { Colors::kCyan.r,        Colors::kCyan.g,        Colors::kCyan.b,        0.80f };
+        constexpr Color kWinOob  = { Colors::kScarlettRed.r, Colors::kScarlettRed.g, Colors::kScarlettRed.b, 0.80f };
     }
 
     // ════════════════════════════════════════════════════════════════════════════
     // WINDOW ANNOTATION PARAMETERS
-    // Tune these to adjust the crop / ROI window overlays
     // ════════════════════════════════════════════════════════════════════════════
     namespace WindowAnnotations
     {
@@ -62,12 +56,9 @@ namespace flychams::operator_pkg
         constexpr float kHudMarginX     = 5.0f;
         constexpr float kHudMarginY     = 7.5f;
         // Colors
-        // In-bounds
-        constexpr float kTextR   = 0.00f, kTextG   = 0.90f, kTextB   = 1.00f, kTextA   = 0.95f;
-        // OOB
-        constexpr float kOobTxtR = 1.00f, kOobTxtG = 0.35f, kOobTxtB = 0.00f, kOobTxtA = 0.95f;
-        // Semi-transparent text background
-        constexpr float kBgR     = 0.00f, kBgG     = 0.00f, kBgB     = 0.00f, kBgA     = 0.50f;
+        constexpr Color kText    = { Colors::kCyan.r,        Colors::kCyan.g,        Colors::kCyan.b,        0.95f };
+        constexpr Color kOobText = { Colors::kOrange.r,      Colors::kOrange.g,      Colors::kOrange.b,      0.95f };
+        constexpr Color kBg      = { Colors::kBlack.r,       Colors::kBlack.g,       Colors::kBlack.b,       0.50f };
     }
 
     // ════════════════════════════════════════════════════════════════════════════
@@ -75,22 +66,7 @@ namespace flychams::operator_pkg
     // ════════════════════════════════════════════════════════════════════════════
     namespace AnnotationHelpers
     {
-        inline common::FoxColorMsg makeColor(float r, float g, float b, float a)
-        {
-            common::FoxColorMsg c;
-            c.r = r; c.g = g; c.b = b; c.a = a;
-            return c;
-        }
-
-        inline common::FoxColorMsg white(float a = 0.95f)
-        {
-            return makeColor(1.0f, 1.0f, 1.0f, a);
-        }
-
-        inline void addLine(common::FoxImageAnnotationsMsg& msg,
-                            const rclcpp::Time& stamp,
-                            common::FoxPoint2Msg p1, common::FoxPoint2Msg p2,
-                            common::FoxColorMsg color, float thickness)
+        inline void addLine(common::FoxImageAnnotationsMsg& msg, const rclcpp::Time& stamp, common::FoxPoint2Msg p1, common::FoxPoint2Msg p2, common::FoxColorMsg color, float thickness)
         {
             common::FoxPointsAnnotationMsg line;
             line.type = common::FoxPointsAnnotationMsg::LINE_STRIP;

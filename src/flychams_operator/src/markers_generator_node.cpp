@@ -43,7 +43,16 @@ public: // Constructor/Destructor
         agent_markers_.clear();
         target_markers_.clear();
         cluster_markers_.clear();
+
+        // Initialize element counter
         element_idx_ = 0;
+
+        // Initialize agent index map
+        int i = 0;
+        for (const auto& [agent_id, _] : getSettings()->getAgentTeam())
+        {
+            agent_index_map_[agent_id] = i++;
+        }
     }
 
     void onDiscoveryShutdown() override
@@ -57,8 +66,14 @@ public: // Constructor/Destructor
 private: // Element management
     void onAddAgent(const ID& agent_id) override
     {
+        // Get element ID
+        const auto element_id = makeElementId(element_idx_++);
+
+        // Get agent index
+        const auto agent_idx = agent_index_map_[agent_id];
+
         // Initialize agent marker generator
-        auto agent_marker = std::make_shared<AgentMarkers>(agent_id, makeElementId(element_idx_++), sharedFromThis());
+        auto agent_marker = std::make_shared<AgentMarkers>(agent_id, agent_idx, element_id, sharedFromThis());
         agent_markers_.insert(std::make_pair(agent_id, agent_marker));
 
         RCLCPP_INFO(node_->get_logger(), "Markers node: agent markers created for %s", agent_id.c_str());
@@ -73,8 +88,11 @@ private: // Element management
 
     void onAddTarget(const ID& target_id) override
     {
+        // Get element ID
+        const auto element_id = makeElementId(element_idx_++);
+
         // Initialize target marker generator
-        auto target_marker = std::make_shared<TargetMarkers>(target_id, makeElementId(element_idx_++), sharedFromThis());
+        auto target_marker = std::make_shared<TargetMarkers>(target_id, element_id, sharedFromThis());
         target_markers_.insert(std::make_pair(target_id, target_marker));
 
         RCLCPP_INFO(node_->get_logger(), "Markers node: target markers created for %s", target_id.c_str());
@@ -89,8 +107,11 @@ private: // Element management
 
     void onAddCluster(const ID& cluster_id) override
     {
+        // Get element ID
+        const auto element_id = makeElementId(element_idx_++);
+        
         // Initialize cluster marker generator
-        auto cluster_marker = std::make_shared<ClusterMarkers>(cluster_id, makeElementId(element_idx_++), sharedFromThis());
+        auto cluster_marker = std::make_shared<ClusterMarkers>(cluster_id, agent_index_map_, element_id, sharedFromThis());
         cluster_markers_.insert(std::make_pair(cluster_id, cluster_marker));
 
         RCLCPP_INFO(node_->get_logger(), "Markers node: cluster markers created for %s", cluster_id.c_str());
@@ -112,12 +133,14 @@ private: // Helpers
     }
 
 private: // Components
-    // Shared element ID counter
-    int element_idx_ = 0;
     // Marker generators
     std::unordered_map<ID, AgentMarkers::SharedPtr> agent_markers_;
     std::unordered_map<ID, TargetMarkers::SharedPtr> target_markers_;
     std::unordered_map<ID, ClusterMarkers::SharedPtr> cluster_markers_;
+    // Element counter
+    int element_idx_ = 0;
+    // Agent index map
+    std::unordered_map<ID, int> agent_index_map_;
 };
 
 int main(int argc, char** argv)

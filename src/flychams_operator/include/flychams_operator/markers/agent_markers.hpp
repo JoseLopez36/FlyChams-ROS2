@@ -1,7 +1,7 @@
 #pragma once
 
 // Utils include
-#include "flychams_operator/markers/marker_utils.hpp"
+#include "flychams_operator/markers/marker_parameters.hpp"
 
 // Base module include
 #include "flychams_common/base/base_module.hpp"
@@ -13,14 +13,7 @@ namespace flychams::operator_pkg
 {
     /**
      * ════════════════════════════════════════════════════════════════
-     * @brief Module that publishes high-quality agent scene markers
-     *
-     * @details
-     * Publishes a foxglove_msgs/SceneUpdate with:
-     *   - Solid body sphere (color-coded by status)
-     *   - Semi-transparent outer glow shell
-     *   - Upward orientation arrow
-     *   - Text label with ID and altitude
+     * @brief Module that publishes agent scene markers
      * ════════════════════════════════════════════════════════════════
      * @author Jose Francisco Lopez Ruiz
      * @date 2026-05-18
@@ -29,8 +22,8 @@ namespace flychams::operator_pkg
     class AgentMarkers : public common::BaseModule
     {
     public: // Constructor/Destructor
-        AgentMarkers(const common::ID& agent_id, const common::ID& element_id, common::BaseNode::SharedPtr node)
-            : BaseModule(node), agent_id_(agent_id), element_id_(element_id)
+        AgentMarkers(const common::ID& agent_id, int agent_idx, const common::ID& element_id, common::BaseNode::SharedPtr node)
+            : BaseModule(node), agent_id_(agent_id), agent_idx_(agent_idx), element_id_(element_id)
         {
             init();
         }
@@ -55,6 +48,7 @@ namespace flychams::operator_pkg
 
     private: // Parameters
         common::ID agent_id_;
+        int agent_idx_;
         common::ID element_id_;
         float update_rate_;
 

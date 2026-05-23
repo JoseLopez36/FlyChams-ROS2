@@ -63,7 +63,7 @@ void TargetMarkers::update()
     const auto lifetime = rclcpp::Duration::from_seconds(2.0 / update_rate_);
 
     // Target colors
-    const FoxColorMsg body_color = MarkerHelpers::makeColor(TargetParameters::kBodyR, TargetParameters::kBodyG, TargetParameters::kBodyB, TargetParameters::kBodyA);
+    const FoxColorMsg base_color = TargetParameters::kBody;
 
     // ── Build entity ───────────────────────────────────────────────────────
     FoxSceneEntityMsg entity;
@@ -87,7 +87,7 @@ void TargetMarkers::update()
         body.size.x = TargetParameters::kBodyDiamXY;
         body.size.y = TargetParameters::kBodyDiamXY;
         body.size.z = TargetParameters::kBodyHeight;
-        body.color = body_color;
+        body.color = base_color;
         body.top_scale = 1.0f;
         body.bottom_scale = 1.0f;
         entity.cylinders.push_back(body);
@@ -103,7 +103,7 @@ void TargetMarkers::update()
         text.billboard = true;
         text.font_size = TargetParameters::kFontSize;
         text.scale_invariant = false;
-        text.color = MarkerHelpers::white();
+        text.color = Colors::kWhite;
         text.text = target_id_;
         entity.texts.push_back(text);
     }

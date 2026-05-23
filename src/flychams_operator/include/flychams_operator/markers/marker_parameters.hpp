@@ -1,18 +1,18 @@
 #pragma once
 
-#include "flychams_common/types/ros_types.hpp"
+#include "flychams_operator/colors/color_dictionary.hpp"
 
 namespace flychams::operator_pkg
 {
     // ════════════════════════════════════════════════════════════════════════════
     // AGENT MARKER PARAMETERS
-    // Tune these to adjust agent visibility
     // ════════════════════════════════════════════════════════════════════════════
     namespace AgentParameters
     {
         // Central body disc
         constexpr double kBodyDiamXY       = 0.45;
         constexpr double kBodyDiamZ        = 0.12;
+        constexpr float  kBodyAlpha        = 0.90f;
         // Motor arms
         constexpr double kArmLength        = 0.70;
         constexpr double kArmDiam          = 0.05;
@@ -36,29 +36,19 @@ namespace flychams::operator_pkg
         constexpr bool   kShowSetpoint          = true;
         constexpr double kSetpointDiam          = 0.30;
         constexpr double kSetpointLineThickness = 0.05;
-        // Status colors
-        // IDLE
-        constexpr float kIdleBodyR = 1.00f, kIdleBodyG = 0.78f, kIdleBodyB = 0.00f, kIdleBodyA = 0.9f;
-        constexpr float kIdleRotorR = 1.00f, kIdleRotorG = 0.65f, kIdleRotorB = 0.00f;
-        // ACTIVE
-        constexpr float kActBodyR  = 0.00f, kActBodyG  = 0.85f, kActBodyB  = 1.00f, kActBodyA  = 0.9f;
-        constexpr float kActRotorR = 0.00f, kActRotorG = 0.55f, kActRotorB = 1.00f;
-        // ERROR
-        constexpr float kErrBodyR  = 1.00f, kErrBodyG  = 0.15f, kErrBodyB  = 0.10f, kErrBodyA  = 0.9f;
-        constexpr float kErrRotorR = 1.00f, kErrRotorG = 0.10f, kErrRotorB = 1.00f;
         // Setpoint colors
-        constexpr float kSetpointR = 0.00f, kSetpointG = 1.00f, kSetpointB = 0.00f, kSetpointA = 0.70f;
-        constexpr float kSetpointLineR = 0.00f, kSetpointLineG = 1.00f, kSetpointLineB = 0.00f, kSetpointLineA = 0.50f;
+        constexpr Color kSetpoint     = { Colors::kGreen.r, Colors::kGreen.g, Colors::kGreen.b, 0.90f };
+        constexpr Color kSetpointLine = { Colors::kGreen.r, Colors::kGreen.g, Colors::kGreen.b, 0.50f };
     }
 
     // ════════════════════════════════════════════════════════════════════════════
     // CLUSTER MARKER PARAMETERS
-    // Tune these to adjust cluster visibility
     // ════════════════════════════════════════════════════════════════════════════
     namespace ClusterParameters
     {
         // Ring line thickness (m)
-        constexpr float  kRingThickness  = 0.40f;
+        constexpr float  kRingThickness        = 0.40f;
+        constexpr int    kRingSegments         = 64;
         // Bounding volume alpha
         constexpr float  kVolumeAlpha          = 0.08f;
         constexpr float  kRingAlpha            = 0.90f;
@@ -66,14 +56,10 @@ namespace flychams::operator_pkg
         constexpr bool   kDisplayText          = true;
         constexpr float  kFontSize             = 2.0f;
         constexpr double kLabelZExtraOffset    = 1.5;
-        // Base color
-        constexpr float kR = 0.18f, kG = 1.00f, kB = 0.45f;
-        constexpr int   kRingSegments          = 64;
     }
 
     // ════════════════════════════════════════════════════════════════════════════
     // TARGET MARKER PARAMETERS
-    // Tune these to adjust target visibility
     // ════════════════════════════════════════════════════════════════════════════
     namespace TargetParameters
     {
@@ -86,7 +72,7 @@ namespace flychams::operator_pkg
         constexpr float  kFontSize         = 2.0f;
         constexpr double kLabelZOffset     = 4.0;
         // Colors
-        constexpr float kBodyR = 1.00f, kBodyG = 0.22f, kBodyB = 0.18f, kBodyA = 1.0f;
+        constexpr Color kBody = { Colors::kScarlettRed.r, Colors::kScarlettRed.g, Colors::kScarlettRed.b, 1.00f };
     }
 
     // ════════════════════════════════════════════════════════════════════════════
@@ -94,18 +80,6 @@ namespace flychams::operator_pkg
     // ════════════════════════════════════════════════════════════════════════════
     namespace MarkerHelpers
     {
-        inline common::FoxColorMsg makeColor(float r, float g, float b, float a)
-        {
-            common::FoxColorMsg c;
-            c.r = r; c.g = g; c.b = b; c.a = a;
-            return c;
-        }
-
-        inline common::FoxColorMsg white(float a = 0.95f)
-        {
-            return makeColor(1.0f, 1.0f, 1.0f, a);
-        }
-
         inline void stampEntity(common::FoxSceneEntityMsg& entity, int64_t stamp_ns, const rclcpp::Duration& lifetime)
         {
             entity.timestamp.nanosec = static_cast<uint32_t>(stamp_ns % 1000000000LL);

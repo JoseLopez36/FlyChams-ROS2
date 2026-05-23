@@ -136,10 +136,10 @@ void AgentAnnotations::publishCameraAnnotations(size_t idx, int view_w, int view
     const uint8_t role = idx < sp.roles.size() ? sp.roles[idx] : 0;
     const bool is_central = (role == 1);
     const FoxColorMsg hud_color = is_central
-        ? AnnotationHelpers::makeColor(CameraAnnotations::kCentralR, CameraAnnotations::kCentralG, CameraAnnotations::kCentralB, CameraAnnotations::kCentralA)
-        : AnnotationHelpers::makeColor(CameraAnnotations::kTrackR,   CameraAnnotations::kTrackG,   CameraAnnotations::kTrackB,   CameraAnnotations::kTrackA);
-    const FoxColorMsg bg     = AnnotationHelpers::makeColor(CameraAnnotations::kBgR,    CameraAnnotations::kBgG,    CameraAnnotations::kBgB,    CameraAnnotations::kBgA);
-    const FoxColorMsg white  = AnnotationHelpers::white();
+        ? AnnotationHelpers::makeColor(CameraAnnotations::kCentral)
+        : AnnotationHelpers::makeColor(CameraAnnotations::kTrack);
+    const FoxColorMsg bg     = AnnotationHelpers::makeColor(CameraAnnotations::kBg);
+    const FoxColorMsg white  = AnnotationHelpers::makeColor(Colors::kWhite);
 
     // ── Crosshair with centre gap ──────────────────────────────────────────
     {
@@ -189,8 +189,8 @@ void AgentAnnotations::publishCameraAnnotations(size_t idx, int view_w, int view
             const float wy1 = static_cast<float>(crop.y + crop.h)  * sy;
 
             const FoxColorMsg win_color = crop.is_out_of_bounds
-                ? AnnotationHelpers::makeColor(CameraAnnotations::kWinOobR, CameraAnnotations::kWinOobG, CameraAnnotations::kWinOobB, CameraAnnotations::kWinOobA)
-                : AnnotationHelpers::makeColor(CameraAnnotations::kWinR,    CameraAnnotations::kWinG,    CameraAnnotations::kWinB,    CameraAnnotations::kWinA);
+                ? AnnotationHelpers::makeColor(CameraAnnotations::kWinOob)
+                : AnnotationHelpers::makeColor(CameraAnnotations::kWin);
 
             // Box
             {
@@ -216,9 +216,7 @@ void AgentAnnotations::publishCameraAnnotations(size_t idx, int view_w, int view
                 label.text = unit_id;
                 label.font_size = CameraAnnotations::kWinOverlayIdFontSz;
                 label.text_color = win_color;
-                label.background_color = AnnotationHelpers::makeColor(
-                    CameraAnnotations::kBgR, CameraAnnotations::kBgG,
-                    CameraAnnotations::kBgB, CameraAnnotations::kBgA);
+                label.background_color = AnnotationHelpers::makeColor(CameraAnnotations::kBg);
                 msg.texts.push_back(label);
             }
         }
@@ -288,9 +286,9 @@ void AgentAnnotations::publishWindowAnnotations(size_t idx, int view_w, int view
     const bool  oob  = crop.is_out_of_bounds;
 
     const FoxColorMsg text_color = oob
-        ? AnnotationHelpers::makeColor(WindowAnnotations::kOobTxtR, WindowAnnotations::kOobTxtG, WindowAnnotations::kOobTxtB, WindowAnnotations::kOobTxtA)
-        : AnnotationHelpers::makeColor(WindowAnnotations::kTextR,   WindowAnnotations::kTextG,   WindowAnnotations::kTextB,   WindowAnnotations::kTextA);
-    const FoxColorMsg bg         = AnnotationHelpers::makeColor(WindowAnnotations::kBgR,   WindowAnnotations::kBgG,   WindowAnnotations::kBgB,   WindowAnnotations::kBgA);
+        ? AnnotationHelpers::makeColor(WindowAnnotations::kOobText)
+        : AnnotationHelpers::makeColor(WindowAnnotations::kText);
+    const FoxColorMsg bg         = AnnotationHelpers::makeColor(WindowAnnotations::kBg);
 
     // ── Role / unit ID badge (top-left of the window view) ───────────────
     if (WindowAnnotations::kShowBadge)

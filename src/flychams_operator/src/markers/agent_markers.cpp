@@ -86,23 +86,18 @@ void AgentMarkers::update()
     const auto stamp = node_->now().nanoseconds();
     const auto lifetime = rclcpp::Duration::from_seconds(2.0 / update_rate_);
 
-    // ── Status colors: IDLE, ACTIVE, ERROR ─────────────────
-    FoxColorMsg body_color;
-    FoxColorMsg rotor_color;
-    if (agent_.has_status && agent_.status == 1) // ACTIVE
+    // ── Agent color ───────────────────────────────────
+    const Color& base_color = AgentColors::get(agent_idx_);
+    Color body_color, rotor_color;
+    if (!agent_.has_status || agent_.status != 1) // ERROR: flash error red
     {
-        body_color  = MarkerHelpers::makeColor(AgentParameters::kActBodyR,  AgentParameters::kActBodyG,  AgentParameters::kActBodyB,  AgentParameters::kActBodyA);
-        rotor_color = MarkerHelpers::makeColor(AgentParameters::kActRotorR, AgentParameters::kActRotorG, AgentParameters::kActRotorB, AgentParameters::kRotorAlpha);
+        body_color  = Colors::kRed; body_color.a = kBodyAlpha;
+        rotor_color = Colors::kRed; rotor_color.a = kRotorAlpha;
     }
-    else if (agent_.has_status && agent_.status == 2) // ERROR
+    else if (agent_.status == 1) // ACTIVE: full agent color
     {
-        body_color  = MarkerHelpers::makeColor(AgentParameters::kErrBodyR,  AgentParameters::kErrBodyG,  AgentParameters::kErrBodyB,  AgentParameters::kErrBodyA);
-        rotor_color = MarkerHelpers::makeColor(AgentParameters::kErrRotorR, AgentParameters::kErrRotorG, AgentParameters::kErrRotorB, AgentParameters::kRotorAlpha);
-    }
-    else // IDLE
-    {
-        body_color  = MarkerHelpers::makeColor(AgentParameters::kIdleBodyR,  AgentParameters::kIdleBodyG,  AgentParameters::kIdleBodyB,  AgentParameters::kIdleBodyA);
-        rotor_color = MarkerHelpers::makeColor(AgentParameters::kIdleRotorR, AgentParameters::kIdleRotorG, AgentParameters::kIdleRotorB, AgentParameters::kRotorAlpha);
+        body_color  = base_color; body_color.a = kBodyAlpha;
+        rotor_color = base_color; rotor_color.a = kRotorAlpha;
     }
 
     // ── Build entity ───────────────────────────────────────────────────────
@@ -195,13 +190,12 @@ void AgentMarkers::update()
     {
         FoxArrowPrimitiveMsg arrow;
         arrow.pose.position = body_pos;
-        // Default arrow primitive points along +X — no rotation needed
         arrow.pose.orientation.w = 1.0;
         arrow.shaft_length   = AgentParameters::kArrowShaftLen;
         arrow.shaft_diameter = AgentParameters::kArrowShaftDiam;
         arrow.head_length    = AgentParameters::kArrowHeadLen;
         arrow.head_diameter  = AgentParameters::kArrowHeadDiam;
-        arrow.color = body_color;
+        arrow.color = rotor_color;
         entity.arrows.push_back(arrow);
     }
 
@@ -217,7 +211,7 @@ void AgentMarkers::update()
         text.billboard = true;
         text.font_size = AgentParameters::kFontSize;
         text.scale_invariant = false;
-        text.color = MarkerHelpers::white();
+        text.color = Colors::kWhite;
         text.text = agent_id_ + "\nh=" + oss.str() + " m";
         entity.texts.push_back(text);
     }
@@ -230,7 +224,7 @@ void AgentMarkers::update()
         setpoint_entity.frame_id = global_frame;
         setpoint_entity.id = agent_id_ + "_setpoint";
 
-        // 1. Setpoint Sphere
+        // Setpoint Sphere
         {
             FoxSpherePrimitiveMsg sphere;
             sphere.pose.position = agent_.setpoint;
@@ -238,27 +232,17 @@ void AgentMarkers::update()
             sphere.size.x = AgentParameters::kSetpointDiam;
             sphere.size.y = AgentParameters::kSetpointDiam;
             sphere.size.z = AgentParameters::kSetpointDiam;
-            sphere.color = MarkerHelpers::makeColor(
-                AgentParameters::kSetpointR,
-                AgentParameters::kSetpointG,
-                AgentParameters::kSetpointB,
-                AgentParameters::kSetpointA
-            );
+            sphere.color = AgentParameters::kSetpoint;
             setpoint_entity.spheres.push_back(sphere);
         }
 
-        // 2. Connecting line from drone to setpoint
+        // Connecting line from drone to setpoint
         {
             FoxLinePrimitiveMsg line;
             line.type = FoxLinePrimitiveMsg::LINE_STRIP;
             line.pose.orientation.w = 1.0;
             line.thickness = AgentParameters::kSetpointLineThickness;
-            line.color = MarkerHelpers::makeColor(
-                AgentParameters::kSetpointLineR,
-                AgentParameters::kSetpointLineG,
-                AgentParameters::kSetpointLineB,
-                AgentParameters::kSetpointLineA
-            );
+            line.color = AgentParameters::kSetpointLine;
             line.points.push_back(pos);
             line.points.push_back(agent_.setpoint);
             setpoint_entity.lines.push_back(line);

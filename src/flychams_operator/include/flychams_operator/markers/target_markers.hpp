@@ -1,7 +1,7 @@
 #pragma once
 
 // Utils include
-#include "flychams_operator/markers/marker_utils.hpp"
+#include "flychams_operator/markers/marker_parameters.hpp"
 
 // Base module include
 #include "flychams_common/base/base_module.hpp"
@@ -14,13 +14,6 @@ namespace flychams::operator_pkg
     /**
      * ════════════════════════════════════════════════════════════════
      * @brief Per-target marker publisher for Foxglove visualization
-     *
-     * @details
-     * Publishes a foxglove_msgs/SceneUpdate with:
-     *   - Cylinder body (human silhouette)
-     *   - Semi-transparent glow shell
-     *   - Ground-plane detection ring
-     *   - Text label with ID
      * ════════════════════════════════════════════════════════════════
      * @author Jose Francisco Lopez Ruiz
      * @date 2026-05-18
