@@ -270,6 +270,9 @@ void SpreadsheetParser::parseAgentTeam(OpenXLSX::XLWorkbook& book, MissionConfig
 	// Open Agent sheet
 	auto sheet = book.worksheet("Agent");
 
+	// Track agent index for sequential assignment
+	int idx = 0;
+
 	// Iterate through data rows
 	for (auto& row : sheet.rows())
 	{
@@ -293,6 +296,8 @@ void SpreadsheetParser::parseAgentTeam(OpenXLSX::XLWorkbook& book, MissionConfig
 
 				// Populate fields
 				agent->id = getCellValue<std::string>(row.findCell(1));
+
+				agent->idx = idx++;
 
 				agent->name = getCellValue<std::string>(row.findCell(2));
 

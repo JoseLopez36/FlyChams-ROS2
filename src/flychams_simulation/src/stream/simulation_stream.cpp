@@ -42,35 +42,30 @@ void SimulationStream::onModuleInit()
     // Launch per-agent view streams
     // URL format: rtsp://<host>:<port>/<VehicleName>/<CameraName>
     const AgentTeamConfig& agent_team = node_->getSettings()->getAgentTeam();
-    int agent_idx = 0;
+    bool scenario_launched = false;
     for (const auto& [agent_id, agent_ptr] : agent_team)
     {
-        // Derive element_id from agent index: ELEMENT00, ELEMENT01, ...
-        std::ostringstream element_ss;
-        element_ss << "ELEMENT" << std::setw(2) << std::setfill('0') << agent_idx;
-        const std::string element_id = element_ss.str();
         const std::string agent_base = rtsp_base + "/" + agent_id;
 
         // SCENARIOCAM is mounted on the first agent only
-        if (agent_idx == 0)
+        if (!scenario_launched)
         {
             const auto scenario_ci = makeCameraInfo(scenario_width_, scenario_height_,
                                                     k_sensor_width, k_sensor_height, k_fov_deg);
-            launchStreamUnit("SCENARIOCAM", "SIMULATION", "SCENARIOVIEW",
+            launchStreamUnit("SCENARIOCAM", "SIMULATION", "scenario",
                              agent_base + "/SCENARIOCAM", scenario_width_, scenario_height_, scenario_ci);
+            scenario_launched = true;
         }
 
         const auto agent_ci = makeCameraInfo(agent_width_, agent_height_,
                                              k_sensor_width, k_sensor_height, k_fov_deg);
-        launchStreamUnit("AGENTCAM_" + agent_id, element_id, "AGENTVIEW",
+        launchStreamUnit("AGENTCAM_" + agent_id, agent_id, "agent_view",
                          agent_base + "/AGENTCAM_" + agent_id, agent_width_, agent_height_, agent_ci);
 
         const auto payload_ci = makeCameraInfo(payload_width_, payload_height_,
                                                k_sensor_width, k_sensor_height, k_fov_deg);
-        launchStreamUnit("PAYLOADCAM_" + agent_id, element_id, "PAYLOADVIEW",
+        launchStreamUnit("PAYLOADCAM_" + agent_id, agent_id, "payload_view",
                          agent_base + "/PAYLOADCAM_" + agent_id, payload_width_, payload_height_, payload_ci);
-
-        ++agent_idx;
     }
 }
 
@@ -120,20 +115,20 @@ std::string SimulationStream::buildSourcePipeline(const std::string& rtsp_url) c
     }
 }
 
-void SimulationStream::launchStreamUnit(const ID& camera_id, const ID& element_id,
+void SimulationStream::launchStreamUnit(const ID& camera_id, const ID& agent_id,
                                         const ID& view_id, const std::string& rtsp_url,
                                         int width, int height,
                                         const CameraInfoMsg& camera_info)
 {
     auto unit = std::make_shared<StreamUnit>();
     unit->camera_id    = camera_id;
-    unit->element_id   = element_id;
+    unit->agent_id     = agent_id;
     unit->view_id      = view_id;
     unit->pipeline     = rtsp_url;
     unit->output_width  = width;
     unit->output_height = height;
     unit->camera_info  = camera_info;
-    unit->image_pub    = node_->createCameraPublisher(element_id, view_id);
+    unit->image_pub    = node_->createCameraPublisher(agent_id, view_id);
     unit->running      = true;
     unit->thread       = std::thread(&SimulationStream::streamPipeline, this, unit);
     stream_units_[camera_id] = unit;

@@ -18,6 +18,11 @@ def load_agent_ids() -> list:
         data = yaml.safe_load(f)
     return data["/**"]["ros__parameters"]["agents"]["id_list"]
 
+def load_agent_idx(agent_id: str) -> int:
+    with open(MISSION_YAML, "r") as f:
+        data = yaml.safe_load(f)
+    return data["/**"]["ros__parameters"]["agents"][agent_id]["idx"]
+
 def run(cmd, **kwargs):
     print(f"+ {cmd}")
     return subprocess.run(cmd, shell=True, **kwargs)
@@ -39,9 +44,10 @@ def launch_sim(agent_ids: list, record: bool = False, record_dir: str = ""):
     run(f"DETACH=true {SCRIPT_DIR}/launch_micro_xrce_dds.sh")
     time.sleep(1)
 
-    # One PX4 container per agent
-    for i, agent_id in enumerate(agent_ids):
-        run(f"DETACH=true {SCRIPT_DIR}/launch_px4.sh {i} {agent_id}")
+    # One PX4 container per agent (instance number taken from mission config idx)
+    for agent_id in agent_ids:
+        idx = load_agent_idx(agent_id)
+        run(f"DETACH=true {SCRIPT_DIR}/launch_px4.sh {idx} {agent_id}")
         time.sleep(1)
 
     # Coordinator
@@ -49,8 +55,8 @@ def launch_sim(agent_ids: list, record: bool = False, record_dir: str = ""):
     time.sleep(1)
 
     # One agent container per agent
-    for i, agent_id in enumerate(agent_ids):
-        run(f"AGENT_IDX={i} DETACH=true {SCRIPT_DIR}/launch_agent.sh {agent_id}")
+    for agent_id in agent_ids:
+        run(f"DETACH=true {SCRIPT_DIR}/launch_agent.sh {agent_id}")
         time.sleep(1)
 
     # Simulation

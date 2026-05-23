@@ -165,18 +165,9 @@ void AutopilotCommunication::publishVehicleCommand(uint32_t command, float param
     msg.param6 = param6;
     msg.param7 = param7;
     
-    // Get system ID from AGENT_IDX environment variable (0 -> 1, 1 -> 2, etc.)
-    uint8_t system_id = 1;
-    const char* agent_idx_env = std::getenv("AGENT_IDX");
-    if (agent_idx_env != nullptr) 
-    {
-        int agent_idx = std::stoi(agent_idx_env);
-        system_id = static_cast<uint8_t>(agent_idx + 1);
-    }
-    else
-    {
-        RCLCPP_WARN(node_->get_logger(), "AGENT_IDX environment variable not set, using default system ID 1");
-    }
+    // Get system ID from idx in mission config (0 -> 1, 1 -> 2, etc.)
+    const int idx = node_->getSettings()->getAgent(agent_id_)->idx;
+    const uint8_t system_id = static_cast<uint8_t>(idx + 1);
     
     msg.target_system = system_id;
     msg.target_component = 1;

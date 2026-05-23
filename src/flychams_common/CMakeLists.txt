@@ -44,6 +44,7 @@ add_library(${PROJECT_NAME} SHARED
   src/settings/spreadsheet_parser.cpp
   src/settings/mission_settings_parser.cpp
   src/settings/airsim_settings_creator.cpp
+  src/settings/foxglove_layout_creator.cpp
   src/settings/mission_settings_creator.cpp
   src/settings/settings_tools.cpp
   # Utils

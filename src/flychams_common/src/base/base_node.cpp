@@ -45,9 +45,11 @@ void BaseNode::init()
     agent_topics_.clusters_pattern = topic_config.agent_clusters;
     agent_topics_.position_setpoint_pattern = topic_config.agent_position_setpoint;
     agent_topics_.observation_setpoints_pattern = topic_config.observation_setpoints;
+    agent_topics_.image_pattern = topic_config.image;
+    agent_topics_.image_compressed_pattern = topic_config.image_compressed;
+    agent_topics_.camera_info_pattern = topic_config.camera_info;
 
     // Operator topics
-    operator_topics_.image_pattern = topic_config.image;
     operator_topics_.annotations_pattern = topic_config.annotations;
     operator_topics_.scene_pattern = topic_config.scene;
     operator_topics_.start_mission = topic_config.start_mission;
@@ -183,19 +185,29 @@ std::string BaseNode::getObservationSetpointsTopic(const ID& agent_id)
     return replace(agent_topics_.observation_setpoints_pattern, "AGENTID", agent_id);
 }
 
-std::string BaseNode::getImageTopic(const ID& element_id, const ID& view_id)
+std::string BaseNode::getImageTopic(const ID& agent_id, const ID& unit_id)
 {
-    return replace(replace(operator_topics_.image_pattern, "ELEMENTID", element_id), "VIEWID", view_id);
+    return replace(replace(agent_topics_.image_pattern, "AGENTID", agent_id), "UNITID", unit_id);
 }
 
-std::string BaseNode::getAnnotationsTopic(const ID& element_id, const ID& view_id)
+std::string BaseNode::getImageCompressedTopic(const ID& agent_id, const ID& unit_id)
 {
-    return replace(replace(operator_topics_.annotations_pattern, "ELEMENTID", element_id), "VIEWID", view_id);
+    return replace(replace(agent_topics_.image_compressed_pattern, "AGENTID", agent_id), "UNITID", unit_id);
 }
 
-std::string BaseNode::getSceneTopic(const ID& element_id)
+std::string BaseNode::getCameraInfoTopic(const ID& agent_id, const ID& unit_id)
 {
-    return replace(operator_topics_.scene_pattern, "ELEMENTID", element_id);
+    return replace(replace(agent_topics_.camera_info_pattern, "AGENTID", agent_id), "UNITID", unit_id);
+}
+
+std::string BaseNode::getAnnotationsTopic(const ID& agent_id, const ID& unit_id)
+{
+    return replace(replace(operator_topics_.annotations_pattern, "AGENTID", agent_id), "UNITID", unit_id);
+}
+
+std::string BaseNode::getSceneTopic()
+{
+    return operator_topics_.scene_pattern;
 }
 
 std::string BaseNode::getGlobalMetricsTopic()
@@ -329,19 +341,19 @@ PublisherPtr<ObservationSetpointsMsg> BaseNode::createObservationSetpointsPublis
     return node_->create_publisher<ObservationSetpointsMsg>(getObservationSetpointsTopic(agent_id), 10);
 }
 
-CameraPublisher BaseNode::createCameraPublisher(const ID& element_id, const ID& view_id)
+CameraPublisher BaseNode::createCameraPublisher(const ID& agent_id, const ID& unit_id)
 {
-    return image_transport_->advertiseCamera(getImageTopic(element_id, view_id), 1);
+    return image_transport_->advertiseCamera(getImageTopic(agent_id, unit_id), 1);
 }
 
-PublisherPtr<FoxImageAnnotationsMsg> BaseNode::createAnnotationsPublisher(const ID& element_id, const ID& view_id)
+PublisherPtr<FoxImageAnnotationsMsg> BaseNode::createAnnotationsPublisher(const ID& agent_id, const ID& unit_id)
 {
-    return node_->create_publisher<FoxImageAnnotationsMsg>(getAnnotationsTopic(element_id, view_id), 10);
+    return node_->create_publisher<FoxImageAnnotationsMsg>(getAnnotationsTopic(agent_id, unit_id), 10);
 }
 
-PublisherPtr<FoxSceneUpdateMsg> BaseNode::createScenePublisher(const ID& element_id)
+PublisherPtr<FoxSceneUpdateMsg> BaseNode::createScenePublisher()
 {
-    return node_->create_publisher<FoxSceneUpdateMsg>(getSceneTopic(element_id), 10);
+    return node_->create_publisher<FoxSceneUpdateMsg>(getSceneTopic(), 10);
 }
 
 PublisherPtr<BoolMsg> BaseNode::createStartMissionPublisher()
@@ -475,9 +487,9 @@ SubscriberPtr<ObservationSetpointsMsg> BaseNode::createObservationSetpointsSubsc
     return node_->create_subscription<ObservationSetpointsMsg>(getObservationSetpointsTopic(agent_id), 10, std::move(callback), options);
 }
 
-SubscriberPtr<ImageMsg> BaseNode::createImageSubscriber(const ID& element_id, const ID& view_id, std::function<void(const ImageMsg::SharedPtr)> callback, const rclcpp::SubscriptionOptions& options)
+SubscriberPtr<ImageMsg> BaseNode::createImageSubscriber(const ID& agent_id, const ID& unit_id, std::function<void(const ImageMsg::SharedPtr)> callback, const rclcpp::SubscriptionOptions& options)
 {
-    return node_->create_subscription<ImageMsg>(getImageTopic(element_id, view_id), rclcpp::SensorDataQoS(), std::move(callback), options);
+    return node_->create_subscription<ImageMsg>(getImageTopic(agent_id, unit_id), rclcpp::SensorDataQoS(), std::move(callback), options);
 }
 
 SubscriberPtr<BoolMsg> BaseNode::createStartMissionSubscriber(std::function<void(const BoolMsg::SharedPtr)> callback, const rclcpp::SubscriptionOptions& options)

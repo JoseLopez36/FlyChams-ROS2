@@ -143,6 +143,7 @@ void MissionSettingsCreator::writeAgentsSection(std::ostringstream& yaml, const 
 	{
 		yaml << "      " << agent_id << ":\n";
 		yaml << "        id: " << agent_id << "\n";
+		yaml << "        idx: " << agent->idx << "\n";
 		yaml << "        name: \"" << agent->name << "\"\n";
 		yaml << "        agent_team_id: " << agent->agent_team_id << "\n";
 		yaml << "        tracking_id: " << agent->tracking_id << "\n";

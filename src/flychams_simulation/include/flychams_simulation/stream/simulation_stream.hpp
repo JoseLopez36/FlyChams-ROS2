@@ -8,10 +8,6 @@
 // OpenCV includes
 #include <cv_bridge/cv_bridge.h>
 
-// Standard includes
-#include <iomanip>
-#include <sstream>
-
 // Base module include
 #include "flychams_common/base/base_module.hpp"
 
@@ -53,7 +49,7 @@ namespace flychams::simulation
         {
             // Unit identification
             common::ID camera_id;
-            common::ID element_id;
+            common::ID agent_id;
             common::ID view_id;
             // Pipeline
             std::string pipeline;
@@ -69,7 +65,7 @@ namespace flychams::simulation
             std::thread thread;
             // Constructor
             StreamUnit()
-                : camera_id(), element_id(), view_id(), pipeline(),
+                : camera_id(), agent_id(), view_id(), pipeline(),
                   output_width(0), output_height(0), camera_info(), image_pub(), running(false), thread()
             {
             }
@@ -97,7 +93,7 @@ namespace flychams::simulation
 
     private: // Stream configuration
         std::string buildSourcePipeline(const std::string& rtsp_url) const;
-        void launchStreamUnit(const common::ID& camera_id, const common::ID& element_id,
+        void launchStreamUnit(const common::ID& camera_id, const common::ID& agent_id,
                               const common::ID& view_id, const std::string& rtsp_url,
                               int width, int height,
                               const common::CameraInfoMsg& camera_info);

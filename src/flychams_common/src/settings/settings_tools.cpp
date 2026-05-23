@@ -551,8 +551,10 @@ void SettingsTools::printSettings() const
     RCLCPP_DEBUG(node_->get_logger(), "    Clusters: %s", config_ptr_->topics.agent_clusters.c_str());
     RCLCPP_DEBUG(node_->get_logger(), "    Position Setpoint: %s", config_ptr_->topics.agent_position_setpoint.c_str());
     RCLCPP_DEBUG(node_->get_logger(), "    Observation Setpoints: %s", config_ptr_->topics.observation_setpoints.c_str());
-    RCLCPP_DEBUG(node_->get_logger(), "  Operator Topics:");
     RCLCPP_DEBUG(node_->get_logger(), "    Image: %s", config_ptr_->topics.image.c_str());
+    RCLCPP_DEBUG(node_->get_logger(), "    Image Compressed: %s", config_ptr_->topics.image_compressed.c_str());
+    RCLCPP_DEBUG(node_->get_logger(), "    Camera Info: %s", config_ptr_->topics.camera_info.c_str());
+    RCLCPP_DEBUG(node_->get_logger(), "  Operator Topics:");
     RCLCPP_DEBUG(node_->get_logger(), "    Annotations: %s", config_ptr_->topics.annotations.c_str());
     RCLCPP_DEBUG(node_->get_logger(), "    Scene: %s", config_ptr_->topics.scene.c_str());
     RCLCPP_DEBUG(node_->get_logger(), "    Start Mission: %s", config_ptr_->topics.start_mission.c_str());

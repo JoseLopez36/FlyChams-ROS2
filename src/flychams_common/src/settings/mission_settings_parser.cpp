@@ -94,6 +94,7 @@ void MissionSettingsParser::parseAgentParameters(const NodePtr& node, const std:
 		agent->id = agent_id;
 		const std::string agent_prefix = prefix + agent_id + ".";
 
+		node->get_parameter<int>(agent_prefix + "idx", agent->idx);
 		node->get_parameter<std::string>(agent_prefix + "name", agent->name);
 		node->get_parameter<std::string>(agent_prefix + "agent_team_id", agent->agent_team_id);
 		node->get_parameter<std::string>(agent_prefix + "tracking_id", agent->tracking_id);
@@ -477,9 +478,11 @@ void MissionSettingsParser::parseTopicParameters(const NodePtr& node, MissionCon
 	node->get_parameter<std::string>("agent_topics.agent_clusters", config_ptr->topics.agent_clusters);
 	node->get_parameter<std::string>("agent_topics.agent_position_setpoint", config_ptr->topics.agent_position_setpoint);
 	node->get_parameter<std::string>("agent_topics.observation_setpoints", config_ptr->topics.observation_setpoints);
+	node->get_parameter<std::string>("agent_topics.image", config_ptr->topics.image);
+	node->get_parameter<std::string>("agent_topics.image_compressed", config_ptr->topics.image_compressed);
+	node->get_parameter<std::string>("agent_topics.camera_info", config_ptr->topics.camera_info);
 
 	// Operator topics
-	node->get_parameter<std::string>("operator_topics.image", config_ptr->topics.image);
 	node->get_parameter<std::string>("operator_topics.annotations", config_ptr->topics.annotations);
 	node->get_parameter<std::string>("operator_topics.scene", config_ptr->topics.scene);
 	node->get_parameter<std::string>("operator_topics.start_mission", config_ptr->topics.start_mission);

@@ -73,7 +73,6 @@ namespace flychams::agent
         
     private: // Parameters
         common::ID agent_id_;
-        common::ID central_camera_id_;
         // Interface parameters
         int central_view_width;
         int central_view_height;
@@ -82,7 +81,6 @@ namespace flychams::agent
         // Stream parameters
         int stream_delay_ms_;
         std::string hw_vendor_;
-        int view_counter_ = 1;
 
     private: // Data
         // Stream units

@@ -66,10 +66,12 @@ namespace flychams::common
             std::string clusters_pattern;
             std::string position_setpoint_pattern;
             std::string observation_setpoints_pattern;
+            std::string image_pattern;
+            std::string image_compressed_pattern;
+            std::string camera_info_pattern;
         };
         struct OperatorTopics
         {
-            std::string image_pattern;
             std::string annotations_pattern;
             std::string scene_pattern;
             std::string start_mission;
@@ -150,9 +152,11 @@ namespace flychams::common
         std::string getAgentClustersTopic(const ID& agent_id);
         std::string getAgentPositionSetpointTopic(const ID& agent_id);
         std::string getObservationSetpointsTopic(const ID& agent_id);
-        std::string getImageTopic(const ID& element_id, const ID& view_id);
-        std::string getAnnotationsTopic(const ID& element_id, const ID& view_id);
-        std::string getSceneTopic(const ID& element_id);
+        std::string getImageTopic(const ID& agent_id, const ID& unit_id);
+        std::string getImageCompressedTopic(const ID& agent_id, const ID& unit_id);
+        std::string getCameraInfoTopic(const ID& agent_id, const ID& unit_id);
+        std::string getAnnotationsTopic(const ID& agent_id, const ID& unit_id);
+        std::string getSceneTopic();
         std::string getStartMissionTopic();
         std::string getPauseMissionTopic();
         std::string getAbortMissionTopic();
@@ -179,9 +183,9 @@ namespace flychams::common
         PublisherPtr<AgentClustersMsg> createAgentClustersPublisher(const ID& agent_id);
         PublisherPtr<PointStampedMsg> createAgentPositionSetpointPublisher(const ID& agent_id);
         PublisherPtr<ObservationSetpointsMsg> createObservationSetpointsPublisher(const ID& agent_id);
-        CameraPublisher createCameraPublisher(const ID& element_id, const ID& view_id);
-        PublisherPtr<FoxImageAnnotationsMsg> createAnnotationsPublisher(const ID& element_id, const ID& view_id);
-        PublisherPtr<FoxSceneUpdateMsg> createScenePublisher(const ID& element_id);
+        CameraPublisher createCameraPublisher(const ID& agent_id, const ID& unit_id);
+        PublisherPtr<FoxImageAnnotationsMsg> createAnnotationsPublisher(const ID& agent_id, const ID& unit_id);
+        PublisherPtr<FoxSceneUpdateMsg> createScenePublisher();
         PublisherPtr<BoolMsg> createStartMissionPublisher();
         PublisherPtr<BoolMsg> createPauseMissionPublisher();
         PublisherPtr<BoolMsg> createAbortMissionPublisher();
@@ -208,7 +212,7 @@ namespace flychams::common
         SubscriberPtr<AgentClustersMsg> createAgentClustersSubscriber(const ID& agent_id, std::function<void(const AgentClustersMsg::SharedPtr)> callback, const rclcpp::SubscriptionOptions& options = rclcpp::SubscriptionOptions());
         SubscriberPtr<PointStampedMsg> createAgentPositionSetpointSubscriber(const ID& agent_id, std::function<void(const PointStampedMsg::SharedPtr)> callback, const rclcpp::SubscriptionOptions& options = rclcpp::SubscriptionOptions());
         SubscriberPtr<ObservationSetpointsMsg> createObservationSetpointsSubscriber(const ID& agent_id, std::function<void(const ObservationSetpointsMsg::SharedPtr)> callback, const rclcpp::SubscriptionOptions& options = rclcpp::SubscriptionOptions());
-        SubscriberPtr<ImageMsg> createImageSubscriber(const ID& element_id, const ID& view_id, std::function<void(const ImageMsg::SharedPtr)> callback, const rclcpp::SubscriptionOptions& options = rclcpp::SubscriptionOptions());
+        SubscriberPtr<ImageMsg> createImageSubscriber(const ID& agent_id, const ID& unit_id, std::function<void(const ImageMsg::SharedPtr)> callback, const rclcpp::SubscriptionOptions& options = rclcpp::SubscriptionOptions());
         SubscriberPtr<BoolMsg> createStartMissionSubscriber(std::function<void(const BoolMsg::SharedPtr)> callback, const rclcpp::SubscriptionOptions& options = rclcpp::SubscriptionOptions());
         SubscriberPtr<BoolMsg> createPauseMissionSubscriber(std::function<void(const BoolMsg::SharedPtr)> callback, const rclcpp::SubscriptionOptions& options = rclcpp::SubscriptionOptions());
         SubscriberPtr<BoolMsg> createAbortMissionSubscriber(std::function<void(const BoolMsg::SharedPtr)> callback, const rclcpp::SubscriptionOptions& options = rclcpp::SubscriptionOptions());

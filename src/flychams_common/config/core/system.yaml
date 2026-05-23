@@ -11,6 +11,7 @@
       config_spreadsheet_path: "/home/testuser/FlyChams-ROS2/src/flychams_common/config/Configuration-Single-Agent.xlsx"
       mission_settings_path: "/home/testuser/FlyChams-ROS2/src/flychams_common/config/generated/mission.yaml"
       airsim_settings_path: "/home/testuser/FlyChams-ROS2/src/flychams_common/config/generated/airsim.json"
+      foxglove_layout_path: "/home/testuser/FlyChams-ROS2/src/flychams_common/config/generated/flychams.json"
       trajectory_root: "/home/testuser/FlyChams-ROS2/src/flychams_common/config/trajectories"
       
     # GUI settings

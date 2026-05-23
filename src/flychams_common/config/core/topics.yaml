@@ -19,12 +19,14 @@
       agent_clusters: "/flychams/agent/AGENTID/clusters" # AgentClusters.msg (custom)
       agent_position_setpoint: "/flychams/agent/AGENTID/position_setpoint" # PointStamped.msg
       observation_setpoints: "/flychams/agent/AGENTID/observation_setpoints" # ObservationSetpoints.msg (custom)
+      image: "/flychams/agent/AGENTID/UNITID/image" # sensor_msgs/Image
+      image_compressed: "/flychams/agent/AGENTID/UNITID/image/compressed" # sensor_msgs/CompressedImage
+      camera_info: "/flychams/agent/AGENTID/UNITID/camera_info" # sensor_msgs/CameraInfo
       
     # Operator topics
     operator_topics:
-      image: "/flychams/operator/ELEMENTID/VIEWID/image" # Image.msg
-      annotations: "/flychams/operator/ELEMENTID/VIEWID/annotations" # foxglove_msgs/ImageAnnotations
-      scene: "/flychams/operator/ELEMENTID/scene" # foxglove_msgs/SceneUpdate
+      annotations: "/flychams/operator/AGENTID/UNITID/annotations" # foxglove_msgs/ImageAnnotations
+      scene: "/flychams/operator/scene" # foxglove_msgs/SceneUpdate
       start_mission: "/flychams/operator/start_mission" # std_msgs/Bool
       pause_mission: "/flychams/operator/pause_mission" # std_msgs/Bool
       abort_mission: "/flychams/operator/abort_mission" # std_msgs/Bool

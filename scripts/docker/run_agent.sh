@@ -51,7 +51,6 @@ docker run ${RUN_FLAGS} \
     ${GPU_FLAGS} \
     -e XDG_RUNTIME_DIR=/tmp \
     -e AGENT_ID="$AGENT_ID" \
-    -e AGENT_IDX="${AGENT_IDX:-0}" \
     -e ROS_DOMAIN_ID="${ROS_DOMAIN_ID}" \
     -e RMW_IMPLEMENTATION="${RMW_IMPLEMENTATION}" \
     -e CYCLONEDDS_URI="${CYCLONEDDS_URI}" \

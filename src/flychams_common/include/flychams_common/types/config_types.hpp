@@ -78,9 +78,11 @@ namespace flychams::common
         std::string agent_clusters;
         std::string agent_position_setpoint;
         std::string observation_setpoints;
+        std::string image;
+        std::string image_compressed;
+        std::string camera_info;
 
         // Operator topics
-        std::string image;
         std::string annotations;
         std::string scene;
         std::string start_mission;
@@ -238,6 +240,7 @@ namespace flychams::common
     {
         // Identifiers
         ID id;
+        int idx;
         Name name;
         ID agent_team_id;
 

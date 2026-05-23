@@ -22,12 +22,6 @@ void AgentStream::onModuleInit()
     // Get hardware vendor from environment variable
     hw_vendor_ = std::getenv("HW_VENDOR") ? std::getenv("HW_VENDOR") : "none";
 
-    // Build element_id from AGENT_IDX environment variable
-    const int agent_idx = std::getenv("AGENT_IDX") ? std::stoi(std::getenv("AGENT_IDX")) : 0;
-    std::ostringstream element_ss;
-    element_ss << "ELEMENT" << std::setw(2) << std::setfill('0') << agent_idx;
-    const std::string element_id = element_ss.str();
-
     // Initialize stream variables
     stream_units_.clear();
 
@@ -41,25 +35,22 @@ void AgentStream::onModuleInit()
         unit->frame_id = node_->getCameraOpticalFrame(agent_id_, camera_id);
         if (camera->role == ObservationRole::Central)
         {
-            central_camera_id_ = camera_id;
-
             unit->output_width = central_view_width;
             unit->output_height = central_view_height;
 
-            // Configure multi-window
+            // Configure multi-window crop streams associated with this central camera
             int nw = tracking_config.multi_window_set.size();
             if (nw > 0)
             {
+                // Create publishers for each crop window
+                for (const auto& [window_id, _] : tracking_config.multi_window_set)
+                {
+                    unit->crop_pubs.push_back(node_->createCameraPublisher(agent_id_, window_id));
+                }
+
                 unit->enable_crops = true;
                 unit->crops.resize(nw);
                 unit->crops_cache.resize(nw);
-                int crop_idx = 1;
-                for (const auto& [window_id, window] : tracking_config.multi_window_set)
-                {
-                    std::ostringstream crop_view_ss;
-                    crop_view_ss << "VIEW" << std::setw(2) << std::setfill('0') << crop_idx++;
-                    unit->crop_pubs.push_back(node_->createCameraPublisher(element_id, crop_view_ss.str()));
-                }
                 unit->crop_output_width = tracking_view_width;
                 unit->crop_output_height = tracking_view_height;
             }
@@ -71,16 +62,9 @@ void AgentStream::onModuleInit()
             unit->enable_crops = false;
         }
 
-        // Central camera → VIEW00, tracking cameras → VIEW01, VIEW02, ...
-        std::ostringstream view_ss;
-        if (camera->role == ObservationRole::Central)
-            view_ss << "VIEW00";
-        else
-        {
-            view_ss << "VIEW" << std::setw(2) << std::setfill('0') << view_counter_++;
-        }
+        // Create publisher for this camera
         unit->camera_info = makeCameraInfo(camera, unit->output_width, unit->output_height, camera->ref_focal);
-        unit->image_pub = node_->createCameraPublisher(element_id, view_ss.str());
+        unit->image_pub = node_->createCameraPublisher(agent_id_, camera_id);
         unit->running = true;
         unit->thread = std::thread(&AgentStream::streamPipeline, this, unit);
         stream_units_[camera_id] = unit;
