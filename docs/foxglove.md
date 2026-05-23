@@ -198,21 +198,7 @@ All topics matching `^/flychams/.*` plus `/rosout` are captured — this covers 
 
 Bags are saved to `recordings/` at the project root and use the **MCAP** format for native Foxglove compatibility.
 
-### Recording methods
-
-**Option A — Standalone script** (attach to a running operator container):
-
-```bash
-# Default output: $PROJECT_ROOT/recordings/flychams_<timestamp>/
-scripts/record_operator.sh
-
-# Custom output directory
-RECORD_DIR=/data/bags scripts/record_operator.sh
-```
-
-Press `Ctrl+C` to stop and finalize the bag.
-
-**Option B — Integrated with launch** (starts recording alongside the operator stack):
+### Recording
 
 ```bash
 # Interactive, with recording

@@ -49,24 +49,21 @@ namespace flychams::simulation
         {
             // Unit identification
             common::ID camera_id;
-            common::ID agent_id;
             common::ID view_id;
             // Pipeline
             std::string pipeline;
             // Output dimensions
             int output_width;
             int output_height;
-            // Camera info
-            common::CameraInfoMsg camera_info;
             // Publisher
-            common::CameraPublisher image_pub;
+            common::ImagePublisher image_pub;
             // Runtime
             std::atomic_bool running;
             std::thread thread;
             // Constructor
             StreamUnit()
-                : camera_id(), agent_id(), view_id(), pipeline(),
-                  output_width(0), output_height(0), camera_info(), image_pub(), running(false), thread()
+                : camera_id(), view_id(), pipeline(),
+                  output_width(0), output_height(0), image_pub(), running(false), thread()
             {
             }
         };
@@ -93,19 +90,12 @@ namespace flychams::simulation
 
     private: // Stream configuration
         std::string buildSourcePipeline(const std::string& rtsp_url) const;
-        void launchStreamUnit(const common::ID& camera_id, const common::ID& agent_id,
-                              const common::ID& view_id, const std::string& rtsp_url,
-                              int width, int height,
-                              const common::CameraInfoMsg& camera_info);
 
     private: // Stream management
         void streamPipeline(const std::shared_ptr<StreamUnit>& unit);
 
     private: // Image utilities
         common::ImageMsg::SharedPtr makeImage(const cv::Mat& image, const std::string& frame_id) const;
-        common::CameraInfoMsg makeCameraInfo(int width, int height,
-                                             float sensor_width, float sensor_height,
-                                             float fov_deg) const;
     };
 
 } // namespace flychams::simulation

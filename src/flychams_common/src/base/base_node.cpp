@@ -49,6 +49,9 @@ void BaseNode::init()
     agent_topics_.image_compressed_pattern = topic_config.image_compressed;
     agent_topics_.camera_info_pattern = topic_config.camera_info;
 
+    // Simulation topics
+    simulation_topics_.simulation_image_pattern = topic_config.simulation_image;
+
     // Operator topics
     operator_topics_.annotations_pattern = topic_config.annotations;
     operator_topics_.scene_pattern = topic_config.scene;
@@ -200,6 +203,11 @@ std::string BaseNode::getCameraInfoTopic(const ID& agent_id, const ID& unit_id)
     return replace(replace(agent_topics_.camera_info_pattern, "AGENTID", agent_id), "UNITID", unit_id);
 }
 
+std::string BaseNode::getSimulationImageTopic(const ID& view_id)
+{
+    return replace(simulation_topics_.simulation_image_pattern, "VIEWID", view_id);
+}
+
 std::string BaseNode::getAnnotationsTopic(const ID& agent_id, const ID& unit_id)
 {
     return replace(replace(operator_topics_.annotations_pattern, "AGENTID", agent_id), "UNITID", unit_id);
@@ -344,6 +352,11 @@ PublisherPtr<ObservationSetpointsMsg> BaseNode::createObservationSetpointsPublis
 CameraPublisher BaseNode::createCameraPublisher(const ID& agent_id, const ID& unit_id)
 {
     return image_transport_->advertiseCamera(getImageTopic(agent_id, unit_id), 1);
+}
+
+ImagePublisher BaseNode::createSimulationImagePublisher(const ID& view_id)
+{
+    return image_transport_->advertise(getSimulationImageTopic(view_id), 1);
 }
 
 PublisherPtr<FoxImageAnnotationsMsg> BaseNode::createAnnotationsPublisher(const ID& agent_id, const ID& unit_id)

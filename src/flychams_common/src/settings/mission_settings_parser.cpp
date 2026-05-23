@@ -482,6 +482,9 @@ void MissionSettingsParser::parseTopicParameters(const NodePtr& node, MissionCon
 	node->get_parameter<std::string>("agent_topics.image_compressed", config_ptr->topics.image_compressed);
 	node->get_parameter<std::string>("agent_topics.camera_info", config_ptr->topics.camera_info);
 
+	// Simulation topics
+	node->get_parameter<std::string>("simulation_topics.simulation_image", config_ptr->topics.simulation_image);
+
 	// Operator topics
 	node->get_parameter<std::string>("operator_topics.annotations", config_ptr->topics.annotations);
 	node->get_parameter<std::string>("operator_topics.scene", config_ptr->topics.scene);

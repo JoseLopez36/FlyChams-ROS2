@@ -23,6 +23,10 @@
       image_compressed: "/flychams/agent/AGENTID/UNITID/image/compressed" # sensor_msgs/CompressedImage
       camera_info: "/flychams/agent/AGENTID/UNITID/camera_info" # sensor_msgs/CameraInfo
       
+    # Simulation topics
+    simulation_topics:
+      simulation_image: "/flychams/simulation/VIEWID/image" # sensor_msgs/Image
+
     # Operator topics
     operator_topics:
       annotations: "/flychams/operator/AGENTID/UNITID/annotations" # foxglove_msgs/ImageAnnotations

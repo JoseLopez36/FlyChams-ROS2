@@ -82,6 +82,9 @@ namespace flychams::common
         std::string image_compressed;
         std::string camera_info;
 
+        // Simulation topics
+        std::string simulation_image;
+
         // Operator topics
         std::string annotations;
         std::string scene;

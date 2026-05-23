@@ -363,7 +363,7 @@ void FoxgloveLayoutCreator::writeSimulationPanels(const MissionConfigPtr& config
     cfg["Image!simscenario"] = {
         {"synchronize", false},
         {"imageMode", {
-            {"imageTopic", "/flychams/agent/SIMULATION/scenario/image/compressed"}
+            {"imageTopic", "/flychams/simulation/scenario/image/compressed"}
         }},
         {"foxglovePanelTitle", "Scenario"}
     };
@@ -379,14 +379,14 @@ void FoxgloveLayoutCreator::writeSimulationPanels(const MissionConfigPtr& config
         cfg["Image!simagent" + suffix] = {
             {"synchronize", false},
             {"imageMode", {
-                {"imageTopic", "/flychams/agent/" + agent_id + "/agent_view/image/compressed"}
+                {"imageTopic", "/flychams/simulation/" + agent_id + "/body/image/compressed"}
             }},
             {"foxglovePanelTitle", "ID: " + agent_id + " Agent View"}
         };
         cfg["Image!simpayload" + suffix] = {
             {"synchronize", false},
             {"imageMode", {
-                {"imageTopic", "/flychams/agent/" + agent_id + "/payload_view/image/compressed"}
+                {"imageTopic", "/flychams/simulation/" + agent_id + "/payload/image/compressed"}
             }},
             {"foxglovePanelTitle", "ID: " + agent_id + " Payload View"}
         };

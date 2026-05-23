@@ -39,6 +39,7 @@ fi
 echo "Starting simulation container: $CONTAINER_NAME (GPU_VENDOR=$GPU_VENDOR)"
 docker run ${RUN_FLAGS} \
     --name "$CONTAINER_NAME" \
+    --privileged \
     --network host \
     ${GPU_FLAGS} \
     -e XDG_RUNTIME_DIR=/tmp \

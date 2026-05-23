@@ -34,11 +34,6 @@ void SimulationStream::onModuleInit()
     // Initialize stream variables
     stream_units_.clear();
 
-    // AirSim default sensor dimensions
-    constexpr float k_sensor_width  = 0.0132f;
-    constexpr float k_sensor_height = 0.007425f;
-    constexpr float k_fov_deg       = 90.0f;
-
     // Launch per-agent view streams
     // URL format: rtsp://<host>:<port>/<VehicleName>/<CameraName>
     const AgentTeamConfig& agent_team = node_->getSettings()->getAgentTeam();
@@ -50,22 +45,56 @@ void SimulationStream::onModuleInit()
         // SCENARIOCAM is mounted on the first agent only
         if (!scenario_launched)
         {
-            const auto scenario_ci = makeCameraInfo(scenario_width_, scenario_height_,
-                                                    k_sensor_width, k_sensor_height, k_fov_deg);
-            launchStreamUnit("SCENARIOCAM", "SIMULATION", "scenario",
-                             agent_base + "/SCENARIOCAM", scenario_width_, scenario_height_, scenario_ci);
+            auto unit = std::make_shared<StreamUnit>();
+            unit->camera_id     = "SCENARIOCAM";
+            unit->view_id       = "scenario";
+            unit->pipeline      = agent_base + "/SCENARIOCAM";
+            unit->output_width  = scenario_width_;
+            unit->output_height = scenario_height_;
+            unit->image_pub     = node_->createSimulationImagePublisher("scenario");
+            unit->running       = true;
+            unit->thread        = std::thread(&SimulationStream::streamPipeline, this, unit);
+            stream_units_["SCENARIOCAM"] = unit;
+
+            if (stream_delay_ms_ > 0)
+                std::this_thread::sleep_for(std::chrono::milliseconds(stream_delay_ms_));
+
             scenario_launched = true;
         }
 
-        const auto agent_ci = makeCameraInfo(agent_width_, agent_height_,
-                                             k_sensor_width, k_sensor_height, k_fov_deg);
-        launchStreamUnit("AGENTCAM_" + agent_id, agent_id, "agent_view",
-                         agent_base + "/AGENTCAM_" + agent_id, agent_width_, agent_height_, agent_ci);
+        {
+            const ID cam_id = "AGENTCAM_" + agent_id;
+            auto unit = std::make_shared<StreamUnit>();
+            unit->camera_id     = cam_id;
+            unit->view_id       = agent_id + "/body";
+            unit->pipeline      = agent_base + "/AGENTCAM_" + agent_id;
+            unit->output_width  = agent_width_;
+            unit->output_height = agent_height_;
+            unit->image_pub     = node_->createSimulationImagePublisher(agent_id + "/body");
+            unit->running       = true;
+            unit->thread        = std::thread(&SimulationStream::streamPipeline, this, unit);
+            stream_units_[cam_id] = unit;
 
-        const auto payload_ci = makeCameraInfo(payload_width_, payload_height_,
-                                               k_sensor_width, k_sensor_height, k_fov_deg);
-        launchStreamUnit("PAYLOADCAM_" + agent_id, agent_id, "payload_view",
-                         agent_base + "/PAYLOADCAM_" + agent_id, payload_width_, payload_height_, payload_ci);
+            if (stream_delay_ms_ > 0)
+                std::this_thread::sleep_for(std::chrono::milliseconds(stream_delay_ms_));
+        }
+
+        {
+            const ID cam_id = "PAYLOADCAM_" + agent_id;
+            auto unit = std::make_shared<StreamUnit>();
+            unit->camera_id     = cam_id;
+            unit->view_id       = agent_id + "/payload";
+            unit->pipeline      = agent_base + "/PAYLOADCAM_" + agent_id;
+            unit->output_width  = payload_width_;
+            unit->output_height = payload_height_;
+            unit->image_pub     = node_->createSimulationImagePublisher(agent_id + "/payload");
+            unit->running       = true;
+            unit->thread        = std::thread(&SimulationStream::streamPipeline, this, unit);
+            stream_units_[cam_id] = unit;
+
+            if (stream_delay_ms_ > 0)
+                std::this_thread::sleep_for(std::chrono::milliseconds(stream_delay_ms_));
+        }
     }
 }
 
@@ -92,50 +121,29 @@ void SimulationStream::onModuleShutdown()
 std::string SimulationStream::buildSourcePipeline(const std::string& rtsp_url) const
 {
     const std::string source =
-        "rtspsrc location=" + rtsp_url + " latency=0 protocols=tcp "
+        "rtspsrc location=" + rtsp_url + " latency=0 protocols=tcp timeout=5000000 "
         "! rtph265depay ! h265parse ";
 
     if (hw_vendor_ == "nvidia")
     {
+        // NVDEC hardware-accelerated H.265 decode
         return source +
             "! nvh265dec ! videoconvert ! video/x-raw,format=BGR "
             "! appsink drop=true max-buffers=1 sync=false";
     }
     else if (hw_vendor_ == "amd")
     {
+        // VA-API hardware-accelerated H.265 decode
         return source +
             "! vah265dec ! vapostproc ! videoconvert ! video/x-raw,format=BGR "
             "! appsink drop=true max-buffers=1 sync=false";
     }
     else
     {
+        // Software decode H.265 decode
         return source +
             "! avdec_h265 ! videoconvert ! video/x-raw,format=BGR "
             "! appsink drop=true max-buffers=1 sync=false";
-    }
-}
-
-void SimulationStream::launchStreamUnit(const ID& camera_id, const ID& agent_id,
-                                        const ID& view_id, const std::string& rtsp_url,
-                                        int width, int height,
-                                        const CameraInfoMsg& camera_info)
-{
-    auto unit = std::make_shared<StreamUnit>();
-    unit->camera_id    = camera_id;
-    unit->agent_id     = agent_id;
-    unit->view_id      = view_id;
-    unit->pipeline     = rtsp_url;
-    unit->output_width  = width;
-    unit->output_height = height;
-    unit->camera_info  = camera_info;
-    unit->image_pub    = node_->createCameraPublisher(agent_id, view_id);
-    unit->running      = true;
-    unit->thread       = std::thread(&SimulationStream::streamPipeline, this, unit);
-    stream_units_[camera_id] = unit;
-
-    if (stream_delay_ms_ > 0)
-    {
-        std::this_thread::sleep_for(std::chrono::milliseconds(stream_delay_ms_));
     }
 }
 
@@ -146,9 +154,9 @@ void SimulationStream::launchStreamUnit(const ID& camera_id, const ID& agent_id,
 void SimulationStream::streamPipeline(const std::shared_ptr<StreamUnit>& unit)
 {
     cv::VideoCapture capture;
-    cv::Mat frame, scaled_frame;
+    cv::Mat frame, low_res_frame;
 
-    RCLCPP_INFO(node_->get_logger(), "Simulation stream: Opening stream for %s: %s",
+    RCLCPP_INFO(node_->get_logger(), "Simulation stream: Opening stream for camera %s: %s",
         unit->camera_id.c_str(), unit->pipeline.c_str());
 
     const std::string gst_pipeline = buildSourcePipeline(unit->pipeline);
@@ -160,7 +168,7 @@ void SimulationStream::streamPipeline(const std::shared_ptr<StreamUnit>& unit)
         if (!capture.isOpened())
         {
             capture.release();
-            RCLCPP_WARN(node_->get_logger(), "Simulation stream: Could not open stream for %s, retrying in 5s...",
+            RCLCPP_WARN(node_->get_logger(), "Simulation stream: Could not open stream for camera %s, retrying in 5s...",
                 unit->camera_id.c_str());
             std::this_thread::sleep_for(std::chrono::seconds(5));
         }
@@ -169,18 +177,18 @@ void SimulationStream::streamPipeline(const std::shared_ptr<StreamUnit>& unit)
     if (!capture.isOpened())
         return;
 
-    RCLCPP_INFO(node_->get_logger(), "Simulation stream: Stream opened for %s", unit->camera_id.c_str());
+    RCLCPP_INFO(node_->get_logger(), "Simulation stream: Stream opened for camera %s",
+        unit->camera_id.c_str());
 
     while (unit->running)
     {
         if (!capture.read(frame) || frame.empty())
             break;
-
-        cv::resize(frame, scaled_frame, cv::Size(unit->output_width, unit->output_height), 0, 0, cv::INTER_LINEAR);
-        auto img_msg = makeImage(scaled_frame, unit->view_id);
-        auto ci_msg  = std::make_shared<CameraInfoMsg>(unit->camera_info);
-        ci_msg->header = img_msg->header;
-        unit->image_pub.publish(img_msg, ci_msg);
+        
+        // Downscale frame
+        cv::resize(frame, low_res_frame, cv::Size(unit->output_width, unit->output_height), 0, 0, cv::INTER_NEAREST);
+        auto img_msg = makeImage(low_res_frame, unit->view_id);
+        unit->image_pub.publish(img_msg);
     }
 
     capture.release();
@@ -196,32 +204,4 @@ ImageMsg::SharedPtr SimulationStream::makeImage(const cv::Mat& image, const std:
     header.stamp = node_->now();
     header.frame_id = frame_id;
     return cv_bridge::CvImage(header, "bgr8", image).toImageMsg();
-}
-
-CameraInfoMsg SimulationStream::makeCameraInfo(int width, int height,
-                                               float sensor_width, float sensor_height,
-                                               float fov_deg) const
-{
-    CameraInfoMsg ci;
-    ci.width  = static_cast<uint32_t>(width);
-    ci.height = static_cast<uint32_t>(height);
-    ci.distortion_model = "plumb_bob";
-
-    const float fov_rad = fov_deg * static_cast<float>(M_PI) / 180.0f;
-    const float fx = (static_cast<float>(width)  / 2.0f) / std::tan(fov_rad / 2.0f);
-    const float fy = fx * (sensor_height / sensor_width) * (static_cast<float>(width) / static_cast<float>(height));
-    const float cx = static_cast<float>(width)  / 2.0f;
-    const float cy = static_cast<float>(height) / 2.0f;
-
-    ci.k = {fx, 0.0, cx,
-             0.0, fy, cy,
-             0.0, 0.0, 1.0};
-    ci.r = {1.0, 0.0, 0.0,
-             0.0, 1.0, 0.0,
-             0.0, 0.0, 1.0};
-    ci.p = {fx, 0.0, cx, 0.0,
-             0.0, fy, cy, 0.0,
-             0.0, 0.0, 1.0, 0.0};
-    ci.d = {0.0, 0.0, 0.0, 0.0, 0.0};
-    return ci;
 }

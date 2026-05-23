@@ -167,6 +167,7 @@ namespace flychams::common
     using CameraInfoMsg = sensor_msgs::msg::CameraInfo;
     // Image transport
     using CameraPublisher = image_transport::CameraPublisher;
+    using ImagePublisher = image_transport::Publisher;
     // Geographic
     using GeoPointMsg = geographic_msgs::msg::GeoPoint;
     using GeoPointStampedMsg = geographic_msgs::msg::GeoPointStamped;

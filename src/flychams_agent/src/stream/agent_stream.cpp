@@ -152,7 +152,7 @@ void AgentStream::observationSetpointsCallback(const ObservationSetpointsMsg::Sh
 std::string AgentStream::buildSourcePipeline(const std::string& rtsp_url) const
 {
     const std::string source =
-        "rtspsrc location=" + rtsp_url + " latency=0 protocols=tcp "
+        "rtspsrc location=" + rtsp_url + " latency=0 protocols=tcp timeout=5000000 "
         "! rtph265depay ! h265parse ";
 
     if (hw_vendor_ == "nvidia")
@@ -185,7 +185,7 @@ std::string AgentStream::buildSourcePipeline(const std::string& rtsp_url) const
 void AgentStream::streamPipeline(const std::shared_ptr<StreamUnit>& unit)
 {
     cv::VideoCapture capture;
-    cv::Mat  frame, low_res_frame, low_res_crop;
+    cv::Mat frame, low_res_frame, low_res_crop;
 
     RCLCPP_INFO(node_->get_logger(), "Agent stream: Opening stream for camera %s: %s",
         unit->config->id.c_str(), unit->pipeline.c_str());

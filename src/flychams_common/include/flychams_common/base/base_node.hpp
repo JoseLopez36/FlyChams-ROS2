@@ -70,6 +70,10 @@ namespace flychams::common
             std::string image_compressed_pattern;
             std::string camera_info_pattern;
         };
+        struct SimulationTopics
+        {
+            std::string simulation_image_pattern;
+        };
         struct OperatorTopics
         {
             std::string annotations_pattern;
@@ -113,6 +117,7 @@ namespace flychams::common
     private: // Topic data
         CoordinatorTopics coordinator_topics_;
         AgentTopics agent_topics_;
+        SimulationTopics simulation_topics_;
         OperatorTopics operator_topics_;
 
     private: // Frame data
@@ -155,6 +160,7 @@ namespace flychams::common
         std::string getImageTopic(const ID& agent_id, const ID& unit_id);
         std::string getImageCompressedTopic(const ID& agent_id, const ID& unit_id);
         std::string getCameraInfoTopic(const ID& agent_id, const ID& unit_id);
+        std::string getSimulationImageTopic(const ID& view_id);
         std::string getAnnotationsTopic(const ID& agent_id, const ID& unit_id);
         std::string getSceneTopic();
         std::string getStartMissionTopic();
@@ -184,6 +190,7 @@ namespace flychams::common
         PublisherPtr<PointStampedMsg> createAgentPositionSetpointPublisher(const ID& agent_id);
         PublisherPtr<ObservationSetpointsMsg> createObservationSetpointsPublisher(const ID& agent_id);
         CameraPublisher createCameraPublisher(const ID& agent_id, const ID& unit_id);
+        ImagePublisher createSimulationImagePublisher(const ID& view_id);
         PublisherPtr<FoxImageAnnotationsMsg> createAnnotationsPublisher(const ID& agent_id, const ID& unit_id);
         PublisherPtr<FoxSceneUpdateMsg> createScenePublisher();
         PublisherPtr<BoolMsg> createStartMissionPublisher();
