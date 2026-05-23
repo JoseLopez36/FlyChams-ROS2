@@ -39,7 +39,7 @@
     # Enclosing circle parameters
     enclosing_circle:
       min_circle_radius: 0.3
-      margin_circle_radius: 5.0
+      margin_circle_radius: 2.5
 
 /**/agent_assignment_node:
   ros__parameters:

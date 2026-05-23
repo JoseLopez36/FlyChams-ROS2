@@ -217,7 +217,7 @@ void AgentStream::streamPipeline(const std::shared_ptr<StreamUnit>& unit)
             break;
 
         // Downscale frame
-        cv::resize(frame, low_res_frame, cv::Size(unit->output_width, unit->output_height), 0, 0, cv::INTER_LINEAR);
+        cv::resize(frame, low_res_frame, cv::Size(unit->output_width, unit->output_height), 0, 0, cv::INTER_AREA);
         auto img_msg = makeImage(low_res_frame, unit->frame_id);
         CameraInfoMsg ci_snapshot;
         {
@@ -250,7 +250,7 @@ void AgentStream::streamPipeline(const std::shared_ptr<StreamUnit>& unit)
                     continue;
 
                 // Scale crop
-                cv::resize(frame(rect), low_res_crop, cv::Size(unit->crop_output_width, unit->crop_output_height), 0, 0, cv::INTER_LINEAR);
+                cv::resize(frame(rect), low_res_crop, cv::Size(unit->crop_output_width, unit->crop_output_height), 0, 0, cv::INTER_AREA);
                 auto crop_img = makeImage(low_res_crop, unit->frame_id);
                 auto crop_ci = std::make_shared<CameraInfoMsg>(unit->camera_info);
                 crop_ci->header = crop_img->header;

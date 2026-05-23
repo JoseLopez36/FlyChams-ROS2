@@ -64,10 +64,10 @@
   ros__parameters:
     # Interface parameters
     central_view:
-      width: 854
-      height: 480
+      width: 1280
+      height: 720
     tracking_view:
-      width: 427
-      height: 240
+      width: 640
+      height: 360
     # Stream parameters
     stream_delay_ms: 500

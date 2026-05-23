@@ -536,7 +536,7 @@ void AgentAnnotations::appendClusterOverlaysWindow(FoxImageAnnotationsMsg& msg, 
     }
 }
 
-Matrix4r AgentAnnotations::buildWTc(const TransformMsg& tf)
+Matrix4r AgentAnnotations::buildWTc(const TransformMsg& tf) const
 {
     // Quaternion → rotation matrix (Eigen convention: w,x,y,z)
     const auto& q = tf.rotation;
@@ -554,7 +554,7 @@ Matrix4r AgentAnnotations::buildWTc(const TransformMsg& tf)
     return wTc;
 }
 
-Matrix3r AgentAnnotations::buildK(const AgentAnnotations::Intrinsics& intr)
+Matrix3r AgentAnnotations::buildK(const AgentAnnotations::Intrinsics& intr) const
 {
     Matrix3r K = Matrix3r::Zero();
     K(0, 0) = static_cast<float>(intr.fx);
@@ -565,7 +565,7 @@ Matrix3r AgentAnnotations::buildK(const AgentAnnotations::Intrinsics& intr)
     return K;
 }
 
-std::vector<FoxPoint2Msg> AgentAnnotations::projectRim(const Vector3r& wP, float radius, const Matrix4r& wTc, const Matrix3r& K, int n_pts = 64)
+std::vector<FoxPoint2Msg> AgentAnnotations::projectRim(const Vector3r& wP, float radius, const Matrix4r& wTc, const Matrix3r& K, int n_pts) const
 {
     // View direction: camera Z axis in world = third column of wTc rotation
     const Vector3r view_dir = wTc.block<3, 1>(0, 2);
