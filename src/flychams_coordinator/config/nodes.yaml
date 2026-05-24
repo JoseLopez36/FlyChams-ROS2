@@ -44,7 +44,9 @@
 /**/agent_assignment_node:
   ros__parameters:
     # Update rate (Hz)
-    assignment_rate: 1.0
+    update_rate: 20.0
+    # Minimum inter-solve rate (Hz)
+    min_assignment_rate: 1.0
 
     # Assignment parameters
     assignment:

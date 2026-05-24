@@ -11,8 +11,9 @@ using namespace flychams::coordinator;
 void AgentAssignment::onModuleInit()
 {
     // Get parameters from parameter server
-    // Get update rate
-    update_rate_ = node_->getParameterOr<float>("assignment_rate", 1.0f);
+    // Get update rate and minimum inter-solve rate
+    update_rate_ = node_->getParameterOr<float>("update_rate", 20.0f);
+    min_assignment_rate_ = node_->getParameterOr<float>("min_assignment_rate", 1.0f);
     // Get assignment mode
     AssignmentSolver::SolverMode assignment_solver_mode = static_cast<AssignmentSolver::SolverMode>(node_->getParameterOr<uint8_t>("assignment.solver_mode", 0));
     // Get assignment solver parameters
@@ -62,11 +63,18 @@ void AgentAssignment::onModuleInit()
     solve_duration_pub_ = node_->createAssignmentSolveDurationPublisher();
 
     // Set update timer
+    last_solve_time_ = common::Time(0, 0, RCL_ROS_TIME);
     update_timer_ = node_->createTimer(update_rate_, std::bind(&AgentAssignment::update, this));
 }
 
 void AgentAssignment::onModuleShutdown()
 {
+    // Wait for any in-progress async solve before destroying shared resources
+    if (async_future_.valid())
+    {
+        async_future_.wait();
+    }
+    async_solvers_.clear();
     // Destroy assignment solver
     solver_->destroy();
     // Destroy agents and clusters
@@ -182,87 +190,85 @@ void AgentAssignment::update()
         return;
     }
 
-    // Get vectors of agent and cluster data with ordered data
-    // It is important that the data is ordered according to the ordered sets A_ and T_,
-    // since the assignment solver assumes that the data follows the same order always
-    // Agents
+    // ── Part 1: Process a completed async solve ───────────────────────────────
+    if (async_future_.valid())
+    {
+        if (async_future_.wait_for(std::chrono::seconds(0)) != std::future_status::ready)
+        {
+            // Solve is still running — keep the executor thread free
+            return;
+        }
+
+        // Retrieve result from async future
+        const auto& [X, time_elapsed_ms] = async_future_.get();
+
+        // Publish result
+        publishResult(X, time_elapsed_ms);
+
+        return;
+    }
+
+    // ── Part 2: Prepare data for async solve ─────────────────────────────────────
+    // Agents data
     int n_agents = static_cast<int>(A_.size());
     Matrix3Xr tab_x(3, n_agents);
     std::vector<Matrix4r> wTcentral_array(n_agents);
-    std::vector<PositionSolver::SharedPtr> solvers(n_agents);
+    async_solvers_.resize(n_agents);
+    async_agent_order_.clear();
     int k = 0;
     for (const auto& agent_id : A_)
     {
+        async_agent_order_.push_back(agent_id);
         const auto& agent = agents_[agent_id];
         tab_x.col(k) = node_->fromMsg(agent.position);
         const TransformMsg& wTcentral_msg = node_->getTransform(world_frame_, central_optical_frame_map_[agent_id]);
         wTcentral_array[k] = node_->fromMsg(wTcentral_msg);
-        solvers[k] = agent.position_solver;
+        async_solvers_[k] = agent.position_solver;
         k++;
     }
-    // Clusters
+
+    // Clusters data
     int n_clusters = static_cast<int>(T_.size());
     Matrix3Xr tab_P(3, n_clusters);
     RowVectorXr tab_r(n_clusters);
+    async_cluster_order_.clear();
     int i = 0;
     for (const auto& cluster_id : T_)
     {
+        async_cluster_order_.push_back(cluster_id);
         const auto& cluster = clusters_[cluster_id];
         tab_P.col(i) = node_->fromMsg(cluster.center);
         tab_r(i) = cluster.radius;
         i++;
     }
 
-    // Perform agent assignment
-    RCLCPP_DEBUG(node_->get_logger(), "Agent assignment: Performing agent assignment...");
-    const auto& start = std::chrono::high_resolution_clock::now();
-    RowVectorXi X = solver_->run(tab_x, tab_P, tab_r, X_prev_, wTcentral_array, solvers);
-    const auto& end = std::chrono::high_resolution_clock::now();
-    float time_elapsed_us = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
-    float time_elapsed_ms = time_elapsed_us / 1000.0f;  // Convert to milliseconds
+    // Auxiliary copy of X_prev_ so the lambda owns its own copy
+    RowVectorXi X_prev_aux = X_prev_;
 
-    // Update previous assignment
-    X_prev_.resize(X.size());
-    X_prev_ = X;
-
-    // Create and publish an assignment message for each agent
-    k = 0;
-    int t = 0;
-    for (const auto& agent_id : A_)
+    // ── Part 3: Launch async solve ─────────────────────────────────────
+    // Enforce minimum inter-solve interval
+    if ((node_->now() - last_solve_time_).seconds() < 1.0 / min_assignment_rate_)
     {
-        // Create message
-        AgentAssignmentMsg msg;
-        msg.header.stamp = node_->get_clock()->now();
-
-        // Get assignment
-        int n = solvers[k]->getUnitCount() - 1;
-        for (int i = 0; i < n; i++)
-        {
-            const std::string unit_id = agents_[agent_id].tracking_unit_ids[i];
-            const int& cluster_index = X(t);
-            const std::string cluster_id = *std::next(T_.begin(), cluster_index);
-            msg.unit_ids.push_back(unit_id);
-            msg.cluster_ids.push_back(cluster_id);
-            t++;
-        }
-
-        // Publish
-        agents_[agent_id].assignment_pub->publish(msg);
-
-        // Log assignment
-        RCLCPP_DEBUG(node_->get_logger(), "Agent assignment: Agent %s assigned to %d clusters", agent_id.c_str(), n);
-        for (int i = 0; i < n; i++)
-        {
-            RCLCPP_DEBUG(node_->get_logger(), "Agent assignment:     - Unit %s    - Cluster %s", msg.unit_ids[i].c_str(), msg.cluster_ids[i].c_str());
-        }
-
-        k++;
+        return;
     }
 
-    // Publish solve duration
-    std_msgs::msg::Float32 duration_msg;
-    duration_msg.data = time_elapsed_ms;
-    solve_duration_pub_->publish(duration_msg);
+    RCLCPP_DEBUG(node_->get_logger(), "Agent assignment: Performing agent assignment...");
+    last_solve_time_ = node_->now();
+    async_future_ = std::async(std::launch::async,
+        [this,
+         tab_x           = std::move(tab_x),
+         tab_P           = std::move(tab_P),
+         tab_r           = std::move(tab_r),
+         X_prev_aux      = std::move(X_prev_aux),
+         wTcentral_array = std::move(wTcentral_array)]() mutable
+        {
+            // Solve assignment
+            const auto start = std::chrono::high_resolution_clock::now();
+            RowVectorXi X = solver_->run(tab_x, tab_P, tab_r, X_prev_aux, wTcentral_array, async_solvers_);
+            float time_elapsed_ms = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now() - start).count() / 1000.0f;
+
+            return std::make_pair(X, time_elapsed_ms);
+        });
 }
 
 // ════════════════════════════════════════════════════════════════════════════
@@ -307,6 +313,55 @@ bool AgentAssignment::checkStatus()
     
     // All checks passed
     return true;
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+// PUBLISH RESULT
+// ════════════════════════════════════════════════════════════════════════════
+
+void AgentAssignment::publishResult(const common::RowVectorXi& X, float time_elapsed_ms)
+{
+    // Update previous assignment
+    X_prev_.resize(X.size());
+    X_prev_ = X;
+
+    // Create and publish an assignment message for each agent
+    int k = 0;
+    int t = 0;
+    for (const auto& agent_id : async_agent_order_)
+    {
+        // Create message
+        AgentAssignmentMsg msg;
+        msg.header.stamp = node_->get_clock()->now();
+
+        // Get assignment
+        int n = async_solvers_[k]->getUnitCount() - 1;
+        for (int i = 0; i < n; i++)
+        {
+            const std::string unit_id = agents_[agent_id].tracking_unit_ids[i];
+            const std::string cluster_id = async_cluster_order_[X(t)];
+            msg.unit_ids.push_back(unit_id);
+            msg.cluster_ids.push_back(cluster_id);
+            t++;
+        }
+
+        // Publish
+        agents_[agent_id].assignment_pub->publish(msg);
+
+        // Log assignment
+        RCLCPP_DEBUG(node_->get_logger(), "Agent assignment: Agent %s assigned to %d clusters", agent_id.c_str(), n);
+        for (int i = 0; i < n; i++)
+        {
+            RCLCPP_DEBUG(node_->get_logger(), "Agent assignment:     - Unit %s    - Cluster %s", msg.unit_ids[i].c_str(), msg.cluster_ids[i].c_str());
+        }
+
+        k++;
+    }
+
+    // Publish solve duration
+    std_msgs::msg::Float32 duration_msg;
+    duration_msg.data = time_elapsed_ms;
+    solve_duration_pub_->publish(duration_msg);
 }
 
 // ════════════════════════════════════════════════════════════════════════════

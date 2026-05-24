@@ -1,5 +1,9 @@
 #pragma once
 
+// Standard library includes
+#include <chrono>
+#include <future>
+
 // Utils include
 #include "flychams_common/assignment/assignment_solver.hpp"
 
@@ -78,6 +82,7 @@ namespace flychams::coordinator
 
     private: // Parameters
         float update_rate_;
+        float min_assignment_rate_;
         // Position solver parameters
         common::PositionSolver::SolverMode position_solver_mode_;
         common::PositionSolver::Parameters position_solver_params_;
@@ -110,10 +115,18 @@ namespace flychams::coordinator
     private: // Assignment management
         void update();
         bool checkStatus();
+        void publishResult(const common::RowVectorXi& X, float time_elapsed_ms);
 
     private: // Utility methods
         common::PositionSolver::SharedPtr createPositionSolver(const std::string& agent_id, const common::PositionSolver::Parameters& solver_params, const common::PositionSolver::SolverMode& solver_mode);
         std::vector<common::CostFunctions::UnitCostParameters> createUnitParameters(const common::TrackingParameters& tracking_params);
+
+    private: // Async solve state
+        std::future<std::pair<common::RowVectorXi, float>> async_future_;
+        std::vector<common::ID> async_agent_order_;
+        std::vector<common::ID> async_cluster_order_;
+        std::vector<common::PositionSolver::SharedPtr> async_solvers_;
+        common::Time last_solve_time_;
 
     private: // ROS components
         // Timer
