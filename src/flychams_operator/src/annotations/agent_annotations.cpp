@@ -299,7 +299,7 @@ void AgentAnnotations::publishCameraAnnotations(size_t idx, int view_w, int view
     {
         std::ostringstream oss;
         oss << std::fixed;
-        oss << "z=" << std::setprecision(2) << zoom;
+        oss << "z=" << std::setprecision(3) << zoom;
         if (idx < sp.rotations.size())
         {
             constexpr float kR2D = 180.0f / static_cast<float>(M_PI);
@@ -376,7 +376,7 @@ void AgentAnnotations::publishWindowAnnotations(size_t idx, int view_w, int view
     {
         std::ostringstream oss;
         oss << crop.w << "x" << crop.h
-            << "  z=" << std::fixed << std::setprecision(2) << zoom;
+            << "  z=" << std::fixed << std::setprecision(3) << zoom;
 
         FoxTextAnnotationMsg hud;
         hud.timestamp = stamp;
@@ -462,11 +462,11 @@ void AgentAnnotations::appendClusterOverlays(FoxImageAnnotationsMsg& msg, const 
         {
             p.x *= sx;
             p.y *= sy;
-            if (p.x < 0.0f || p.x > fvw || p.y < 0.0f || p.y > fvh)
-            {
-                out_of_bounds = true;
-                break;
-            }
+            // if (p.x < 0.0f || p.x > fvw || p.y < 0.0f || p.y > fvh)
+            // {
+            //     out_of_bounds = true;
+            //     break;
+            // }
         }
         if (out_of_bounds)
             continue;
@@ -530,11 +530,11 @@ void AgentAnnotations::appendClusterOverlaysWindow(FoxImageAnnotationsMsg& msg, 
         {
             p.x = (p.x - static_cast<float>(crop.x)) * crop_sx;
             p.y = (p.y - static_cast<float>(crop.y)) * crop_sy;
-            if (p.x < 0.0f || p.x > fvw || p.y < 0.0f || p.y > fvh)
-            {
-                out_of_bounds = true;
-                break;
-            }
+            // if (p.x < 0.0f || p.x > fvw || p.y < 0.0f || p.y > fvh)
+            // {
+            //     out_of_bounds = true;
+            //     break;
+            // }
         }
         if (out_of_bounds)
             continue;

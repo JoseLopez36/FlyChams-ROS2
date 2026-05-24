@@ -290,8 +290,8 @@ CameraInfoMsg AgentStream::makeCameraInfo(const MultiCameraConfigPtr& config, in
     const float rho_y = sh / static_cast<float>(cam.resolution(1));
     const float fx    = focal / rho_x;
     const float fy    = focal / rho_y;
-    const float cx    = static_cast<float>(width)  / 2.0f;
-    const float cy    = static_cast<float>(height) / 2.0f;
+    const float cx    = static_cast<float>(cam.resolution(0)) / 2.0f;
+    const float cy    = static_cast<float>(cam.resolution(1)) / 2.0f;
 
     ci.k = {fx, 0.0, cx,
              0.0, fy, cy,
