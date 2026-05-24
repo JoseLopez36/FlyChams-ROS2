@@ -113,6 +113,12 @@ void ClusterAnalysis::update()
 	// Compute cluster geometry and publish
 	for (auto& [cluster_id, cluster] : clusters_)
 	{
+		// Skip clusters with no assigned targets
+		if (cluster.assignment.empty())
+		{
+			continue;
+		}
+
 		// Iterate over the assignment and get the points
 		int n = static_cast<int>(cluster.assignment.size());
 		Matrix3Xr tab_P(3, n);

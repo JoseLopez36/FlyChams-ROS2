@@ -115,6 +115,28 @@ namespace flychams::common
 
 					// 4. Ensure persistence of centroids
 					C = ensureClusterPersistence(C, C_prev, centroids, tab_P, dt);
+
+					// 5. Recover any cluster that persistence left empty
+					int n_pts = tab_P.cols();
+					for (int k = 0; k < K; k++)
+					{
+						bool has_points = (C.array() == k).any();
+						if (!has_points)
+						{
+							float max_d = -1.0f;
+							int farthest_idx = 0;
+							for (int i = 0; i < n_pts; i++)
+							{
+								float d = (tab_P.col(i) - centroids.col(C(i))).norm();
+								if (d > max_d)
+								{
+									max_d = d;
+									farthest_idx = i;
+								}
+							}
+							C(farthest_idx) = k;
+						}
+					}
 					break;
 				}
 

@@ -151,8 +151,8 @@ void TargetClustering::update()
 		i++;
 	}
 
-	// Get number of clusters
-	int K = static_cast<int>(C_.size());
+	// Get number of clusters (capped to the number of targets)
+	int K = std::min(static_cast<int>(C_.size()), n);
 
 	// Get clustering mode
 	KMeansMod::Mode mode = KMeansMod::Mode::CONSISTENT_AND_PERSISTENT;
@@ -174,10 +174,16 @@ void TargetClustering::update()
 	// Update previous assignments
 	assignments_prev_ = assignments;
 
-	// Create and publish an assignment message for each cluster
+	// Create and publish an assignment message for each active cluster (only indices 0..K-1)
 	int k = 0;
 	for (const auto& cluster_id : C_)
 	{
+		// Stop once we have covered all clusters used by K-Means
+		if (k >= K)
+		{
+			break;
+		}
+
 		// Create message
 		ClusterAssignmentMsg msg;
 		msg.header.stamp = node_->get_clock()->now();
