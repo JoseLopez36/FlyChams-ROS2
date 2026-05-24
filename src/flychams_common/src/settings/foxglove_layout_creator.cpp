@@ -252,12 +252,12 @@ void FoxgloveLayoutCreator::write3DScenePanel(const MissionConfigPtr& config_ptr
     // Agent palette hex colors — must match AgentColors::kPalette order in color_dictionary.hpp
     static const char* kAgentHex[] = {
         "#00d9ff",  // 0 kCyan
-        "#8c33ff",  // 1 kViolet
-        "#ffc700",  // 2 kAmber
-        "#00cca6",  // 3 kTeal
+        "#33cc66",  // 1 kLime
+        "#ffc700",  // 2 kAmber        
+        "#8c33ff",  // 3 kViolet
         "#ff9966",  // 4 kPeach
         "#008cff",  // 5 kSkyBlue
-        "#33cc66",  // 6 kLime
+        "#00cca6",  // 6 kTeal
         "#d900d9",  // 7 kMagenta
     };
     static constexpr int kPaletteSize = 8;

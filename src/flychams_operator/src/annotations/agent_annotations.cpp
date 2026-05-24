@@ -437,7 +437,7 @@ void AgentAnnotations::appendClusterOverlays(FoxImageAnnotationsMsg& msg, const 
     const float fvw = static_cast<float>(view_w);
     const float fvh = static_cast<float>(view_h);
 
-    const FoxColorMsg dash_color = ClusterAnnotations::kDash;
+    const FoxColorMsg dash_color = AnnotationHelpers::makeColor(AgentColors::get(agent_idx_));
 
     for (const auto& cluster : clusters_)
     {
@@ -505,7 +505,7 @@ void AgentAnnotations::appendClusterOverlaysWindow(FoxImageAnnotationsMsg& msg, 
     const float fvw     = static_cast<float>(view_w);
     const float fvh     = static_cast<float>(view_h);
 
-    const FoxColorMsg dash_color = ClusterAnnotations::kDash;
+    const FoxColorMsg dash_color = AnnotationHelpers::makeColor(AgentColors::get(agent_idx_));
 
     for (const auto& cluster : clusters_)
     {

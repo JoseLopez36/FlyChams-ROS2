@@ -83,12 +83,12 @@ namespace flychams::operator_pkg
         constexpr int kPaletteSize = 8;
         inline const Color kPalette[kPaletteSize] = {
             Colors::kCyan,      // 0 — bright blue-cyan
-            Colors::kViolet,    // 1 — purple
+            Colors::kLime,      // 1 — lime
             Colors::kAmber,     // 2 — golden yellow
-            Colors::kTeal,      // 3 — blue-green
+            Colors::kViolet,    // 3 — violet
             Colors::kPeach,     // 4 — warm orange
             Colors::kSkyBlue,   // 5 — medium blue
-            Colors::kLime,      // 6 — lime green
+            Colors::kTeal,      // 6 — teal
             Colors::kMagenta,   // 7 — magenta
         };
 

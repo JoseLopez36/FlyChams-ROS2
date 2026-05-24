@@ -50,9 +50,6 @@ namespace flychams::operator_pkg
         constexpr bool   kShowSetpoint          = true;
         constexpr double kSetpointDiam          = 0.50;
         constexpr double kSetpointLineThickness = 0.10;
-        // Setpoint colors
-        inline const Color kSetpoint     = withAlpha(Colors::kGreen, 0.90f);
-        inline const Color kSetpointLine = withAlpha(Colors::kGreen, 0.50f);
     }
 
     // ════════════════════════════════════════════════════════════════════════════
@@ -67,7 +64,7 @@ namespace flychams::operator_pkg
         constexpr float  kVolumeAlpha          = 0.08f;
         constexpr float  kRingAlpha            = 0.90f;
         // Text label
-        constexpr bool   kDisplayText          = true;
+        constexpr bool   kDisplayText          = false;
         constexpr float  kFontSize             = 2.0f;
         constexpr double kLabelZExtraOffset    = 1.5;
     }

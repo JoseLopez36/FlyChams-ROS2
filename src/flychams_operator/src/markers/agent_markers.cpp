@@ -226,7 +226,7 @@ void AgentMarkers::getEntities(FoxSceneUpdateMsg& out) const
             sphere.size.x = AgentParameters::kSetpointDiam;
             sphere.size.y = AgentParameters::kSetpointDiam;
             sphere.size.z = AgentParameters::kSetpointDiam;
-            sphere.color = AgentParameters::kSetpoint;
+            sphere.color = body_color;
             setpoint_entity.spheres.push_back(sphere);
         }
 
@@ -236,7 +236,7 @@ void AgentMarkers::getEntities(FoxSceneUpdateMsg& out) const
             line.type = FoxLinePrimitiveMsg::LINE_STRIP;
             line.pose.orientation.w = 1.0;
             line.thickness = AgentParameters::kSetpointLineThickness;
-            line.color = AgentParameters::kSetpointLine;
+            line.color = body_color;
             line.points.push_back(pos);
             line.points.push_back(agent_.setpoint);
             setpoint_entity.lines.push_back(line);

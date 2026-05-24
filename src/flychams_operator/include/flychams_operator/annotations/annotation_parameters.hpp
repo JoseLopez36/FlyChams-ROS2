@@ -82,8 +82,6 @@ namespace flychams::operator_pkg
         constexpr int   kNDashes      = 18;
         constexpr float kDashFrac     = 0.50f;
         constexpr float kThickness    = 2.0f;
-        // Color
-        inline const Color kDash = withAlpha(Colors::kWhite, 0.50f);
     }
 
     // ════════════════════════════════════════════════════════════════════════════
