@@ -51,8 +51,9 @@ namespace flychams::agent
             common::SubscriberPtr<common::AgentStatusMsg> status_sub;
             common::SubscriberPtr<common::PointStampedMsg> position_sub;
             common::SubscriberPtr<common::AgentClustersMsg> clusters_sub;
-            // Publisher
+            // Publishers
             common::PublisherPtr<common::PointStampedMsg> setpoint_pub;
+            common::PublisherPtr<common::Float32Msg> solve_duration_pub;
             // Constructor
             Agent()
                 : status(), has_status(false), position(), has_position(false), clusters(),

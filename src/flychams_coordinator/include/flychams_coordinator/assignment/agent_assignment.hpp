@@ -118,6 +118,8 @@ namespace flychams::coordinator
     private: // ROS components
         // Timer
         common::TimerPtr update_timer_;
+        // Publisher for assignment solve duration
+        common::PublisherPtr<common::Float32Msg> solve_duration_pub_;
     };
 
 } // namespace flychams::coordinator

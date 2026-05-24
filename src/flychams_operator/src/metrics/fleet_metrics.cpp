@@ -16,9 +16,15 @@ void FleetMetrics::onModuleInit()
     // Initialize data
     total_agents_ = 0;
     assignment_solve_duration_ = 0.0f;
+    has_assignment_solve_duration_ = false;
 
     // Publishers
     metrics_pub_ = node_->createFleetMetricsPublisher();
+
+    // Subscribers
+    assignment_solve_duration_sub_ = node_->createAssignmentSolveDurationSubscriber(
+        std::bind(&FleetMetrics::assignmentSolveDurationCallback, this, std::placeholders::_1),
+        node_->getSubscriptionOptions());
 
     // Update timer
     update_timer_ = node_->createTimer(update_rate_, std::bind(&FleetMetrics::update, this));
@@ -27,6 +33,7 @@ void FleetMetrics::onModuleInit()
 void FleetMetrics::onModuleShutdown()
 {
     metrics_pub_.reset();
+    assignment_solve_duration_sub_.reset();
     update_timer_.reset();
 }
 
@@ -42,6 +49,12 @@ void FleetMetrics::addAgent()
 void FleetMetrics::removeAgent()
 {
     total_agents_--;
+}
+
+void FleetMetrics::assignmentSolveDurationCallback(const Float32Msg::SharedPtr msg)
+{
+    assignment_solve_duration_ = msg->data;
+    has_assignment_solve_duration_ = true;
 }
 
 // ════════════════════════════════════════════════════════════════════════════
@@ -60,7 +73,7 @@ void FleetMetrics::update()
     FleetMetricsMsg msg;
     msg.header = node_->createHeader(node_->getGlobalFrame());
     msg.total_agents = total_agents_;
-    msg.assignment_solve_duration = 0.0f;  // TODO: Not currently sourced from assignment module
+    msg.assignment_solve_duration = has_assignment_solve_duration_ ? assignment_solve_duration_ : 0.0f;
 
     metrics_pub_->publish(msg);
 }

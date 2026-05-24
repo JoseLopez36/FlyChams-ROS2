@@ -1,5 +1,7 @@
 /**:
   ros__parameters:
+    # Topics are organized by precedence (who sends the message first)
+
     # Coordinator topics
     coordinator_topics:
       registration: "/flychams/coordinator/registration" # Registration.msg (custom)
@@ -8,16 +10,18 @@
       global_origin: "/flychams/coordinator/global_origin" # GeoPointStamped.msg
       target_position: "/flychams/coordinator/TARGETID/position" # PointStamped.msg
       cluster_assignment: "/flychams/coordinator/CLUSTERID/assignment" # ClusterAssignment.msg (custom)
-      cluster_geometry: "/flychams/coordinator/CLUSTERID/geometry" # ClusterGeometry.msg (custom)      
+      cluster_geometry: "/flychams/coordinator/CLUSTERID/geometry" # ClusterGeometry.msg (custom)
+      agent_assignment: "/flychams/coordinator/AGENTID/assignment" # AgentAssignment.msg (custom)
+      agent_clusters: "/flychams/coordinator/AGENTID/clusters" # AgentClusters.msg (custom)
+      assignment_solve_duration: "/flychams/coordinator/assignment_solve_duration" # std_msgs/Float32 
 
     # Agent topics
     agent_topics:
       agent_status: "/flychams/agent/AGENTID/status" # AgentStatus.msg (custom)
       agent_global_position: "/flychams/agent/AGENTID/global_position" # PointStamped.msg
       agent_local_position: "/flychams/agent/AGENTID/local_position" # PointStamped.msg
-      agent_assignment: "/flychams/agent/AGENTID/assignment" # AgentAssignment.msg (custom)
-      agent_clusters: "/flychams/agent/AGENTID/clusters" # AgentClusters.msg (custom)
       agent_position_setpoint: "/flychams/agent/AGENTID/position_setpoint" # PointStamped.msg
+      position_solve_duration: "/flychams/agent/AGENTID/position_solve_duration" # std_msgs/Float32
       observation_setpoints: "/flychams/agent/AGENTID/observation_setpoints" # ObservationSetpoints.msg (custom)
       image: "/flychams/agent/AGENTID/UNITID/image" # sensor_msgs/Image
       image_compressed: "/flychams/agent/AGENTID/UNITID/image/compressed" # sensor_msgs/CompressedImage

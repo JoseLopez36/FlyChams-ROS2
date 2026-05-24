@@ -36,14 +36,16 @@ void BaseNode::init()
     coordinator_topics_.target_position_pattern = topic_config.target_position;
     coordinator_topics_.cluster_assignment_pattern = topic_config.cluster_assignment;
     coordinator_topics_.cluster_geometry_pattern = topic_config.cluster_geometry;
+    coordinator_topics_.agent_assignment_pattern = topic_config.agent_assignment;
+    coordinator_topics_.agent_clusters_pattern = topic_config.agent_clusters;
+    coordinator_topics_.assignment_solve_duration = topic_config.assignment_solve_duration;
 
     // Agent topics
     agent_topics_.status_pattern = topic_config.agent_status;
     agent_topics_.global_position_pattern = topic_config.agent_global_position;
     agent_topics_.local_position_pattern = topic_config.agent_local_position;
-    agent_topics_.assignment_pattern = topic_config.agent_assignment;
-    agent_topics_.clusters_pattern = topic_config.agent_clusters;
     agent_topics_.position_setpoint_pattern = topic_config.agent_position_setpoint;
+    agent_topics_.position_solve_duration_pattern = topic_config.position_solve_duration;
     agent_topics_.observation_setpoints_pattern = topic_config.observation_setpoints;
     agent_topics_.image_pattern = topic_config.image;
     agent_topics_.image_compressed_pattern = topic_config.image_compressed;
@@ -154,6 +156,21 @@ std::string BaseNode::getClusterGeometryTopic(const ID& cluster_id)
     return replace(coordinator_topics_.cluster_geometry_pattern, "CLUSTERID", cluster_id);
 }
 
+std::string BaseNode::getAgentAssignmentTopic(const ID& agent_id)
+{
+    return replace(coordinator_topics_.agent_assignment_pattern, "AGENTID", agent_id);
+}
+
+std::string BaseNode::getAgentClustersTopic(const ID& agent_id)
+{
+    return replace(coordinator_topics_.agent_clusters_pattern, "AGENTID", agent_id);
+}
+
+std::string BaseNode::getAssignmentSolveDurationTopic()
+{
+    return coordinator_topics_.assignment_solve_duration;
+}
+
 std::string BaseNode::getAgentStatusTopic(const ID& agent_id)
 {
     return replace(agent_topics_.status_pattern, "AGENTID", agent_id);
@@ -169,16 +186,6 @@ std::string BaseNode::getAgentLocalPositionTopic(const ID& agent_id)
     return replace(agent_topics_.local_position_pattern, "AGENTID", agent_id);
 }
 
-std::string BaseNode::getAgentAssignmentTopic(const ID& agent_id)
-{
-    return replace(agent_topics_.assignment_pattern, "AGENTID", agent_id);
-}
-
-std::string BaseNode::getAgentClustersTopic(const ID& agent_id)
-{
-    return replace(agent_topics_.clusters_pattern, "AGENTID", agent_id);
-}
-
 std::string BaseNode::getAgentPositionSetpointTopic(const ID& agent_id)
 {
     return replace(agent_topics_.position_setpoint_pattern, "AGENTID", agent_id);
@@ -187,6 +194,11 @@ std::string BaseNode::getAgentPositionSetpointTopic(const ID& agent_id)
 std::string BaseNode::getObservationSetpointsTopic(const ID& agent_id)
 {
     return replace(agent_topics_.observation_setpoints_pattern, "AGENTID", agent_id);
+}
+
+std::string BaseNode::getPositionSolveDurationTopic(const ID& agent_id)
+{
+    return replace(agent_topics_.position_solve_duration_pattern, "AGENTID", agent_id);
 }
 
 std::string BaseNode::getImageTopic(const ID& agent_id, const ID& unit_id)
@@ -318,6 +330,22 @@ PublisherPtr<ClusterGeometryMsg> BaseNode::createClusterGeometryPublisher(const 
     return node_->create_publisher<ClusterGeometryMsg>(getClusterGeometryTopic(cluster_id), 10);
 }
 
+PublisherPtr<AgentAssignmentMsg> BaseNode::createAgentAssignmentPublisher(const ID& agent_id)
+{
+    rclcpp::QoS qos = rclcpp::QoS(rclcpp::KeepLast(1)).reliable().transient_local();
+    return node_->create_publisher<AgentAssignmentMsg>(getAgentAssignmentTopic(agent_id), qos);
+}
+
+PublisherPtr<AgentClustersMsg> BaseNode::createAgentClustersPublisher(const ID& agent_id)
+{
+    return node_->create_publisher<AgentClustersMsg>(getAgentClustersTopic(agent_id), 10);
+}
+
+PublisherPtr<Float32Msg> BaseNode::createAssignmentSolveDurationPublisher()
+{
+    return node_->create_publisher<Float32Msg>(getAssignmentSolveDurationTopic(), 10);
+}
+
 PublisherPtr<AgentStatusMsg> BaseNode::createAgentStatusPublisher(const ID& agent_id)
 {
     rclcpp::QoS qos = rclcpp::QoS(rclcpp::KeepLast(1)).reliable().transient_local();
@@ -334,20 +362,14 @@ PublisherPtr<PointStampedMsg> BaseNode::createAgentLocalPositionPublisher(const 
     return node_->create_publisher<PointStampedMsg>(getAgentLocalPositionTopic(agent_id), 10);
 }
 
-PublisherPtr<AgentAssignmentMsg> BaseNode::createAgentAssignmentPublisher(const ID& agent_id)
-{
-    rclcpp::QoS qos = rclcpp::QoS(rclcpp::KeepLast(1)).reliable().transient_local();
-    return node_->create_publisher<AgentAssignmentMsg>(getAgentAssignmentTopic(agent_id), qos);
-}
-
-PublisherPtr<AgentClustersMsg> BaseNode::createAgentClustersPublisher(const ID& agent_id)
-{
-    return node_->create_publisher<AgentClustersMsg>(getAgentClustersTopic(agent_id), 10);
-}
-
 PublisherPtr<PointStampedMsg> BaseNode::createAgentPositionSetpointPublisher(const ID& agent_id)
 {
     return node_->create_publisher<PointStampedMsg>(getAgentPositionSetpointTopic(agent_id), 10);
+}
+
+PublisherPtr<Float32Msg> BaseNode::createPositionSolveDurationPublisher(const ID& agent_id)
+{
+    return node_->create_publisher<Float32Msg>(getPositionSolveDurationTopic(agent_id), 10);
 }
 
 PublisherPtr<ObservationSetpointsMsg> BaseNode::createObservationSetpointsPublisher(const ID& agent_id)
@@ -474,6 +496,22 @@ SubscriberPtr<ClusterGeometryMsg> BaseNode::createClusterGeometrySubscriber(cons
     return node_->create_subscription<ClusterGeometryMsg>(getClusterGeometryTopic(cluster_id), 10, std::move(callback), options);
 }
 
+SubscriberPtr<AgentAssignmentMsg> BaseNode::createAgentAssignmentSubscriber(const ID& agent_id, std::function<void(const AgentAssignmentMsg::SharedPtr)> callback, const rclcpp::SubscriptionOptions& options)
+{
+    rclcpp::QoS qos = rclcpp::QoS(rclcpp::KeepLast(1)).reliable().transient_local();
+    return node_->create_subscription<AgentAssignmentMsg>(getAgentAssignmentTopic(agent_id), qos, std::move(callback), options);
+}
+
+SubscriberPtr<AgentClustersMsg> BaseNode::createAgentClustersSubscriber(const ID& agent_id, std::function<void(const AgentClustersMsg::SharedPtr)> callback, const rclcpp::SubscriptionOptions& options)
+{
+    return node_->create_subscription<AgentClustersMsg>(getAgentClustersTopic(agent_id), 10, std::move(callback), options);
+}
+
+SubscriberPtr<Float32Msg> BaseNode::createAssignmentSolveDurationSubscriber(std::function<void(const Float32Msg::SharedPtr)> callback, const rclcpp::SubscriptionOptions& options)
+{
+    return node_->create_subscription<Float32Msg>(getAssignmentSolveDurationTopic(), 10, std::move(callback), options);
+}
+
 SubscriberPtr<AgentStatusMsg> BaseNode::createAgentStatusSubscriber(const ID& agent_id, std::function<void(const AgentStatusMsg::SharedPtr)> callback, const rclcpp::SubscriptionOptions& options)
 {
     rclcpp::QoS qos = rclcpp::QoS(rclcpp::KeepLast(1)).reliable().transient_local();
@@ -490,20 +528,14 @@ SubscriberPtr<PointStampedMsg> BaseNode::createAgentLocalPositionSubscriber(cons
     return node_->create_subscription<PointStampedMsg>(getAgentLocalPositionTopic(agent_id), 10, std::move(callback), options);
 }
 
-SubscriberPtr<AgentAssignmentMsg> BaseNode::createAgentAssignmentSubscriber(const ID& agent_id, std::function<void(const AgentAssignmentMsg::SharedPtr)> callback, const rclcpp::SubscriptionOptions& options)
-{
-    rclcpp::QoS qos = rclcpp::QoS(rclcpp::KeepLast(1)).reliable().transient_local();
-    return node_->create_subscription<AgentAssignmentMsg>(getAgentAssignmentTopic(agent_id), qos, std::move(callback), options);
-}
-
-SubscriberPtr<AgentClustersMsg> BaseNode::createAgentClustersSubscriber(const ID& agent_id, std::function<void(const AgentClustersMsg::SharedPtr)> callback, const rclcpp::SubscriptionOptions& options)
-{
-    return node_->create_subscription<AgentClustersMsg>(getAgentClustersTopic(agent_id), 10, std::move(callback), options);
-}
-
 SubscriberPtr<PointStampedMsg> BaseNode::createAgentPositionSetpointSubscriber(const ID& agent_id, std::function<void(const PointStampedMsg::SharedPtr)> callback, const rclcpp::SubscriptionOptions& options)
 {
     return node_->create_subscription<PointStampedMsg>(getAgentPositionSetpointTopic(agent_id), 10, std::move(callback), options);
+}
+
+SubscriberPtr<Float32Msg> BaseNode::createPositionSolveDurationSubscriber(const ID& agent_id, std::function<void(const Float32Msg::SharedPtr)> callback, const rclcpp::SubscriptionOptions& options)
+{
+    return node_->create_subscription<Float32Msg>(getPositionSolveDurationTopic(agent_id), 10, std::move(callback), options);
 }
 
 SubscriberPtr<ObservationSetpointsMsg> BaseNode::createObservationSetpointsSubscriber(const ID& agent_id, std::function<void(const ObservationSetpointsMsg::SharedPtr)> callback, const rclcpp::SubscriptionOptions& options)

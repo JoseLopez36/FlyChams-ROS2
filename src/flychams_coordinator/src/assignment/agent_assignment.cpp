@@ -58,6 +58,9 @@ void AgentAssignment::onModuleInit()
     solver_params.switch_weight = switch_weight;
     solver_->init(assignment_solver_mode, solver_params);
 
+    // Create publisher for assignment solve duration
+    solve_duration_pub_ = node_->createAssignmentSolveDurationPublisher();
+
     // Set update timer
     update_timer_ = node_->createTimer(update_rate_, std::bind(&AgentAssignment::update, this));
 }
@@ -71,6 +74,8 @@ void AgentAssignment::onModuleShutdown()
     A_.clear();
     clusters_.clear();
     T_.clear();
+    // Destroy publishers
+    solve_duration_pub_.reset();
     // Destroy update timer
     update_timer_.reset();
 }
@@ -210,7 +215,11 @@ void AgentAssignment::update()
 
     // Perform agent assignment
     RCLCPP_DEBUG(node_->get_logger(), "Agent assignment: Performing agent assignment...");
+    const auto& start = std::chrono::high_resolution_clock::now();
     RowVectorXi X = solver_->run(tab_x, tab_P, tab_r, X_prev_, wTcentral_array, solvers);
+    const auto& end = std::chrono::high_resolution_clock::now();
+    float time_elapsed_us = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
+    float time_elapsed_ms = time_elapsed_us / 1000.0f;  // Convert to milliseconds
 
     // Update previous assignment
     X_prev_.resize(X.size());
@@ -249,6 +258,11 @@ void AgentAssignment::update()
 
         k++;
     }
+
+    // Publish solve duration
+    std_msgs::msg::Float32 duration_msg;
+    duration_msg.data = time_elapsed_ms;
+    solve_duration_pub_->publish(duration_msg);
 }
 
 // ════════════════════════════════════════════════════════════════════════════

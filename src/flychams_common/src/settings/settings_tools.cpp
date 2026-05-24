@@ -543,13 +543,15 @@ void SettingsTools::printSettings() const
     RCLCPP_DEBUG(node_->get_logger(), "    Target Position: %s", config_ptr_->topics.target_position.c_str());
     RCLCPP_DEBUG(node_->get_logger(), "    Cluster Assignment: %s", config_ptr_->topics.cluster_assignment.c_str());
     RCLCPP_DEBUG(node_->get_logger(), "    Cluster Geometry: %s", config_ptr_->topics.cluster_geometry.c_str());
+    RCLCPP_DEBUG(node_->get_logger(), "    Agent Assignment: %s", config_ptr_->topics.agent_assignment.c_str());
+    RCLCPP_DEBUG(node_->get_logger(), "    Agent Clusters: %s", config_ptr_->topics.agent_clusters.c_str());
+    RCLCPP_DEBUG(node_->get_logger(), "    Assignment Solve Duration: %s", config_ptr_->topics.assignment_solve_duration.c_str());
     RCLCPP_DEBUG(node_->get_logger(), "  Agent Topics:");
     RCLCPP_DEBUG(node_->get_logger(), "    Status: %s", config_ptr_->topics.agent_status.c_str());
     RCLCPP_DEBUG(node_->get_logger(), "    Global Position: %s", config_ptr_->topics.agent_global_position.c_str());
     RCLCPP_DEBUG(node_->get_logger(), "    Local Position: %s", config_ptr_->topics.agent_local_position.c_str());
-    RCLCPP_DEBUG(node_->get_logger(), "    Assignment: %s", config_ptr_->topics.agent_assignment.c_str());
-    RCLCPP_DEBUG(node_->get_logger(), "    Clusters: %s", config_ptr_->topics.agent_clusters.c_str());
     RCLCPP_DEBUG(node_->get_logger(), "    Position Setpoint: %s", config_ptr_->topics.agent_position_setpoint.c_str());
+    RCLCPP_DEBUG(node_->get_logger(), "    Position Solve Duration: %s", config_ptr_->topics.position_solve_duration.c_str());
     RCLCPP_DEBUG(node_->get_logger(), "    Observation Setpoints: %s", config_ptr_->topics.observation_setpoints.c_str());
     RCLCPP_DEBUG(node_->get_logger(), "    Image: %s", config_ptr_->topics.image.c_str());
     RCLCPP_DEBUG(node_->get_logger(), "    Image Compressed: %s", config_ptr_->topics.image_compressed.c_str());
@@ -564,6 +566,7 @@ void SettingsTools::printSettings() const
     RCLCPP_DEBUG(node_->get_logger(), "    Land All: %s", config_ptr_->topics.land_all.c_str());
     RCLCPP_DEBUG(node_->get_logger(), "    Return Home: %s", config_ptr_->topics.return_home.c_str());
     RCLCPP_DEBUG(node_->get_logger(), "    Mission Metrics: %s", config_ptr_->topics.mission_metrics.c_str());
+    RCLCPP_DEBUG(node_->get_logger(), "    Fleet Metrics: %s", config_ptr_->topics.fleet_metrics.c_str());
     RCLCPP_DEBUG(node_->get_logger(), "    Agent Metrics: %s", config_ptr_->topics.agent_metrics.c_str());
     RCLCPP_DEBUG(node_->get_logger(), "    Target Metrics: %s", config_ptr_->topics.target_metrics.c_str());
     RCLCPP_DEBUG(node_->get_logger(), "    Cluster Metrics: %s", config_ptr_->topics.cluster_metrics.c_str());

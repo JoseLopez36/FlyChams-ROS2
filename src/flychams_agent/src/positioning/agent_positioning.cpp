@@ -58,6 +58,9 @@ void AgentPositioning::onModuleInit()
     // Create publisher for agent setpoint
     agent_.setpoint_pub = node_->createAgentPositionSetpointPublisher(agent_id_);
 
+    // Create publisher for solve duration
+    agent_.solve_duration_pub = node_->createPositionSolveDurationPublisher(agent_id_);
+
     // Set update timer
     update_timer_ = node_->createTimer(update_rate_, std::bind(&AgentPositioning::update, this));
 }
@@ -71,6 +74,7 @@ void AgentPositioning::onModuleShutdown()
     agent_.position_sub.reset();
     agent_.clusters_sub.reset();
     agent_.setpoint_pub.reset();
+    agent_.solve_duration_pub.reset();
     // Destroy update timer
     update_timer_.reset();
 }
@@ -133,14 +137,20 @@ void AgentPositioning::update()
     const auto& start = std::chrono::high_resolution_clock::now();
     Vector3r optimal_position = solver_->run(tab_P, tab_r, x0, wTcentral, J);
     const auto& end = std::chrono::high_resolution_clock::now();
-    float time_elapsed = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
+    float time_elapsed_us = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
+    float time_elapsed_ms = time_elapsed_us / 1000.0f;  // Convert to milliseconds
     RCLCPP_DEBUG(node_->get_logger(), "Agent positioning: Computed optimal position (J = %.2f): (xOpt = %.2f, %.2f, %.2f) in %.2f us",
-        J, optimal_position(0), optimal_position(1), optimal_position(2), time_elapsed);
+        J, optimal_position(0), optimal_position(1), optimal_position(2), time_elapsed_us);
 
     // Publish position
     agent_.setpoint.header.stamp = node_->now();
     node_->toMsg(optimal_position, agent_.setpoint.point);
     agent_.setpoint_pub->publish(agent_.setpoint);
+
+    // Publish solve duration
+    std_msgs::msg::Float32 duration_msg;
+    duration_msg.data = time_elapsed_ms;
+    agent_.solve_duration_pub->publish(duration_msg);
 }
 
 // ════════════════════════════════════════════════════════════════════════════

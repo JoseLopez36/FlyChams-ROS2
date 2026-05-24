@@ -49,18 +49,23 @@ namespace flychams::operator_pkg
             // Latest zoom factors (from observation setpoints)
             std::vector<float> zoom_factors;
             bool has_observation_setpoints;
+            // Latest position solve duration
+            float position_solve_duration;
+            bool has_position_solve_duration;
             // Publisher
             common::PublisherPtr<common::AgentMetricsMsg> metrics_pub;
             // Subscribers
             common::SubscriberPtr<common::PointStampedMsg> local_position_sub;
             common::SubscriberPtr<common::PointStampedMsg> position_setpoint_sub;
             common::SubscriberPtr<common::ObservationSetpointsMsg> observation_setpoints_sub;
+            common::SubscriberPtr<common::Float32Msg> position_solve_duration_sub;
             // Constructor
             AgentData()
                 : position(), has_position(false), setpoint(), has_setpoint(false),
                   zoom_factors(), has_observation_setpoints(false),
+                  position_solve_duration(0.0f), has_position_solve_duration(false),
                   metrics_pub(), local_position_sub(), position_setpoint_sub(),
-                  observation_setpoints_sub()
+                  observation_setpoints_sub(), position_solve_duration_sub()
             {
             }
         };
@@ -79,6 +84,7 @@ namespace flychams::operator_pkg
         void localPositionCallback(const common::PointStampedMsg::SharedPtr msg);
         void positionSetpointCallback(const common::PointStampedMsg::SharedPtr msg);
         void observationSetpointsCallback(const common::ObservationSetpointsMsg::SharedPtr msg);
+        void positionSolveDurationCallback(const common::Float32Msg::SharedPtr msg);
 
     private: // Update
         void update();

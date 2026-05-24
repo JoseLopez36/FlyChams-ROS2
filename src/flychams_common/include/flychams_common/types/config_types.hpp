@@ -69,14 +69,16 @@ namespace flychams::common
         std::string target_position;
         std::string cluster_assignment;
         std::string cluster_geometry;
+        std::string agent_assignment;
+        std::string agent_clusters;
+        std::string assignment_solve_duration;
 
         // Agent topics
         std::string agent_status;
         std::string agent_global_position;
         std::string agent_local_position;
-        std::string agent_assignment;
-        std::string agent_clusters;
         std::string agent_position_setpoint;
+        std::string position_solve_duration;
         std::string observation_setpoints;
         std::string image;
         std::string image_compressed;

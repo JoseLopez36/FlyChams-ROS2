@@ -34,6 +34,10 @@ void AgentMetrics::onModuleInit()
         std::bind(&AgentMetrics::observationSetpointsCallback, this, std::placeholders::_1),
         node_->getSubscriptionOptions());
 
+    agent_.position_solve_duration_sub = node_->createPositionSolveDurationSubscriber(agent_id_,
+        std::bind(&AgentMetrics::positionSolveDurationCallback, this, std::placeholders::_1),
+        node_->getSubscriptionOptions());
+
     // Update timer
     update_timer_ = node_->createTimer(update_rate_, std::bind(&AgentMetrics::update, this));
 }
@@ -44,6 +48,7 @@ void AgentMetrics::onModuleShutdown()
     agent_.local_position_sub.reset();
     agent_.position_setpoint_sub.reset();
     agent_.observation_setpoints_sub.reset();
+    agent_.position_solve_duration_sub.reset();
     update_timer_.reset();
 }
 
@@ -79,6 +84,12 @@ void AgentMetrics::observationSetpointsCallback(const ObservationSetpointsMsg::S
 {
     agent_.zoom_factors.assign(msg->zoom_factors.begin(), msg->zoom_factors.end());
     agent_.has_observation_setpoints = true;
+}
+
+void AgentMetrics::positionSolveDurationCallback(const Float32Msg::SharedPtr msg)
+{
+    agent_.position_solve_duration = msg->data;
+    agent_.has_position_solve_duration = true;
 }
 
 // ════════════════════════════════════════════════════════════════════════════
@@ -122,7 +133,7 @@ void AgentMetrics::update()
     msg.position = agent_.position;
     msg.setpoint = agent_.has_setpoint ? agent_.setpoint : agent_.position;
     msg.zoom_factors = agent_.has_observation_setpoints ? agent_.zoom_factors : std::vector<float>{};
-    msg.position_solve_duration = 0.0f;  // TODO: Not currently sourced from positioning module
+    msg.position_solve_duration = agent_.has_position_solve_duration ? agent_.position_solve_duration : 0.0f;
     msg.distance_traveled = distance_traveled_;
     msg.speed = speed;
     msg.distance_to_goal = distance_to_goal;

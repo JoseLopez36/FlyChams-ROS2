@@ -46,10 +46,14 @@ namespace flychams::operator_pkg
     private: // Accumulated data
         int total_agents_;
         float assignment_solve_duration_;
+        bool has_assignment_solve_duration_;
 
     public: // Element management
         void addAgent();
         void removeAgent();
+
+    private: // Callbacks
+        void assignmentSolveDurationCallback(const common::Float32Msg::SharedPtr msg);
 
     private: // Update
         void update();
@@ -57,6 +61,7 @@ namespace flychams::operator_pkg
 
     private: // ROS components
         common::PublisherPtr<common::FleetMetricsMsg> metrics_pub_;
+        common::SubscriberPtr<common::Float32Msg> assignment_solve_duration_sub_;
         common::TimerPtr update_timer_;
     };
 

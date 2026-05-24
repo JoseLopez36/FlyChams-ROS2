@@ -469,14 +469,16 @@ void MissionSettingsParser::parseTopicParameters(const NodePtr& node, MissionCon
 	node->get_parameter<std::string>("coordinator_topics.target_position", config_ptr->topics.target_position);
 	node->get_parameter<std::string>("coordinator_topics.cluster_assignment", config_ptr->topics.cluster_assignment);
 	node->get_parameter<std::string>("coordinator_topics.cluster_geometry", config_ptr->topics.cluster_geometry);
+	node->get_parameter<std::string>("coordinator_topics.agent_assignment", config_ptr->topics.agent_assignment);
+	node->get_parameter<std::string>("coordinator_topics.agent_clusters", config_ptr->topics.agent_clusters);
+	node->get_parameter<std::string>("coordinator_topics.assignment_solve_duration", config_ptr->topics.assignment_solve_duration);
 
 	// Agent topics
 	node->get_parameter<std::string>("agent_topics.agent_status", config_ptr->topics.agent_status);
 	node->get_parameter<std::string>("agent_topics.agent_global_position", config_ptr->topics.agent_global_position);
 	node->get_parameter<std::string>("agent_topics.agent_local_position", config_ptr->topics.agent_local_position);
-	node->get_parameter<std::string>("agent_topics.agent_assignment", config_ptr->topics.agent_assignment);
-	node->get_parameter<std::string>("agent_topics.agent_clusters", config_ptr->topics.agent_clusters);
 	node->get_parameter<std::string>("agent_topics.agent_position_setpoint", config_ptr->topics.agent_position_setpoint);
+	node->get_parameter<std::string>("agent_topics.position_solve_duration", config_ptr->topics.position_solve_duration);
 	node->get_parameter<std::string>("agent_topics.observation_setpoints", config_ptr->topics.observation_setpoints);
 	node->get_parameter<std::string>("agent_topics.image", config_ptr->topics.image);
 	node->get_parameter<std::string>("agent_topics.image_compressed", config_ptr->topics.image_compressed);
