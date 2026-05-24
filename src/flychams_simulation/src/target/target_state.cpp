@@ -25,7 +25,7 @@ void TargetState::onModuleInit()
     const auto& root = node_->getSettings()->getSystem().trajectory_root;
     const auto& folder = node_->getSettings()->getTarget(target_id_)->trajectory_folder;
     const auto& index = node_->getSettings()->getTarget(target_id_)->target_index;
-    const auto& path = root + "/" + folder + "/" + "TRAJ" + std::to_string(index + 1) + ".csv";
+    const auto& path = root + "/" + folder + "/" + "trajectory_" + std::to_string(index) + ".csv";
     RCLCPP_INFO(node_->get_logger(), "Target state: Parsing trajectory for target %s with path %s", target_id_.c_str(), path.c_str());
     trajectory_.points = TrajectoryParser::parse(path);
     trajectory_.current_idx = 0;

@@ -34,34 +34,36 @@ def run(cmd, **kwargs):
 def launch_sim(agent_ids: list, record: bool = False, record_dir: str = ""):
     print("=== Simulation mode ===")
 
+    delay = 0.5
+
     # Operator
     record_env = f"RECORD=true{' RECORD_DIR=' + record_dir if record_dir else ''}" if record else ""
     operator_env = f"DETACH=true {record_env}".strip()
     run(f"{operator_env} {SCRIPT_DIR}/launch_operator.sh")
-    time.sleep(1)
+    time.sleep(delay)
 
     # Micro-XRCE-DDS Agent
     run(f"DETACH=true {SCRIPT_DIR}/launch_micro_xrce_dds.sh")
-    time.sleep(1)
+    time.sleep(delay)
 
     # One PX4 container per agent (instance number taken from mission config idx)
     for agent_id in agent_ids:
         idx = load_agent_idx(agent_id)
         run(f"DETACH=true {SCRIPT_DIR}/launch_px4.sh {idx} {agent_id}")
-        time.sleep(1)
+        time.sleep(delay)
 
     # Coordinator
     run(f"DETACH=true {SCRIPT_DIR}/launch_coordinator.sh")
-    time.sleep(1)
+    time.sleep(delay)
 
     # One agent container per agent
     for agent_id in agent_ids:
         run(f"DETACH=true {SCRIPT_DIR}/launch_agent.sh {agent_id}")
-        time.sleep(1)
+        time.sleep(delay)
 
     # Simulation
     run(f"DETACH=true {SCRIPT_DIR}/launch_simulation.sh")
-    time.sleep(1)
+    time.sleep(delay)
 
 # ------------------------------------------------------------------
 # Real mode

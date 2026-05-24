@@ -140,9 +140,10 @@ namespace flychams::common
                 return;
             }
 
-            // Iterate through all agents
-            for (int a = 0; a < m; a++)
+            // Always process the first remaining agent so X_min is assembled
+            // in the same order as the input agent array
             {
+                int a = 0;
                 // Get current agent
                 auto& Ak = A[a];
                 int k = Ak.k;
