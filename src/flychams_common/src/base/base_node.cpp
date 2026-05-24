@@ -61,7 +61,8 @@ void BaseNode::init()
     operator_topics_.arm_all = topic_config.arm_all;
     operator_topics_.land_all = topic_config.land_all;
     operator_topics_.return_home = topic_config.return_home;
-    operator_topics_.metrics = topic_config.mission_metrics;
+    operator_topics_.mission_metrics = topic_config.mission_metrics;
+    operator_topics_.fleet_metrics = topic_config.fleet_metrics;
     operator_topics_.agent_metrics_pattern = topic_config.agent_metrics;
     operator_topics_.target_metrics_pattern = topic_config.target_metrics;
     operator_topics_.cluster_metrics_pattern = topic_config.cluster_metrics;
@@ -218,9 +219,14 @@ std::string BaseNode::getSceneTopic()
     return operator_topics_.scene_pattern;
 }
 
-std::string BaseNode::getGlobalMetricsTopic()
+std::string BaseNode::getMissionMetricsTopic()
 {
-    return operator_topics_.metrics;
+    return operator_topics_.mission_metrics;
+}
+
+std::string BaseNode::getFleetMetricsTopic()
+{
+    return operator_topics_.fleet_metrics;
 }
 
 std::string BaseNode::getStartMissionTopic() 
@@ -401,7 +407,12 @@ PublisherPtr<BoolMsg> BaseNode::createReturnHomePublisher()
 
 PublisherPtr<MissionMetricsMsg> BaseNode::createMissionMetricsPublisher()
 {
-    return node_->create_publisher<MissionMetricsMsg>(getGlobalMetricsTopic(), 10);
+    return node_->create_publisher<MissionMetricsMsg>(getMissionMetricsTopic(), 10);
+}
+
+PublisherPtr<FleetMetricsMsg> BaseNode::createFleetMetricsPublisher()
+{
+    return node_->create_publisher<FleetMetricsMsg>(getFleetMetricsTopic(), 10);
 }
 
 PublisherPtr<AgentMetricsMsg> BaseNode::createAgentMetricsPublisher(const ID& agent_id)
@@ -540,9 +551,14 @@ SubscriberPtr<BoolMsg> BaseNode::createReturnHomeSubscriber(std::function<void(c
     return node_->create_subscription<BoolMsg>(getReturnHomeTopic(), 10, std::move(callback), options);
 }
 
-SubscriberPtr<MissionMetricsMsg> BaseNode::createGlobalMetricsSubscriber(std::function<void(const MissionMetricsMsg::SharedPtr)> callback, const rclcpp::SubscriptionOptions& options)
+SubscriberPtr<MissionMetricsMsg> BaseNode::createMissionMetricsSubscriber(std::function<void(const MissionMetricsMsg::SharedPtr)> callback, const rclcpp::SubscriptionOptions& options)
 {
-    return node_->create_subscription<MissionMetricsMsg>(getGlobalMetricsTopic(), 10, std::move(callback), options);
+    return node_->create_subscription<MissionMetricsMsg>(getMissionMetricsTopic(), 10, std::move(callback), options);
+}
+
+SubscriberPtr<FleetMetricsMsg> BaseNode::createFleetMetricsSubscriber(std::function<void(const FleetMetricsMsg::SharedPtr)> callback, const rclcpp::SubscriptionOptions& options)
+{
+    return node_->create_subscription<FleetMetricsMsg>(getFleetMetricsTopic(), 10, std::move(callback), options);
 }
 
 SubscriberPtr<AgentMetricsMsg> BaseNode::createAgentMetricsSubscriber(const ID& agent_id, std::function<void(const AgentMetricsMsg::SharedPtr)> callback, const rclcpp::SubscriptionOptions& options)

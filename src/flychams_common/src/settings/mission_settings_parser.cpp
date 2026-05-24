@@ -495,6 +495,7 @@ void MissionSettingsParser::parseTopicParameters(const NodePtr& node, MissionCon
 	node->get_parameter<std::string>("operator_topics.land_all", config_ptr->topics.land_all);
 	node->get_parameter<std::string>("operator_topics.return_home", config_ptr->topics.return_home);
 	node->get_parameter<std::string>("operator_topics.mission_metrics", config_ptr->topics.mission_metrics);
+	node->get_parameter<std::string>("operator_topics.fleet_metrics", config_ptr->topics.fleet_metrics);
 	node->get_parameter<std::string>("operator_topics.agent_metrics", config_ptr->topics.agent_metrics);
 	node->get_parameter<std::string>("operator_topics.target_metrics", config_ptr->topics.target_metrics);
 	node->get_parameter<std::string>("operator_topics.cluster_metrics", config_ptr->topics.cluster_metrics);

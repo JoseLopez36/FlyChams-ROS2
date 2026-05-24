@@ -1,4 +1,4 @@
-#include "flychams_operator/metrics/target_metrics.hpp"
+#include "flychams_operator/metrics/fleet_metrics.hpp"
 
 using namespace flychams::common;
 
@@ -8,108 +8,72 @@ using namespace flychams::operator_pkg;
 // INIT / SHUTDOWN
 // ════════════════════════════════════════════════════════════════════════════
 
-void TargetMetrics::onModuleInit()
+void FleetMetrics::onModuleInit()
 {
     // Get parameters
-    update_rate_ = node_->getParameterOr<float>("update_rate", 10.0f);
+    update_rate_ = node_->getParameterOr<float>("update_rate", 1.0f);
 
     // Initialize data
-    target_ = TargetData();
-    distance_traveled_ = 0.0f;
-    last_update_time_ = node_->now();
+    total_agents_ = 0;
+    assignment_solve_duration_ = 0.0f;
 
     // Publishers
-    target_.metrics_pub = node_->createTargetMetricsPublisher(target_id_);
-
-    // Subscribers
-    target_.position_sub = node_->createTargetPositionSubscriber(target_id_,
-        std::bind(&TargetMetrics::positionCallback, this, std::placeholders::_1),
-        node_->getSubscriptionOptions());
+    metrics_pub_ = node_->createFleetMetricsPublisher();
 
     // Update timer
-    update_timer_ = node_->createTimer(update_rate_, std::bind(&TargetMetrics::update, this));
+    update_timer_ = node_->createTimer(update_rate_, std::bind(&FleetMetrics::update, this));
 }
 
-void TargetMetrics::onModuleShutdown()
+void FleetMetrics::onModuleShutdown()
 {
-    target_.metrics_pub.reset();
-    target_.position_sub.reset();
+    metrics_pub_.reset();
     update_timer_.reset();
 }
 
 // ════════════════════════════════════════════════════════════════════════════
-// CALLBACKS
+// ELEMENT MANAGEMENT
 // ════════════════════════════════════════════════════════════════════════════
 
-void TargetMetrics::positionCallback(const PointStampedMsg::SharedPtr msg)
+void FleetMetrics::addAgent()
 {
-    if (target_.has_position)
-    {
-        float dx = msg->point.x - target_.position.x;
-        float dy = msg->point.y - target_.position.y;
-        float dz = msg->point.z - target_.position.z;
-        distance_traveled_ += std::sqrt(dx * dx + dy * dy + dz * dz);
-    }
-    else
-    {
-        last_position_ = msg->point;
-    }
-    target_.position = msg->point;
-    target_.has_position = true;
+    total_agents_++;
+}
+
+void FleetMetrics::removeAgent()
+{
+    total_agents_--;
 }
 
 // ════════════════════════════════════════════════════════════════════════════
 // UPDATE
 // ════════════════════════════════════════════════════════════════════════════
 
-void TargetMetrics::update()
+void FleetMetrics::update()
 {
     // Skip update if status is not valid
     if (!checkStatus())
     {
-        RCLCPP_INFO(node_->get_logger(), "Target metrics: Skipping update due to invalid status");
         return;
     }
 
-    // Compute dt
-    auto now = node_->now();
-    float dt = static_cast<float>((now - last_update_time_).seconds());
-    last_update_time_ = now;
-
-    // Compute instantaneous speed
-    float dx = target_.position.x - last_position_.x;
-    float dy = target_.position.y - last_position_.y;
-    float dz = target_.position.z - last_position_.z;
-    float speed = (dt > 0.0f) ? std::sqrt(dx * dx + dy * dy + dz * dz) / dt : 0.0f;
-    last_position_ = target_.position;
-
     // Build and publish message
-    TargetMetricsMsg msg;
+    FleetMetricsMsg msg;
     msg.header = node_->createHeader(node_->getGlobalFrame());
-    msg.position = target_.position;
-    msg.distance_traveled = distance_traveled_;
-    msg.speed = speed;
+    msg.total_agents = total_agents_;
+    msg.assignment_solve_duration = 0.0f;  // TODO: Not currently sourced from assignment module
 
-    target_.metrics_pub->publish(msg);
+    metrics_pub_->publish(msg);
 }
 
 // ════════════════════════════════════════════════════════════════════════════
 // STATUS: Status check
 // ════════════════════════════════════════════════════════════════════════════
 
-bool TargetMetrics::checkStatus()
+bool FleetMetrics::checkStatus()
 {
-    // Check 1: Mission must be active
+    // Only publish when mission is active
     if (!node_->isMissionActive())
     {
-        RCLCPP_INFO(node_->get_logger(), "Target clustering: Mission is not active");
-        return false;
-    }
-
-    // Check 2: Target must have a valid position
-    if (!target_.has_position)
-    {
-        RCLCPP_INFO(node_->get_logger(), "Target metrics: Target %s has no position", target_id_.c_str());
         return false;
     }
 

@@ -61,10 +61,7 @@ namespace flychams::operator_pkg
         TargetData target_;
         common::PointMsg last_position_;
         float distance_traveled_;
-        float total_speed_;
-        int speed_samples_;
         common::Time last_update_time_;
-        float time_elapsed_;
 
     private: // Callbacks
         void positionCallback(const common::PointStampedMsg::SharedPtr msg);

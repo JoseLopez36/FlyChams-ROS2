@@ -84,7 +84,8 @@ namespace flychams::common
             std::string arm_all;
             std::string land_all;
             std::string return_home;
-            std::string metrics;
+            std::string mission_metrics;
+            std::string fleet_metrics;
             std::string agent_metrics_pattern;
             std::string target_metrics_pattern;
             std::string cluster_metrics_pattern;
@@ -169,7 +170,8 @@ namespace flychams::common
         std::string getArmAllTopic();
         std::string getLandAllTopic();
         std::string getReturnHomeTopic();
-        std::string getGlobalMetricsTopic();
+        std::string getMissionMetricsTopic();
+        std::string getFleetMetricsTopic();
         std::string getAgentMetricsTopic(const ID& agent_id);
         std::string getTargetMetricsTopic(const ID& target_id);
         std::string getClusterMetricsTopic(const ID& cluster_id);
@@ -200,6 +202,7 @@ namespace flychams::common
         PublisherPtr<BoolMsg> createLandAllPublisher();
         PublisherPtr<BoolMsg> createReturnHomePublisher();
         PublisherPtr<MissionMetricsMsg> createMissionMetricsPublisher();
+        PublisherPtr<FleetMetricsMsg> createFleetMetricsPublisher();
         PublisherPtr<AgentMetricsMsg> createAgentMetricsPublisher(const ID& agent_id);
         PublisherPtr<TargetMetricsMsg> createTargetMetricsPublisher(const ID& target_id);
         PublisherPtr<ClusterMetricsMsg> createClusterMetricsPublisher(const ID& cluster_id);
@@ -227,7 +230,8 @@ namespace flychams::common
         SubscriberPtr<BoolMsg> createArmAllSubscriber(std::function<void(const BoolMsg::SharedPtr)> callback, const rclcpp::SubscriptionOptions& options = rclcpp::SubscriptionOptions());
         SubscriberPtr<BoolMsg> createLandAllSubscriber(std::function<void(const BoolMsg::SharedPtr)> callback, const rclcpp::SubscriptionOptions& options = rclcpp::SubscriptionOptions());
         SubscriberPtr<BoolMsg> createReturnHomeSubscriber(std::function<void(const BoolMsg::SharedPtr)> callback, const rclcpp::SubscriptionOptions& options = rclcpp::SubscriptionOptions());
-        SubscriberPtr<MissionMetricsMsg> createGlobalMetricsSubscriber(std::function<void(const MissionMetricsMsg::SharedPtr)> callback, const rclcpp::SubscriptionOptions& options = rclcpp::SubscriptionOptions());
+        SubscriberPtr<MissionMetricsMsg> createMissionMetricsSubscriber(std::function<void(const MissionMetricsMsg::SharedPtr)> callback, const rclcpp::SubscriptionOptions& options = rclcpp::SubscriptionOptions());
+        SubscriberPtr<FleetMetricsMsg> createFleetMetricsSubscriber(std::function<void(const FleetMetricsMsg::SharedPtr)> callback, const rclcpp::SubscriptionOptions& options = rclcpp::SubscriptionOptions());
         SubscriberPtr<AgentMetricsMsg> createAgentMetricsSubscriber(const ID& agent_id, std::function<void(const AgentMetricsMsg::SharedPtr)> callback, const rclcpp::SubscriptionOptions& options = rclcpp::SubscriptionOptions());
         SubscriberPtr<TargetMetricsMsg> createTargetMetricsSubscriber(const ID& target_id, std::function<void(const TargetMetricsMsg::SharedPtr)> callback, const rclcpp::SubscriptionOptions& options = rclcpp::SubscriptionOptions());
         SubscriberPtr<ClusterMetricsMsg> createClusterMetricsSubscriber(const ID& cluster_id, std::function<void(const ClusterMetricsMsg::SharedPtr)> callback, const rclcpp::SubscriptionOptions& options = rclcpp::SubscriptionOptions());

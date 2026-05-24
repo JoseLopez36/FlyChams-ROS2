@@ -38,6 +38,7 @@
       land_all: "/flychams/operator/land_all" # std_msgs/Bool
       return_home: "/flychams/operator/return_home" # std_msgs/Bool
       mission_metrics: "/flychams/operator/mission_metrics" # MissionMetrics.msg (custom)
+      fleet_metrics: "/flychams/operator/fleet_metrics" # FleetMetrics.msg (custom)
       agent_metrics: "/flychams/operator/AGENTID/agent_metrics" # AgentMetrics.msg (custom)
       target_metrics: "/flychams/operator/TARGETID/target_metrics" # TargetMetrics.msg (custom)
       cluster_metrics: "/flychams/operator/CLUSTERID/cluster_metrics" # ClusterMetrics.msg (custom)

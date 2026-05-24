@@ -16,11 +16,7 @@ void AgentMetrics::onModuleInit()
     // Initialize data
     agent_ = AgentData();
     distance_traveled_ = 0.0f;
-    total_speed_ = 0.0f;
-    speed_samples_ = 0;
-    time_elapsed_ = 0.0f;
     last_update_time_ = node_->now();
-    mission_start_time_ = node_->now();
 
     // Publishers
     agent_.metrics_pub = node_->createAgentMetricsPublisher(agent_id_);
@@ -102,7 +98,6 @@ void AgentMetrics::update()
     auto now = node_->now();
     float dt = static_cast<float>((now - last_update_time_).seconds());
     last_update_time_ = now;
-    time_elapsed_ = static_cast<float>((now - mission_start_time_).seconds());
 
     // Compute instantaneous speed
     float dx = agent_.position.x - last_position_.x;
@@ -110,11 +105,6 @@ void AgentMetrics::update()
     float dz = agent_.position.z - last_position_.z;
     float speed = (dt > 0.0f) ? std::sqrt(dx * dx + dy * dy + dz * dz) / dt : 0.0f;
     last_position_ = agent_.position;
-
-    // Accumulate speed for average
-    total_speed_ += speed;
-    speed_samples_++;
-    float average_speed = (speed_samples_ > 0) ? total_speed_ / static_cast<float>(speed_samples_) : 0.0f;
 
     // Compute distance to goal
     float distance_to_goal = 0.0f;
@@ -132,12 +122,10 @@ void AgentMetrics::update()
     msg.position = agent_.position;
     msg.setpoint = agent_.has_setpoint ? agent_.setpoint : agent_.position;
     msg.zoom_factors = agent_.has_observation_setpoints ? agent_.zoom_factors : std::vector<float>{};
-    msg.optimization_duration = 0.0f;
+    msg.position_solve_duration = 0.0f;  // TODO: Not currently sourced from positioning module
     msg.distance_traveled = distance_traveled_;
     msg.speed = speed;
     msg.distance_to_goal = distance_to_goal;
-    msg.time_elapsed = time_elapsed_;
-    msg.average_speed = average_speed;
 
     agent_.metrics_pub->publish(msg);
 }

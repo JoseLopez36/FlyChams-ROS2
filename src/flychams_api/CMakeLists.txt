@@ -29,6 +29,7 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   "msg/ObservationSetpoints.msg"
   # Operator messages
   "msg/MissionMetrics.msg"
+  "msg/FleetMetrics.msg"
   "msg/AgentMetrics.msg"
   "msg/TargetMetrics.msg"
   "msg/ClusterMetrics.msg"

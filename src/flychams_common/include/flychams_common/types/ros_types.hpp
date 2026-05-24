@@ -87,6 +87,7 @@
 #include "flychams_api/msg/observation_setpoints.hpp"
 // Operator messages
 #include "flychams_api/msg/mission_metrics.hpp"
+#include "flychams_api/msg/fleet_metrics.hpp"
 #include "flychams_api/msg/agent_metrics.hpp"
 #include "flychams_api/msg/target_metrics.hpp"
 #include "flychams_api/msg/cluster_metrics.hpp"
@@ -234,6 +235,7 @@ namespace flychams::common
     using ObservationSetpointsMsg = flychams_api::msg::ObservationSetpoints;
     // Operator messages
     using MissionMetricsMsg = flychams_api::msg::MissionMetrics;
+    using FleetMetricsMsg = flychams_api::msg::FleetMetrics;
     using AgentMetricsMsg = flychams_api::msg::AgentMetrics;
     using TargetMetricsMsg = flychams_api::msg::TargetMetrics;
     using ClusterMetricsMsg = flychams_api::msg::ClusterMetrics;

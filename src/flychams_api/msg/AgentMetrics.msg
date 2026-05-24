@@ -7,8 +7,8 @@ geometry_msgs/Point setpoint
 # Tracking data
 float32[] zoom_factors               # Associated tracking zoom factor for this cluster
 
-# Optimization data
-float32 optimization_duration        # Time taken to compute the optimal position (ms)
+# Problem-solving data
+float32 position_solve_duration      # Time taken to compute the optimal position (ms)
 
 # Position and movement metrics
 float32 distance_traveled            # Total distance covered by the UAV (m)
@@ -16,17 +16,3 @@ float32 speed                        # Current speed of the UAV (m/s)
 
 # Goal-related metrics
 float32 distance_to_goal             # Current distance to assigned goal (m)
-
-# Energy metrics
-#float32 battery_level               # TODO: Remaining battery percentage (0-1) 
-#float32 power_consumption           # TODO: Current power consumption rate (W)
-
-# Mission metrics
-#float32 average_distance_to_targets # TODO: Average distance to assigned targets (m)
-#int32 waypoints_reached             # TODO: Number of waypoints successfully reached
-float32 time_elapsed                 # Time elapsed since mission start (s)
-
-# Performance metrics
-float32 average_speed                # Average speed during mission (m/s)
-#float32 tracking_error              # TODO: Error in following planned trajectory (m)
-#float32 stability_metric            # Measure of flight stability (0-1)

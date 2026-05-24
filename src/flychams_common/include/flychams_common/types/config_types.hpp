@@ -95,6 +95,7 @@ namespace flychams::common
         std::string land_all;
         std::string return_home;
         std::string mission_metrics;
+        std::string fleet_metrics;
         std::string agent_metrics;
         std::string target_metrics;
         std::string cluster_metrics;

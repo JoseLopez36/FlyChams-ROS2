@@ -62,10 +62,7 @@ namespace flychams::operator_pkg
         ClusterData cluster_;
         common::PointMsg last_center_;
         float distance_traveled_;
-        float total_speed_;
-        int speed_samples_;
         common::Time last_update_time_;
-        float time_elapsed_;
 
     private: // Callbacks
         void clusterGeometryCallback(const common::ClusterGeometryMsg::SharedPtr msg);

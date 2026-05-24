@@ -16,9 +16,6 @@ void ClusterMetrics::onModuleInit()
     // Initialize data
     cluster_ = ClusterData();
     distance_traveled_ = 0.0f;
-    total_speed_ = 0.0f;
-    speed_samples_ = 0;
-    time_elapsed_ = 0.0f;
     last_update_time_ = node_->now();
 
     // Publishers
@@ -78,7 +75,6 @@ void ClusterMetrics::update()
     auto now = node_->now();
     float dt = static_cast<float>((now - last_update_time_).seconds());
     last_update_time_ = now;
-    time_elapsed_ += dt;
 
     // Compute instantaneous centroid speed
     float dx = cluster_.center.x - last_center_.x;
@@ -87,11 +83,6 @@ void ClusterMetrics::update()
     float speed = (dt > 0.0f) ? std::sqrt(dx * dx + dy * dy + dz * dz) / dt : 0.0f;
     last_center_ = cluster_.center;
 
-    // Accumulate speed for average
-    total_speed_ += speed;
-    speed_samples_++;
-    float average_speed = (speed_samples_ > 0) ? total_speed_ / static_cast<float>(speed_samples_) : 0.0f;
-
     // Build and publish message
     ClusterMetricsMsg msg;
     msg.header = node_->createHeader(node_->getGlobalFrame());
@@ -99,8 +90,6 @@ void ClusterMetrics::update()
     msg.radius = cluster_.radius;
     msg.distance_traveled = distance_traveled_;
     msg.speed = speed;
-    msg.time_elapsed = time_elapsed_;
-    msg.average_speed = average_speed;
 
     cluster_.metrics_pub->publish(msg);
 }

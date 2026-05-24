@@ -1,6 +1,8 @@
 #include "rclcpp/rclcpp.hpp"
 
 // Module include
+#include "flychams_operator/metrics/mission_metrics.hpp"
+#include "flychams_operator/metrics/fleet_metrics.hpp"
 #include "flychams_operator/metrics/agent_metrics.hpp"
 #include "flychams_operator/metrics/target_metrics.hpp"
 #include "flychams_operator/metrics/cluster_metrics.hpp"
@@ -38,6 +40,12 @@ public: // Constructor/Destructor
 
     void onDiscoveryInit() override
     {
+        // Create singleton modules
+        mission_metrics_ = std::make_shared<MissionMetrics>(sharedFromThis());
+        fleet_metrics_ = std::make_shared<FleetMetrics>(sharedFromThis());
+        RCLCPP_INFO(node_->get_logger(), "Metrics node: mission and fleet metrics created");
+
+        // Clear per-element maps
         agent_metrics_.clear();
         target_metrics_.clear();
         cluster_metrics_.clear();
@@ -45,6 +53,8 @@ public: // Constructor/Destructor
 
     void onDiscoveryShutdown() override
     {
+        mission_metrics_.reset();
+        fleet_metrics_.reset();
         agent_metrics_.clear();
         target_metrics_.clear();
         cluster_metrics_.clear();
@@ -54,40 +64,53 @@ private: // Element management
     void onAddAgent(const ID& agent_id) override
     {
         agent_metrics_.emplace(agent_id, std::make_shared<AgentMetrics>(agent_id, sharedFromThis()));
+        mission_metrics_->addAgent();
+        fleet_metrics_->addAgent();
         RCLCPP_INFO(node_->get_logger(), "Metrics node: agent metrics created for %s", agent_id.c_str());
     }
 
     void onRemoveAgent(const ID& agent_id) override
     {
         agent_metrics_.erase(agent_id);
+        mission_metrics_->removeAgent();
+        fleet_metrics_->removeAgent();
         RCLCPP_INFO(node_->get_logger(), "Metrics node: agent metrics destroyed for %s", agent_id.c_str());
     }
 
     void onAddTarget(const ID& target_id) override
     {
         target_metrics_.emplace(target_id, std::make_shared<TargetMetrics>(target_id, sharedFromThis()));
+        mission_metrics_->addTarget();
         RCLCPP_INFO(node_->get_logger(), "Metrics node: target metrics created for %s", target_id.c_str());
     }
 
     void onRemoveTarget(const ID& target_id) override
     {
         target_metrics_.erase(target_id);
+        mission_metrics_->removeTarget();
         RCLCPP_INFO(node_->get_logger(), "Metrics node: target metrics destroyed for %s", target_id.c_str());
     }
 
     void onAddCluster(const ID& cluster_id) override
     {
         cluster_metrics_.emplace(cluster_id, std::make_shared<ClusterMetrics>(cluster_id, sharedFromThis()));
+        mission_metrics_->addCluster();
         RCLCPP_INFO(node_->get_logger(), "Metrics node: cluster metrics created for %s", cluster_id.c_str());
     }
 
     void onRemoveCluster(const ID& cluster_id) override
     {
         cluster_metrics_.erase(cluster_id);
+        mission_metrics_->removeCluster();
         RCLCPP_INFO(node_->get_logger(), "Metrics node: cluster metrics destroyed for %s", cluster_id.c_str());
     }
 
 private: // Components
+    // Singleton modules
+    MissionMetrics::SharedPtr mission_metrics_;
+    FleetMetrics::SharedPtr fleet_metrics_;
+
+    // Per-element modules
     std::unordered_map<ID, AgentMetrics::SharedPtr>   agent_metrics_;
     std::unordered_map<ID, TargetMetrics::SharedPtr>  target_metrics_;
     std::unordered_map<ID, ClusterMetrics::SharedPtr> cluster_metrics_;

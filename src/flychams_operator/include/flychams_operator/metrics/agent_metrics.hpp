@@ -73,11 +73,7 @@ namespace flychams::operator_pkg
         AgentData agent_;
         common::PointMsg last_position_;
         float distance_traveled_;
-        float total_speed_;
-        int speed_samples_;
         common::Time last_update_time_;
-        float time_elapsed_;
-        common::Time mission_start_time_;
 
     private: // Callbacks
         void localPositionCallback(const common::PointStampedMsg::SharedPtr msg);
