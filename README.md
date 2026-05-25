@@ -1,4 +1,4 @@
-# Flying Chameleons ROS2: Multi-UAV System for Autonomous Target Tracking
+# Flying Chameleons ROS2
 
 [![ROS2 Humble](https://img.shields.io/badge/ROS2-Humble-blue.svg)](https://docs.ros.org/en/humble/)
 [![Unreal Engine 5](https://img.shields.io/badge/Unreal_Engine-5-313131?logo=unrealengine&logoColor=white)](https://www.unrealengine.com/)
@@ -8,19 +8,13 @@
 
 The Flying Chameleons (FlyChams) project implements a complete system for controlling and coordinating multiple UAVs equipped with modifiable tracking systems. The primary goal is to optimize target tracking through collaborative agent positioning and camera control.
 
-The project leverages:
-- **ROS2 Humble** for the distributed robotics framework.
-- **Unreal Engine 5** for photorealistic simulation.
-- **AirSim** for high-fidelity physics simulation.
-- **PX4 v1.16** for commercial flight control.
-- **Micro-XRCE-DDS** for PX4–ROS2 topic bridging.
-- **Docker** for containerised deployment of all system components.
+Built on **ROS2 Humble**, **PX4 v1.16**, **Unreal Engine 5 + AirSim**, and **Docker**.
 
 ---
 
 <div align="center">
   <img src="media/images/MultiWindowSimulation.png" alt="Full Simulation Environment" width="100%"/>
-  <p><em>Complete simulation view showing the UE5 environment, operator GUI, and real-time RViZ data.</em></p>
+  <p><em>Complete simulation view: UE5 environment, Foxglove operator GUI, and real-time data.</em></p>
 </div>
 
 |  |  |
@@ -35,119 +29,116 @@ This project is part of a broader research initiative by the Department of Syste
 1. **Flying Chameleons: A New Concept for Minimum-Deployment, Multiple-Target Tracking Drones**
    
    *Sensors, 2022* | [DOI](https://doi.org/10.3390/s22062359)
-   
+
    > This article introduces the innovative concept of "Flying Chameleons", autonomous aerial vehicles equipped with multiple independently steerable cameras for simultaneous tracking of multiple mobile targets. The proposal seeks to maximize efficiency in surveillance and tracking applications while minimizing resource deployment, offering an alternative to traditional approaches that require multiple vehicles or shared attention strategies.
 
 2. **Optimal Positioning Strategy for Multi-camera, Zooming Drones**
    
    *IEEE/CAA Journal of Automatica Sinica, 2024* | [DOI](https://doi.org/10.1109/JAS.2024.124455)
-   
+
    > This research extends the "Flying Chameleons" concept by incorporating zoom capabilities in the onboard cameras. It addresses the resulting non-convex optimization problem through convex relaxation techniques, allowing the aerial agent to dynamically adjust the focal lengths of the cameras to balance the real distance to targets with the required level of visual detail.
 
 3. **Monitoring through Multi-camera Aerial Vehicles: A Case Study Using Unreal Engine**
-   
+
    *Jornadas de Automática (JJAA) 2024, Málaga* | [DOI](https://doi.org/10.17979/ja-cea.2024.45.10800)
    
    > This work generalizes the multi-camera agent concept to enable collaboration among multiple agents in a single monitoring mission. Additionally, it explores the potential of Unreal Engine 5 as a photorealistic graphical simulation tool for implementing and validating the proposal. Note: This work was selected for presentation among the 6 works chosen at the Jornadas de Automática 2024 in Málaga.
 
-## 🎥 Demos & Validation
+## Demos
 
-**Flight Demonstration** - [📹 View Video](media/videos/Demo.mp4)  
-*Target acquisition and tracking in the Unreal Engine 5 simulation environment.*
+- **Flight Demonstration** — [View Video](media/videos/Demo.mp4)
+- **MATLAB Test** — [View Video](media/videos/MatlabTest.mp4)
+- **Camera Gimbal Mechanics** — [View GIF](media/videos/GimbalMovement.gif)
 
-**MATLAB Test** - [📹 View Video](media/videos/MatlabTest.mp4)  
-*Target acquisition and tracking in Matlab.*
+## Architecture
 
-**Camera Gimbal Mechanics** - [📹 Gimbal Movement](media/videos/GimbalMovement.gif)  
-*Independent gimbal control test.*
-
-## System Architecture
-
-| Package                 | Description                                     |
-| ----------------------- | ----------------------------------------------- |
-| `flychams_coordinator`  | Perception algorithms for clustering targets and agent assignment |
-| `flychams_simulation`   | Simulation framework manager and target control |
-| `flychams_agent`        | Agent control, tracking, and positioning       |
-| `flychams_operator`     | Metrics aggregation, visualization markers, and Foxglove bridge |
-| `flychams_common`       | Core domain models, utilities, and interfaces   |
-| `flychams_api`          | Custom messages and services for FlyChams      |
+| Package | Description |
+|---|---|
+| `flychams_api` | Custom `.msg` definitions |
+| `flychams_common` | Shared base classes, types, utilities, algorithms |
+| `flychams_coordinator` | Target clustering and agent assignment |
+| `flychams_agent` | Per-UAV control, tracking, and positioning |
+| `flychams_simulation` | AirSim bridge, target control, scenario streaming |
+| `flychams_operator` | Metrics, visualization markers, Foxglove bridge |
 
 ## Prerequisites
 
-### Software Requirements
+### Software
 
-- **Ubuntu 20.04, 22.04, or 24.04** (or compatible Linux distribution)
-- **Docker** - Required for running coordinator, simulation, agent and operator containers.
-  - For **NVIDIA GPUs**: [NVIDIA Container Toolkit](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html)
-  - For **AMD GPUs**: Docker with `/dev/kfd` and `/dev/dri` access (ROCm not required for VAAPI)
-- **PX4 v1.16 + Micro-XRCE-DDS Agent v2.4.3** - Required for autopilot SITL simulation. See **[docs/autopilot.md](docs/autopilot.md)** for setup.
-- **Unreal Engine 5.2.1 (optional)** - Required for creating custom photorealistic simulation environments.
+- **Ubuntu 22.04 or 24.04**
+- **Docker** (NVIDIA: [Container Toolkit](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html) · AMD: `/dev/kfd` + `/dev/dri` access)
+- **PX4 v1.16 + Micro-XRCE-DDS Agent v2.4.3** — see [docs/autopilot.md](docs/autopilot.md)
+- **FlyChams-Sim-UE5** binary — see [docs/simulator.md](docs/simulator.md)
 
-### Hardware Requirements
+### Hardware (simulation)
 
-#### Simulation Mode (PC)
-- **CPU**: Intel i7-12700K / AMD Ryzen 7 5800X or better
-- **GPU**: NVIDIA RTX 3070 / AMD RX 6800 XT or better (for UE5)
-- **RAM**: 16 GB minimum (32 GB recommended)
+- **CPU**: i7-12700K / Ryzen 7 5800X or better
+- **GPU**: RTX 3070 / RX 6800 XT or better
+- **RAM**: 32 GB recommended (16 GB minimum)
 
-#### Hardware Mode (Onboard Computer)
-- **Device**: NVIDIA Jetson Orin Nano Super
-- **OS**: Ubuntu 22.04 (JetPack 6.0+)
+### Hardware (onboard)
 
-## 📦 Installation
+- NVIDIA Jetson Orin Nano Super · Ubuntu 22.04 (JetPack 6.0+)
+
+## Quick Start
+
+Clone the repository:
 
 ```bash
 git clone https://github.com/JoseLopez36/FlyChams-ROS2.git
 cd FlyChams-ROS2
 ```
 
-For building Docker images and preparing the workspaces see **[docs/setup.md](docs/setup.md)**.
+Follow the steps in the documentation:
 
-## 🚀 Quick Start
+1. Build Docker images and ROS2 workspaces — [docs/setup.md](docs/setup.md)
+2. Set up PX4 and Micro-XRCE-DDS — [docs/autopilot.md](docs/autopilot.md)
+3. Launch the simulator — [docs/simulator.md](docs/simulator.md)
+4. Launch the stack — [docs/launch.md](docs/launch.md)
 
-See **[docs/launch.md](docs/launch.md)** for the full launch reference, including:
-- Unified launcher (`scripts/flychams.py`) for sim and hardware modes.
-- Individual launch scripts per service.
-- Operator / Foxglove bridge.
-- Stop and log commands.
+Easy way to launch:
 
-## ⚙️ Configuration
+```bash
+scripts/flychams.py sim          # start simulation
+scripts/flychams.py sim --record # start with MCAP recording
+scripts/stop.sh                  # stop everything
+```
 
-The system uses a workflow where Excel spreadsheets drive the configuration.
+## Configuration
 
-1.  **Edit Configuration**: Modify Excel files in `config/` (e.g., `Configuration-TFG.xlsx`).
-    - Define mission parameters.
-2.  **Generate YAML**: Run `scripts/launch_settings.sh` to create ROS2 and AirSim config files.
-    Files are generated in `src/flychams_common/config/generated/`.
+Edit the Excel spreadsheet in `src/flychams_common/config/`, then regenerate:
+
+```bash
+scripts/launch_settings.sh
+```
 
 See `src/flychams_common/config/core/system.yaml` for all configurable paths and parameters.
 
-## 📂 Directory Structure
+## Directory Structure
 
 ```
 FlyChams-ROS2/
-├── docs/               # Documentation (setup, launch, docker, foxglove, simulator)
-├── docker/             # Dockerfiles for each container role
-├── scripts/            # Build, launch, stop, and log helper scripts
-├── src/                # ROS2 packages
-│   ├── flychams_common/
-│   ├── flychams_coordinator/
-│   ├── flychams_agent/
-│   ├── flychams_operator/
-│   └── flychams_api/
-├── foxglove/           # Foxglove Studio layout
-└── README.md
+├── docker/             # Dockerfiles (layered: base → gpu → roles)
+├── docs/               # Documentation
+├── matlab/             # Trajectory generation and recording analysis
+├── scripts/            # Build, launch, stop, and log helpers
+└── src/                # ROS2 packages
+    ├── flychams_api/
+    ├── flychams_common/
+    ├── flychams_coordinator/
+    ├── flychams_agent/
+    ├── flychams_operator/
+    └── flychams_simulation/
 ```
 
-### Documentation
+## Documentation
 
 | File | Contents |
 |---|---|
-| [docs/setup.md](docs/setup.md) | Prerequisites, building workspaces, generating settings, env vars |
-| [docs/launch.md](docs/launch.md) | Launching, stopping, and inspecting logs |
-| [docs/docker.md](docs/docker.md) | Building and managing Docker images |
-| [docs/autopilot.md](docs/autopilot.md) | PX4 v1.16 and Micro-XRCE-DDS Agent setup |
-| [docs/simulator.md](docs/simulator.md) | AirSim / UE5 simulator setup |
+| [docs/setup.md](docs/setup.md) | Docker images, workspace builds, settings generation, env vars, DDS tuning |
+| [docs/launch.md](docs/launch.md) | Launching, stopping, inspecting logs |
+| [docs/autopilot.md](docs/autopilot.md) | PX4 and Micro-XRCE-DDS Agent setup |
+| [docs/simulator.md](docs/simulator.md) | UE5/AirSim setup and optimization flags |
 | [docs/foxglove.md](docs/foxglove.md) | Foxglove Studio operator interface |
 | [docs/matlab.md](docs/matlab.md) | MATLAB trajectory generation and recording analysis |
 
@@ -157,4 +148,4 @@ Licensed under [CC BY-NC 4.0](https://creativecommons.org/licenses/by-nc/4.0/). 
 
 ## Contact
 
-Jose Francisco Lopez Ruiz - [josloprui6@alum.us.es](mailto:josloprui6@alum.us.es)
+Jose Francisco Lopez Ruiz — [josloprui6@alum.us.es](mailto:josloprui6@alum.us.es)

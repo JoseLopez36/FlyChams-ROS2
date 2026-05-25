@@ -1,17 +1,56 @@
 # Setup
 
-All scripts are run from the **project root** unless stated otherwise.
+All commands assume `pwd == FlyChams-ROS2/`.
 
 ## Prerequisites
 
-1. Docker images built — see [docker.md](docker.md).
-2. PX4 and Micro-XRCE-DDS Agent set up — see [autopilot.md](autopilot.md).
+- **Docker** installed and running.
+  - **NVIDIA GPU**: install the [NVIDIA Container Toolkit](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html).
+  - **AMD GPU**: ensure Docker has access to `/dev/kfd` and `/dev/dri`.
+- **PX4 v1.16** and **Micro-XRCE-DDS Agent v2.4.3** — see [autopilot.md](autopilot.md).
 
 ---
 
-## 1. Build Workspaces
+## 1. Build Docker Images
 
-Build each ROS2 workspace inside its respective container.
+Images form a layered hierarchy — build in this order:
+
+```
+ros:humble-ros-base
+  └── flychams-base
+        ├── flychams-coordinator
+        ├── flychams-operator
+        └── flychams-gpu
+              ├── flychams-simulation
+              └── flychams-agent
+```
+
+```bash
+scripts/docker/build_base.sh
+scripts/docker/build_gpu.sh
+scripts/docker/build_coordinator.sh
+scripts/docker/build_simulation.sh
+scripts/docker/build_agent.sh
+scripts/docker/build_operator.sh
+```
+
+### GPU vendor override
+
+Auto-detection picks NVIDIA or AMD. Override with:
+
+```bash
+GPU_VENDOR=nvidia scripts/docker/build_gpu.sh
+GPU_VENDOR=nvidia scripts/docker/build_simulation.sh
+GPU_VENDOR=nvidia scripts/docker/build_agent.sh
+```
+
+Valid values: `nvidia`, `amd`, `none`.
+
+---
+
+## 2. Build ROS2 Workspaces
+
+Each script runs `colcon build` inside the corresponding container:
 
 ```bash
 scripts/build_coordinator_ws.sh
@@ -20,36 +59,41 @@ scripts/build_operator_ws.sh
 scripts/build_agent_ws.sh
 ```
 
-Each script runs `colcon build` for the relevant packages inside the corresponding Docker container.
-
 ---
 
-## 2. Generate Settings
+## 3. Generate Settings
 
-Reads `src/flychams_common/config/core/system.yaml` for input/output paths and generates the mission YAML and AirSim JSON files.
+Reads the configuration spreadsheet via `system.yaml` and generates the mission YAML, AirSim JSON, and Foxglove layout:
 
 ```bash
 scripts/launch_settings.sh
 ```
 
-Runs `settings_creator_node` inside the coordinator container. Must be re-run whenever the configuration spreadsheet changes.
+Re-run whenever the spreadsheet or `system.yaml` changes.
+
+| Generated file | Purpose |
+|---|---|
+| `src/flychams_common/config/generated/mission.yaml` | Mission definition (agents, targets, environment) |
+| `src/flychams_common/config/generated/airsim.json` | AirSim vehicle and camera settings |
+| `src/flychams_common/config/generated/flychams.json` | Foxglove Studio layout |
 
 ---
 
-## 3. Environment Variables
+## 4. Environment Variables
 
-All containers inherit the following from the host (with defaults):
+All containers inherit these from the host:
 
 | Variable | Default | Description |
 |---|---|---|
 | `ROS_DOMAIN_ID` | `0` | ROS2 DDS domain |
-| `RMW_IMPLEMENTATION` | `rmw_cyclonedds_cpp` | ROS2 RMW implementation |
-| `CYCLONEDDS_URI` | — | Path to CycloneDDS XML config (see [performance.md](performance.md)) |
-| `PX4_AUTOPILOT_PATH` | — | Absolute path to the PX4 source tree (see [autopilot.md](autopilot.md)) |
-| `Micro_XRCE_DDS_AGENT_PATH` | — | Absolute path to the Micro-XRCE-DDS-Agent source tree (see [autopilot.md](autopilot.md)) |
+| `RMW_IMPLEMENTATION` | `rmw_cyclonedds_cpp` | RMW implementation |
+| `CYCLONEDDS_URI` | *(set in containers)* | Path to `cyclonedds.xml` |
+| `PX4_AUTOPILOT_PATH` | — | PX4 source tree (see [autopilot.md](autopilot.md)) |
+| `Micro_XRCE_DDS_AGENT_PATH` | — | Micro-XRCE-DDS-Agent source tree (see [autopilot.md](autopilot.md)) |
+| `GPU_VENDOR` | `auto` | `nvidia` / `amd` / `none` — override GPU auto-detection |
 | `FOXGLOVE_PORT` | `8765` | WebSocket port for Foxglove Bridge |
 
-Override on the command line:
+Override inline:
 
 ```bash
 ROS_DOMAIN_ID=5 scripts/flychams.py sim
@@ -57,18 +101,62 @@ ROS_DOMAIN_ID=5 scripts/flychams.py sim
 
 ---
 
-## 4. Configuration
+## 5. Network & DDS Tuning
 
-| File | Purpose |
-|---|---|
-| `src/flychams_common/config/core/system.yaml` | Paths, simulation settings, GUI settings |
-| `src/flychams_common/config/generated/mission.yaml` | Generated mission: agents, targets, environment |
-| `src/flychams_common/config/generated/airsim.json` | Generated AirSim settings |
+CycloneDDS uses UDP multicast. Apply these host-level tweaks once to avoid dropped messages under high-frequency multi-agent traffic.
+
+### Increase UDP buffer limits
+
+Create `/etc/sysctl.d/99-flychams-net.conf`:
+
+```
+net.core.rmem_max=2147483647
+net.core.wmem_max=2147483647
+net.core.rmem_default=16777216
+net.core.wmem_default=16777216
+net.ipv4.ipfrag_time=3
+net.ipv4.ipfrag_high_thresh=134217728
+```
+
+Apply:
+
+```bash
+sudo sysctl --system
+```
+
+### Enable multicast on loopback
+
+```bash
+sudo ip link set lo multicast on
+```
+
+To persist across reboots, create a systemd oneshot service:
+
+```bash
+sudo tee /etc/systemd/system/multicast-lo.service > /dev/null <<'EOF'
+[Unit]
+Description=Enable Multicast on Loopback
+
+[Service]
+Type=oneshot
+ExecStart=/usr/sbin/ip link set lo multicast on
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+sudo systemctl daemon-reload
+sudo systemctl enable --now multicast-lo.service
+```
+
+### CycloneDDS configuration
+
+The project CycloneDDS profile is at `src/flychams_common/config/core/cyclonedds.xml` and is loaded automatically inside every container. No manual action is needed unless you want a custom profile:
+
+```bash
+CYCLONEDDS_URI=file:///path/to/custom.xml scripts/flychams.py sim
+```
 
 ---
 
 Once setup is complete, see [launch.md](launch.md) to start the system.
-
----
-
-For UDP buffer tuning, CycloneDDS configuration, and other performance tips see [performance.md](performance.md).
