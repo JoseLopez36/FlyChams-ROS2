@@ -19,7 +19,15 @@ Sim mode starts containers in this order: PX4 instances → Micro-XRCE-DDS → C
 ### With recording
 
 ```bash
-scripts/flychams.py sim --record         # saves MCAP bag to recordings/
+scripts/flychams.py sim --record                    # saves MCAP bag to recordings/
+scripts/flychams.py sim --record --record-name foo  # saves to recordings/foo/foo.mcap
+```
+
+### With duration limit
+
+```bash
+scripts/flychams.py sim --duration 180          # stop after 3 minutes
+scripts/flychams.py sim --record --duration 60  # record for 1 minute
 ```
 
 ### Individual scripts

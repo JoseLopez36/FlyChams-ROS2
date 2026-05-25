@@ -4,7 +4,7 @@
     simulation:
       framework: AirSim
       clock_speed: 1.0    # Clock speed multiplier (1.0 = real-time)
-      quality_preset: 1
+      quality_preset: 3   # (0 = low quality, 1 = medium quality, 2 = high quality, 3 = epic quality,)
 
     # Path settings
     path:

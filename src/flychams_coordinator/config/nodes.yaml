@@ -12,6 +12,8 @@
   ros__parameters:
     # Update rate (Hz)
     update_rate: 1.0
+    # Auto-start mission when fleet is ready
+    mission_autostart: true
 
 /**/fleet_state_node:
   ros__parameters:

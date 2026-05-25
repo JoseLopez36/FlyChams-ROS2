@@ -41,6 +41,7 @@ namespace flychams::coordinator
 
     private: // Parameters
         float update_rate_;
+        bool mission_autostart_;
 
     private: // Data
         // Agents
@@ -54,6 +55,7 @@ namespace flychams::coordinator
         std::chrono::steady_clock::time_point mission_start_time_;
         float mission_time_;
         bool fleet_ready_;
+        bool autostart_triggered_;
 
     public: // Dynamic element management
         void addAgent(const common::ID& agent_id);

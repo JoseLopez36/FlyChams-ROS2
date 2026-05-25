@@ -12,6 +12,7 @@ void MissionState::onModuleInit()
 {
     // Get parameters from parameter server
     update_rate_ = node_->getParameterOr<float>("mission_state_rate", 1.0f);
+    mission_autostart_ = node_->getParameterOr<bool>("mission_autostart", false);
 
     // Initialize data
     agents_.clear();
@@ -21,6 +22,7 @@ void MissionState::onModuleInit()
     mission_active_ = false;
     mission_time_ = 0.0f;
     fleet_ready_ = false;
+    autostart_triggered_ = false;
 
     // Create fleet status subscriber
     fleet_status_sub_ = node_->createFleetStatusSubscriber(
@@ -83,6 +85,18 @@ void MissionState::fleetStatusCallback(const FleetStatusMsg::SharedPtr msg)
 
     // Fleet is ready when all agents are active
     fleet_ready_ = msg->all_agents_active;
+
+    // Auto-start mission if enabled and conditions are met
+    if (mission_autostart_ && fleet_ready_ && !autostart_triggered_ &&
+        mission_status_ == MissionStatus::READY)
+    {
+        autostart_triggered_ = true;
+        mission_status_ = MissionStatus::ACTIVE;
+        mission_active_ = true;
+        mission_start_time_ = std::chrono::steady_clock::now();
+        mission_time_ = 0.0f;
+        RCLCPP_INFO(node_->get_logger(), "Mission auto-started (fleet ready)");
+    }
 }
 
 void MissionState::startMissionCallback(const BoolMsg::SharedPtr msg)
@@ -130,6 +144,7 @@ void MissionState::abortMissionCallback(const BoolMsg::SharedPtr msg)
     {
         mission_status_ = MissionStatus::ABORTED;
         mission_active_ = false;
+        autostart_triggered_ = false;
         RCLCPP_INFO(node_->get_logger(), "Mission aborted");
     }
     else

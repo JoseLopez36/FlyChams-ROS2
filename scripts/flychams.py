@@ -4,6 +4,7 @@ import subprocess
 import os
 import time
 import yaml
+import threading
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 PROJECT_ROOT = os.path.abspath(os.path.join(SCRIPT_DIR, ".."))
@@ -31,13 +32,27 @@ def run(cmd, **kwargs):
 # Simulation mode
 # ------------------------------------------------------------------
 
-def launch_sim(agent_ids: list, record: bool = False, record_dir: str = ""):
+def launch_sim(agent_ids: list, record: bool = False, record_name: str = "", duration: float = 0.0):
     print("=== Simulation mode ===")
+
+    # Start duration timer if specified
+    if duration > 0:
+        print(f"Mission duration timer set: {duration} seconds")
+        timer = threading.Timer(duration, stop_all)
+        timer.daemon = True
+        timer.start()
 
     delay = 0.5
 
     # Operator
-    record_env = f"RECORD=true{' RECORD_DIR=' + record_dir if record_dir else ''}" if record else ""
+    if record:
+        if record_name:
+            record_dir = f"recordings/"
+            record_env = f"RECORD=true RECORD_DIR={record_dir} RECORD_NAME={record_name}"
+        else:
+            record_env = "RECORD=true"
+    else:
+        record_env = ""
     operator_env = f"DETACH=true {record_env}".strip()
     run(f"{operator_env} {SCRIPT_DIR}/launch_operator.sh")
     time.sleep(delay)
@@ -69,10 +84,15 @@ def launch_sim(agent_ids: list, record: bool = False, record_dir: str = ""):
 # Real mode
 # ------------------------------------------------------------------
 
-def launch(agent_ids: list):
+def launch(agent_ids: list, duration: float = 0.0):
     print("=== Real mode ===")
     # TODO: implement real mode
     pass
+
+def stop_all():
+    """Stop all FlyChams containers."""
+    print("\n=== Mission duration expired - stopping all containers ===")
+    run(f"{SCRIPT_DIR}/stop.sh")
 
 # ------------------------------------------------------------------
 # Entry point
@@ -101,10 +121,17 @@ def parse_args():
         help="Record all Foxglove-displayed topics to an MCAP bag (operator only)"
     )
     parser.add_argument(
-        "--record-dir",
+        "--record-name",
         default="",
-        metavar="DIR",
-        help="Output directory for the bag (default: recordings/ inside the project root)"
+        metavar="NAME",
+        help="Custom name for the recording (creates recordings/NAME/NAME.mcap, default: auto-generated timestamp)"
+    )
+    parser.add_argument(
+        "--duration",
+        type=float,
+        default=0.0,
+        metavar="SECONDS",
+        help="Mission duration in seconds (0 = run indefinitely, stop everything when expired)"
     )
     return parser.parse_args()
 
@@ -113,6 +140,6 @@ if __name__ == "__main__":
     args = parse_args()
     agent_ids = args.agents if args.agents else load_agent_ids()
     if args.mode == "sim":
-        launch_sim(agent_ids, record=args.record, record_dir=args.record_dir)
+        launch_sim(agent_ids, record=args.record, record_name=args.record_name, duration=args.duration)
     else:
-        launch(agent_ids)
+        launch(agent_ids, duration=args.duration)
