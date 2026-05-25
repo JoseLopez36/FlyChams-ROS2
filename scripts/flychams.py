@@ -2,6 +2,7 @@
 import argparse
 import subprocess
 import os
+import sys
 import time
 import yaml
 import threading
@@ -34,13 +35,6 @@ def run(cmd, **kwargs):
 
 def launch_sim(agent_ids: list, record: bool = False, record_name: str = "", duration: float = 0.0):
     print("=== Simulation mode ===")
-
-    # Start duration timer if specified
-    if duration > 0:
-        print(f"Mission duration timer set: {duration} seconds")
-        timer = threading.Timer(duration, stop_all)
-        timer.daemon = True
-        timer.start()
 
     delay = 0.5
 
@@ -80,6 +74,14 @@ def launch_sim(agent_ids: list, record: bool = False, record_name: str = "", dur
     run(f"DETACH=true {SCRIPT_DIR}/launch_simulation.sh")
     time.sleep(delay)
 
+    # Mission timer with keyboard early stop
+    stop_event = threading.Event()
+    listener = threading.Thread(target=keyboard_listener, args=(stop_event,))
+    listener.daemon = True
+    listener.start()
+    wait_for_stop(stop_event, duration)
+    stop_all()
+
 # ------------------------------------------------------------------
 # Real mode
 # ------------------------------------------------------------------
@@ -91,8 +93,43 @@ def launch(agent_ids: list, duration: float = 0.0):
 
 def stop_all():
     """Stop all FlyChams containers."""
-    print("\n=== Mission duration expired - stopping all containers ===")
+    print("\n=== Stopping all containers ===")
     run(f"{SCRIPT_DIR}/stop.sh")
+
+def keyboard_listener(stop_event):
+    """Listen for Enter key to trigger early stop."""
+    try:
+        input()
+        stop_event.set()
+    except EOFError:
+        pass
+
+def wait_for_stop(stop_event, duration=0):
+    """Wait for duration or early stop. Returns True if stopped early."""
+    if duration > 0:
+        # Countdown mode
+        print(f"Mission running for {duration} seconds (press Enter to stop early)...")
+        remaining = duration
+        while remaining > 0 and not stop_event.is_set():
+            print(f"Remaining: {remaining:.0f}s", end="\r", flush=True)
+            sleep_time = min(1.0, remaining)
+            stop_event.wait(sleep_time)
+            remaining -= sleep_time
+        if stop_event.is_set():
+            print("\nStopped early by user")
+            return True
+        print("Remaining: 0s")
+        return False
+    else:
+        # Up counter mode
+        print("Mission running (press Enter to stop)...")
+        elapsed = 0
+        while not stop_event.is_set():
+            print(f"Elapsed: {elapsed}s", end="\r", flush=True)
+            stop_event.wait(1.0)
+            elapsed += 1
+        print(f"\nStopped after {elapsed}s")
+        return True
 
 # ------------------------------------------------------------------
 # Entry point
