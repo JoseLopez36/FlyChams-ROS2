@@ -19,5 +19,5 @@ __pycache__/
 recordings/
 
 # Ignore MATLAB files
+matlab_msg_gen_R2026a/
 *.asv
-matlab_ros2_ws/

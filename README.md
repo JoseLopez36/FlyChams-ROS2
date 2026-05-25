@@ -149,6 +149,7 @@ FlyChams-ROS2/
 | [docs/autopilot.md](docs/autopilot.md) | PX4 v1.16 and Micro-XRCE-DDS Agent setup |
 | [docs/simulator.md](docs/simulator.md) | AirSim / UE5 simulator setup |
 | [docs/foxglove.md](docs/foxglove.md) | Foxglove Studio operator interface |
+| [docs/matlab.md](docs/matlab.md) | MATLAB trajectory generation and recording analysis |
 
 ## License
 
