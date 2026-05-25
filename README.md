@@ -64,6 +64,14 @@ The following videos showcase FlyChams in different configurations, from a singl
 - **Multi-Agent — Multi-Window** — [View Video](media/videos/MultiAgent-MultiWindow.mp4)
 - **Multi-Agent — Hybrid** — [View Video](media/videos/MultiAgent-Hybrid.mp4)
 
+### Recordings
+
+MCAP bag recordings for each demo are available on Zenodo:
+
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.20382819.svg)](https://doi.org/10.5281/zenodo.20382819)
+
+Download and extract them into the `recordings/` directory to replay in [Foxglove Studio](https://foxglove.dev/).
+
 ## Architecture
 
 | Package | Description |
