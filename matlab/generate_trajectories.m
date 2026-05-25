@@ -45,7 +45,7 @@ clear; clc; close all;
 
 % --- Output --------------------------------------------------
 OUTPUT_ROOT = '../src/flychams_common/config/trajectories';
-CONFIGURATION_NAME = 'Complex';
+CONFIGURATION_NAME = 'Default';
 
 % --- Time axis -----------------------------------------------
 T_TOTAL   = 1000.0;  % Total trajectory duration (s)
@@ -58,7 +58,7 @@ DT        = 0.05;    % Sample period (s) — must match TrajectoryParser expecta
 %   'default'             — 4 clusters, 4 targets each (default demo)
 %   'complex'             — 6 clusters for 3 agents × 2 tracking units; mixed dispersion and overlapping geometry
 %
-CLUSTER_SETUP = 'complex';
+CLUSTER_SETUP = 'default';
 
 [CLUSTERS, CONFIGURATION_NAME] = get_cluster_setup(CLUSTER_SETUP, CONFIGURATION_NAME);
 

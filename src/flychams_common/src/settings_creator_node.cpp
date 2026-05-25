@@ -70,16 +70,40 @@ int main(int argc, char** argv)
     // Create mission.yaml file
     std::string mission_settings_path;
     node->get_parameter("path.mission_settings_path", mission_settings_path);
+    
+    // Create output directory if it doesn't exist
+    std::filesystem::path mission_dir = std::filesystem::path(mission_settings_path).parent_path();
+    if (!std::filesystem::exists(mission_dir)) {
+        RCLCPP_INFO(node->get_logger(), "Creating output directory: %s", mission_dir.c_str());
+        std::filesystem::create_directories(mission_dir);
+    }
+    
     MissionSettingsCreator::createMissionSettings(config_ptr, mission_settings_path);
 
     // Create AirSim settings
     std::string airsim_settings_path;
     node->get_parameter("path.airsim_settings_path", airsim_settings_path);
+    
+    // Create AirSim output directory if it doesn't exist
+    std::filesystem::path airsim_dir = std::filesystem::path(airsim_settings_path).parent_path();
+    if (!std::filesystem::exists(airsim_dir)) {
+        RCLCPP_INFO(node->get_logger(), "Creating AirSim output directory: %s", airsim_dir.c_str());
+        std::filesystem::create_directories(airsim_dir);
+    }
+    
     AirsimSettingsCreator::createAirsimSettings(config_ptr, airsim_settings_path);
 
     // Create Foxglove layout
     std::string foxglove_layout_path;
     node->get_parameter("path.foxglove_layout_path", foxglove_layout_path);
+    
+    // Create Foxglove output directory if it doesn't exist
+    std::filesystem::path foxglove_dir = std::filesystem::path(foxglove_layout_path).parent_path();
+    if (!std::filesystem::exists(foxglove_dir)) {
+        RCLCPP_INFO(node->get_logger(), "Creating Foxglove output directory: %s", foxglove_dir.c_str());
+        std::filesystem::create_directories(foxglove_dir);
+    }
+    
     FoxgloveLayoutCreator::createFoxgloveLayout(config_ptr, foxglove_layout_path);
 
     // Finish the node
