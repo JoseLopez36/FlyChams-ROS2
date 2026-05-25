@@ -18,8 +18,13 @@ Built on **ROS2 Humble**, **PX4 v1.16**, **Unreal Engine 5 + AirSim**, and **Doc
 </div>
 
 <div align="center">
-  <img src="media/images/UnrealSimulator.png" alt="Unreal Engine 5 simulation environment" width="100%"/>
+  <img src="media/images/Environment.png" alt="Unreal Engine 5 simulation environment" width="100%"/>
   <p><em>Unreal Engine 5 simulation environment</em></p>
+</div>
+
+<div align="center">
+  <img src="media/images/Agent_1.png" alt="Agent in simulation" width="30%"/>
+  <p><em>Agent in simulation</em></p>
 </div>
 
 ## Research
