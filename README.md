@@ -13,14 +13,14 @@ Built on **ROS2 Humble**, **PX4 v1.16**, **Unreal Engine 5 + AirSim**, and **Doc
 ---
 
 <div align="center">
-  <img src="media/images/MultiWindowSimulation.png" alt="Full Simulation Environment" width="100%"/>
-  <p><em>Complete simulation view: UE5 environment, Foxglove operator GUI, and real-time data.</em></p>
+  <img src="media/images/OperatorInterface.png" alt="Foxglove operator GUI" width="100%"/>
+  <p><em>Foxglove operator GUI</em></p>
 </div>
 
-|  |  |
-| :---: | :---: |
-| <img src="media/images/MultiWindowViews.png" alt="Target Tracking" width="70%"/> | <img src="media/images/MultiWindowAgent.png" alt="Drone Close-up" width="100%"/> |
-| *Real-time multi-target tracking windows* | *High-fidelity hexacopter model in UE5* |
+<div align="center">
+  <img src="media/images/UnrealSimulator.png" alt="Unreal Engine 5 simulation environment" width="100%"/>
+  <p><em>Unreal Engine 5 simulation environment</em></p>
+</div>
 
 ## Research
 
