@@ -51,9 +51,18 @@ This project is part of a broader research initiative by the Department of Syste
 
 ## Demos
 
-- **Flight Demonstration** — [View Video](media/videos/Demo.mp4)
-- **MATLAB Test** — [View Video](media/videos/MatlabTest.mp4)
-- **Camera Gimbal Mechanics** — [View GIF](media/videos/GimbalMovement.gif)
+The following videos showcase FlyChams in different configurations, from a single multi-camera drone to coordinated multi-agent fleets tracking multiple targets simultaneously. Each demo highlights a specific aspect of the system's capabilities.
+
+### Single Agent
+
+- **Single Agent — Multi-Camera** — [View Video](media/videos/SingleAgent-MultiCamera.mp4)
+- **Single Agent — Multi-Window** — [View Video](media/videos/SingleAgent-MultiWindow.mp4)
+
+### Multi-Agent
+
+- **Multi-Agent — Multi-Camera** — [View Video](media/videos/MultiAgent-MultiCamera.mp4)
+- **Multi-Agent — Multi-Window** — [View Video](media/videos/MultiAgent-MultiWindow.mp4)
+- **Multi-Agent — Hybrid** — [View Video](media/videos/MultiAgent-Hybrid.mp4)
 
 ## Architecture
 
