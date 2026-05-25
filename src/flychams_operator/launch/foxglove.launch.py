@@ -22,7 +22,7 @@ def generate_launch_description():
                 'num_threads': 16,
                 # QoS
                 'min_qos_depth': 1,
-                'max_qos_depth': 30000,
+                'max_qos_depth': 100000,
                 # Restrict advertised topics and services to flychams namespace
                 'topic_whitelist': ['^/flychams/.*', '/clock', '/rosout', '/tf', '/tf_static'],
                 'service_whitelist': ['^/flychams/.*'],

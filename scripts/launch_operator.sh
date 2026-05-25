@@ -9,7 +9,7 @@ RECORD_DIR="${RECORD_DIR:-recordings}"
 RECORD_CMD=""
 if [ "$RECORD" = "true" ]; then
     RECORD_NAME="flychams_$(date +%Y%m%d_%H%M%S)"
-    RECORD_CMD=" & mkdir -p ${RECORD_DIR} && exec ros2 bag record --storage mcap --regex '^(/flychams/.*|/clock|/rosout|/tf|/tf_static)' --exclude '/flychams/(agent|simulation)/.*/image$' --output ${RECORD_DIR}/${RECORD_NAME}"
+    RECORD_CMD=" & mkdir -p ${RECORD_DIR} && source install/setup.bash && exec ros2 bag record --storage mcap --regex '^(/flychams/.*|/clock|/rosout|/tf|/tf_static)' --exclude '/flychams/(agent|simulation)/.*/image$' --output ${RECORD_DIR}/${RECORD_NAME}"
 fi
 
 CMD="source install/setup.bash && ros2 launch flychams_operator operator.launch.py & source install/setup.bash && ros2 launch flychams_operator foxglove.launch.py${RECORD_CMD}" \
