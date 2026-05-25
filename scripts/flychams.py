@@ -111,7 +111,7 @@ def wait_for_stop(stop_event, duration=0):
         print(f"Mission running for {duration} seconds (press Enter to stop early)...")
         remaining = duration
         while remaining > 0 and not stop_event.is_set():
-            print(f"Remaining: {remaining:.0f}s", end="\r", flush=True)
+            print(f"Remaining: {remaining:.0f}s".ljust(30), end="\r", flush=True)
             sleep_time = min(1.0, remaining)
             stop_event.wait(sleep_time)
             remaining -= sleep_time
@@ -125,7 +125,7 @@ def wait_for_stop(stop_event, duration=0):
         print("Mission running (press Enter to stop)...")
         elapsed = 0
         while not stop_event.is_set():
-            print(f"Elapsed: {elapsed}s", end="\r", flush=True)
+            print(f"Elapsed: {elapsed}s".ljust(30), end="\r", flush=True)
             stop_event.wait(1.0)
             elapsed += 1
         print(f"\nStopped after {elapsed}s")

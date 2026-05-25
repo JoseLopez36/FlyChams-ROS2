@@ -306,7 +306,7 @@ void FoxgloveLayoutCreator::write3DScenePanel(const MissionConfigPtr& config_ptr
             {"ignoreColladaUpAxis", false},
             {"transforms", {
                 {"visible", false},
-                {"enablePreloading", false},
+                {"enablePreloading", true},
                 {"labelSize", 1.5},
                 {"axisSize", 6},
                 {"lineWidth", 2}
@@ -315,6 +315,7 @@ void FoxgloveLayoutCreator::write3DScenePanel(const MissionConfigPtr& config_ptr
         {"transforms", {
             {"world", {
                 {"visible", true},
+                {"enablePreloading", true},
                 {"xAxisColor", "#ff4444"},
                 {"yAxisColor", "#44ff44"},
                 {"zAxisColor", "#4444ff"},
