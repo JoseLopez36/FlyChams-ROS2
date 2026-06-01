@@ -14,6 +14,12 @@ FOXGLOVE_PORT="${FOXGLOVE_PORT:-8765}"
 
 [ "$DETACH" = "true" ] && RUN_FLAGS="--rm -d" || RUN_FLAGS="--rm -it"
 
+# Auto-detect GPU vendor if not specified
+GPU_VENDOR="${GPU_VENDOR:-auto}"
+if [ "$GPU_VENDOR" = "auto" ]; then
+    GPU_VENDOR=$($SCRIPT_DIR/detect_gpu.sh)
+fi
+
 if docker ps -a --format '{{.Names}}' | grep -q "^${CONTAINER_NAME}$"; then
     echo "Removing existing container: $CONTAINER_NAME"
     docker rm -f "$CONTAINER_NAME"
@@ -26,6 +32,7 @@ docker run ${RUN_FLAGS} \
     -e ROS_DOMAIN_ID="${ROS_DOMAIN_ID}" \
     -e RMW_IMPLEMENTATION="${RMW_IMPLEMENTATION}" \
     -e CYCLONEDDS_URI="${CYCLONEDDS_URI}" \
+    -e HW_VENDOR="$GPU_VENDOR" \
     -v "$PROJECT_ROOT:/home/testuser/FlyChams-ROS2" \
     -w "/home/testuser/FlyChams-ROS2" \
     flychams-operator \

@@ -2,6 +2,8 @@
   ros__parameters:
     # Update rate (Hz)
     update_rate: 10.0
+    # Enable CPU/GPU/RAM/VRAM performance metrics collection
+    enable_performance_metrics: true
 
 /**/markers_generator_node:
   ros__parameters:
