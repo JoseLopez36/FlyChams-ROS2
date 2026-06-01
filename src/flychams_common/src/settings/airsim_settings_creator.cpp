@@ -421,7 +421,7 @@ void AirsimSettingsCreator::writeInternalCamerasSection(const ID& agent_id, cons
             }},
             {"X", mount_pos.x()}, {"Y", -mount_pos.y()}, {"Z", -mount_pos.z()},
             {"Roll", 0.0f}, {"Pitch", MathUtils::radToDeg(-mount_ori.y())}, {"Yaw", 0.0f},
-            {"EnableGimbal", true}, {"CameraVisible", true}, {"CameraScale", 0.7f}
+            {"EnableGimbal", true}, {"CameraVisible", true}, {"CameraScale", 0.5f}
         };
     }
 }
