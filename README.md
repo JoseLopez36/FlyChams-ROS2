@@ -163,6 +163,7 @@ FlyChams-ROS2/
 | [docs/simulator.md](docs/simulator.md) | UE5/AirSim setup and optimization flags |
 | [docs/foxglove.md](docs/foxglove.md) | Foxglove Studio operator interface |
 | [docs/matlab.md](docs/matlab.md) | MATLAB trajectory generation and recording analysis |
+| [docs/performance.md](docs/performance.md) | Hardware utilisation benchmarks (CPU, GPU, RAM, VRAM) |
 
 ## License
 
