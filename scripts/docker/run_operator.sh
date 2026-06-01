@@ -20,15 +20,28 @@ if [ "$GPU_VENDOR" = "auto" ]; then
     GPU_VENDOR=$($SCRIPT_DIR/detect_gpu.sh)
 fi
 
+# Build GPU-specific Docker flags
+GPU_FLAGS=""
+if [ "$GPU_VENDOR" = "nvidia" ]; then
+    echo "Using NVIDIA GPU"
+    GPU_FLAGS="--runtime nvidia --gpus all -e NVIDIA_DRIVER_CAPABILITIES=all -e NVIDIA_VISIBLE_DEVICES=all"
+elif [ "$GPU_VENDOR" = "amd" ]; then
+    echo "Using AMD GPU"
+    VIDEO_GID=$(getent group video  | cut -d: -f3)
+    RENDER_GID=$(getent group render | cut -d: -f3)
+    GPU_FLAGS="--device /dev/kfd --device /dev/dri --group-add ${VIDEO_GID} --group-add ${RENDER_GID} --security-opt seccomp=unconfined"
+fi
+
 if docker ps -a --format '{{.Names}}' | grep -q "^${CONTAINER_NAME}$"; then
     echo "Removing existing container: $CONTAINER_NAME"
     docker rm -f "$CONTAINER_NAME"
 fi
 
-echo "Starting operator container: $CONTAINER_NAME"
+echo "Starting operator container: $CONTAINER_NAME (GPU_VENDOR=$GPU_VENDOR)"
 docker run ${RUN_FLAGS} \
     --name "$CONTAINER_NAME" \
     --network host \
+    ${GPU_FLAGS} \
     -e ROS_DOMAIN_ID="${ROS_DOMAIN_ID}" \
     -e RMW_IMPLEMENTATION="${RMW_IMPLEMENTATION}" \
     -e CYCLONEDDS_URI="${CYCLONEDDS_URI}" \
