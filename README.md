@@ -165,6 +165,7 @@ FlyChams-ROS2/
 | [docs/matlab.md](docs/matlab.md) | MATLAB trajectory generation and recording analysis |
 | [docs/performance.md](docs/performance.md) | Hardware utilisation benchmarks (CPU, GPU, RAM, VRAM) |
 | [docs/jetson.md](docs/jetson.md) | Jetson Orin Nano setup for onboard agent |
+| [docs/gcs.md](docs/gcs.md) | Ground Control Station for hardware deployments |
 
 ## License
 

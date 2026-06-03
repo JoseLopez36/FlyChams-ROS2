@@ -84,11 +84,14 @@ lsmod | grep nvhost
 On the Jetson, GPU vendor is auto-detected as `jetson`. Build the images:
 
 ```bash
+# Build Micro-XRCE-DDS Agent image
+scripts/docker/build_micro_xrce_dds.sh
+
 # Build base and GPU layers
 scripts/docker/build_base.sh
 scripts/docker/build_gpu.sh
 
-# Build agent image (for onboard UAV)
+# Build agent image
 scripts/docker/build_agent.sh
 ```
 
@@ -98,6 +101,17 @@ To force Jetson detection explicitly:
 GPU_VENDOR=jetson scripts/docker/build_gpu.sh
 GPU_VENDOR=jetson scripts/docker/build_agent.sh
 ```
+
+### Micro-XRCE-DDS Agent for Hardware Mode
+
+When using the [GCS hardware mode](gcs.md), the Jetson must also run the Micro-XRCE-DDS Agent to bridge PX4 autopilot to ROS2. This runs as a separate Docker container:
+
+```bash
+# On Jetson - build the Micro-XRCE-DDS image
+scripts/docker/build_micro_xrce_dds.sh
+```
+
+The Micro-XRCE-DDS Agent runs on port `8888 + agent_idx` (e.g., 8888 for AGENT00, 8889 for AGENT01).
 
 ---
 

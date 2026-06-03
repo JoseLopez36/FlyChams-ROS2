@@ -15,6 +15,11 @@ MISSION_YAML = os.path.join(
     "src", "flychams_common", "config", "generated", "mission.yaml"
 )
 
+HARDWARE_YAML = os.path.join(
+    PROJECT_ROOT,
+    "src", "flychams_common", "config", "core", "hardware.yaml"
+)
+
 def load_agent_ids() -> list:
     with open(MISSION_YAML, "r") as f:
         data = yaml.safe_load(f)
@@ -25,9 +30,23 @@ def load_agent_idx(agent_id: str) -> int:
         data = yaml.safe_load(f)
     return data["/**"]["ros__parameters"]["agents"][agent_id]["idx"]
 
+def load_hardware_config() -> dict:
+    """Load hardware agent SSH configuration."""
+    if not os.path.exists(HARDWARE_YAML):
+        return {}
+    with open(HARDWARE_YAML, "r") as f:
+        data = yaml.safe_load(f)
+    return data.get("agents", {})
+
 def run(cmd, **kwargs):
     print(f"+ {cmd}")
     return subprocess.run(cmd, shell=True, **kwargs)
+
+def run_ssh(host: str, user: str, remote_cmd: str, **kwargs):
+    """Run a command on a remote host via SSH."""
+    ssh_cmd = f"ssh -o ConnectTimeout=10 -o StrictHostKeyChecking=no {user}@{host} '{remote_cmd}'"
+    print(f"+ [SSH {host}] {remote_cmd}")
+    return subprocess.run(ssh_cmd, shell=True, **kwargs)
 
 # ------------------------------------------------------------------
 # Simulation mode
@@ -55,7 +74,7 @@ def launch_sim(agent_ids: list, record: bool = False, record_name: str = "", dur
     run(f"DETACH=true {SCRIPT_DIR}/launch_micro_xrce_dds.sh")
     time.sleep(delay)
 
-    # One PX4 container per agent (instance number taken from mission config idx)
+    # One PX4 container per agent
     for agent_id in agent_ids:
         idx = load_agent_idx(agent_id)
         run(f"DETACH=true {SCRIPT_DIR}/launch_px4.sh {idx} {agent_id}")
@@ -83,13 +102,84 @@ def launch_sim(agent_ids: list, record: bool = False, record_name: str = "", dur
     stop_all()
 
 # ------------------------------------------------------------------
-# Real mode
+# Hardware mode
 # ------------------------------------------------------------------
 
-def launch(agent_ids: list, duration: float = 0.0):
-    print("=== Real mode ===")
-    # TODO: implement real mode
-    pass
+def launch_hardware(agent_ids: list, record: bool = False, record_name: str = "", duration: float = 0.0):
+    print("=== Hardware mode ===")
+
+    delay = 0.5
+
+    # Load hardware.yaml
+    hardware_config = load_hardware_config()
+    if not hardware_config:
+        print("WARNING: No hardware configuration found.")
+        print(f"Please configure agent hosts in: {HARDWARE_YAML}")
+        print("Agents will not be launched automatically.")
+
+    # Operator
+    if record:
+        if record_name:
+            record_dir = "recordings/"
+            record_env = f"RECORD=true RECORD_DIR={record_dir} RECORD_NAME={record_name}"
+        else:
+            record_env = "RECORD=true"
+    else:
+        record_env = ""
+    operator_env = f"DETACH=true {record_env}".strip()
+    run(f"{operator_env} {SCRIPT_DIR}/launch_operator.sh")
+    time.sleep(delay)
+
+    # Coordinator
+    run(f"DETACH=true {SCRIPT_DIR}/launch_coordinator.sh")
+    time.sleep(delay)
+
+    # Launch agents and Micro-XRCE-DDS on UAVs via SSH
+    print(f"Launching {len(agent_ids)} agents on UAVs...")
+    for agent_id in agent_ids:
+        if agent_id in hardware_config:
+            cfg = hardware_config[agent_id]
+            host = cfg.get("host")
+            user = cfg.get("user")
+            workspace = cfg.get("workspace")
+            idx = load_agent_idx(agent_id)
+            xrce_port = 8888 + idx
+
+            if host:
+                # Launch Micro-XRCE-DDS Agent
+                remote_xrce_cmd = f"cd {workspace} && DETACH=true XRCE_PORT={xrce_port} scripts/launch_micro_xrce_dds.sh"
+                print(f"Launching Micro-XRCE-DDS for {agent_id} on {host}:{xrce_port}...")
+                run_ssh(host, user, remote_xrce_cmd)
+                time.sleep(0.5)
+
+                # Launch flychams_agent
+                remote_cmd = f"cd {workspace} && DETACH=true scripts/launch_agent.sh {agent_id}"
+                print(f"Launching {agent_id} on {host}...")
+                run_ssh(host, user, remote_cmd)
+            else:
+                print(f"WARNING: No host configured for {agent_id}")
+        else:
+            print(f"WARNING: {agent_id} not found in hardware.yaml, skipping")
+        time.sleep(delay)
+
+    # Mission timer with keyboard early stop
+    stop_event = threading.Event()
+    listener = threading.Thread(target=keyboard_listener, args=(stop_event,))
+    listener.daemon = True
+    listener.start()
+    wait_for_stop(stop_event, duration)
+    stop_all()
+
+    # Stop remote agents and XRCE via SSH
+    print("Stopping remote agents and Micro-XRCE-DDS...")
+    for agent_id in agent_ids:
+        if agent_id in hardware_config:
+            cfg = hardware_config[agent_id]
+            host = cfg.get("host")
+            user = cfg.get("user")
+            if host:
+                remote_cmd = f"cd {workspace} && scripts/stop.sh 2>/dev/null || true"
+                run_ssh(host, user, remote_cmd, capture_output=True)
 
 def stop_all():
     """Stop all FlyChams containers."""
@@ -142,14 +232,14 @@ def parse_args():
     )
     parser.add_argument(
         "mode",
-        choices=["sim", "real"],
-        help="Launch mode:\n  sim   Simulation (AirSim + PX4 SITL)\n  real  Real hardware"
+        choices=["sim", "hw"],
+        help="Launch mode:\n  sim   Simulation (AirSim + PX4 SITL + all containers)\n  hw  Hardware mode (GCS bringup: operator, coordinator, Micro-XRCE-DDS Agent)"
     )
     parser.add_argument(
         "agents",
         nargs="*",
         metavar="AGENT_ID",
-        help="Agent IDs to launch (e.g. AGENT00 AGENT01). Defaults to all agents in mission.yaml"
+        help="Agent IDs to launch (sim mode only, e.g. AGENT00 AGENT01). Defaults to all agents in mission.yaml"
     )
     parser.add_argument(
         "--record",
@@ -176,7 +266,9 @@ def parse_args():
 if __name__ == "__main__":
     args = parse_args()
     agent_ids = args.agents if args.agents else load_agent_ids()
-    if args.mode == "sim":
-        launch_sim(agent_ids, record=args.record, record_name=args.record_name, duration=args.duration)
+    if args.mode == "hw":
+        # Hardware mode
+        launch_hardware(agent_ids, record=args.record, record_name=args.record_name, duration=args.duration)
     else:
-        launch(agent_ids, duration=args.duration)
+        # Simulation mode
+        launch_sim(agent_ids, record=args.record, record_name=args.record_name, duration=args.duration)
