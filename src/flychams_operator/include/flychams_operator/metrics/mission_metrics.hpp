@@ -23,7 +23,7 @@ namespace flychams::operator_pkg
      * mission time, and system performance metrics (CPU, GPU, RAM,
      * VRAM). Publishes MissionMetrics message. GPU and VRAM sampling
      * supports both NVIDIA (nvidia-smi) and AMD (AMDGPU sysfs) vendors,
-     * determined at init time from the HW_VENDOR environment variable.
+     * determined at init time from the GPU_VENDOR environment variable.
      *
      * ════════════════════════════════════════════════════════════════
      * @author Jose Francisco Lopez Ruiz
@@ -57,7 +57,7 @@ namespace flychams::operator_pkg
     private: // Parameters
         float update_rate_;
         bool enable_performance_metrics_;
-        std::string hw_vendor_; // "nvidia" | "amd" | "none"
+        std::string gpu_vendor_; // "nvidia" | "amd" | "none"
 
     private: // Accumulated data
         int total_agents_;

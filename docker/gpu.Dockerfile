@@ -1,7 +1,7 @@
 # GPU Dockerfile - GStreamer + GPU acceleration
 FROM flychams-base
 
-# GPU vendor: nvidia | amd
+# GPU vendor: nvidia | amd | jetson
 ARG GPU_VENDOR=nvidia
 ENV GPU_VENDOR=${GPU_VENDOR}
 
@@ -28,5 +28,11 @@ RUN if [ "$GPU_VENDOR" = "nvidia" ]; then \
             gstreamer1.0-vaapi \
             libva-dev libva-drm2 libva-x11-2 \
             mesa-va-drivers \
+        && sudo rm -rf /var/lib/apt/lists/* && sudo apt-get clean; \
+    elif [ "$GPU_VENDOR" = "jetson" ]; then \
+        sudo apt-get update && sudo apt-get install -y \
+            gstreamer1.0-plugins-bad \
+            gstreamer1.0-nvvideo4linux2 \
+            libnvidia-encode-470 \
         && sudo rm -rf /var/lib/apt/lists/* && sudo apt-get clean; \
     fi

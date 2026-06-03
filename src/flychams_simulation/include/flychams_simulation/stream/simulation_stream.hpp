@@ -70,7 +70,7 @@ namespace flychams::simulation
 
     private: // Parameters
         int stream_delay_ms_;
-        std::string hw_vendor_;
+        std::string gpu_vendor_;
         // RTSP server
         std::string rtsp_host_;
         int rtsp_port_;

@@ -45,7 +45,7 @@ docker run ${RUN_FLAGS} \
     -e ROS_DOMAIN_ID="${ROS_DOMAIN_ID}" \
     -e RMW_IMPLEMENTATION="${RMW_IMPLEMENTATION}" \
     -e CYCLONEDDS_URI="${CYCLONEDDS_URI}" \
-    -e HW_VENDOR="$GPU_VENDOR" \
+    -e GPU_VENDOR="$GPU_VENDOR" \
     -v "$PROJECT_ROOT:/home/testuser/FlyChams-ROS2" \
     -w "/home/testuser/FlyChams-ROS2" \
     flychams-operator \

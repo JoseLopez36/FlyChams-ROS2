@@ -26,7 +26,7 @@ void SimulationStream::onModuleInit()
     payload_height_ = node_->getParameterOr<int>("payload_view.height", 480);
 
     // Get hardware vendor from environment variable
-    hw_vendor_ = std::getenv("HW_VENDOR") ? std::getenv("HW_VENDOR") : "none";
+    gpu_vendor_ = std::getenv("GPU_VENDOR") ? std::getenv("GPU_VENDOR") : "none";
 
     // Base RTSP URL: rtsp://<host>:<port>
     const std::string rtsp_base = "rtsp://" + rtsp_host_ + ":" + std::to_string(rtsp_port_);
@@ -124,14 +124,14 @@ std::string SimulationStream::buildSourcePipeline(const std::string& rtsp_url) c
         "rtspsrc location=" + rtsp_url + " latency=0 protocols=tcp timeout=5000000 "
         "! rtph265depay ! h265parse ";
 
-    if (hw_vendor_ == "nvidia")
+    if (gpu_vendor_ == "nvidia")
     {
         // NVDEC hardware-accelerated H.265 decode
         return source +
             "! nvh265dec ! videoconvert ! video/x-raw,format=BGR "
             "! appsink drop=true max-buffers=1 sync=false";
     }
-    else if (hw_vendor_ == "amd")
+    else if (gpu_vendor_ == "amd")
     {
         // VA-API hardware-accelerated H.265 decode
         return source +

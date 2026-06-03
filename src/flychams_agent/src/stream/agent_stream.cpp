@@ -19,8 +19,8 @@ void AgentStream::onModuleInit()
     // Stream parameters
     stream_delay_ms_ = node_->getParameterOr<int>("stream_delay_ms", 500);
 
-    // Get hardware vendor from environment variable
-    hw_vendor_ = std::getenv("HW_VENDOR") ? std::getenv("HW_VENDOR") : "none";
+    // Get GPU vendor from environment variable
+    gpu_vendor_ = std::getenv("GPU_VENDOR") ? std::getenv("GPU_VENDOR") : "none";
 
     // Initialize stream variables
     stream_units_.clear();
@@ -155,18 +155,26 @@ std::string AgentStream::buildSourcePipeline(const std::string& rtsp_url) const
         "rtspsrc location=" + rtsp_url + " latency=0 protocols=tcp timeout=5000000 "
         "! rtph265depay ! h265parse ";
 
-    if (hw_vendor_ == "nvidia")
+    if (gpu_vendor_ == "nvidia")
     {
         // NVDEC hardware-accelerated H.265 decode
         return source +
             "! nvh265dec ! videoconvert ! video/x-raw,format=BGR "
             "! appsink drop=true max-buffers=1 sync=false";
     }
-    else if (hw_vendor_ == "amd")
+    else if (gpu_vendor_ == "amd")
     {
         // VA-API hardware-accelerated H.265 decode
         return source +
             "! vah265dec ! vapostproc ! videoconvert ! video/x-raw,format=BGR "
+            "! appsink drop=true max-buffers=1 sync=false";
+    }
+    else if (gpu_vendor_ == "jetson")
+    {
+        // Jetson (Tegra) hardware-accelerated H.265 decode using V4L2
+        return source +
+            "! nvv4l2decoder enable-max-performance=1 drop-frame-interval=1 "
+            "! nvvidconv ! video/x-raw,format=BGRx ! videoconvert ! video/x-raw,format=BGR "
             "! appsink drop=true max-buffers=1 sync=false";
     }
     else

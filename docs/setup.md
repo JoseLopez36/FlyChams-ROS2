@@ -36,7 +36,7 @@ scripts/docker/build_operator.sh
 
 ### GPU vendor override
 
-Auto-detection picks NVIDIA or AMD. Override with:
+Auto-detection picks NVIDIA, AMD, or Jetson (Tegra). Override with:
 
 ```bash
 GPU_VENDOR=nvidia scripts/docker/build_gpu.sh
@@ -44,7 +44,7 @@ GPU_VENDOR=nvidia scripts/docker/build_simulation.sh
 GPU_VENDOR=nvidia scripts/docker/build_agent.sh
 ```
 
-Valid values: `nvidia`, `amd`, `none`.
+Valid values: `nvidia`, `amd`, `jetson`, `none`.
 
 ---
 

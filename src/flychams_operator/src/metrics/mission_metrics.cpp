@@ -15,7 +15,7 @@ void MissionMetrics::onModuleInit()
     enable_performance_metrics_ = node_->getParameterOr<bool>("enable_performance_metrics", true);
 
     // Get hardware vendor from environment variable
-    hw_vendor_ = std::getenv("HW_VENDOR") ? std::getenv("HW_VENDOR") : "none";
+    gpu_vendor_ = std::getenv("GPU_VENDOR") ? std::getenv("GPU_VENDOR") : "none";
 
     // Initialize data
     total_agents_ = 0;
@@ -166,7 +166,7 @@ void MissionMetrics::sampleHardware()
 
     RCLCPP_DEBUG(node_->get_logger(),
         "HW sample [%s] — CPU: %.1f%% | GPU: %.1f%% | RAM: %.2f GB | VRAM: %.2f GB",
-        hw_vendor_.c_str(), cpu_.instant, gpu_.instant, ram_.instant, vram_.instant);
+        gpu_vendor_.c_str(), cpu_.instant, gpu_.instant, ram_.instant, vram_.instant);
 }
 
 float MissionMetrics::readCpuUsage() const
@@ -212,7 +212,7 @@ float MissionMetrics::readCpuUsage() const
 
 float MissionMetrics::readGpuUsage() const
 {
-    if (hw_vendor_ == "nvidia")
+    if (gpu_vendor_ == "nvidia")
     {
         // nvidia-smi returns GPU utilisation in percent
         FILE* pipe = popen("nvidia-smi --query-gpu=utilization.gpu --format=csv,noheader,nounits 2>/dev/null", "r");
@@ -229,7 +229,7 @@ float MissionMetrics::readGpuUsage() const
         pclose(pipe);
         return value;
     }
-    else if (hw_vendor_ == "amd")
+    else if (gpu_vendor_ == "amd")
     {
         // Read GPU busy percent directly from AMDGPU sysfs
         for (int card = 0; card < 8; ++card)
@@ -288,7 +288,7 @@ float MissionMetrics::readRamUsageGb() const
 
 float MissionMetrics::readVramUsageGb() const
 {
-    if (hw_vendor_ == "nvidia")
+    if (gpu_vendor_ == "nvidia")
     {
         // nvidia-smi reports used VRAM in MiB; convert to GB
         FILE* pipe = popen("nvidia-smi --query-gpu=memory.used --format=csv,noheader,nounits 2>/dev/null", "r");
@@ -305,7 +305,7 @@ float MissionMetrics::readVramUsageGb() const
         pclose(pipe);
         return used_mib / 1024.0f;
     }
-    else if (hw_vendor_ == "amd")
+    else if (gpu_vendor_ == "amd")
     {
         // AMDGPU sysfs reports used VRAM in bytes; convert to GB
         for (int card = 0; card < 8; ++card)

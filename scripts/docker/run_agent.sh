@@ -36,6 +36,28 @@ elif [ "$GPU_VENDOR" = "amd" ]; then
     VIDEO_GID=$(getent group video  | cut -d: -f3)
     RENDER_GID=$(getent group render | cut -d: -f3)
     GPU_FLAGS="--device /dev/kfd --device /dev/dri --group-add ${VIDEO_GID} --group-add ${RENDER_GID} --security-opt seccomp=unconfined"
+elif [ "$GPU_VENDOR" = "jetson" ]; then
+    echo "Using Jetson (Tegra) GPU"
+    GPU_FLAGS="--runtime nvidia -e NVIDIA_DRIVER_CAPABILITIES=all"
+    if [ -e /dev/nvhost-ctrl ]; then
+        GPU_FLAGS="${GPU_FLAGS} --device /dev/nvhost-ctrl"
+    fi
+    if [ -e /dev/nvhost-ctrl-gpu ]; then
+        GPU_FLAGS="${GPU_FLAGS} --device /dev/nvhost-ctrl-gpu"
+    fi
+    if [ -e /dev/nvhost-vic ]; then
+        GPU_FLAGS="${GPU_FLAGS} --device /dev/nvhost-vic"
+    fi
+    if [ -e /dev/nvhost-nvdec ]; then
+        GPU_FLAGS="${GPU_FLAGS} --device /dev/nvhost-nvdec"
+    fi
+    if [ -e /dev/nvhost-nvenc ]; then
+        GPU_FLAGS="${GPU_FLAGS} --device /dev/nvhost-nvenc"
+    fi
+    if getent group video >/dev/null 2>&1; then
+        VIDEO_GID=$(getent group video | cut -d: -f3)
+        GPU_FLAGS="${GPU_FLAGS} --group-add ${VIDEO_GID}"
+    fi
 fi
 
 if docker ps -a --format '{{.Names}}' | grep -q "^${CONTAINER_NAME}$"; then
@@ -54,7 +76,7 @@ docker run ${RUN_FLAGS} \
     -e ROS_DOMAIN_ID="${ROS_DOMAIN_ID}" \
     -e RMW_IMPLEMENTATION="${RMW_IMPLEMENTATION}" \
     -e CYCLONEDDS_URI="${CYCLONEDDS_URI}" \
-    -e HW_VENDOR="$GPU_VENDOR" \
+    -e GPU_VENDOR="$GPU_VENDOR" \
     -v "$PROJECT_ROOT:/home/testuser/FlyChams-ROS2" \
     -w "/home/testuser/FlyChams-ROS2" \
     flychams-agent \

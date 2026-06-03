@@ -80,7 +80,7 @@ namespace flychams::agent
         int tracking_view_height;
         // Stream parameters
         int stream_delay_ms_;
-        std::string hw_vendor_;
+        std::string gpu_vendor_;
 
     private: // Data
         // Stream units

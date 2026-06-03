@@ -59,5 +59,5 @@ CPU and GPU figures are in **percent (%)**; RAM and VRAM figures are in **GB**.
 - VRAM consumption grows approximately linearly per additional agent stream and remains within the
   8 GB budget at 3 agents.
 - RAM usage stays well within the 32 GB system budget across all tested configurations.
-- Performance metrics are collected by `metrics_creator_node` via `HW_VENDOR=nvidia` and reported on
+- Performance metrics are collected by `metrics_creator_node` via `GPU_VENDOR=nvidia` and reported on
   the `/flychams/operator/mission/metrics` topic.
