@@ -10,6 +10,7 @@ log/
 .vscode/
 .cursor/
 .windsurf/
+.devin/
 AGENTS.md
 
 # Ignore python cache
