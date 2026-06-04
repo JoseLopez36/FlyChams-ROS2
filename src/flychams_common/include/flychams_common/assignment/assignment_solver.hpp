@@ -4,6 +4,7 @@
 #include "flychams_common/positioning/position_solver.hpp"
 
 // Solver algorithms
+#include "flychams_common/assignment/greedy.hpp"
 #include "flychams_common/assignment/exhaustive_search.hpp"
 #include "flychams_common/assignment/branch_and_bound.hpp"
 
@@ -27,8 +28,9 @@ namespace flychams::common
         // Modes
         enum class SolverMode
         {
-            EXHAUSTIVE_SEARCH      = 0,
-            BRANCH_AND_BOUND       = 1
+            GREEDY                 = 0,
+            EXHAUSTIVE_SEARCH      = 1,
+            BRANCH_AND_BOUND       = 2
         };
         // Parameters
         struct Parameters
@@ -44,6 +46,7 @@ namespace flychams::common
 
     private: // Data
         // Solver algorithms
+        Greedy greedy_;
         ExhaustiveSearch exhaustive_search_;
         BranchAndBound branch_and_bound_;
 
@@ -57,6 +60,19 @@ namespace flychams::common
             // Initialize the solver algorithms
             switch (mode_)
             {
+                case SolverMode::GREEDY:
+                {
+                    // Get Greedy parameters
+                    Greedy::Parameters greedy_params;
+                    greedy_params.observation_weight = params.observation_weight;
+                    greedy_params.distance_weight = params.distance_weight;
+                    greedy_params.switch_weight = params.switch_weight;
+
+                    // Initialize the Greedy solver with the parameters
+                    greedy_.init(greedy_params);
+                    break;
+                }
+
                 case SolverMode::EXHAUSTIVE_SEARCH:
                 {
                     // Get Exhaustive Search parameters
@@ -93,6 +109,12 @@ namespace flychams::common
             // Destroy the solver algorithms
             switch (mode_)
             {
+                case SolverMode::GREEDY:
+                {
+                    greedy_.destroy();
+                    break;
+                }
+
                 case SolverMode::EXHAUSTIVE_SEARCH:
                 {
                     exhaustive_search_.destroy();
@@ -116,6 +138,11 @@ namespace flychams::common
             // Run the assignment based on the mode
             switch (mode_)
             {
+                case SolverMode::GREEDY:
+                {
+                    return greedy_.run(tab_x, tab_P, tab_r, X_prev, wTcentral_array, solvers);
+                }
+
                 case SolverMode::EXHAUSTIVE_SEARCH:
                 {
                     return exhaustive_search_.run(tab_x, tab_P, tab_r, X_prev, wTcentral_array, solvers);

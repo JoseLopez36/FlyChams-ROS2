@@ -61,7 +61,51 @@ scripts/stop.sh
 
 ---
 
-## 4. Logs
+## 4. Rosbag Replay (Benchmarking)
+
+Use this procedure to replay a previously recorded bag to benchmark a subsystem. For example, to benchmark the assignment solver (e.g. compare `EXHAUSTIVE_SEARCH` vs `BRANCH_AND_BOUND` node counts) without running PX4 or AirSim.
+
+**1. Start the bag first**:
+
+```bash
+ros2 bag play recordings/<bag-name>/<bag-name>.mcap --clock --loop \
+    --topics \
+        /tf \
+        /tf_static \
+        /flychams/coordinator/registration \
+        /flychams/coordinator/mission_status \
+        /flychams/coordinator/fleet_status \
+        /flychams/coordinator/CLUSTER00/geometry \
+        /flychams/coordinator/CLUSTER01/geometry \
+        /flychams/coordinator/CLUSTER02/geometry \
+        /flychams/agent/AGENT00/global_position \
+        /flychams/agent/AGENT01/global_position \
+        /flychams/agent/AGENT02/global_position
+```
+
+> Adjust the `CLUSTER*` and `AGENT*` entries to match the IDs in your recording.
+
+> `--loop` keeps replaying so the coordinator can run continuously.
+
+**2. In a second terminal, start only the coordinator container:**
+
+```bash
+scripts/launch_coordinator.sh
+```
+
+**3. Monitor the solver output topics:**
+
+```bash
+# Solve duration (ms)
+ros2 topic echo /flychams/coordinator/assignment_solve_duration
+
+# Evaluated node count
+ros2 topic echo /flychams/coordinator/assignment_node_count
+```
+
+---
+
+## 5. Logs
 
 ```bash
 scripts/logs.sh                        # all containers
