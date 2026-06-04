@@ -16,14 +16,20 @@ namespace flychams::common
 {
     /**
      * ════════════════════════════════════════════════════════════════
-     * @brief Solver for agent assignment using sub-optimal combinatorial
-     * optimization
+     * @brief Solver for agent assignment using branch-and-bound
+     * combinatorial optimization
+     *
+     * @details
+     * Explores the assignment tree agent-by-agent. At each node the
+     * partial cost J + Jk is compared against the best complete
+     * solution found so far (J_min); if it already exceeds J_min the
+     * entire sub-tree is pruned, bounding the search.
      * ════════════════════════════════════════════════════════════════
      * @author Jose Francisco Lopez Ruiz
      * @date 2025-04-22
      * ════════════════════════════════════════════════════════════════
      */
-    class SuboptimalCombinatorial
+    class BranchAndBound
     {
     public: // Types
         // Parameters
@@ -64,7 +70,7 @@ namespace flychams::common
             // Nothing to destroy
         }
         common::RowVectorXi run(const common::Matrix3Xr& tab_x, const common::Matrix3Xr& tab_P, const common::RowVectorXr& tab_r,
-            const common::RowVectorXi& X_prev, const std::vector<common::Matrix4r>& wTcentral_array, 
+            const common::RowVectorXi& X_prev, const std::vector<common::Matrix4r>& wTcentral_array,
             std::vector<PositionSolver::SharedPtr>& solvers)
         {
             // Get number of agents and tracking units
@@ -115,11 +121,9 @@ namespace flychams::common
         void globalCost(std::vector<Agent>& A, const std::vector<Cluster>& T,
             const float& J, const common::RowVectorXi& X,
             float& J_min, common::RowVectorXi& X_min,
-            const common::RowVectorXi& nk, const std::vector<common::Matrix4r>& wTcentral_array, 
+            const common::RowVectorXi& nk, const std::vector<common::Matrix4r>& wTcentral_array,
             std::vector<PositionSolver::SharedPtr>& solvers)
         {
-            //std::cout << "---------------> Global cost: " << J << std::endl;
-
             // Get number of agents and clusters
             int m = static_cast<int>(A.size());
             int n = static_cast<int>(T.size());
@@ -133,9 +137,6 @@ namespace flychams::common
                 {
                     J_min = J;
                     X_min = X;
-                    //std::cout << "New minimum cost found: " << J_min << std::endl;
-                    //std::cout << "New minimum assignment: " << X_min << std::endl;
-                    //std::cout << "----------------" << std::endl;
                 }
                 return;
             }
@@ -154,11 +155,8 @@ namespace flychams::common
                 {
                     T_array(i) = T[i].i;
                 }
-                //std::cout << "Calculating permutations for: " << T_array << " taking " << nk(k) << " clusters" << std::endl;
                 const common::MatrixXi P = calculatePermutations(T_array, nk(k));
                 int n_perms = P.rows();
-                //std::cout << "Calculated " << n_perms << " permutations:" << std::endl;
-                //std::cout << P << std::endl;
 
                 // Iterate through all permutations
                 for (int p = 0; p < n_perms; p++)
@@ -181,17 +179,12 @@ namespace flychams::common
                     // Calculate agent cost with current permutation
                     float Jk;
                     common::RowVectorXi Xk;
-                    //std::cout << "Calculating agent cost for agent " << k << std::endl;
                     agentCost(Ak, Tk, Jk, Xk, nk(k), wTcentral_array[k], solvers[k]);
-                    //std::cout << "Agent cost: " << Jk << std::endl;
-                    //std::cout << "Agent assignment: " << Xk << std::endl;
 
                     // If current cost plus new cost is less than minimum found so far, continue down this branch,
                     // else, break and backtrack to avoid losing time.
                     if (J + Jk < J_min)
                     {
-                        //std::cout << "Continuing down branch" << std::endl;
-
                         // Create a copy of the agent vector without the current agent
                         std::vector<Agent> An;
                         for (const auto& Akn : A)
@@ -242,9 +235,6 @@ namespace flychams::common
                     }
                 }
             }
-
-            // The process is finished
-            //std::cout << "----------------" << std::endl;
         }
 
         void agentCost(Agent& Ak, const std::vector<Cluster>& Tk,
