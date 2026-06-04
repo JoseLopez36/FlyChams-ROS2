@@ -115,14 +115,14 @@ namespace flychams::coordinator
     private: // Assignment management
         void update();
         bool checkStatus();
-        void publishResult(const common::RowVectorXi& X, float time_elapsed_ms);
+        void publishResult(const common::RowVectorXi& X, float time_elapsed_ms, int node_count);
 
     private: // Utility methods
         common::PositionSolver::SharedPtr createPositionSolver(const std::string& agent_id, const common::PositionSolver::Parameters& solver_params, const common::PositionSolver::SolverMode& solver_mode);
         std::vector<common::CostFunctions::UnitCostParameters> createUnitParameters(const common::TrackingParameters& tracking_params);
 
     private: // Async solve state
-        std::future<std::pair<common::RowVectorXi, float>> async_future_;
+        std::future<std::tuple<common::RowVectorXi, float, int>> async_future_;
         std::vector<common::ID> async_agent_order_;
         std::vector<common::ID> async_cluster_order_;
         std::vector<common::PositionSolver::SharedPtr> async_solvers_;
@@ -133,6 +133,8 @@ namespace flychams::coordinator
         common::TimerPtr update_timer_;
         // Publisher for assignment solve duration
         common::PublisherPtr<common::Float32Msg> solve_duration_pub_;
+        // Publisher for assignment evaluated node count
+        common::PublisherPtr<common::Int32Msg> node_count_pub_;
     };
 
 } // namespace flychams::coordinator

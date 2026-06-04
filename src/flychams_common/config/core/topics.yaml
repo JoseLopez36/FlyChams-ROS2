@@ -13,7 +13,8 @@
       cluster_geometry: "/flychams/coordinator/CLUSTERID/geometry" # ClusterGeometry.msg (custom)
       agent_assignment: "/flychams/coordinator/AGENTID/assignment" # AgentAssignment.msg (custom)
       agent_clusters: "/flychams/coordinator/AGENTID/clusters" # AgentClusters.msg (custom)
-      assignment_solve_duration: "/flychams/coordinator/assignment_solve_duration" # std_msgs/Float32 
+      assignment_solve_duration: "/flychams/coordinator/assignment_solve_duration" # std_msgs/Float32
+      assignment_node_count: "/flychams/coordinator/assignment_node_count" # std_msgs/Int32
 
     # Agent topics
     agent_topics:

@@ -546,6 +546,7 @@ void SettingsTools::printSettings() const
     RCLCPP_DEBUG(node_->get_logger(), "    Agent Assignment: %s", config_ptr_->topics.agent_assignment.c_str());
     RCLCPP_DEBUG(node_->get_logger(), "    Agent Clusters: %s", config_ptr_->topics.agent_clusters.c_str());
     RCLCPP_DEBUG(node_->get_logger(), "    Assignment Solve Duration: %s", config_ptr_->topics.assignment_solve_duration.c_str());
+    RCLCPP_DEBUG(node_->get_logger(), "    Assignment Node Count: %s", config_ptr_->topics.assignment_node_count.c_str());
     RCLCPP_DEBUG(node_->get_logger(), "  Agent Topics:");
     RCLCPP_DEBUG(node_->get_logger(), "    Status: %s", config_ptr_->topics.agent_status.c_str());
     RCLCPP_DEBUG(node_->get_logger(), "    Global Position: %s", config_ptr_->topics.agent_global_position.c_str());

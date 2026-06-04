@@ -111,7 +111,7 @@ namespace flychams::common
         }
 
         // Optimization
-        common::RowVectorXi run(const common::Matrix3Xr& tab_x, const common::Matrix3Xr& tab_P, const common::RowVectorXr& tab_r, const common::RowVectorXi& X_prev, const std::vector<common::Matrix4r>& wTcentral_array, std::vector<PositionSolver::SharedPtr>& solvers)
+        std::pair<common::RowVectorXi, int> run(const common::Matrix3Xr& tab_x, const common::Matrix3Xr& tab_P, const common::RowVectorXr& tab_r, const common::RowVectorXi& X_prev, const std::vector<common::Matrix4r>& wTcentral_array, std::vector<PositionSolver::SharedPtr>& solvers)
         {
             // Run the assignment based on the mode
             switch (mode_)

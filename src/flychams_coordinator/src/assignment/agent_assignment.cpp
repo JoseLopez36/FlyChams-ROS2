@@ -59,8 +59,9 @@ void AgentAssignment::onModuleInit()
     solver_params.switch_weight = switch_weight;
     solver_->init(assignment_solver_mode, solver_params);
 
-    // Create publisher for assignment solve duration
+    // Create publishers for assignment benchmarking
     solve_duration_pub_ = node_->createAssignmentSolveDurationPublisher();
+    node_count_pub_ = node_->createAssignmentNodeCountPublisher();
 
     // Set update timer
     last_solve_time_ = common::Time(0, 0, RCL_ROS_TIME);
@@ -84,6 +85,7 @@ void AgentAssignment::onModuleShutdown()
     T_.clear();
     // Destroy publishers
     solve_duration_pub_.reset();
+    node_count_pub_.reset();
     // Destroy update timer
     update_timer_.reset();
 }
@@ -200,10 +202,10 @@ void AgentAssignment::update()
         }
 
         // Retrieve result from async future
-        const auto& [X, time_elapsed_ms] = async_future_.get();
+        const auto& [X, time_elapsed_ms, node_count] = async_future_.get();
 
         // Publish result
-        publishResult(X, time_elapsed_ms);
+        publishResult(X, time_elapsed_ms, node_count);
 
         return;
     }
@@ -264,10 +266,10 @@ void AgentAssignment::update()
         {
             // Solve assignment
             const auto start = std::chrono::high_resolution_clock::now();
-            RowVectorXi X = solver_->run(tab_x, tab_P, tab_r, X_prev_aux, wTcentral_array, async_solvers_);
+            const auto& [X, node_count] = solver_->run(tab_x, tab_P, tab_r, X_prev_aux, wTcentral_array, async_solvers_);
             float time_elapsed_ms = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now() - start).count() / 1000.0f;
 
-            return std::make_pair(X, time_elapsed_ms);
+            return std::make_tuple(X, time_elapsed_ms, node_count);
         });
 }
 
@@ -319,7 +321,7 @@ bool AgentAssignment::checkStatus()
 // PUBLISH RESULT
 // ════════════════════════════════════════════════════════════════════════════
 
-void AgentAssignment::publishResult(const common::RowVectorXi& X, float time_elapsed_ms)
+void AgentAssignment::publishResult(const common::RowVectorXi& X, float time_elapsed_ms, int node_count)
 {
     // Update previous assignment
     X_prev_.resize(X.size());
@@ -362,6 +364,11 @@ void AgentAssignment::publishResult(const common::RowVectorXi& X, float time_ela
     std_msgs::msg::Float32 duration_msg;
     duration_msg.data = time_elapsed_ms;
     solve_duration_pub_->publish(duration_msg);
+
+    // Publish evaluated node count
+    std_msgs::msg::Int32 node_count_msg;
+    node_count_msg.data = node_count;
+    node_count_pub_->publish(node_count_msg);
 }
 
 // ════════════════════════════════════════════════════════════════════════════

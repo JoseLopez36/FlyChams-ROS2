@@ -68,7 +68,7 @@ namespace flychams::common
         {
             // Nothing to destroy
         }
-        common::RowVectorXi run(const common::Matrix3Xr& tab_x, const common::Matrix3Xr& tab_P, const common::RowVectorXr& tab_r,
+        std::pair<common::RowVectorXi, int> run(const common::Matrix3Xr& tab_x, const common::Matrix3Xr& tab_P, const common::RowVectorXr& tab_r,
             const common::RowVectorXi& X_prev, const std::vector<common::Matrix4r>& wTcentral_array,
             std::vector<PositionSolver::SharedPtr>& solvers)
         {
@@ -109,11 +109,12 @@ namespace flychams::common
 
             // Compute minimum global cost using recursive function
             float J = 0.0f, J_min = HUGE_VALF;
+            int node_count = 0;
             common::RowVectorXi X = common::RowVectorXi::Zero(0), X_min = common::RowVectorXi::Zero(0);
-            globalCost(A, T, J, X, J_min, X_min, nk, wTcentral_array, solvers);
+            globalCost(A, T, J, X, J_min, X_min, nk, wTcentral_array, solvers, node_count);
 
-            // Return assignment vector
-            return X_min;
+            // Return assignment vector and evaluated node count
+            return std::make_pair(X_min, node_count);
         }
 
     private: // Recursive cost calculation. Exhaustive search
@@ -121,7 +122,7 @@ namespace flychams::common
             const float& J, const common::RowVectorXi& X,
             float& J_min, common::RowVectorXi& X_min,
             const common::RowVectorXi& nk, const std::vector<common::Matrix4r>& wTcentral_array,
-            std::vector<PositionSolver::SharedPtr>& solvers)
+            std::vector<PositionSolver::SharedPtr>& solvers, int& node_count)
         {
             // Get number of agents and clusters
             int m = static_cast<int>(A.size());
@@ -179,6 +180,7 @@ namespace flychams::common
                     float Jk;
                     common::RowVectorXi Xk;
                     agentCost(Ak, Tk, Jk, Xk, nk(k), wTcentral_array[k], solvers[k]);
+                    node_count++;
 
                     // Create a copy of the agent vector without the current agent
                     std::vector<Agent> An;
@@ -226,7 +228,7 @@ namespace flychams::common
                     }
 
                     // Recursive call — always descend, no bound check
-                    globalCost(An, Tn, J + Jk, Xn, J_min, X_min, nk, wTcentral_array, solvers);
+                    globalCost(An, Tn, J + Jk, Xn, J_min, X_min, nk, wTcentral_array, solvers, node_count);
                 }
             }
         }
