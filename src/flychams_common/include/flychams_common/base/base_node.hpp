@@ -60,6 +60,7 @@ namespace flychams::common
             std::string agent_clusters_pattern;
             std::string assignment_solve_duration;
             std::string assignment_node_count;
+            std::string assignment_swap_count;
         };
         struct AgentTopics
         {
@@ -159,6 +160,7 @@ namespace flychams::common
         std::string getAgentClustersTopic(const ID& agent_id);
         std::string getAssignmentSolveDurationTopic();
         std::string getAssignmentNodeCountTopic();
+        std::string getAssignmentSwapCountTopic();
 
         // Agent topic getters
         std::string getAgentStatusTopic(const ID& agent_id);
@@ -202,6 +204,7 @@ namespace flychams::common
         PublisherPtr<AgentClustersMsg> createAgentClustersPublisher(const ID& agent_id);
         PublisherPtr<Float32Msg> createAssignmentSolveDurationPublisher();
         PublisherPtr<Int32Msg> createAssignmentNodeCountPublisher();
+        PublisherPtr<Int32Msg> createAssignmentSwapCountPublisher();
 
         // Agent publishers
         PublisherPtr<AgentStatusMsg> createAgentStatusPublisher(const ID& agent_id);
@@ -243,6 +246,7 @@ namespace flychams::common
         SubscriberPtr<AgentClustersMsg> createAgentClustersSubscriber(const ID& agent_id, std::function<void(const AgentClustersMsg::SharedPtr)> callback, const rclcpp::SubscriptionOptions& options = rclcpp::SubscriptionOptions());
         SubscriberPtr<Float32Msg> createAssignmentSolveDurationSubscriber(std::function<void(const Float32Msg::SharedPtr)> callback, const rclcpp::SubscriptionOptions& options = rclcpp::SubscriptionOptions());
         SubscriberPtr<Int32Msg> createAssignmentNodeCountSubscriber(std::function<void(const Int32Msg::SharedPtr)> callback, const rclcpp::SubscriptionOptions& options = rclcpp::SubscriptionOptions());
+        SubscriberPtr<Int32Msg> createAssignmentSwapCountSubscriber(std::function<void(const Int32Msg::SharedPtr)> callback, const rclcpp::SubscriptionOptions& options = rclcpp::SubscriptionOptions());
 
         // Agent subscribers
         SubscriberPtr<AgentStatusMsg> createAgentStatusSubscriber(const ID& agent_id, std::function<void(const AgentStatusMsg::SharedPtr)> callback, const rclcpp::SubscriptionOptions& options = rclcpp::SubscriptionOptions());

@@ -473,6 +473,7 @@ void MissionSettingsParser::parseTopicParameters(const NodePtr& node, MissionCon
 	node->get_parameter<std::string>("coordinator_topics.agent_clusters", config_ptr->topics.agent_clusters);
 	node->get_parameter<std::string>("coordinator_topics.assignment_solve_duration", config_ptr->topics.assignment_solve_duration);
 	node->get_parameter<std::string>("coordinator_topics.assignment_node_count", config_ptr->topics.assignment_node_count);
+	node->get_parameter<std::string>("coordinator_topics.assignment_swap_count", config_ptr->topics.assignment_swap_count);
 
 	// Agent topics
 	node->get_parameter<std::string>("agent_topics.agent_status", config_ptr->topics.agent_status);

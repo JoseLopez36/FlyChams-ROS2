@@ -135,6 +135,8 @@ namespace flychams::coordinator
         common::PublisherPtr<common::Float32Msg> solve_duration_pub_;
         // Publisher for assignment evaluated node count
         common::PublisherPtr<common::Int32Msg> node_count_pub_;
+        // Publisher for assignment swap count per solve
+        common::PublisherPtr<common::Int32Msg> swap_count_pub_;
     };
 
 } // namespace flychams::coordinator

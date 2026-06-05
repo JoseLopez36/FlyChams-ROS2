@@ -40,6 +40,7 @@ void BaseNode::init()
     coordinator_topics_.agent_clusters_pattern = topic_config.agent_clusters;
     coordinator_topics_.assignment_solve_duration = topic_config.assignment_solve_duration;
     coordinator_topics_.assignment_node_count = topic_config.assignment_node_count;
+    coordinator_topics_.assignment_swap_count = topic_config.assignment_swap_count;
 
     // Agent topics
     agent_topics_.status_pattern = topic_config.agent_status;
@@ -175,6 +176,11 @@ std::string BaseNode::getAssignmentSolveDurationTopic()
 std::string BaseNode::getAssignmentNodeCountTopic()
 {
     return coordinator_topics_.assignment_node_count;
+}
+
+std::string BaseNode::getAssignmentSwapCountTopic()
+{
+    return coordinator_topics_.assignment_swap_count;
 }
 
 std::string BaseNode::getAgentStatusTopic(const ID& agent_id)
@@ -357,6 +363,11 @@ PublisherPtr<Int32Msg> BaseNode::createAssignmentNodeCountPublisher()
     return node_->create_publisher<Int32Msg>(getAssignmentNodeCountTopic(), 10);
 }
 
+PublisherPtr<Int32Msg> BaseNode::createAssignmentSwapCountPublisher()
+{
+    return node_->create_publisher<Int32Msg>(getAssignmentSwapCountTopic(), 10);
+}
+
 PublisherPtr<AgentStatusMsg> BaseNode::createAgentStatusPublisher(const ID& agent_id)
 {
     rclcpp::QoS qos = rclcpp::QoS(rclcpp::KeepLast(1)).reliable().transient_local();
@@ -526,6 +537,11 @@ SubscriberPtr<Float32Msg> BaseNode::createAssignmentSolveDurationSubscriber(std:
 SubscriberPtr<Int32Msg> BaseNode::createAssignmentNodeCountSubscriber(std::function<void(const Int32Msg::SharedPtr)> callback, const rclcpp::SubscriptionOptions& options)
 {
     return node_->create_subscription<Int32Msg>(getAssignmentNodeCountTopic(), 10, std::move(callback), options);
+}
+
+SubscriberPtr<Int32Msg> BaseNode::createAssignmentSwapCountSubscriber(std::function<void(const Int32Msg::SharedPtr)> callback, const rclcpp::SubscriptionOptions& options)
+{
+    return node_->create_subscription<Int32Msg>(getAssignmentSwapCountTopic(), 10, std::move(callback), options);
 }
 
 SubscriberPtr<AgentStatusMsg> BaseNode::createAgentStatusSubscriber(const ID& agent_id, std::function<void(const AgentStatusMsg::SharedPtr)> callback, const rclcpp::SubscriptionOptions& options)

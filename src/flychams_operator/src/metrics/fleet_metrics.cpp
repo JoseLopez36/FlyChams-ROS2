@@ -17,6 +17,7 @@ void FleetMetrics::onModuleInit()
     total_agents_ = 0;
     assignment_solve_duration_ = 0.0f;
     has_assignment_solve_duration_ = false;
+    assignment_swap_count_ = 0;
 
     // Publishers
     metrics_pub_ = node_->createFleetMetricsPublisher();
@@ -24,6 +25,10 @@ void FleetMetrics::onModuleInit()
     // Subscribers
     assignment_solve_duration_sub_ = node_->createAssignmentSolveDurationSubscriber(
         std::bind(&FleetMetrics::assignmentSolveDurationCallback, this, std::placeholders::_1),
+        node_->getSubscriptionOptions());
+
+    assignment_swap_count_sub_ = node_->createAssignmentSwapCountSubscriber(
+        std::bind(&FleetMetrics::assignmentSwapCountCallback, this, std::placeholders::_1),
         node_->getSubscriptionOptions());
 
     // Update timer
@@ -34,6 +39,7 @@ void FleetMetrics::onModuleShutdown()
 {
     metrics_pub_.reset();
     assignment_solve_duration_sub_.reset();
+    assignment_swap_count_sub_.reset();
     update_timer_.reset();
 }
 
@@ -57,6 +63,12 @@ void FleetMetrics::assignmentSolveDurationCallback(const Float32Msg::SharedPtr m
     has_assignment_solve_duration_ = true;
 }
 
+void FleetMetrics::assignmentSwapCountCallback(const Int32Msg::SharedPtr msg)
+{
+    // Accumulate swap count over the mission
+    assignment_swap_count_ += msg->data;
+}
+
 // ════════════════════════════════════════════════════════════════════════════
 // UPDATE
 // ════════════════════════════════════════════════════════════════════════════
@@ -73,6 +85,7 @@ void FleetMetrics::update()
     FleetMetricsMsg msg;
     msg.header = node_->createHeader(node_->getGlobalFrame());
     msg.total_agents = total_agents_;
+    msg.assignment_swap_count = assignment_swap_count_;
     msg.assignment_solve_duration = has_assignment_solve_duration_ ? assignment_solve_duration_ : 0.0f;
 
     metrics_pub_->publish(msg);

@@ -13,11 +13,9 @@ namespace flychams::operator_pkg
      * @brief Fleet-level metrics aggregator
      *
      * @details
-     * Tracks fleet-wide metrics including total agent count and
-     * assignment solve duration. Publishes FleetMetrics message.
-     *
-     * Note: assignment_solve_duration is currently not sourced from
-     * the coordinator (placeholder value).
+     * Tracks fleet-wide metrics including total agent count,
+     * assignment solve duration and cumulative assignment swap count.
+     * Publishes FleetMetrics message.
      *
      * ════════════════════════════════════════════════════════════════
      * @author Jose Francisco Lopez Ruiz
@@ -47,6 +45,7 @@ namespace flychams::operator_pkg
         int total_agents_;
         float assignment_solve_duration_;
         bool has_assignment_solve_duration_;
+        int assignment_swap_count_;
 
     public: // Element management
         void addAgent();
@@ -54,6 +53,7 @@ namespace flychams::operator_pkg
 
     private: // Callbacks
         void assignmentSolveDurationCallback(const common::Float32Msg::SharedPtr msg);
+        void assignmentSwapCountCallback(const common::Int32Msg::SharedPtr msg);
 
     private: // Update
         void update();
@@ -62,6 +62,7 @@ namespace flychams::operator_pkg
     private: // ROS components
         common::PublisherPtr<common::FleetMetricsMsg> metrics_pub_;
         common::SubscriberPtr<common::Float32Msg> assignment_solve_duration_sub_;
+        common::SubscriberPtr<common::Int32Msg> assignment_swap_count_sub_;
         common::TimerPtr update_timer_;
     };
 

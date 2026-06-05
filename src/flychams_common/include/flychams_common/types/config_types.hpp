@@ -73,6 +73,7 @@ namespace flychams::common
         std::string agent_clusters;
         std::string assignment_solve_duration;
         std::string assignment_node_count;
+        std::string assignment_swap_count;
 
         // Agent topics
         std::string agent_status;

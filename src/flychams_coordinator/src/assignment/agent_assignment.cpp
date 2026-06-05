@@ -62,6 +62,7 @@ void AgentAssignment::onModuleInit()
     // Create publishers for assignment benchmarking
     solve_duration_pub_ = node_->createAssignmentSolveDurationPublisher();
     node_count_pub_ = node_->createAssignmentNodeCountPublisher();
+    swap_count_pub_ = node_->createAssignmentSwapCountPublisher();
 
     // Set update timer
     last_solve_time_ = common::Time(0, 0, RCL_ROS_TIME);
@@ -86,6 +87,7 @@ void AgentAssignment::onModuleShutdown()
     // Destroy publishers
     solve_duration_pub_.reset();
     node_count_pub_.reset();
+    swap_count_pub_.reset();
     // Destroy update timer
     update_timer_.reset();
 }
@@ -323,6 +325,13 @@ bool AgentAssignment::checkStatus()
 
 void AgentAssignment::publishResult(const common::RowVectorXi& X, float time_elapsed_ms, int node_count)
 {
+    // Compute swap count: number of positions that changed, only when all previous entries are valid
+    int swap_count = 0;
+    if (X_prev_.size() == X.size() && (X_prev_.array() >= 0).all())
+    {
+        swap_count = (X_prev_.array() != X.array()).count();
+    }
+
     // Update previous assignment
     X_prev_.resize(X.size());
     X_prev_ = X;
@@ -369,6 +378,11 @@ void AgentAssignment::publishResult(const common::RowVectorXi& X, float time_ela
     std_msgs::msg::Int32 node_count_msg;
     node_count_msg.data = node_count;
     node_count_pub_->publish(node_count_msg);
+
+    // Publish assignment swap count
+    std_msgs::msg::Int32 swap_count_msg;
+    swap_count_msg.data = swap_count;
+    swap_count_pub_->publish(swap_count_msg);
 }
 
 // ════════════════════════════════════════════════════════════════════════════
