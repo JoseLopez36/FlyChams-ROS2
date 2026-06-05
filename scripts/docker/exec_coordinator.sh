@@ -3,7 +3,7 @@ CONTAINER_NAME="${CONTAINER_NAME:-flychams-coordinator}"
 
 if ! docker ps --format '{{.Names}}' | grep -q "^${CONTAINER_NAME}$"; then
     echo "Error: Container '$CONTAINER_NAME' is not running"
-    echo "Start it first with: scripts/run_coordinator.sh"
+    echo "Start it first with: scripts/docker/run_coordinator.sh"
     exit 1
 fi
 

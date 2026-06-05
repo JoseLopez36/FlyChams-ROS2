@@ -65,11 +65,10 @@ scripts/stop.sh
 
 Use this procedure to replay a previously recorded bag to benchmark a subsystem. For example, to benchmark the assignment solver (e.g. compare `EXHAUSTIVE_SEARCH` vs `BRANCH_AND_BOUND` node counts) without running PX4 or AirSim.
 
-**1. Start the bag first**:
+**1. Start the operator container and replay the bag inside it:**
 
 ```bash
-ros2 bag play recordings/<bag-name>/<bag-name>.mcap --clock --loop \
-    --topics \
+CMD="source install/setup.bash && ros2 bag play recordings/<bag-name>/<bag-name>.mcap --clock --topics \
         /tf \
         /tf_static \
         /flychams/coordinator/registration \
@@ -80,12 +79,11 @@ ros2 bag play recordings/<bag-name>/<bag-name>.mcap --clock --loop \
         /flychams/coordinator/CLUSTER02/geometry \
         /flychams/agent/AGENT00/global_position \
         /flychams/agent/AGENT01/global_position \
-        /flychams/agent/AGENT02/global_position
+        /flychams/agent/AGENT02/global_position" \
+scripts/docker/run_operator.sh
 ```
 
-> Adjust the `CLUSTER*` and `AGENT*` entries to match the IDs in your recording.
-
-> `--loop` keeps replaying so the coordinator can run continuously.
+> Adjust the `CLUSTER*` and `AGENT*` entries to match the IDs in your recording. `--loop` keeps replaying so the coordinator can run continuously.
 
 **2. In a second terminal, start only the coordinator container:**
 
@@ -101,6 +99,16 @@ ros2 topic echo /flychams/coordinator/assignment_solve_duration
 
 # Evaluated node count
 ros2 topic echo /flychams/coordinator/assignment_node_count
+```
+
+**4. Optionally record the benchmark results into a new bag:**
+
+```bash
+CMD="source install/setup.bash && ros2 bag record --storage mcap \
+    --output recordings/benchmark_\$(date +%Y%m%d_%H%M%S) \
+    /flychams/coordinator/assignment_solve_duration \
+    /flychams/coordinator/assignment_node_count" \
+scripts/docker/exec_operator.sh
 ```
 
 ---

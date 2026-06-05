@@ -1,16 +1,9 @@
 #!/usr/bin/env bash
-AGENT_ID="${1:-}"
-if [ -z "$AGENT_ID" ]; then
-    echo "Usage: $0 <AGENT_ID>"
-    echo "Example: $0 AGENT00"
-    exit 1
-fi
-
-CONTAINER_NAME="flychams-agent-${AGENT_ID}"
+CONTAINER_NAME="${CONTAINER_NAME:-flychams-operator}"
 
 if ! docker ps --format '{{.Names}}' | grep -q "^${CONTAINER_NAME}$"; then
     echo "Error: Container '$CONTAINER_NAME' is not running"
-    echo "Start it first with: scripts/docker/run_agent.sh $AGENT_ID"
+    echo "Start it first with: scripts/docker/run_operator.sh"
     exit 1
 fi
 
