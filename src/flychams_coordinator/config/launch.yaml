@@ -18,4 +18,4 @@ node_log_levels:
   fleet_state: "warn"
   target_clustering: "warn"
   cluster_analysis: "warn"
-  agent_assignment: "info"
+  agent_assignment: "warn"
