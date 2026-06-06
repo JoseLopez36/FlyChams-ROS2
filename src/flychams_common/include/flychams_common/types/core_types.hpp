@@ -303,6 +303,10 @@ namespace flychams::common
 
     // ════════════════════════════════════════════════════════════════
     // TRACKING TYPES: Tracking-related types used throughout the project
+    //
+    // Zoom factor (upsilon): unified metric for Camera and Window units.
+    //   Camera: upsilon = focal length (m).
+    //   Window: upsilon = lambda * xi (resolution factor × correction).
     // ════════════════════════════════════════════════════════════════
 
     /**
@@ -327,6 +331,10 @@ namespace flychams::common
     {
         // Central camera focal length (m)
         float f_ref;
+        // Resolution factor limits
+        float lambda_min;
+        float lambda_max;
+        float lambda_ref;
         // Full resolution (pix)
         int full_width;
         int full_height;
@@ -340,13 +348,11 @@ namespace flychams::common
      */
     struct ObservationUnitParameters
     {
-        // Unit ID
+        // Unit identification
         std::string id;
-        // Unit type
         ObservationType type;
-        // Unit role
         ObservationRole role;
-        // Zoom factor limits
+        // Zoom factor limits: focal length (Camera) or lambda*xi (Window)
         float upsilon_min;
         float upsilon_max;
         float upsilon_ref;
@@ -354,11 +360,11 @@ namespace flychams::common
         float rho_x;
         float rho_y;
         float rho;
-        // Apparent target sizes (pix)
+        // Apparent target sizes limits (pix)
         float s_min_pix;
         float s_max_pix;
         float s_ref_pix;
-        // Apparent target sizes (m)
+        // Apparent target sizes limits (m)
         float s_min;
         float s_max;
         float s_ref;

@@ -160,7 +160,7 @@ const ObservationUnitParameters SettingsTools::getObservationUnitParameters(cons
     RCLCPP_DEBUG(node_->get_logger(), "  Unit ID: %s", params.id.c_str());
     RCLCPP_DEBUG(node_->get_logger(), "  Unit type: %s", observationTypeToString(params.type).c_str());
     RCLCPP_DEBUG(node_->get_logger(), "  Unit role: %s", observationRoleToString(params.role).c_str());
-    RCLCPP_DEBUG(node_->get_logger(), "  Zoom factor limits: min=%.3f, max=%.3f, ref=%.3f [m]", params.upsilon_min, params.upsilon_max, params.upsilon_ref);
+    RCLCPP_DEBUG(node_->get_logger(), "  Upsilon limits: min=%.3f, max=%.3f, ref=%.3f [m]", params.upsilon_min, params.upsilon_max, params.upsilon_ref);
     RCLCPP_DEBUG(node_->get_logger(), "  Regularized pixel size: %.6f [m/pix]", params.rho);
     RCLCPP_DEBUG(node_->get_logger(), "  Target size limits: min=%.2f [pix], max=%.2f [pix], ref=%.2f [pix]", params.s_min_pix, params.s_max_pix, params.s_ref_pix);
     RCLCPP_DEBUG(node_->get_logger(), "  Camera resolution: %d x %d [pix]", params.camera_params.width, params.camera_params.height);
@@ -185,15 +185,14 @@ const ObservationUnitParameters SettingsTools::getObservationUnitParameters(cons
     // Unit role (tracking always for multi-window units)
     params.role = ObservationRole::Tracking;
 
-    // Window resolution factor limits
-    params.upsilon_min = multi_window->min_lambda;
-    params.upsilon_max = multi_window->max_lambda;
-    params.upsilon_ref = multi_window->ref_lambda;
-
     // Get central camera parameters
     params.camera_params = central_camera_params.camera_params;
 
     // Get window parameters
+    // Resolution factor limits (config)
+    params.window_params.lambda_min = multi_window->min_lambda;
+    params.window_params.lambda_max = multi_window->max_lambda;
+    params.window_params.lambda_ref = multi_window->ref_lambda;
     // Central camera focal length (m)
     params.window_params.f_ref = central_camera_params.upsilon_ref;
     // Full resolution (pix)
@@ -206,6 +205,14 @@ const ObservationUnitParameters SettingsTools::getObservationUnitParameters(cons
     params.rho_x = central_camera_params.rho_x;
     params.rho_y = central_camera_params.rho_y;
     params.rho = central_camera_params.rho;
+
+    // Zoom factor (upsilon) limits: upsilon = lambda * xi
+    const Vector2r c(params.camera_params.K(0, 2), params.camera_params.K(1, 2));
+    std::tie(params.upsilon_min, params.upsilon_max, params.upsilon_ref) = ZoomUtils::computeWindowUpsilonBounds(
+        params.window_params.full_width, params.window_params.full_height, c,
+        params.rho_x, params.rho_y,
+        params.window_params.lambda_min, params.window_params.lambda_max, params.window_params.lambda_ref,
+        params.window_params.f_ref);
 
     // Calculate ROI parameters
     const auto& min_apparent_size = tracking.min_target_size;
@@ -235,7 +242,8 @@ const ObservationUnitParameters SettingsTools::getObservationUnitParameters(cons
     RCLCPP_DEBUG(node_->get_logger(), "  Unit ID: %s", params.id.c_str());
     RCLCPP_DEBUG(node_->get_logger(), "  Unit type: %s", observationTypeToString(params.type).c_str());
     RCLCPP_DEBUG(node_->get_logger(), "  Unit role: %s", observationRoleToString(params.role).c_str());
-    RCLCPP_DEBUG(node_->get_logger(), "  Zoom factor limits: min=%.3f, max=%.3f, ref=%.3f [m]", params.upsilon_min, params.upsilon_max, params.upsilon_ref);
+    RCLCPP_DEBUG(node_->get_logger(), "  Resolution factor limits: min=%.3f, max=%.3f, ref=%.3f", params.window_params.lambda_min, params.window_params.lambda_max, params.window_params.lambda_ref);
+    RCLCPP_DEBUG(node_->get_logger(), "  Zoom factor (upsilon) limits: min=%.3f, max=%.3f, ref=%.3f", params.upsilon_min, params.upsilon_max, params.upsilon_ref);
     RCLCPP_DEBUG(node_->get_logger(), "  Regularized pixel size: %.6f [m/pix]", params.rho);
     RCLCPP_DEBUG(node_->get_logger(), "  Target size limits: min=%.2f [pix], max=%.2f [pix], ref=%.2f [pix]", params.s_min_pix, params.s_max_pix, params.s_ref_pix);
     RCLCPP_DEBUG(node_->get_logger(), "  Window full resolution: %d x %d [pix]", params.window_params.full_width, params.window_params.full_height);

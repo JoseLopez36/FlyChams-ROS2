@@ -123,9 +123,9 @@ void AgentStream::observationSetpointsCallback(const ObservationSetpointsMsg::Sh
         // Update camera_info focal length for tracking cameras
         if (type == ObservationType::Camera && role == ObservationRole::Tracking)
         {
-            const float zoom = msg->zoom_factors[i];
+            const float focal = msg->focals[i];
             std::lock_guard<std::mutex> lock(unit->camera_info_mutex);
-            unit->camera_info = makeCameraInfo(unit->config, unit->output_width, unit->output_height, zoom);
+            unit->camera_info = makeCameraInfo(unit->config, unit->output_width, unit->output_height, focal);
         }
 
         // Update crops for the central camera windows

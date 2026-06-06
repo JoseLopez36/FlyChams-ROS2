@@ -160,7 +160,7 @@ void AgentBridge::publishCameraFovCmd()
         const float& sensor_width = camera_config.sensor_size(0);
 
         // Calculate camera FoV
-        const float& focal = agent_.observation_setpoints.zoom_factors[i];
+        const float& focal = agent_.observation_setpoints.focals[i];
         float fov = VisionUtils::computeFov(focal, sensor_width);
         msg.fovs.push_back(fov);
     }

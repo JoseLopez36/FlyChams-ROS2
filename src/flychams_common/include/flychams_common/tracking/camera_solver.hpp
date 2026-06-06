@@ -1,5 +1,8 @@
 #pragma once
 
+// Tracking includes
+#include "flychams_common/tracking/zoom_utils.hpp"
+
 // Utilities
 #include "flychams_common/types/core_types.hpp"
 #include "flychams_common/utils/math_utils.hpp"
@@ -41,7 +44,7 @@ namespace flychams::common
         }
 
         // Runtime methods
-        std::tuple<float, common::Vector3r, float, float> run(const common::Vector3r& z, const float& r, const common::Matrix4r& T, const common::ObservationUnitParameters& unit_params)
+        std::tuple<float, float, common::Vector3r, float> run(const common::Vector3r& z, const float& r, const common::Matrix4r& T, const common::ObservationUnitParameters& unit_params)
         {
             // Args:
             // z: Target position in world frame (m)
@@ -54,16 +57,13 @@ namespace flychams::common
             const common::Matrix3r R = T.block<3, 3>(0, 0);
 
             // Compute focal length
-            const auto focal = computeCameraFocal(z, r, x, unit_params);
+            const float focal = computeFocal(z, r, x, unit_params);
 
-            // Update previous focal
+            // Compute upsilon (focal length for cameras)
+            const float upsilon = focal;
+
+            // Update previous focal length
             focal_prev_ = focal;
-
-            // Compute generalized zoom factor: (upsilon - upsilon_min) / (upsilon_max - upsilon_min)
-            const float upsilon_range = unit_params.upsilon_max - unit_params.upsilon_min;
-            const float generalized_zoom = (upsilon_range > 0.0f)
-                ? (focal - unit_params.upsilon_min) / upsilon_range
-                : 0.0f;
 
             // Compute camera orientation
             common::Vector3r rpy;
@@ -80,16 +80,16 @@ namespace flychams::common
             // Update previous orientation
             rpy_prev_ = rpy;
 
-            // Compute apparent target size: s = r * focal / (d * rho)
+            // Compute apparent target size
             const float d = (x - z).norm();
-            const float apparent_size = r * focal / (d * unit_params.rho);
+            const float apparent_size = ZoomUtils::computeApparentSize(r, upsilon, d, unit_params.rho);
 
-            // Return focal length, orientation, generalized zoom and apparent size
-            return std::make_tuple(focal, rpy, generalized_zoom, apparent_size);
+            // Return upsilon, focal length, orientation and apparent size
+            return std::make_tuple(upsilon, focal, rpy, apparent_size);
         }
 
     private: // Implementation
-        float computeCameraFocal(const common::Vector3r& z, const float& r, const common::Vector3r& x, const common::ObservationUnitParameters& unit_params)
+        float computeFocal(const common::Vector3r& z, const float& r, const common::Vector3r& x, const common::ObservationUnitParameters& unit_params)
         {
             // Args:
             // z: Target position in world frame (m)

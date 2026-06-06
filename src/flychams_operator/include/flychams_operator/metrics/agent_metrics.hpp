@@ -16,7 +16,7 @@ namespace flychams::operator_pkg
      * Subscribes to an agent's local position, position setpoint,
      * observation setpoints and agent status topics. On each timer
      * tick it computes distance_traveled, speed, distance_to_goal,
-     * apparent_target_sizes, generalized_zoom_factors and centering_errors,
+     * upsilons and apparent_target_sizes,
      * then publishes an AgentMetrics message.
      *
      * ════════════════════════════════════════════════════════════════
@@ -48,10 +48,8 @@ namespace flychams::operator_pkg
             common::PointMsg setpoint;
             bool has_setpoint;
             // Latest tracking data (from observation setpoints)
-            std::vector<float> zoom_factors;
-            std::vector<float> generalized_zoom_factors;
+            std::vector<float> upsilons_norm;
             std::vector<float> apparent_target_sizes;
-            std::vector<float> centering_errors;
             bool has_observation_setpoints;
             // Latest position solve duration
             float position_solve_duration;
@@ -66,7 +64,7 @@ namespace flychams::operator_pkg
             // Constructor
             AgentData()
                 : position(), has_position(false), setpoint(), has_setpoint(false),
-                  zoom_factors(), generalized_zoom_factors(), apparent_target_sizes(), centering_errors(),
+                  upsilons_norm(), apparent_target_sizes(),
                   has_observation_setpoints(false),
                   position_solve_duration(0.0f), has_position_solve_duration(false),
                   metrics_pub(), local_position_sub(), position_setpoint_sub(),

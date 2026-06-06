@@ -9,6 +9,7 @@
 #include "flychams_common/types/ros_types.hpp"
 
 // Utils includes
+#include "flychams_common/tracking/zoom_utils.hpp"
 #include "flychams_common/utils/math_utils.hpp"
 #include "flychams_common/utils/vision_utils.hpp"
 

@@ -168,8 +168,8 @@ void AgentAnnotations::publishCameraAnnotations(size_t idx, int view_w, int view
     const auto& sp = *setpoints_;
     const auto stamp = node_->now();
 
-    // Get zoom factor (focal)
-    const float zoom = idx < sp.zoom_factors.size() ? sp.zoom_factors[idx] : 1.0f;
+    // Get focal length
+    const float focal = idx < sp.focals.size() ? sp.focals[idx] : 1.0f;
 
     FoxImageAnnotationsMsg msg;
 
@@ -299,7 +299,7 @@ void AgentAnnotations::publishCameraAnnotations(size_t idx, int view_w, int view
     {
         std::ostringstream oss;
         oss << std::fixed;
-        oss << "z=" << std::setprecision(3) << zoom;
+        oss << "f=" << std::setprecision(3) << focal;
         if (idx < sp.rotations.size())
         {
             constexpr float kR2D = 180.0f / static_cast<float>(M_PI);
@@ -344,7 +344,7 @@ void AgentAnnotations::publishWindowAnnotations(size_t idx, int view_w, int view
     FoxImageAnnotationsMsg msg;
 
     const float y1   = static_cast<float>(view_h);
-    const float zoom = idx < sp.zoom_factors.size() ? sp.zoom_factors[idx] : 1.0f;
+    const float lambda = idx < sp.lambdas.size() ? sp.lambdas[idx] : 1.0f;
     const bool  oob  = crop.is_out_of_bounds;
 
     // Agent color from palette (orange tint when out of bounds)
@@ -371,12 +371,12 @@ void AgentAnnotations::publishWindowAnnotations(size_t idx, int view_w, int view
         msg.texts.push_back(badge);
     }
 
-    // ── HUD text (crop size + zoom, bottom-left corner)
+    // ── HUD text (crop size + lambda, bottom-left corner)
     if (WindowAnnotations::kShowHud)
     {
         std::ostringstream oss;
         oss << crop.w << "x" << crop.h
-            << "  z=" << std::fixed << std::setprecision(3) << zoom;
+            << "  lambda=" << std::fixed << std::setprecision(3) << lambda;
 
         FoxTextAnnotationMsg hud;
         hud.timestamp = stamp;

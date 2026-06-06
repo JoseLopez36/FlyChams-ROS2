@@ -11,9 +11,16 @@ string[] ids                         # Unit IDs
 uint8[] types                        # Unit types (0: None, 1: Camera, 2: Window)
 uint8[] roles                        # Unit roles (0: None, 1: Central, 2: Tracking)
 
-# Unit data
-float32[] zoom_factors               # Unit zoom factor
-float32[] generalized_zoom_factors   # Generalized zoom factor for each unit (0=min, 1=max)
+# Zoom data
+float32[] upsilons                   # Generalized zoom factor upsilon (focal for Camera, lambda*xi for Window) (m)
+float32[] upsilons_norm              # Normalized zoom factor upsilon (dimensionless, [0, 1])
+float32[] focals                     # Focal lengths for Camera (m)
+float32[] lambdas                    # Resolution factors for Window (dimensionless)
+float32[] xis                        # Offset correction factors for Window (m)
+
+# Spatial data
 geometry_msgs/Vector3[] rotations    # Unit goal roll, pitch and yaw (rad) (only for Camera type)
 flychams_api/Crop[] crops            # Unit goal crop or ROI (only for Window type)
+
+# Apparent target sizes
 float32[] apparent_target_sizes      # Projected cluster radius for each unit (px)

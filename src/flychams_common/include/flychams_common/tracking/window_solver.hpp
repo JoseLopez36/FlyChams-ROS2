@@ -1,5 +1,8 @@
 #pragma once
 
+// Tracking includes
+#include "flychams_common/tracking/zoom_utils.hpp"
+
 // Utilities
 #include "flychams_common/types/core_types.hpp"
 #include "flychams_common/utils/math_utils.hpp"
@@ -28,7 +31,7 @@ namespace flychams::common
         }
 
         // Runtime methods
-        std::tuple<float, common::Crop, float, float> run(const common::Vector3r& z, const float& r, const common::Matrix4r& T, const common::ObservationUnitParameters& unit_params)
+        std::tuple<float, float, float, common::Crop, float> run(const common::Vector3r& z, const float& r, const common::Matrix4r& T, const common::ObservationUnitParameters& unit_params)
         {
             // Args:
             // z: Target position in world frame (m)
@@ -45,11 +48,8 @@ namespace flychams::common
             // Compute window size and correction factor
             const auto [size, lambda, xi] = computeWindowSize(z, r, x, p, unit_params);
 
-            // Compute generalized zoom factor: (upsilon - upsilon_min) / (upsilon_max - upsilon_min)
-            const float upsilon_range = unit_params.upsilon_max - unit_params.upsilon_min;
-            const float generalized_zoom = (upsilon_range > 0.0f)
-                ? (lambda - unit_params.upsilon_min) / upsilon_range
-                : 0.0f;
+            // Compute upsilon (lambda*xi for windows)
+            const float upsilon = lambda * xi;
 
             // Compute window corner
             const common::Vector2i corner = computeWindowCorner(p, size);
@@ -69,12 +69,12 @@ namespace flychams::common
             crop.h = size.y();
             crop.is_out_of_bounds = is_out_of_bounds;
 
-            // Compute apparent target size: s = r * lambda * xi / (d * rho)
+            // Compute apparent target size
             const float d = (x - z).norm();
-            const float apparent_size = r * lambda * xi / (d * unit_params.rho);
+            const float apparent_size = ZoomUtils::computeApparentSize(r, upsilon, d, unit_params.rho);
 
-            // Return resolution factor, crop, generalized zoom and apparent size
-            return std::make_tuple(lambda, crop, generalized_zoom, apparent_size);
+            // Return upsilon, lambda, xi, crop and apparent size
+            return std::make_tuple(upsilon, lambda, xi, crop, apparent_size);
         }
 
     private: // Implementation
@@ -93,25 +93,25 @@ namespace flychams::common
             const auto& full_height = unit_params.window_params.full_height;
             const auto& tracking_width = unit_params.window_params.tracking_width;
             const auto& tracking_height = unit_params.window_params.tracking_height;
-            const auto& lambda_min = unit_params.upsilon_min;
-            const auto& lambda_max = unit_params.upsilon_max;
+            const auto& lambda_min = unit_params.window_params.lambda_min;
+            const auto& lambda_max = unit_params.window_params.lambda_max;
+            const auto& K = unit_params.camera_params.K;
             const auto& rho_x = unit_params.rho_x;
             const auto& rho_y = unit_params.rho_y;
             const auto& s_ref = unit_params.s_ref;
 
             // Compute distance between target and camera
-            float d = (x - z).norm();
+            const float d = (x - z).norm();
 
             // Calculate the correction factor for uncentered targets
-            float u_pix = full_width / 2.0f;
-            float v_pix = full_height / 2.0f;
-            float l = std::sqrt(std::pow(p(0) - u_pix, 2) * std::pow(rho_x, 2) + std::pow(p(1) - v_pix, 2) * std::pow(rho_y, 2));
-            float xi = std::sqrt(std::pow(f, 2) + std::pow(l, 2));
+            const Vector2r c(K(0, 2), K(1, 2));
+            const float l = ZoomUtils::computeClusterOffset(p, c, rho_x, rho_y);
+            const float xi = ZoomUtils::computeOffsetCorrectionFactor(f, l);
 
             // Attempt to adjust the resolution factor to achieve the desired apparent size of the object
             float lambda = (d * s_ref) / (r * xi);
 
-            // Clamp the resolution factor within the camera's resolution limits
+            // Clamp the resolution factor within limits
             lambda = std::max(std::min(lambda, lambda_max), lambda_min);
 
             // Compute window size using the resolution factor
