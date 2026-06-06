@@ -45,8 +45,10 @@ void AgentTracking::onModuleInit()
         agent_.observation_setpoints.types.push_back(static_cast<uint8_t>(unit.type));
         agent_.observation_setpoints.roles.push_back(static_cast<uint8_t>(unit.role));
         agent_.observation_setpoints.zoom_factors.push_back(unit.upsilon_ref);
+        agent_.observation_setpoints.generalized_zoom_factors.push_back(0.0f);
         agent_.observation_setpoints.rotations.push_back(Vector3Msg());
         agent_.observation_setpoints.crops.push_back(CropMsg());
+        agent_.observation_setpoints.apparent_target_sizes.push_back(0.0f);
     }
 
     // Create observation unit solvers
@@ -140,28 +142,36 @@ void AgentTracking::update()
     {
         // Initialize variables
         float zoom_factor;
+        float generalized_zoom = 0.0f;
         Vector3r rotation; // Only for Camera type
         Crop crop;         // Only for Window type
+        float apparent_size = 0.0f;
 
         // Solve based on unit type
         if (unit.type == ObservationType::Camera && unit.role == ObservationRole::Central)
         {
             // Set central camera reference focal length
             zoom_factor = tracking_params_.observation_units_params[0].upsilon_ref;
+            // Generalized zoom at reference focal length
+            const float upsilon_range = unit.upsilon_max - unit.upsilon_min;
+            generalized_zoom = (upsilon_range > 0.0f)
+                ? (zoom_factor - unit.upsilon_min) / upsilon_range
+                : 0.0f;
             // Get central camera initial orientation
             rotation = node_->getSettings()->getMultiCamera(agent_id_, unit.id)->orientation;
         }
         else if (unit.type == ObservationType::Camera && unit.role == ObservationRole::Tracking)
         {
-            std::tie(zoom_factor, rotation) = updateCamera(tab_P.col(i), tab_r(i), tab_T[i], solvers_[i]);
+            std::tie(zoom_factor, rotation, generalized_zoom, apparent_size) = updateCamera(tab_P.col(i), tab_r(i), tab_T[i], solvers_[i]);
         }
         else if (unit.type == ObservationType::Window)
         {
-            std::tie(zoom_factor, crop) = updateWindow(tab_P.col(i), tab_r(i), tab_T[0], solvers_[i]);
+            std::tie(zoom_factor, crop, generalized_zoom, apparent_size) = updateWindow(tab_P.col(i), tab_r(i), tab_T[0], solvers_[i]);
         }
 
         // Update observation setpoints
         agent_.observation_setpoints.zoom_factors[i] = zoom_factor;
+        agent_.observation_setpoints.generalized_zoom_factors[i] = generalized_zoom;
         if (unit.type == ObservationType::Camera)
         {
             node_->toMsg(rotation, agent_.observation_setpoints.rotations[i]);
@@ -170,6 +180,7 @@ void AgentTracking::update()
         {
             node_->toMsg(crop, agent_.observation_setpoints.crops[i]);
         }
+        agent_.observation_setpoints.apparent_target_sizes[i] = apparent_size;
 
         i++;
     }
@@ -220,7 +231,7 @@ bool AgentTracking::checkStatus()
 // TRACKING: Tracking methods
 // ════════════════════════════════════════════════════════════════════════════
 
-std::tuple<float, Vector3r> AgentTracking::updateCamera(const Vector3r& P, const float& r, const Matrix4r& T, ObservationSolver::SharedPtr solver)
+std::tuple<float, Vector3r, float, float> AgentTracking::updateCamera(const Vector3r& P, const float& r, const Matrix4r& T, ObservationSolver::SharedPtr solver)
 {
     // Create auxiliary transform
     // This transform is used in the calculation of tracking orientation
@@ -235,17 +246,17 @@ std::tuple<float, Vector3r> AgentTracking::updateCamera(const Vector3r& P, const
     wTaux.block<3, 3>(0, 0) = MathUtils::quatToMatrix(wQaux);
 
     // Compute camera setpoint
-    const auto& [focal, auxRPYc] = solver->runCamera(P, r, wTaux);
+    const auto& [focal, auxRPYc, generalized_zoom, apparent_size] = solver->runCamera(P, r, wTaux);
 
     // Convert auxiliary orientation to world frame (same X, inverted Y and Z)
     const Vector3r wRPYc = Vector3r(auxRPYc(0), auxRPYc(1) - M_PI_2, auxRPYc(2) - M_PI_2);
 
-    // Return focal length and orientation
-    return std::make_tuple(focal, wRPYc);
+    // Return focal length, orientation, generalized zoom and apparent size
+    return std::make_tuple(focal, wRPYc, generalized_zoom, apparent_size);
 }
 
-std::tuple<float, Crop> AgentTracking::updateWindow(const Vector3r& P, const float& r, const Matrix4r& T, ObservationSolver::SharedPtr solver)
+std::tuple<float, Crop, float, float> AgentTracking::updateWindow(const Vector3r& P, const float& r, const Matrix4r& T, ObservationSolver::SharedPtr solver)
 {
-    // Compute window setpoint and return resolution factor and crop
+    // Compute window setpoint and return resolution factor, crop, generalized zoom and apparent size
     return solver->runWindow(P, r, T);
 }

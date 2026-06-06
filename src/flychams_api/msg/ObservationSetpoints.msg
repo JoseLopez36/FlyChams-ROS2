@@ -17,4 +17,3 @@ float32[] generalized_zoom_factors   # Generalized zoom factor for each unit (0=
 geometry_msgs/Vector3[] rotations    # Unit goal roll, pitch and yaw (rad) (only for Camera type)
 flychams_api/Crop[] crops            # Unit goal crop or ROI (only for Window type)
 float32[] apparent_target_sizes      # Projected cluster radius for each unit (px)
-float32[] centering_errors           # Distance between projected centroid and view center for each unit (px)

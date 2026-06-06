@@ -28,7 +28,7 @@ namespace flychams::common
         }
 
         // Runtime methods
-        std::tuple<float, common::Crop> run(const common::Vector3r& z, const float& r, const common::Matrix4r& T, const common::ObservationUnitParameters& unit_params)
+        std::tuple<float, common::Crop, float, float> run(const common::Vector3r& z, const float& r, const common::Matrix4r& T, const common::ObservationUnitParameters& unit_params)
         {
             // Args:
             // z: Target position in world frame (m)
@@ -42,8 +42,14 @@ namespace flychams::common
             // Project target position onto central camera
             common::Vector2r p = common::VisionUtils::projectPoint(z, T, unit_params.camera_params.K);
 
-            // Compute window size
-            const auto [size, lambda] = computeWindowSize(z, r, x, p, unit_params);
+            // Compute window size and correction factor
+            const auto [size, lambda, xi] = computeWindowSize(z, r, x, p, unit_params);
+
+            // Compute generalized zoom factor: (upsilon - upsilon_min) / (upsilon_max - upsilon_min)
+            const float upsilon_range = unit_params.upsilon_max - unit_params.upsilon_min;
+            const float generalized_zoom = (upsilon_range > 0.0f)
+                ? (lambda - unit_params.upsilon_min) / upsilon_range
+                : 0.0f;
 
             // Compute window corner
             const common::Vector2i corner = computeWindowCorner(p, size);
@@ -63,12 +69,16 @@ namespace flychams::common
             crop.h = size.y();
             crop.is_out_of_bounds = is_out_of_bounds;
 
-            // Return resolution factor and crop
-            return std::make_tuple(lambda, crop);
+            // Compute apparent target size: s = r * lambda * xi / (d * rho)
+            const float d = (x - z).norm();
+            const float apparent_size = r * lambda * xi / (d * unit_params.rho);
+
+            // Return resolution factor, crop, generalized zoom and apparent size
+            return std::make_tuple(lambda, crop, generalized_zoom, apparent_size);
         }
 
     private: // Implementation
-        std::tuple<common::Vector2i, float> computeWindowSize(const common::Vector3r& z, const float& r, const common::Vector3r& x, const common::Vector2r& p, const common::ObservationUnitParameters& unit_params)
+        std::tuple<common::Vector2i, float, float> computeWindowSize(const common::Vector3r& z, const float& r, const common::Vector3r& x, const common::Vector2r& p, const common::ObservationUnitParameters& unit_params)
         {
             // Args:
             // z: Target position in world frame (m)
@@ -109,8 +119,8 @@ namespace flychams::common
             size(0) = static_cast<int>(std::round(static_cast<float>(tracking_width) / lambda));
             size(1) = static_cast<int>(std::round(static_cast<float>(tracking_height) / lambda));
 
-            // Return window size and resolution factor
-            return std::make_tuple(size, lambda);
+            // Return window size, resolution factor and correction factor
+            return std::make_tuple(size, lambda, xi);
         }
 
         common::Vector2i computeWindowCorner(const common::Vector2r& p, const common::Vector2i& size)

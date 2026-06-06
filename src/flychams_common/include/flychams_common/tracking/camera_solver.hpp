@@ -41,7 +41,7 @@ namespace flychams::common
         }
 
         // Runtime methods
-        std::tuple<float, common::Vector3r> run(const common::Vector3r& z, const float& r, const common::Matrix4r& T, const common::ObservationUnitParameters& unit_params)
+        std::tuple<float, common::Vector3r, float, float> run(const common::Vector3r& z, const float& r, const common::Matrix4r& T, const common::ObservationUnitParameters& unit_params)
         {
             // Args:
             // z: Target position in world frame (m)
@@ -59,6 +59,12 @@ namespace flychams::common
             // Update previous focal
             focal_prev_ = focal;
 
+            // Compute generalized zoom factor: (upsilon - upsilon_min) / (upsilon_max - upsilon_min)
+            const float upsilon_range = unit_params.upsilon_max - unit_params.upsilon_min;
+            const float generalized_zoom = (upsilon_range > 0.0f)
+                ? (focal - unit_params.upsilon_min) / upsilon_range
+                : 0.0f;
+
             // Compute camera orientation
             common::Vector3r rpy;
             if (is_first_update_)
@@ -74,8 +80,12 @@ namespace flychams::common
             // Update previous orientation
             rpy_prev_ = rpy;
 
-            // Return focal length and orientation
-            return std::make_tuple(focal, rpy);
+            // Compute apparent target size: s = r * focal / (d * rho)
+            const float d = (x - z).norm();
+            const float apparent_size = r * focal / (d * unit_params.rho);
+
+            // Return focal length, orientation, generalized zoom and apparent size
+            return std::make_tuple(focal, rpy, generalized_zoom, apparent_size);
         }
 
     private: // Implementation

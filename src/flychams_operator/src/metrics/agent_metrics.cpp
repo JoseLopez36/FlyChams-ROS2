@@ -85,7 +85,6 @@ void AgentMetrics::observationSetpointsCallback(const ObservationSetpointsMsg::S
     agent_.zoom_factors.assign(msg->zoom_factors.begin(), msg->zoom_factors.end());
     agent_.generalized_zoom_factors.assign(msg->generalized_zoom_factors.begin(), msg->generalized_zoom_factors.end());
     agent_.apparent_target_sizes.assign(msg->apparent_target_sizes.begin(), msg->apparent_target_sizes.end());
-    agent_.centering_errors.assign(msg->centering_errors.begin(), msg->centering_errors.end());
     agent_.has_observation_setpoints = true;
 }
 
@@ -138,7 +137,7 @@ void AgentMetrics::update()
     msg.zoom_factors = agent_.has_observation_setpoints ? agent_.zoom_factors : std::vector<float>{};
     msg.generalized_zoom_factors = agent_.has_observation_setpoints ? agent_.generalized_zoom_factors : std::vector<float>{};
     msg.apparent_target_sizes = agent_.has_observation_setpoints ? agent_.apparent_target_sizes : std::vector<float>{};
-    msg.centering_errors = agent_.has_observation_setpoints ? agent_.centering_errors : std::vector<float>{};
+    msg.centering_errors = {};
     msg.position_solve_duration = agent_.has_position_solve_duration ? agent_.position_solve_duration : 0.0f;
     msg.distance_traveled = distance_traveled_;
     msg.speed = speed;
