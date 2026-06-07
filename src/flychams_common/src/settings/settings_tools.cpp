@@ -198,6 +198,11 @@ const ObservationUnitParameters SettingsTools::getObservationUnitParameters(cons
     // Full resolution (pix)
     params.window_params.full_width = central_camera_params.camera_params.width;
     params.window_params.full_height = central_camera_params.camera_params.height;
+    // Tracking resolution (pix) = full_resolution * lambda_min
+    params.window_params.tracking_width = 
+        static_cast<int>(std::round(static_cast<float>(params.window_params.full_width) * params.window_params.lambda_min));
+    params.window_params.tracking_height = 
+        static_cast<int>(std::round(static_cast<float>(params.window_params.full_height) * params.window_params.lambda_min));
     // Regularized pixel size (m/pix)
     params.rho_x = central_camera_params.rho_x;
     params.rho_y = central_camera_params.rho_y;
