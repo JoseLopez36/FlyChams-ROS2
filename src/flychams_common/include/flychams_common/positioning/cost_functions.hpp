@@ -18,6 +18,20 @@ namespace flychams::common
     class CostFunctions
     {
     public: // Types
+        struct UnitCostWeights // Shared cost function weights for all tracking units
+        {
+            // Psi
+            float tau0 = 1.0f;
+            float tau1 = 2.0f;
+            float tau2 = 10.0f;
+            // Lambda
+            float sigma0 = 1.0f;
+            float sigma1 = 2.0f;
+            float sigma2 = 10.0f;
+            // Gamma
+            float mu1 = 1.0f;
+            float mu2 = 1.0f;
+        };
         struct UnitCostParameters // Parameters for the cost of a single observation unit
         {
             // Unit parameters
@@ -33,9 +47,21 @@ namespace flychams::common
             float sigma1 = 2.0f;
             float sigma2 = 10.0f;
             // Gamma
-            float mu = 1.0f;
-            float nu = 1.0f;
+            float mu1 = 1.0f;
+            float mu2 = 1.0f;
         };
+
+        static void applyCostWeights(const UnitCostWeights& weights, UnitCostParameters& unit)
+        {
+            unit.tau0 = weights.tau0;
+            unit.tau1 = weights.tau1;
+            unit.tau2 = weights.tau2;
+            unit.sigma0 = weights.sigma0;
+            unit.sigma1 = weights.sigma1;
+            unit.sigma2 = weights.sigma2;
+            unit.mu1 = weights.mu1;
+            unit.mu2 = weights.mu2;
+        }
         struct CostParameters // Parameters for the cost function
         {
             int n_t;                                    // Number of tracking units
@@ -182,8 +208,8 @@ namespace flychams::common
             const auto& sigma0 = unit.sigma0;
             const auto& sigma1 = unit.sigma1;
             const auto& sigma2 = unit.sigma2;
-            const auto& mu = unit.mu;
-            const auto& nu = unit.nu;
+            const auto& mu1 = unit.mu1;
+            const auto& mu2 = unit.mu2;
 
             // Target position and distance to its camera (approximated by distance to the vehicle)
             const float d = (x - z).norm();
@@ -213,8 +239,8 @@ namespace flychams::common
                 sigma1 * pow(max(0.0f, L1 - d), 2) +
                 sigma2 * pow(max(0.0f, L2 - d), 2);
             const float gamma_i =
-                mu * (x - p_ref).transpose() * (x - p_ref) +
-                nu * pow((d - (x - z).transpose() * common::Vector3r(0.0f, 0.0f, 1.0f)), 2);
+                mu1 * (x - p_ref).transpose() * (x - p_ref) +
+                mu2 * pow((d - (x - z).transpose() * common::Vector3r(0.0f, 0.0f, 1.0f)), 2);
 
             // Return the value of Ji
             return psi_i + lambda_i + gamma_i;
@@ -239,8 +265,8 @@ namespace flychams::common
             const auto& tau0 = unit.tau0;
             const auto& tau1 = unit.tau1;
             const auto& tau2 = unit.tau2;
-            const auto& mu = unit.mu;
-            const auto& nu = unit.nu;
+            const auto& mu1 = unit.mu1;
+            const auto& mu2 = unit.mu2;
 
             // Target position and distance to its camera (approximated by distance to the vehicle)
             const float d = (x - z).norm();
@@ -267,8 +293,8 @@ namespace flychams::common
                 tau2 * pow(max(0.0f, d - U2), 2);
             // const float lambda_i = 0.0f; // Non-convex term is not considered
             const float gamma_i =
-                mu * (x - p_ref).transpose() * (x - p_ref) +
-                nu * pow((d - (x - z).transpose() * common::Vector3r(0.0f, 0.0f, 1.0f)), 2);
+                mu1 * (x - p_ref).transpose() * (x - p_ref) +
+                mu2 * pow((d - (x - z).transpose() * common::Vector3r(0.0f, 0.0f, 1.0f)), 2);
 
             // Return the value of Ji
             return psi_i + gamma_i;
@@ -301,8 +327,8 @@ namespace flychams::common
             const auto& sigma0 = unit.sigma0;
             const auto& sigma1 = unit.sigma1;
             const auto& sigma2 = unit.sigma2;
-            const auto& mu = unit.mu;
-            const auto& nu = unit.nu;
+            const auto& mu1 = unit.mu1;
+            const auto& mu2 = unit.mu2;
 
             // Target position and distance to its camera (approximated by distance to the vehicle)
             const float d = (x - z).norm();
@@ -342,8 +368,8 @@ namespace flychams::common
                 sigma1 * pow(max(0.0f, L1 - d_proj), 2) +
                 sigma2 * pow(max(0.0f, L2 - d_proj), 2);
             const float gamma_i =
-                mu * (x - p_ref).transpose() * (x - p_ref) +
-                nu * pow((d - (x - z).transpose() * common::Vector3r(0.0f, 0.0f, 1.0f)), 2);
+                mu1 * (x - p_ref).transpose() * (x - p_ref) +
+                mu2 * pow((d - (x - z).transpose() * common::Vector3r(0.0f, 0.0f, 1.0f)), 2);
 
             // Return the value of Ji
             return psi_i + lambda_i + gamma_i;
@@ -370,8 +396,8 @@ namespace flychams::common
             const auto& tau0 = unit.tau0;
             const auto& tau1 = unit.tau1;
             const auto& tau2 = unit.tau2;
-            const auto& mu = unit.mu;
-            const auto& nu = unit.nu;
+            const auto& mu1 = unit.mu1;
+            const auto& mu2 = unit.mu2;
 
             // Initialize the gradient
             grad = common::Vector3r::Zero();
@@ -408,8 +434,8 @@ namespace flychams::common
                 tau2 * pow(max(0.0f, d - U2), 2);
             // const float lambda_i = 0.0f; // Non-convex term is not considered
             const float gamma_i =
-                mu * (x - p_ref).transpose() * (x - p_ref) +
-                nu * pow((d - (x - z).transpose() * common::Vector3r(0.0f, 0.0f, 1.0f)), 2);
+                mu1 * (x - p_ref).transpose() * (x - p_ref) +
+                mu2 * pow((d - (x - z).transpose() * common::Vector3r(0.0f, 0.0f, 1.0f)), 2);
 
             // Compute the gradient of the cost function
             // Psi gradient
@@ -457,8 +483,8 @@ namespace flychams::common
             const auto& sigma0 = unit.sigma0;
             const auto& sigma1 = unit.sigma1;
             const auto& sigma2 = unit.sigma2;
-            const auto& mu = unit.mu;
-            const auto& nu = unit.nu;
+            const auto& mu1 = unit.mu1;
+            const auto& mu2 = unit.mu2;
 
             // Initialize the gradient
             grad = common::Vector3r::Zero();
@@ -507,8 +533,8 @@ namespace flychams::common
                 sigma1 * pow(max(0.0f, L1 - d_proj), 2) +
                 sigma2 * pow(max(0.0f, L2 - d_proj), 2);
             const float gamma_i =
-                mu * (x - p_ref).transpose() * (x - p_ref) +
-                nu * pow((d - (x - z).transpose() * common::Vector3r(0.0f, 0.0f, 1.0f)), 2);
+                mu1 * (x - p_ref).transpose() * (x - p_ref) +
+                mu2 * pow((d - (x - z).transpose() * common::Vector3r(0.0f, 0.0f, 1.0f)), 2);
 
             // Compute the gradient of the cost function
             // Psi gradient

@@ -54,6 +54,16 @@
       num_challenger_tests: 10
       # Nesterov parameters
       lipschitz_constant: 0.0
+      # Cost function weights
+      cost_weights:
+        tau0: 1.0
+        tau1: 2.0
+        tau2: 10.0
+        sigma0: 1.0
+        sigma1: 2.0
+        sigma2: 10.0
+        mu1: 1.0
+        mu2: 1.0
 
 /**/agent_tracking_node:
   ros__parameters:

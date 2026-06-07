@@ -86,6 +86,7 @@ namespace flychams::coordinator
         // Position solver parameters
         common::PositionSolver::SolverMode position_solver_mode_;
         common::PositionSolver::Parameters position_solver_params_;
+        common::CostFunctions::UnitCostWeights cost_weights_;
 
     private: // Data
         // Agents

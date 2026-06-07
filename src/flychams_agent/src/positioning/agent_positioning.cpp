@@ -31,6 +31,15 @@ void AgentPositioning::onModuleInit()
     solver_params_.num_challenger_tests = node_->getParameterOr<int>("positioning.num_challenger_tests", 10);
     // Get Nesterov parameters
     solver_params_.lipschitz_constant = node_->getParameterOr<float>("positioning.lipschitz_constant", 0.0f);
+    // Get cost function weights
+    cost_weights_.tau0 = node_->getParameterOr<float>("positioning.cost_weights.tau0", 1.0f);
+    cost_weights_.tau1 = node_->getParameterOr<float>("positioning.cost_weights.tau1", 2.0f);
+    cost_weights_.tau2 = node_->getParameterOr<float>("positioning.cost_weights.tau2", 10.0f);
+    cost_weights_.sigma0 = node_->getParameterOr<float>("positioning.cost_weights.sigma0", 1.0f);
+    cost_weights_.sigma1 = node_->getParameterOr<float>("positioning.cost_weights.sigma1", 2.0f);
+    cost_weights_.sigma2 = node_->getParameterOr<float>("positioning.cost_weights.sigma2", 10.0f);
+    cost_weights_.mu1 = node_->getParameterOr<float>("positioning.cost_weights.mu1", 1.0f);
+    cost_weights_.mu2 = node_->getParameterOr<float>("positioning.cost_weights.mu2", 1.0f);
 
     // Initialize data
     agent_ = Agent();
@@ -230,17 +239,7 @@ std::vector<CostFunctions::UnitCostParameters> AgentPositioning::createUnitParam
         unit_cost_params.params = unit_params;
 
         // Cost function weights
-        // Psi
-        unit_cost_params.tau0 = 1.0f;
-        unit_cost_params.tau1 = 2.0f;
-        unit_cost_params.tau2 = 10.0f;
-        // Lambda
-        unit_cost_params.sigma0 = 1.0f;
-        unit_cost_params.sigma1 = 2.0f;
-        unit_cost_params.sigma2 = 10.0f;
-        // Gamma
-        unit_cost_params.mu = 1.0f;
-        unit_cost_params.nu = 1.0f;
+        CostFunctions::applyCostWeights(cost_weights_, unit_cost_params);
 
         params_vector.push_back(unit_cost_params);
     }
