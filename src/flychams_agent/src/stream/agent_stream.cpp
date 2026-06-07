@@ -120,8 +120,14 @@ void AgentStream::observationSetpointsCallback(const ObservationSetpointsMsg::Sh
         const auto role = static_cast<ObservationRole>(msg->roles[i]);
         const auto type = static_cast<ObservationType>(msg->types[i]);
 
-        // Update camera_info focal length for tracking camera units
-        if (type == ObservationType::Camera && role != ObservationRole::Central)
+        // Update camera_info focal length for camera units
+        if (type == ObservationType::Camera && role == ObservationRole::Central)
+        {
+            const float focal = msg->focals[i];
+            std::lock_guard<std::mutex> lock(unit->camera_info_mutex);
+            unit->camera_info = makeCameraInfo(unit->config, unit->config->camera.resolution(0), unit->config->camera.resolution(1), focal);
+        }
+        else if (type == ObservationType::Camera)
         {
             const float focal = msg->focals[i];
             std::lock_guard<std::mutex> lock(unit->camera_info_mutex);

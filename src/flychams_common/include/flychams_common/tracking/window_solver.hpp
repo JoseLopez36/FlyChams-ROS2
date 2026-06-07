@@ -86,6 +86,7 @@ namespace flychams::common
             // unit_params: Observation unit parameters
 
             // Extract parameters
+            const auto& f_ref = unit_params.window_params.f_ref;
             const auto& full_width = unit_params.window_params.full_width;
             const auto& full_height = unit_params.window_params.full_height;
             const auto& tracking_width = unit_params.window_params.tracking_width;
@@ -113,7 +114,7 @@ namespace flychams::common
             lambda = std::max(std::min(lambda, lambda_max), lambda_min);
 
             // Compute upsilon (lambda*f for windows)
-            const float upsilon = lambda * f;
+            const float upsilon = lambda * f_ref;
 
             // Compute offset corrected upsilon (lambda*xi)
             const float upsilon_xi = lambda * xi;

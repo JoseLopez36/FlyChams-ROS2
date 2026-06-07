@@ -138,11 +138,11 @@ void AgentTracking::update()
         tab_T[c] = node_->fromMsg(T);
     }
 
-    // Compute central camera focal length (encases every cluster) [deprecated]
-    // float central_focal = updateCentralCamera(tab_P, tab_r, tab_T[0], solvers_[0]);
+    // Compute central camera focal length (encases every cluster)
+    float central_focal = updateCentralCamera(tab_P, tab_r, tab_T[0], solvers_[0]);
 
     // Use central camera focal length from parameters
-    float central_focal = tracking_params_.observation_units_params[0].upsilon_ref;
+    // float central_focal = tracking_params_.observation_units_params[0].upsilon_ref;
 
     // Solve tracking for each observation unit
     int unit_idx = 0;
