@@ -138,6 +138,9 @@ void AgentTracking::update()
         tab_T[c] = node_->fromMsg(T);
     }
 
+    // Compute central camera focal length (encases every cluster)
+    float central_focal = updateCentralCamera(tab_P, tab_r, tab_T[0], solvers_[0]);
+
     // Solve tracking for each observation unit
     int unit_idx = 0;
     int cluster_idx = 0;
@@ -154,8 +157,8 @@ void AgentTracking::update()
         // Solve based on unit type
         if (unit.type == ObservationType::Camera && unit.role == ObservationRole::Central)
         {
-            upsilon = unit.upsilon_ref;
-            focal = upsilon;
+            upsilon = central_focal;
+            focal = central_focal;
             rotation = node_->getSettings()->getMultiCamera(agent_id_, unit.id)->orientation;
         }
         else if (unit.type == ObservationType::Camera && unit.role == ObservationRole::Tracking)
@@ -165,7 +168,7 @@ void AgentTracking::update()
         }
         else if (unit.type == ObservationType::Window)
         {
-            std::tie(upsilon, lambda, crop, apparent_size) = updateWindow(tab_P.col(cluster_idx), tab_r(cluster_idx), tab_T[0], solvers_[unit_idx]);
+            std::tie(upsilon, lambda, crop, apparent_size) = updateWindow(tab_P.col(cluster_idx), tab_r(cluster_idx), tab_T[0], central_focal, solvers_[unit_idx]);
             cluster_idx++;
         }
 
@@ -244,6 +247,26 @@ bool AgentTracking::checkStatus()
 // TRACKING: Tracking methods
 // ════════════════════════════════════════════════════════════════════════════
 
+float AgentTracking::updateCentralCamera(const Matrix3Xr& tab_P, const RowVectorXr& tab_r, const Matrix4r& T, ObservationSolver::SharedPtr central_solver)
+{
+    const size_t n = tab_P.cols();
+
+    // Build encasing cluster from all assigned clusters
+    Vector3r z = tab_P.rowwise().mean();
+    float r = 0.0f;
+    for (size_t i = 0; i < n; ++i)
+    {
+        r = std::max(r, (tab_P.col(i) - z).norm() + tab_r(i));
+    }
+
+    const auto& [upsilon, focal, rpy, apparent_size] = central_solver->runCamera(z, r, T);
+    (void)upsilon;
+    (void)rpy;
+    (void)apparent_size;
+
+    return focal;
+}
+
 std::tuple<float, float, Vector3r, float> AgentTracking::updateCamera(const Vector3r& P, const float& r, const Matrix4r& T, ObservationSolver::SharedPtr solver)
 {
     // Create auxiliary transform
@@ -268,8 +291,8 @@ std::tuple<float, float, Vector3r, float> AgentTracking::updateCamera(const Vect
     return std::make_tuple(upsilon, focal, wRPYc, apparent_size);
 }
 
-std::tuple<float, float, Crop, float> AgentTracking::updateWindow(const Vector3r& P, const float& r, const Matrix4r& T, ObservationSolver::SharedPtr solver)
+std::tuple<float, float, Crop, float> AgentTracking::updateWindow(const Vector3r& P, const float& r, const Matrix4r& T, const float& f, ObservationSolver::SharedPtr solver)
 {
-    // Compute window setpoint and return upsilon, crop and apparent size
-    return solver->runWindow(P, r, T);
+    // Compute window setpoint and return upsilon, lambda, crop and apparent size
+    return solver->runWindow(P, r, T, f);
 }

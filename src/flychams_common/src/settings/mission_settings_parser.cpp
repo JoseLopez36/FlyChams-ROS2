@@ -205,13 +205,6 @@ void MissionSettingsParser::parseMultiWindowParameters(const NodePtr& node, Mult
 	node->get_parameter<std::string>(prefix + "name", multi_window->name);
 	node->get_parameter<std::string>(prefix + "observation_set_id", multi_window->observation_set_id);
 
-	// Parse resolution (width, height)
-	int64_t width, height;
-	node->get_parameter<int64_t>(prefix + "resolution.width", width);
-	node->get_parameter<int64_t>(prefix + "resolution.height", height);
-	multi_window->resolution(0) = static_cast<int>(width);
-	multi_window->resolution(1) = static_cast<int>(height);
-
 	node->get_parameter<float>(prefix + "min_lambda", multi_window->min_lambda);
 	node->get_parameter<float>(prefix + "max_lambda", multi_window->max_lambda);
 	node->get_parameter<float>(prefix + "ref_lambda", multi_window->ref_lambda);

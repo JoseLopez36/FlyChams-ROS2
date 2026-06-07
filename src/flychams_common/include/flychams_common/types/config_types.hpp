@@ -194,7 +194,6 @@ namespace flychams::common
         ID observation_set_id;
 
         // Internal config
-        Vector2i resolution;
         float min_lambda;
         float max_lambda;
         float ref_lambda;

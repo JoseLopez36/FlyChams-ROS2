@@ -198,9 +198,6 @@ const ObservationUnitParameters SettingsTools::getObservationUnitParameters(cons
     // Full resolution (pix)
     params.window_params.full_width = central_camera_params.camera_params.width;
     params.window_params.full_height = central_camera_params.camera_params.height;
-    // Tracking resolution (pix)
-    params.window_params.tracking_width = multi_window->resolution(0);
-    params.window_params.tracking_height = multi_window->resolution(1);
     // Regularized pixel size (m/pix)
     params.rho_x = central_camera_params.rho_x;
     params.rho_y = central_camera_params.rho_y;
@@ -470,8 +467,6 @@ void SettingsTools::printSettings() const
             RCLCPP_DEBUG(node_->get_logger(), "      [MULTI-WINDOW: %s]", multi_window_id.c_str());
             RCLCPP_DEBUG(node_->get_logger(), "        Name: %s", multi_window->name.c_str());
             RCLCPP_DEBUG(node_->get_logger(), "        Observation Set ID: %s", multi_window->observation_set_id.c_str());
-            RCLCPP_DEBUG(node_->get_logger(), "        Resolution: %d x %d",
-                multi_window->resolution(0), multi_window->resolution(1));
             RCLCPP_DEBUG(node_->get_logger(), "        Lambda: min=%.3f, max=%.3f, ref=%.3f",
                 multi_window->min_lambda, multi_window->max_lambda, multi_window->ref_lambda);
         }

@@ -31,22 +31,26 @@ namespace flychams::common
         }
 
         // Runtime methods
-        std::tuple<float, float, common::Crop, float> run(const common::Vector3r& z, const float& r, const common::Matrix4r& T, const common::ObservationUnitParameters& unit_params)
+        std::tuple<float, float, common::Crop, float> run(const common::Vector3r& z, const float& r, const common::Matrix4r& T, const float& f, const common::ObservationUnitParameters& unit_params)
         {
             // Args:
             // z: Target position in world frame (m)
             // r: Equivalent radius of the target's area of interest (m)
             // T: C0 in world frame (frame of central camera)
+            // f: Central camera focal length (m)
             // unit_params: Observation unit parameters
 
             // Extract camera position
             const common::Vector3r x = T.block<3, 1>(0, 3);
 
             // Project target position onto central camera
-            common::Vector2r p = common::VisionUtils::projectPoint(z, T, unit_params.camera_params.K);
+            common::Matrix3r K = unit_params.camera_params.K;
+            K(0, 0) = f / unit_params.rho_x;
+            K(1, 1) = f / unit_params.rho_y;
+            common::Vector2r p = common::VisionUtils::projectPoint(z, T, K);
 
             // Compute window size, upsilon, lambda and apparent size
-            const auto [size, upsilon, lambda, apparent_size] = computeWindowSize(z, r, x, p, unit_params);
+            const auto [size, upsilon, lambda, apparent_size] = computeWindowSize(z, r, x, p, f, unit_params);
 
             // Compute window corner
             const common::Vector2i corner = computeWindowCorner(p, size);
@@ -71,17 +75,17 @@ namespace flychams::common
         }
 
     private: // Implementation
-        std::tuple<common::Vector2i, float, float, float> computeWindowSize(const common::Vector3r& z, const float& r, const common::Vector3r& x, const common::Vector2r& p, const common::ObservationUnitParameters& unit_params)
+        std::tuple<common::Vector2i, float, float, float> computeWindowSize(const common::Vector3r& z, const float& r, const common::Vector3r& x, const common::Vector2r& p, const float& f, const common::ObservationUnitParameters& unit_params)
         {
             // Args:
             // z: Target position in world frame (m)
             // r: Equivalent radius of the target's area of interest (m)
             // x: Central camera position in world frame (m)
             // p: Projected point on central camera (pix)
+            // f: Central camera focal length (m)
             // unit_params: Observation unit parameters
 
             // Extract parameters
-            const auto& f = unit_params.window_params.f_ref;
             const auto& full_width = unit_params.window_params.full_width;
             const auto& full_height = unit_params.window_params.full_height;
             const auto& tracking_width = unit_params.window_params.tracking_width;

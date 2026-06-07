@@ -523,19 +523,11 @@ void SpreadsheetParser::parseMultiWindowSet(OpenXLSX::XLWorkbook& book, AgentCon
 
 				multi_window->observation_set_id = FK;
 
-				auto resolution_str = getCellValue<std::string>(row.findCell(4));
-				auto resolution_vec = parseVector<int>(resolution_str, 2, 'x');
-				if (resolution_vec.size() >= 2)
-				{
-					multi_window->resolution(0) = resolution_vec[0];
-					multi_window->resolution(1) = resolution_vec[1];
-				}
+				multi_window->min_lambda = getCellValue<float>(row.findCell(4));
 
-				multi_window->min_lambda = getCellValue<float>(row.findCell(5));
+				multi_window->max_lambda = getCellValue<float>(row.findCell(5));
 
-				multi_window->max_lambda = getCellValue<float>(row.findCell(6));
-
-				multi_window->ref_lambda = getCellValue<float>(row.findCell(7));
+				multi_window->ref_lambda = getCellValue<float>(row.findCell(6));
 
 				// Store setting
 				agent_ptr->tracking.multi_window_set.insert({ multi_window->id, multi_window });

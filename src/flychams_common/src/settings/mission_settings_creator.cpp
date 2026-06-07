@@ -270,9 +270,6 @@ void MissionSettingsCreator::writeMultiWindowSection(std::ostringstream& yaml, c
 {
 	yaml << prefix << "name: \"" << multi_window->name << "\"\n";
 	yaml << prefix << "observation_set_id: " << multi_window->observation_set_id << "\n";
-	yaml << prefix << "resolution:\n";
-	yaml << prefix << "  width: " << std::fixed << std::setprecision(3) << multi_window->resolution(0) << "\n";
-	yaml << prefix << "  height: " << std::fixed << std::setprecision(3) << multi_window->resolution(1) << "\n";
 	yaml << prefix << "min_lambda: " << std::fixed << std::setprecision(3) << multi_window->min_lambda << "\n";
 	yaml << prefix << "max_lambda: " << std::fixed << std::setprecision(3) << multi_window->max_lambda << "\n";
 	yaml << prefix << "ref_lambda: " << std::fixed << std::setprecision(3) << multi_window->ref_lambda << "\n";

@@ -83,8 +83,9 @@ namespace flychams::agent
         bool checkStatus();
 
     private: // Tracking methods
+        float updateCentralCamera(const common::Matrix3Xr& tab_P, const common::RowVectorXr& tab_r, const common::Matrix4r& T, common::ObservationSolver::SharedPtr central_solver);
         std::tuple<float, float, common::Vector3r, float> updateCamera(const common::Vector3r& P, const float& r, const common::Matrix4r& T, common::ObservationSolver::SharedPtr solver);
-        std::tuple<float, float, common::Crop, float> updateWindow(const common::Vector3r& P, const float& r, const common::Matrix4r& T, common::ObservationSolver::SharedPtr solver);
+        std::tuple<float, float, common::Crop, float> updateWindow(const common::Vector3r& P, const float& r, const common::Matrix4r& T, const float& f, common::ObservationSolver::SharedPtr solver);
 
     private: // ROS components
         // Timer

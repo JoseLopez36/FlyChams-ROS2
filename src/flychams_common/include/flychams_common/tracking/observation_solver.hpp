@@ -78,15 +78,16 @@ namespace flychams::common
             return camera_solver_->run(z, r, T, unit_params_);
         }
 
-        std::tuple<float, float, common::Crop, float> runWindow(const common::Vector3r& z, const float& r, const common::Matrix4r& T)
+        std::tuple<float, float, common::Crop, float> runWindow(const common::Vector3r& z, const float& r, const common::Matrix4r& T, const float& f)
         {
             // Args:
             // z: Target position in world frame (m)
             // r: Equivalent radius of the target's area of interest (m)
             // T: C0_ in world frame (auxiliary frame of central camera)
+            // f: Central camera focal length (m)
 
             // Run window solver
-            return window_solver_->run(z, r, T, unit_params_);
+            return window_solver_->run(z, r, T, f, unit_params_);
         }
     };
 
