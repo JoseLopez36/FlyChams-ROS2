@@ -54,8 +54,7 @@ namespace flychams::common
             // Nothing to destroy
         }
         std::pair<common::RowVectorXi, int> run(const common::Matrix3Xr& tab_x, const common::Matrix3Xr& tab_P, const common::RowVectorXr& tab_r,
-            const common::RowVectorXi& X_prev, const std::vector<common::Matrix4r>& wTcentral_array,
-            std::vector<PositionSolver::SharedPtr>& solvers)
+            const common::RowVectorXi& X_prev, std::vector<PositionSolver::SharedPtr>& solvers)
         {
             int m = tab_x.cols();  // number of agents
             int n = tab_P.cols();  // number of clusters

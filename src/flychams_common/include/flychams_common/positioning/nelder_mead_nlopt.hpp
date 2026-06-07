@@ -41,7 +41,6 @@ namespace flychams::common
             common::Matrix3Xr tab_P;
             common::RowVectorXr tab_r;
             common::Vector3r x_hat;
-            common::Matrix4r wTcentral;
 
             // Cost function parameters
             CostFunctions::CostParameters cost_params;
@@ -73,7 +72,6 @@ namespace flychams::common
             data_.tab_P = common::Matrix3Xr::Zero(3, data_.cost_params.n_o);
             data_.tab_r = common::RowVectorXr::Zero(data_.cost_params.n_o);
             data_.x_hat = common::Vector3r::Zero();
-            data_.wTcentral = common::Matrix4r::Identity();
 
             // Create an NLopt optimizer
             opt_ = nlopt_create(NLOPT_LN_NELDERMEAD, 3); // 3 is the dimension of the problem
@@ -89,7 +87,7 @@ namespace flychams::common
                 nlopt_destroy(opt_);
             }
         }
-        common::Vector3r run(const common::Matrix3Xr& tab_P, const common::RowVectorXr& tab_r, const common::Vector3r& x0, const common::Matrix4r& wTcentral, float& J)
+        common::Vector3r run(const common::Matrix3Xr& tab_P, const common::RowVectorXr& tab_r, const common::Vector3r& x0, float& J)
         {
             // Check if NLopt optimizer is initialized
             if (!opt_)
@@ -113,7 +111,6 @@ namespace flychams::common
             data_.tab_P = tab_P;
             data_.tab_r = tab_r;
             data_.x_hat = common::Vector3r::Zero();
-            data_.wTcentral = wTcentral;
 
             // First optimization (solve for initial position)
             common::Vector3r x_opt_1;
@@ -199,7 +196,7 @@ namespace flychams::common
             Data* data_ptr = reinterpret_cast<Data*>(data);
 
             // Calculate the cost for J1
-            float J1 = CostFunctions::J1(data_ptr->tab_P, data_ptr->tab_r, x_vec, data_ptr->wTcentral, data_ptr->cost_params);
+            float J1 = CostFunctions::J1(data_ptr->tab_P, data_ptr->tab_r, x_vec, data_ptr->cost_params);
 
             return static_cast<double>(J1);
         }
@@ -211,7 +208,7 @@ namespace flychams::common
             Data* data_ptr = reinterpret_cast<Data*>(data);
 
             // Calculate the cost for J2
-            float J2 = CostFunctions::J2(data_ptr->tab_P, data_ptr->tab_r, x_vec, data_ptr->x_hat, data_ptr->wTcentral, data_ptr->cost_params);
+            float J2 = CostFunctions::J2(data_ptr->tab_P, data_ptr->tab_r, x_vec, data_ptr->x_hat, data_ptr->cost_params);
 
             return static_cast<double>(J2);
         }

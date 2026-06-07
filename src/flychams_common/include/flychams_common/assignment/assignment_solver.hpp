@@ -133,24 +133,24 @@ namespace flychams::common
         }
 
         // Optimization
-        std::pair<common::RowVectorXi, int> run(const common::Matrix3Xr& tab_x, const common::Matrix3Xr& tab_P, const common::RowVectorXr& tab_r, const common::RowVectorXi& X_prev, const std::vector<common::Matrix4r>& wTcentral_array, std::vector<PositionSolver::SharedPtr>& solvers)
+        std::pair<common::RowVectorXi, int> run(const common::Matrix3Xr& tab_x, const common::Matrix3Xr& tab_P, const common::RowVectorXr& tab_r, const common::RowVectorXi& X_prev, std::vector<PositionSolver::SharedPtr>& solvers)
         {
             // Run the assignment based on the mode
             switch (mode_)
             {
                 case SolverMode::GREEDY:
                 {
-                    return greedy_.run(tab_x, tab_P, tab_r, X_prev, wTcentral_array, solvers);
+                    return greedy_.run(tab_x, tab_P, tab_r, X_prev, solvers);
                 }
 
                 case SolverMode::EXHAUSTIVE_SEARCH:
                 {
-                    return exhaustive_search_.run(tab_x, tab_P, tab_r, X_prev, wTcentral_array, solvers);
+                    return exhaustive_search_.run(tab_x, tab_P, tab_r, X_prev, solvers);
                 }
 
                 case SolverMode::BRANCH_AND_BOUND:
                 {
-                    return branch_and_bound_.run(tab_x, tab_P, tab_r, X_prev, wTcentral_array, solvers);
+                    return branch_and_bound_.run(tab_x, tab_P, tab_r, X_prev, solvers);
                 }
 
                 default:

@@ -39,11 +39,6 @@ void AgentPositioning::onModuleInit()
     agent_.setpoint.header = node_->createHeader(node_->getGlobalFrame());
     agent_.setpoint.point = PointMsg();
 
-    // Get relevant transform frames
-    world_frame_ = node_->getGlobalFrame();
-    const TrackingParameters& tracking_params = node_->getSettings()->getTrackingParameters(agent_id_);
-    central_optical_frame_ = node_->getCameraOpticalFrame(agent_id_, tracking_params.observation_units_params[0].id);
-
     // Create and initialize solver
     solver_ = createSolver(agent_id_, solver_params_, solver_mode_);
 
@@ -128,14 +123,10 @@ void AgentPositioning::update()
         tab_r(i) = agent_.clusters.radii[i];
     }
 
-    // Get central observation unit transform
-    const TransformMsg& wTcentral_msg = node_->getTransform(world_frame_, central_optical_frame_);
-    Matrix4r wTcentral = node_->fromMsg(wTcentral_msg);
-
     // Solve agent positioning
     float J;
     const auto& start = std::chrono::high_resolution_clock::now();
-    Vector3r optimal_position = solver_->run(tab_P, tab_r, x0, wTcentral, J);
+    Vector3r optimal_position = solver_->run(tab_P, tab_r, x0, J);
     const auto& end = std::chrono::high_resolution_clock::now();
     float time_elapsed_us = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
     float time_elapsed_ms = time_elapsed_us / 1000.0f;  // Convert to milliseconds

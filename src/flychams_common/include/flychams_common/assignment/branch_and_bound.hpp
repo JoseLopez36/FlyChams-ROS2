@@ -70,8 +70,7 @@ namespace flychams::common
             // Nothing to destroy
         }
         std::pair<common::RowVectorXi, int> run(const common::Matrix3Xr& tab_x, const common::Matrix3Xr& tab_P, const common::RowVectorXr& tab_r,
-            const common::RowVectorXi& X_prev, const std::vector<common::Matrix4r>& wTcentral_array,
-            std::vector<PositionSolver::SharedPtr>& solvers)
+            const common::RowVectorXi& X_prev, std::vector<PositionSolver::SharedPtr>& solvers)
         {
             // Get number of agents and tracking units
             int m = tab_x.cols();
@@ -112,7 +111,7 @@ namespace flychams::common
             float J = 0.0f, J_min = HUGE_VALF;
             int node_count = 0;
             common::RowVectorXi X = common::RowVectorXi::Zero(0), X_min = common::RowVectorXi::Zero(0);
-            globalCost(A, T, J, X, J_min, X_min, nk, wTcentral_array, solvers, node_count);
+            globalCost(A, T, J, X, J_min, X_min, nk, solvers, node_count);
 
             // Return assignment vector and evaluated node count
             return std::make_pair(X_min, node_count);
@@ -122,7 +121,7 @@ namespace flychams::common
         void globalCost(std::vector<Agent>& A, const std::vector<Cluster>& T,
             const float& J, const common::RowVectorXi& X,
             float& J_min, common::RowVectorXi& X_min,
-            const common::RowVectorXi& nk, const std::vector<common::Matrix4r>& wTcentral_array,
+            const common::RowVectorXi& nk,
             std::vector<PositionSolver::SharedPtr>& solvers, int& node_count)
         {
             // Get number of agents and clusters
@@ -180,7 +179,7 @@ namespace flychams::common
                     // Calculate agent cost with current permutation
                     float Jk;
                     common::RowVectorXi Xk;
-                    agentCost(Ak, Tk, Jk, Xk, nk(k), wTcentral_array[k], solvers[k]);
+                    agentCost(Ak, Tk, Jk, Xk, nk(k), solvers[k]);
                     node_count++;
 
                     // If current cost plus new cost is less than minimum found so far, continue down this branch,
@@ -233,7 +232,7 @@ namespace flychams::common
                         }
 
                         // Recursive call to continue branch exploration
-                        globalCost(An, Tn, J + Jk, Xn, J_min, X_min, nk, wTcentral_array, solvers, node_count);
+                        globalCost(An, Tn, J + Jk, Xn, J_min, X_min, nk, solvers, node_count);
                     }
                 }
             }
@@ -242,7 +241,6 @@ namespace flychams::common
         void agentCost(Agent& Ak, const std::vector<Cluster>& Tk,
             float& Jk, common::RowVectorXi& Xk,
             const int& nk,
-            const common::Matrix4r& wTcentral,
             PositionSolver::SharedPtr solver)
         {
             // Check if solver is valid
@@ -328,7 +326,7 @@ namespace flychams::common
             tab_r_central.tail(nk) = tab_r;
             // Run solver to get optimal position
             float Jo;
-            common::Vector3r x_opt = solver->run(tab_P_central, tab_r_central, x, wTcentral, Jo);
+            common::Vector3r x_opt = solver->run(tab_P_central, tab_r_central, x, Jo);
 
             // Calculate distance cost
             float Jd = (x - x_opt).norm();

@@ -276,44 +276,44 @@ namespace flychams::common
         int getUnitCount() const { return params_.cost_params.n_o; }
 
         // Optimization
-        common::Vector3r run(const common::Matrix3Xr& tab_P, const common::RowVectorXr& tab_r, const common::Vector3r& x0, const common::Matrix4r& wTcentral, float& J)
+        common::Vector3r run(const common::Matrix3Xr& tab_P, const common::RowVectorXr& tab_r, const common::Vector3r& x0, float& J)
         {
             // Run the optimization based on the mode
             switch (mode_)
             {
             case SolverMode::ELLIPSOID_METHOD:
             {
-                return ellipsoid_method_.run(tab_P, tab_r, x0, wTcentral, J);
+                return ellipsoid_method_.run(tab_P, tab_r, x0, J);
             }
 
             case SolverMode::NELDER_MEAD_NLOPT:
             {
-                return nelder_mead_nlopt_.run(tab_P, tab_r, x0, wTcentral, J);
+                return nelder_mead_nlopt_.run(tab_P, tab_r, x0, J);
             }
 
             case SolverMode::NESTEROV_ALGORITHM:
             {
-                return nesterov_algorithm_.run(tab_P, tab_r, x0, wTcentral, J);
+                return nesterov_algorithm_.run(tab_P, tab_r, x0, J);
             }
 
             case SolverMode::L_BFGS_NLOPT:
             {
-                return l_bfgs_nlopt_.run(tab_P, tab_r, x0, wTcentral, J);
+                return l_bfgs_nlopt_.run(tab_P, tab_r, x0, J);
             }
 
             case SolverMode::PSO_ALGORITHM:
             {
-                return pso_algorithm_.run(tab_P, tab_r, wTcentral, J);
+                return pso_algorithm_.run(tab_P, tab_r, J);
             }
 
             case SolverMode::ALC_PSO_ALGORITHM:
             {
-                return alc_pso_algorithm_.run(tab_P, tab_r, wTcentral, J);
+                return alc_pso_algorithm_.run(tab_P, tab_r, J);
             }
 
             case SolverMode::CMA_ES_ALGORITHM:
             {
-                return cma_es_algorithm_.run(tab_P, tab_r, wTcentral, J);
+                return cma_es_algorithm_.run(tab_P, tab_r, J);
             }
 
             default:

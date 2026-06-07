@@ -31,7 +31,7 @@ namespace flychams::common
         }
 
         // Runtime methods
-        std::tuple<float, float, float, common::Crop, float> run(const common::Vector3r& z, const float& r, const common::Matrix4r& T, const common::ObservationUnitParameters& unit_params)
+        std::tuple<float, float, common::Crop, float> run(const common::Vector3r& z, const float& r, const common::Matrix4r& T, const common::ObservationUnitParameters& unit_params)
         {
             // Args:
             // z: Target position in world frame (m)
@@ -45,11 +45,8 @@ namespace flychams::common
             // Project target position onto central camera
             common::Vector2r p = common::VisionUtils::projectPoint(z, T, unit_params.camera_params.K);
 
-            // Compute window size and correction factor
-            const auto [size, lambda, xi] = computeWindowSize(z, r, x, p, unit_params);
-
-            // Compute upsilon (lambda*xi for windows)
-            const float upsilon = lambda * xi;
+            // Compute window size, upsilon, lambda and apparent size
+            const auto [size, upsilon, lambda, apparent_size] = computeWindowSize(z, r, x, p, unit_params);
 
             // Compute window corner
             const common::Vector2i corner = computeWindowCorner(p, size);
@@ -69,16 +66,12 @@ namespace flychams::common
             crop.h = size.y();
             crop.is_out_of_bounds = is_out_of_bounds;
 
-            // Compute apparent target size
-            const float d = (x - z).norm();
-            const float apparent_size = ZoomUtils::computeApparentSize(r, upsilon, d, unit_params.rho);
-
-            // Return upsilon, lambda, xi, crop and apparent size
-            return std::make_tuple(upsilon, lambda, xi, crop, apparent_size);
+            // Return upsilon, lambda, crop and apparent size
+            return std::make_tuple(upsilon, lambda, crop, apparent_size);
         }
 
     private: // Implementation
-        std::tuple<common::Vector2i, float, float> computeWindowSize(const common::Vector3r& z, const float& r, const common::Vector3r& x, const common::Vector2r& p, const common::ObservationUnitParameters& unit_params)
+        std::tuple<common::Vector2i, float, float, float> computeWindowSize(const common::Vector3r& z, const float& r, const common::Vector3r& x, const common::Vector2r& p, const common::ObservationUnitParameters& unit_params)
         {
             // Args:
             // z: Target position in world frame (m)
@@ -98,6 +91,7 @@ namespace flychams::common
             const auto& K = unit_params.camera_params.K;
             const auto& rho_x = unit_params.rho_x;
             const auto& rho_y = unit_params.rho_y;
+            const auto& rho = unit_params.rho;
             const auto& s_ref = unit_params.s_ref;
 
             // Compute distance between target and camera
@@ -114,13 +108,22 @@ namespace flychams::common
             // Clamp the resolution factor within limits
             lambda = std::max(std::min(lambda, lambda_max), lambda_min);
 
+            // Compute upsilon (lambda*f for windows)
+            const float upsilon = lambda * f;
+
+            // Compute offset corrected upsilon (lambda*xi)
+            const float upsilon_xi = lambda * xi;
+
+            // Compute apparent target size
+            const float apparent_size = ZoomUtils::computeApparentSize(r, upsilon_xi, d, rho);
+
             // Compute window size using the resolution factor
             common::Vector2i size(0, 0);
             size(0) = static_cast<int>(std::round(static_cast<float>(tracking_width) / lambda));
             size(1) = static_cast<int>(std::round(static_cast<float>(tracking_height) / lambda));
 
-            // Return window size, resolution factor and correction factor
-            return std::make_tuple(size, lambda, xi);
+            // Return window size, upsilon, lambda and apparent size
+            return std::make_tuple(size, upsilon, lambda, apparent_size);
         }
 
         common::Vector2i computeWindowCorner(const common::Vector2r& p, const common::Vector2i& size)

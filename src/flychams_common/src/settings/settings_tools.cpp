@@ -206,13 +206,10 @@ const ObservationUnitParameters SettingsTools::getObservationUnitParameters(cons
     params.rho_y = central_camera_params.rho_y;
     params.rho = central_camera_params.rho;
 
-    // Zoom factor (upsilon) limits: upsilon = lambda * xi
-    const Vector2r c(params.camera_params.K(0, 2), params.camera_params.K(1, 2));
-    std::tie(params.upsilon_min, params.upsilon_max, params.upsilon_ref) = ZoomUtils::computeWindowUpsilonBounds(
-        params.window_params.full_width, params.window_params.full_height, c,
-        params.rho_x, params.rho_y,
-        params.window_params.lambda_min, params.window_params.lambda_max, params.window_params.lambda_ref,
-        params.window_params.f_ref);
+    // Zoom factor (upsilon) limits: upsilon = lambda * f (m)
+    params.upsilon_min = params.window_params.lambda_min * params.window_params.f_ref;
+    params.upsilon_max = params.window_params.lambda_max * params.window_params.f_ref;
+    params.upsilon_ref = params.window_params.lambda_ref * params.window_params.f_ref;
 
     // Calculate ROI parameters
     const auto& min_apparent_size = tracking.min_target_size;

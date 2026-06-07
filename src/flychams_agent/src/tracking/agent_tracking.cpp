@@ -48,7 +48,6 @@ void AgentTracking::onModuleInit()
         agent_.observation_setpoints.upsilons_norm.push_back(0.0f);
         agent_.observation_setpoints.focals.push_back(0.0f);
         agent_.observation_setpoints.lambdas.push_back(0.0f);
-        agent_.observation_setpoints.xis.push_back(0.0f);
         agent_.observation_setpoints.rotations.push_back(Vector3Msg());
         agent_.observation_setpoints.crops.push_back(CropMsg());
         agent_.observation_setpoints.apparent_target_sizes.push_back(0.0f);
@@ -147,7 +146,6 @@ void AgentTracking::update()
         float upsilon = 0.0f;
         float focal = 0.0f;
         float lambda = 0.0f;
-        float xi = 0.0f;
         Vector3r rotation; // Only for Camera type
         Crop crop;         // Only for Window type
         float apparent_size = 0.0f;
@@ -165,7 +163,7 @@ void AgentTracking::update()
         }
         else if (unit.type == ObservationType::Window)
         {
-            std::tie(upsilon, lambda, xi, crop, apparent_size) = updateWindow(tab_P.col(i), tab_r(i), tab_T[0], solvers_[i]);
+            std::tie(upsilon, lambda, crop, apparent_size) = updateWindow(tab_P.col(i), tab_r(i), tab_T[0], solvers_[i]);
         }
 
         // Update observation setpoints
@@ -173,7 +171,6 @@ void AgentTracking::update()
         agent_.observation_setpoints.upsilons[i] = upsilon;
         agent_.observation_setpoints.focals[i] = focal;
         agent_.observation_setpoints.lambdas[i] = lambda;
-        agent_.observation_setpoints.xis[i] = xi;
         // Spatial data
         if (unit.type == ObservationType::Camera)
         {
@@ -268,7 +265,7 @@ std::tuple<float, float, Vector3r, float> AgentTracking::updateCamera(const Vect
     return std::make_tuple(upsilon, focal, wRPYc, apparent_size);
 }
 
-std::tuple<float, float, float, Crop, float> AgentTracking::updateWindow(const Vector3r& P, const float& r, const Matrix4r& T, ObservationSolver::SharedPtr solver)
+std::tuple<float, float, Crop, float> AgentTracking::updateWindow(const Vector3r& P, const float& r, const Matrix4r& T, ObservationSolver::SharedPtr solver)
 {
     // Compute window setpoint and return upsilon, crop and apparent size
     return solver->runWindow(P, r, T);

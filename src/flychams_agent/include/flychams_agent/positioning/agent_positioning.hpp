@@ -69,9 +69,6 @@ namespace flychams::agent
         // Position solver parameters
         common::PositionSolver::SolverMode solver_mode_;
         common::PositionSolver::Parameters solver_params_;
-        // Transform parameters
-        std::string world_frame_;
-        std::string central_optical_frame_;
 
     private: // Data
         // Agent

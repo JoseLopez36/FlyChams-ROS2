@@ -46,10 +46,6 @@ void AgentAssignment::onModuleInit()
     T_.clear();
     X_prev_.resize(0);
 
-    // Get relevant transform frames
-    world_frame_ = node_->getGlobalFrame();
-    central_optical_frame_map_.clear();
-
     // Create and initialize assignment solver
     // Note: Position solvers will be created when adding agents
     solver_ = std::make_shared<AssignmentSolver>();
@@ -111,10 +107,6 @@ void AgentAssignment::addAgent(const ID& agent_id)
         agents_[agent_id].tracking_unit_ids[t_u] = tracking_params.observation_units_params[i].id;
         t_u++;
     }
-
-    // Get central observation unit optical frame
-    central_optical_frame_map_.insert({ agent_id,
-        node_->getCameraOpticalFrame(agent_id, tracking_params.observation_units_params[0].id) });
 
     // Create and initialize position solver
     agents_[agent_id].position_solver = createPositionSolver(agent_id, position_solver_params_, position_solver_mode_);
@@ -216,7 +208,6 @@ void AgentAssignment::update()
     // Agents data
     int n_agents = static_cast<int>(A_.size());
     Matrix3Xr tab_x(3, n_agents);
-    std::vector<Matrix4r> wTcentral_array(n_agents);
     async_solvers_.resize(n_agents);
     async_agent_order_.clear();
     int k = 0;
@@ -225,8 +216,6 @@ void AgentAssignment::update()
         async_agent_order_.push_back(agent_id);
         const auto& agent = agents_[agent_id];
         tab_x.col(k) = node_->fromMsg(agent.position);
-        const TransformMsg& wTcentral_msg = node_->getTransform(world_frame_, central_optical_frame_map_[agent_id]);
-        wTcentral_array[k] = node_->fromMsg(wTcentral_msg);
         async_solvers_[k] = agent.position_solver;
         k++;
     }
@@ -263,12 +252,11 @@ void AgentAssignment::update()
          tab_x           = std::move(tab_x),
          tab_P           = std::move(tab_P),
          tab_r           = std::move(tab_r),
-         X_prev_aux      = std::move(X_prev_aux),
-         wTcentral_array = std::move(wTcentral_array)]() mutable
+         X_prev_aux      = std::move(X_prev_aux)]() mutable
         {
             // Solve assignment
             const auto start = std::chrono::high_resolution_clock::now();
-            const auto& [X, node_count] = solver_->run(tab_x, tab_P, tab_r, X_prev_aux, wTcentral_array, async_solvers_);
+            const auto& [X, node_count] = solver_->run(tab_x, tab_P, tab_r, X_prev_aux, async_solvers_);
             float time_elapsed_ms = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now() - start).count() / 1000.0f;
 
             return std::make_tuple(X, time_elapsed_ms, node_count);

@@ -64,7 +64,6 @@ namespace flychams::common
             // Cost function data
             common::Matrix3Xr tab_P;
             common::RowVectorXr tab_r;
-            common::Matrix4r wTcentral;
 
             // Cost function parameters
             CostFunctions::CostParameters cost_params;
@@ -96,7 +95,6 @@ namespace flychams::common
             // Initialize data
             data_.tab_P = common::Matrix3Xr::Zero(3, data_.cost_params.n_o);
             data_.tab_r = common::RowVectorXr::Zero(data_.cost_params.n_o);
-            data_.wTcentral = common::Matrix4r::Identity();
 
             // Initialize particles
             particles_.resize(params_.num_particles);
@@ -106,12 +104,11 @@ namespace flychams::common
             // Destroy particles
             particles_.clear();
         }
-        common::Vector3r run(const common::Matrix3Xr& tab_P, const common::RowVectorXr& tab_r, const common::Matrix4r& wTcentral, float& J)
+        common::Vector3r run(const common::Matrix3Xr& tab_P, const common::RowVectorXr& tab_r, float& J)
         {
             // Update data struct
             data_.tab_P = tab_P;
             data_.tab_r = tab_r;
-            data_.wTcentral = wTcentral;
 
             // Compute the optimal position
             common::Vector3r x_opt;
@@ -152,7 +149,7 @@ namespace flychams::common
                 particles_[k].position = params_.x_min + ((params_.x_max - params_.x_min).array() * r.array()).matrix();
                 particles_[k].best_position = particles_[k].position;
                 particles_[k].velocity = common::Vector3r::Zero();
-                particles_[k].best_score = CostFunctions::J0(data_.tab_P, data_.tab_r, particles_[k].position, data_.wTcentral, data_.cost_params);
+                particles_[k].best_score = CostFunctions::J0(data_.tab_P, data_.tab_r, particles_[k].position, data_.cost_params);
 
                 // Update leader particle if current score is better. This will choose an initial leader particle
                 if (particles_[k].best_score < leader_best_score)
@@ -187,7 +184,7 @@ namespace flychams::common
                 // Iterate over all particles to compute and update their scores
                 for (int k = 0; k < params_.num_particles; k++)
                 {
-                    float score = CostFunctions::J0(data_.tab_P, data_.tab_r, particles_[k].position, data_.wTcentral, data_.cost_params);
+                    float score = CostFunctions::J0(data_.tab_P, data_.tab_r, particles_[k].position, data_.cost_params);
 
                     // Update best score if current score is better
                     if (score < particles_[k].best_score)
@@ -317,7 +314,7 @@ namespace flychams::common
                             particles_[k].position += particles_[k].velocity;
 
                             // Compute the score of the particle
-                            float score = CostFunctions::J0(data_.tab_P, data_.tab_r, particles_[k].position, data_.wTcentral, data_.cost_params);
+                            float score = CostFunctions::J0(data_.tab_P, data_.tab_r, particles_[k].position, data_.cost_params);
 
                             if (score < particles_[k].best_score)
                             {
@@ -334,7 +331,7 @@ namespace flychams::common
 
                     if (challenger_accepted)
                     {
-                        leader_best_score = CostFunctions::J0(data_.tab_P, data_.tab_r, challenger_position, data_.wTcentral, data_.cost_params);
+                        leader_best_score = CostFunctions::J0(data_.tab_P, data_.tab_r, challenger_position, data_.cost_params);
                         leader_best_position = challenger_position;
                         lifespan = params_.max_lifespan;
                         age = 0;

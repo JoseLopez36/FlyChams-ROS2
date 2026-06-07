@@ -16,7 +16,6 @@ float32[] upsilons                   # Generalized zoom factor upsilon (focal fo
 float32[] upsilons_norm              # Normalized zoom factor upsilon (dimensionless, [0, 1])
 float32[] focals                     # Focal lengths for Camera (m)
 float32[] lambdas                    # Resolution factors for Window (dimensionless)
-float32[] xis                        # Offset correction factors for Window (m)
 
 # Spatial data
 geometry_msgs/Vector3[] rotations    # Unit goal roll, pitch and yaw (rad) (only for Camera type)
