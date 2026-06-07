@@ -63,6 +63,7 @@ namespace flychams::agent
         float update_rate_;
         // Flight parameters
         float takeoff_altitude_;
+        float mission_altitude_;
         float landing_altitude_;
 
     private: // Data

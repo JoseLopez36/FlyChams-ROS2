@@ -1,7 +1,8 @@
 /**:
   ros__parameters:
-    # Takeoff and landing altitude (m)
-    takeoff_altitude: 10.0
+    # Takeoff, mission and landing altitude (m)
+    takeoff_altitude: 5.0
+    mission_altitude: 30.0
     landing_altitude: 0.5
 
 /**/agent_frames_node:

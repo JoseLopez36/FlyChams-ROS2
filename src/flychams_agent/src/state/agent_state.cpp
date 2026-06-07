@@ -15,6 +15,7 @@ void DroneState::onModuleInit()
     update_rate_ = node_->getParameterOr<float>("update_rate", 10.0f);
     // Get flight parameters
     takeoff_altitude_ = node_->getParameterOr<float>("takeoff_altitude", 3.0f);
+    mission_altitude_ = node_->getParameterOr<float>("mission_altitude", 30.0f);
     landing_altitude_ = node_->getParameterOr<float>("landing_altitude", 0.5f);
 
     // Initialize data
@@ -90,7 +91,7 @@ void DroneState::update()
     float altitude = -agent_.vehicle_odom.position[2];
 
     // Map PX4 state to simplified 3-state AgentStatus
-    // ACTIVE = armed AND flying (above takeoff altitude)
+    // ACTIVE = armed AND at mission altitude; is_flying = above takeoff altitude
     AgentStatus status = AgentStatus::IDLE;
     bool is_flying = false;
 
@@ -107,18 +108,18 @@ void DroneState::update()
     }
     else
     {
-        // Armed: check if flying
+        // Armed: check takeoff and mission altitude thresholds
         is_flying = altitude >= takeoff_altitude_ * 0.8f;
-        if (is_flying)
+        if (altitude >= mission_altitude_ * 0.8f)
         {
             status = AgentStatus::ACTIVE;
-            RCLCPP_INFO(node_->get_logger(), "Drone state: Agent %s is flying", agent_id_.c_str());
+            RCLCPP_INFO(node_->get_logger(), "Drone state: Agent %s is at mission altitude", agent_id_.c_str());
         }
         else
         {
-            // Armed but still on ground (taking off or just armed on ground)
+            // Armed but still climbing (takeoff or transit to mission altitude)
             status = AgentStatus::IDLE;
-            RCLCPP_INFO(node_->get_logger(), "Drone state: Agent %s is armed but not flying", agent_id_.c_str());
+            RCLCPP_INFO(node_->get_logger(), "Drone state: Agent %s is armed but not at mission altitude", agent_id_.c_str());
         }
     }
 

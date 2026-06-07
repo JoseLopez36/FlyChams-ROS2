@@ -50,6 +50,8 @@ namespace flychams::agent
 			// Status data
 			common::AgentStatus status;
 			bool has_status;
+			bool is_armed;
+			bool is_flying;
 			// Position data
 			common::PointStampedMsg local_position;
 			bool has_local_position;
@@ -62,8 +64,9 @@ namespace flychams::agent
 			common::SubscriberPtr<common::PointStampedMsg> setpoint_sub;
 			// Constructor
 			Agent()
-				: status(), has_status(false), local_position(), has_local_position(false), setpoint(),
-				has_setpoint(false), status_sub(), local_position_sub(), setpoint_sub()
+				: status(), has_status(false), is_armed(false), is_flying(false), local_position(),
+				has_local_position(false), setpoint(), has_setpoint(false), status_sub(),
+				local_position_sub(), setpoint_sub()
 			{
 			}
 		};
@@ -75,6 +78,7 @@ namespace flychams::agent
 		ControlMode control_mode_;
 		// Flight parameters
 		float takeoff_altitude_;
+		float mission_altitude_;
 		FlyingBox flying_box_;
 
 	private: // Data
@@ -110,6 +114,7 @@ namespace flychams::agent
 		bool requestDisarm();
 		bool requestArm();
 		bool requestTakeoff();
+		bool requestMissionAltitude();
 		bool requestHover();
 		bool requestSetpoint();
 		bool requestLand();

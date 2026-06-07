@@ -19,6 +19,7 @@ void DroneControl::onModuleInit()
 	bool auto_arm = node_->getParameterOr<bool>("auto_arm", false);
 	// Get flight parameters
 	takeoff_altitude_ = node_->getParameterOr<float>("takeoff_altitude", 1.5f);
+	mission_altitude_ = node_->getParameterOr<float>("mission_altitude", 30.0f);
 
 	// Get space constraints
 	const auto& config_ptr = node_->getSettings()->getConfig();
@@ -94,6 +95,8 @@ void DroneControl::statusCallback(const AgentStatusMsg::SharedPtr msg)
 {
 	// Update current status
 	agent_.status = static_cast<AgentStatus>(msg->status);
+	agent_.is_armed = msg->is_armed;
+	agent_.is_flying = msg->is_flying;
 	agent_.has_status = true;
 }
 
@@ -203,12 +206,28 @@ void DroneControl::update()
 	case AgentStatus::IDLE:
 		if (!arm_all_)
 			break;
-		// Agent is on the ground and disarmed: prepare for takeoff
-		success &= requestTakeoff();
-		if (command_counter_ > 10)
+		if (!agent_.is_armed)
 		{
-			success &= requestOffboard();
-			success &= requestArm();
+			// Agent is on the ground and disarmed: prepare for takeoff
+			success &= requestTakeoff();
+			if (command_counter_ > 10)
+			{
+				success &= requestOffboard();
+				success &= requestArm();
+			}
+			command_counter_++;
+		}
+		else if (agent_.is_flying)
+		{
+			// At takeoff altitude: climb to mission altitude
+			success &= requestMissionAltitude();
+			command_counter_ = 0;
+		}
+		else
+		{
+			// Armed but still climbing to takeoff altitude
+			success &= requestTakeoff();
+			command_counter_ = 0;
 		}
 		if (!success)
 		{
@@ -216,7 +235,6 @@ void DroneControl::update()
 				agent_id_.c_str());
 			return;
 		}
-		command_counter_++;
 		break;
 	case AgentStatus::ACTIVE:
 		// Agent is armed and flying: execute mission setpoints
@@ -324,6 +342,18 @@ bool DroneControl::requestTakeoff()
 	if (agent_.status == AgentStatus::IDLE)
 	{
 		autopilot_comm_->setLocalPosition(0.0f, 0.0f, takeoff_altitude_);
+		return true;
+	}
+	else
+		return false;
+}
+
+bool DroneControl::requestMissionAltitude()
+{
+	if (agent_.status == AgentStatus::IDLE && agent_.is_armed)
+	{
+		const float z = std::min(mission_altitude_, flying_box_.max_z);
+		autopilot_comm_->setLocalPosition(0.0f, 0.0f, z);
 		return true;
 	}
 	else
