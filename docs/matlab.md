@@ -38,65 +38,32 @@ Generates multi-target trajectory sets compatible with the `flychams_simulation`
 
 Available motion primitives: `lissajous`, `spiral`, `random_walk`, `figure8`, `circle`, `waypoint`. Targets are organised into clusters with configurable centre, radius, and dispersion.
 
-### `load_recording.m`
+### `analyze_trajectories.m`
 
-Loads a FlyChams MCAP recording into a structured MATLAB `rec` struct. Agents, targets, and clusters are discovered automatically from the topic list.
+Plots agent trajectories, assigned cluster-center trajectories, speed, goal distance, and travel-distance statistics from a FlyChams MCAP recording.
 
 **Usage:**
 
 ```matlab
-rec = load_recording('../recordings/my_run/my_run_0.mcap', 'Verbose', true);
+analyze_trajectories('../recordings/my_run/my_run_0.mcap', 20.0, 110.0)
 ```
 
-Requires the custom message stubs generated in [Section 1](#1-custom-message-generation-one-time-setup).
+The plot uses the same per-agent color palette as the operator visualisation.
 
-### `run_analysis.m`
+### `analyze_tracking.m`
 
-Master entry point that loads a recording and runs the full analysis suite. Opens a file picker if no path is given.
+Plots and summarises per-tracking-unit zoom factor and apparent target size from `AgentMetrics`. The central unit is skipped.
 
 ```matlab
-run_analysis % file picker
-run_analysis('../recordings/my_run/my_run_0.mcap', 'SaveFigs', true)
+analyze_tracking('../recordings/my_run/my_run_0.mcap', 20.0, 110.0)
 ```
 
-| Parameter | Default | Description |
-|---|---|---|
-| `SaveFigs` | `false` | Save PNG of every figure |
-| `OutputDir` | `''` | Override auto-generated output directory |
-| `Verbose` | `true` | Print progress to console |
-| `Decimate` | `10` | Spatial downsampling for trajectory plots |
-| `Smooth` | `5` | Time-series smoothing half-window (samples) |
+### `analyze_fleet.m`
 
-### `plot_metrics.m`
-
-Time-series dashboard for operator metrics. Produces four figures: mission overview, per-agent panel, per-target panel, and per-cluster panel.
+Plots and summarises fleet-level travel distance, assignment swap count, assignment solve duration, mean speed, and goal-distance metrics.
 
 ```matlab
-plot_metrics(rec)
-```
-
-### `plot_trajectories.m`
-
-Spatial trajectory visualisation: 2-D top-down view, 3-D view, and per-agent distance-to-goal over time.
-
-```matlab
-plot_trajectories(rec)
-```
-
-### `plot_tracking.m`
-
-Image-plane tracking quality analysis (crop area fraction, centring error, OOB rate, zoom factor, approximate IoU) per tracking unit.
-
-```matlab
-plot_tracking(rec)
-```
-
-### `plot_solver.m`
-
-Position-solver and assignment-solver performance analysis (time-series, histogram, CDF, worst-case percentile).
-
-```matlab
-plot_solver(rec)
+analyze_fleet('../recordings/my_run/my_run_0.mcap', 20.0, 110.0)
 ```
 
 ---
@@ -108,14 +75,10 @@ plot_solver(rec)
 ros2genmsg('../src/')
 
 % 2. Load a recording
-rec = load_recording('../recordings/my_run/my_run_0.mcap', 'Verbose', true);
+bag = '../recordings/my_run/my_run_0.mcap';
 
 % 3. Run individual plots
-plot_trajectories(rec);
-plot_metrics(rec);
-plot_tracking(rec);
-plot_solver(rec);
-
-% Or run everything at once with automatic figure export
-run_analysis('../recordings/my_run/my_run_0.mcap', 'SaveFigs', true);
+analyze_trajectories(bag);
+analyze_tracking(bag);
+analyze_fleet(bag);
 ```

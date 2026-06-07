@@ -46,6 +46,7 @@ namespace flychams::operator_pkg
         float assignment_solve_duration_;
         bool has_assignment_solve_duration_;
         int assignment_swap_count_;
+        bool has_assignment_swap_count_;
 
     public: // Element management
         void addAgent();

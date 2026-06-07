@@ -22,8 +22,8 @@ void AgentMetrics::onModuleInit()
     agent_.metrics_pub = node_->createAgentMetricsPublisher(agent_id_);
 
     // Subscribers
-    agent_.local_position_sub = node_->createAgentLocalPositionSubscriber(agent_id_,
-        std::bind(&AgentMetrics::localPositionCallback, this, std::placeholders::_1),
+    agent_.global_position_sub = node_->createAgentGlobalPositionSubscriber(agent_id_,
+        std::bind(&AgentMetrics::globalPositionCallback, this, std::placeholders::_1),
         node_->getSubscriptionOptions());
 
     agent_.position_setpoint_sub = node_->createAgentPositionSetpointSubscriber(agent_id_,
@@ -45,7 +45,7 @@ void AgentMetrics::onModuleInit()
 void AgentMetrics::onModuleShutdown()
 {
     agent_.metrics_pub.reset();
-    agent_.local_position_sub.reset();
+    agent_.global_position_sub.reset();
     agent_.position_setpoint_sub.reset();
     agent_.observation_setpoints_sub.reset();
     agent_.position_solve_duration_sub.reset();
@@ -56,7 +56,7 @@ void AgentMetrics::onModuleShutdown()
 // CALLBACKS
 // ════════════════════════════════════════════════════════════════════════════
 
-void AgentMetrics::localPositionCallback(const PointStampedMsg::SharedPtr msg)
+void AgentMetrics::globalPositionCallback(const PointStampedMsg::SharedPtr msg)
 {
     if (agent_.has_position)
     {

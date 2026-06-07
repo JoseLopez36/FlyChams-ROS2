@@ -13,7 +13,7 @@ namespace flychams::operator_pkg
      * @brief Per-agent metrics aggregator
      *
      * @details
-     * Subscribes to an agent's local position, position setpoint,
+     * Subscribes to an agent's global position, position setpoint,
      * observation setpoints and agent status topics. On each timer
      * tick it computes distance_traveled, speed, distance_to_goal,
      * upsilons and apparent_target_sizes,
@@ -57,7 +57,7 @@ namespace flychams::operator_pkg
             // Publisher
             common::PublisherPtr<common::AgentMetricsMsg> metrics_pub;
             // Subscribers
-            common::SubscriberPtr<common::PointStampedMsg> local_position_sub;
+            common::SubscriberPtr<common::PointStampedMsg> global_position_sub;
             common::SubscriberPtr<common::PointStampedMsg> position_setpoint_sub;
             common::SubscriberPtr<common::ObservationSetpointsMsg> observation_setpoints_sub;
             common::SubscriberPtr<common::Float32Msg> position_solve_duration_sub;
@@ -67,7 +67,7 @@ namespace flychams::operator_pkg
                   upsilons_norm(), apparent_target_sizes(),
                   has_observation_setpoints(false),
                   position_solve_duration(0.0f), has_position_solve_duration(false),
-                  metrics_pub(), local_position_sub(), position_setpoint_sub(),
+                  metrics_pub(), global_position_sub(), position_setpoint_sub(),
                   observation_setpoints_sub(), position_solve_duration_sub()
             {
             }
@@ -84,7 +84,7 @@ namespace flychams::operator_pkg
         common::Time last_update_time_;
 
     private: // Callbacks
-        void localPositionCallback(const common::PointStampedMsg::SharedPtr msg);
+        void globalPositionCallback(const common::PointStampedMsg::SharedPtr msg);
         void positionSetpointCallback(const common::PointStampedMsg::SharedPtr msg);
         void observationSetpointsCallback(const common::ObservationSetpointsMsg::SharedPtr msg);
         void positionSolveDurationCallback(const common::Float32Msg::SharedPtr msg);
