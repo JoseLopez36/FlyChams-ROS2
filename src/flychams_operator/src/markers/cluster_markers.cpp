@@ -39,7 +39,7 @@ void ClusterMarkers::clustersCallback(const AgentClustersMsg::SharedPtr msg)
 
     clusters_.clear();
     const size_t n = msg->centers.size();
-    for (size_t i = 1; i < n; ++i)  // skip index 0 (global cluster)
+    for (size_t i = 0; i < n; ++i)
     {
         ClusterData cluster;
         cluster.center  = msg->centers[i];

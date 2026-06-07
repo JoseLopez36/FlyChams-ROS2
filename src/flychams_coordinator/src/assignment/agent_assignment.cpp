@@ -112,7 +112,7 @@ void AgentAssignment::addAgent(const ID& agent_id)
     agents_[agent_id].position_solver = createPositionSolver(agent_id, position_solver_params_, position_solver_mode_);
 
     // Add tracking units to previous assignments
-    X_prev_.resize(X_prev_.size() + agents_[agent_id].position_solver->getUnitCount() - 1);
+    X_prev_.resize(X_prev_.size() + agents_[agent_id].position_solver->getUnitCount());
     X_prev_.setConstant(-1);
 
     // Create agent position subscriber
@@ -334,7 +334,7 @@ void AgentAssignment::publishResult(const common::RowVectorXi& X, float time_ela
         msg.header.stamp = node_->get_clock()->now();
 
         // Get assignment
-        int n = async_solvers_[k]->getUnitCount() - 1;
+        int n = async_solvers_[k]->getUnitCount();
         for (int i = 0; i < n; i++)
         {
             const std::string unit_id = agents_[agent_id].tracking_unit_ids[i];
@@ -389,7 +389,7 @@ PositionSolver::SharedPtr AgentAssignment::createPositionSolver(const std::strin
 
     // Get cost parameters for each tracking unit
     CostFunctions::CostParameters cost_params;
-    cost_params.n_o = tracking_params.n_o;
+    cost_params.n_t = tracking_params.n_t;
     cost_params.units = createUnitParameters(tracking_params);
 
     // Get space constraints
@@ -416,9 +416,12 @@ std::vector<CostFunctions::UnitCostParameters> AgentAssignment::createUnitParame
 {
     std::vector<CostFunctions::UnitCostParameters> params_vector;
 
-    // Get unit parameters each observation unit
+    // Get unit parameters for each tracking unit
     for (const auto& unit_params : tracking_params.observation_units_params)
     {
+        if (unit_params.role == ObservationRole::Central)
+            continue;
+
         CostFunctions::UnitCostParameters unit_cost_params;
 
         // Set unit parameters

@@ -70,8 +70,8 @@ namespace flychams::common
             data_.cost_params = cost_params;
 
             // Initialize data
-            data_.tab_P = common::Matrix3Xr::Zero(3, data_.cost_params.n_o);
-            data_.tab_r = common::RowVectorXr::Zero(data_.cost_params.n_o);
+            data_.tab_P = common::Matrix3Xr::Zero(3, data_.cost_params.n_t);
+            data_.tab_r = common::RowVectorXr::Zero(data_.cost_params.n_t);
             data_.x_hat = common::Vector3r::Zero();
         }
         void destroy()
@@ -152,7 +152,7 @@ namespace flychams::common
             if (L <= 1e-6f)
             {
                 // Compute Lipschitz constant using the number of tracking units
-                L = 15.0f * (static_cast<float>(data_.cost_params.n_o) + 1.0f);
+                L = 15.0f * (static_cast<float>(data_.cost_params.n_t) + 1.0f);
             }
 
             // Initialize variables

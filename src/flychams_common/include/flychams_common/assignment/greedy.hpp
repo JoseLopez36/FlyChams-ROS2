@@ -63,7 +63,7 @@ namespace flychams::common
             common::RowVectorXi nk = common::RowVectorXi::Zero(m);
             for (int k = 0; k < m; k++)
             {
-                nk(k) = solvers[k]->getUnitCount() - 1;
+                nk(k) = solvers[k]->getUnitCount();
             }
 
             // Track which clusters are still available

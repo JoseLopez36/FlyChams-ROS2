@@ -38,7 +38,7 @@ namespace flychams::common
         };
         struct CostParameters // Parameters for the cost function
         {
-            int n_o;                                    // Number of units
+            int n_t;                                    // Number of tracking units
             std::vector<UnitCostParameters> units;      // Unit cost parameters
         };
 
@@ -48,7 +48,7 @@ namespace flychams::common
             // Compute the value of the optimization index based on nested intervals 
             // (original cost function, with non-convex term)
             float J = 0.0f;
-            for (int i = 0; i < cost_params.n_o; i++)
+            for (int i = 0; i < cost_params.n_t; i++)
             {
                 // Get relevant data
                 const auto& z = tab_P.col(i);
@@ -68,7 +68,7 @@ namespace flychams::common
             // Compute the value of the optimization index based on nested intervals 
             // (without non-convex term)
             float J = 0.0f;
-            for (int i = 0; i < cost_params.n_o; i++)
+            for (int i = 0; i < cost_params.n_t; i++)
             {
                 // Get relevant data
                 const auto& z = tab_P.col(i);
@@ -88,7 +88,7 @@ namespace flychams::common
             // Compute the value of the optimization index based on nested intervals 
             // (with convex relaxation of the non-convex term)
             float J = 0.0f;
-            for (int i = 0; i < cost_params.n_o; i++)
+            for (int i = 0; i < cost_params.n_t; i++)
             {
                 // Get relevant data
                 const auto& z = tab_P.col(i);
@@ -112,7 +112,7 @@ namespace flychams::common
             // Compute the value of the optimization index based on nested intervals 
             // (without non-convex term)
             float J = 0.0f;
-            for (int i = 0; i < cost_params.n_o; i++)
+            for (int i = 0; i < cost_params.n_t; i++)
             {
                 // Get relevant data
                 const auto& z = tab_P.col(i);
@@ -139,7 +139,7 @@ namespace flychams::common
             // Compute the value of the optimization index based on nested intervals 
             // (with convex relaxation of the non-convex term)
             float J = 0.0f;
-            for (int i = 0; i < cost_params.n_o; i++)
+            for (int i = 0; i < cost_params.n_t; i++)
             {
                 // Get relevant data
                 const auto& z = tab_P.col(i);

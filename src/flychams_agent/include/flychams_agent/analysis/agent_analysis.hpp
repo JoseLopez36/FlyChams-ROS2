@@ -36,7 +36,6 @@ namespace flychams::agent
             // Assignment data
             std::vector<common::ID> unit_ids;
             std::vector<common::ID> cluster_ids;
-            common::ID central_unit_id;
             bool has_assignment;
             // Subscribers
             common::SubscriberPtr<common::AgentAssignmentMsg> assignment_sub;
@@ -81,9 +80,6 @@ namespace flychams::agent
         void update();
         bool checkStatus();
         void updateClusterSubscriptions(const std::vector<common::ID>& new_cluster_ids);
-
-    private: // Analysis methods
-        std::pair<common::PointMsg, float> computeCentralCluster(const std::vector<common::PointMsg>& centers, const std::vector<float>& radii);
 
     private: // ROS components
         // Timer

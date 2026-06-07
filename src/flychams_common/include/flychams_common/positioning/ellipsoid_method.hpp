@@ -70,8 +70,8 @@ namespace flychams::common
             data_.cost_params = cost_params;
 
             // Initialize data
-            data_.tab_P = common::Matrix3Xr::Zero(3, data_.cost_params.n_o);
-            data_.tab_r = common::RowVectorXr::Zero(data_.cost_params.n_o);
+            data_.tab_P = common::Matrix3Xr::Zero(3, data_.cost_params.n_t);
+            data_.tab_r = common::RowVectorXr::Zero(data_.cost_params.n_t);
             data_.x_hat = common::Vector3r::Zero();
 
             // Initialize ellipsoid

@@ -139,7 +139,8 @@ void AgentTracking::update()
     }
 
     // Solve tracking for each observation unit
-    int i = 0;
+    int unit_idx = 0;
+    int cluster_idx = 0;
     for (const auto& unit : tracking_params_.observation_units_params)
     {
         // Initialize variables
@@ -159,40 +160,42 @@ void AgentTracking::update()
         }
         else if (unit.type == ObservationType::Camera && unit.role == ObservationRole::Tracking)
         {
-            std::tie(upsilon, focal, rotation, apparent_size) = updateCamera(tab_P.col(i), tab_r(i), tab_T[i], solvers_[i]);
+            std::tie(upsilon, focal, rotation, apparent_size) = updateCamera(tab_P.col(cluster_idx), tab_r(cluster_idx), tab_T[unit_idx], solvers_[unit_idx]);
+            cluster_idx++;
         }
         else if (unit.type == ObservationType::Window)
         {
-            std::tie(upsilon, lambda, crop, apparent_size) = updateWindow(tab_P.col(i), tab_r(i), tab_T[0], solvers_[i]);
+            std::tie(upsilon, lambda, crop, apparent_size) = updateWindow(tab_P.col(cluster_idx), tab_r(cluster_idx), tab_T[0], solvers_[unit_idx]);
+            cluster_idx++;
         }
 
         // Update observation setpoints
         // Zoom data
-        agent_.observation_setpoints.upsilons[i] = upsilon;
-        agent_.observation_setpoints.focals[i] = focal;
-        agent_.observation_setpoints.lambdas[i] = lambda;
+        agent_.observation_setpoints.upsilons[unit_idx] = upsilon;
+        agent_.observation_setpoints.focals[unit_idx] = focal;
+        agent_.observation_setpoints.lambdas[unit_idx] = lambda;
         // Spatial data
         if (unit.type == ObservationType::Camera)
         {
-            node_->toMsg(rotation, agent_.observation_setpoints.rotations[i]);
+            node_->toMsg(rotation, agent_.observation_setpoints.rotations[unit_idx]);
         }
         else if (unit.type == ObservationType::Window)
         {
-            node_->toMsg(crop, agent_.observation_setpoints.crops[i]);
+            node_->toMsg(crop, agent_.observation_setpoints.crops[unit_idx]);
         }
-        agent_.observation_setpoints.apparent_target_sizes[i] = apparent_size;
+        agent_.observation_setpoints.apparent_target_sizes[unit_idx] = apparent_size;
         // Calculate normalized upsilon
         float range = unit.upsilon_max - unit.upsilon_min;
         if (range > 0.0f)
         {
-            agent_.observation_setpoints.upsilons_norm[i] = (upsilon - unit.upsilon_min) / range;
+            agent_.observation_setpoints.upsilons_norm[unit_idx] = (upsilon - unit.upsilon_min) / range;
         }
         else
         {
-            agent_.observation_setpoints.upsilons_norm[i] = 1.0f;
+            agent_.observation_setpoints.upsilons_norm[unit_idx] = 1.0f;
         }
 
-        i++;
+        unit_idx++;
     }
 
     // Publish observation setpoints

@@ -18,10 +18,6 @@ void AgentAnalysis::onModuleInit()
     agent_ = Agent();
     clusters_.clear();
 
-    // Define agent's central unit ID
-    const auto& tracking_params = node_->getSettings()->getTrackingParameters(agent_id_);
-    agent_.central_unit_id = tracking_params.observation_units_params[0].id;
-
     // Create agent assignment subscriber
     agent_.assignment_sub = node_->createAgentAssignmentSubscriber(agent_id_,
         std::bind(&AgentAnalysis::assignmentCallback, this, std::placeholders::_1), node_->getSubscriptionOptions());
@@ -90,27 +86,18 @@ void AgentAnalysis::update()
     msg.header = node_->createHeader(node_->getGlobalFrame());
 
     // Iterate over the assignment and add tracking clusters
-    int n_t = static_cast<int>(agent_.unit_ids.size());
-    int n_o = n_t + 1;
-    msg.unit_ids.resize(n_o);
-    msg.centers.resize(n_o);
-    msg.radii.resize(n_o);
-    
-    int c = 0;
-    for (int i = 1; i < n_o; i++)
+    const int n_t = static_cast<int>(agent_.unit_ids.size());
+    msg.unit_ids.resize(n_t);
+    msg.centers.resize(n_t);
+    msg.radii.resize(n_t);
+
+    for (int i = 0; i < n_t; i++)
     {
-        msg.unit_ids[i] = agent_.unit_ids[c];
-        const auto& cluster = clusters_[agent_.cluster_ids[c]];
+        msg.unit_ids[i] = agent_.unit_ids[i];
+        const auto& cluster = clusters_[agent_.cluster_ids[i]];
         msg.centers[i] = cluster.center;
         msg.radii[i] = cluster.radius;
-        c++;
     }
-
-    // Add central cluster
-    msg.unit_ids[0] = agent_.central_unit_id;
-    const auto& [central_P, central_r] = computeCentralCluster(msg.centers, msg.radii);
-    msg.centers[0] = central_P;
-    msg.radii[0] = central_r;
 
     // Publish
     agent_.clusters_pub->publish(msg);
@@ -181,52 +168,4 @@ void AgentAnalysis::updateClusterSubscriptions(const std::vector<ID>& new_cluste
             clusters_[id] = std::move(new_cluster);
         }
     }
-}
-
-// ════════════════════════════════════════════════════════════════════════════
-// ANALYSIS: Analysis methods
-// ════════════════════════════════════════════════════════════════════════════
-
-std::pair<PointMsg, float> AgentAnalysis::computeCentralCluster(const std::vector<PointMsg>& centers, const std::vector<float>& radii)
-{
-    // Get number of tracking units
-    int n = centers.size() - 1;
-
-    // Convert message to Eigen
-    Matrix3Xr tab_P(3, n);
-    RowVectorXr tab_r(n);
-    int c = 0;
-    for (int i = 1; i < n + 1; i++)
-    {
-        tab_P.col(c) = node_->fromMsg(centers[i]);
-        tab_r(c) = radii[i];
-        c++;
-    }
-
-    // Compute mean of all available clusters
-    Vector3r z_mean = Vector3r::Zero();
-    for (int i = 0; i < n; i++)
-    {
-        z_mean += tab_P.col(i);
-    }
-    
-    if (n > 0)
-    {
-        z_mean /= static_cast<float>(n);
-    }
-
-    // Get the largest possible radius
-    float r_max = 0.0f;
-    for (int i = 0; i < n; i++)
-    {
-        r_max = std::max(r_max, (z_mean - tab_P.col(i)).norm() + tab_r(i));
-    }
-
-    // Convert back to message
-    PointMsg central_P;
-    node_->toMsg(z_mean, central_P);
-    float central_r = r_max;
-
-    // Return central cluster and radius
-    return std::make_pair(central_P, central_r);
 }

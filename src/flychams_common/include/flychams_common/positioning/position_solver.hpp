@@ -273,7 +273,7 @@ namespace flychams::common
         }
 
         // Getters
-        int getUnitCount() const { return params_.cost_params.n_o; }
+        int getUnitCount() const { return params_.cost_params.n_t; }
 
         // Optimization
         common::Vector3r run(const common::Matrix3Xr& tab_P, const common::RowVectorXr& tab_r, const common::Vector3r& x0, float& J)

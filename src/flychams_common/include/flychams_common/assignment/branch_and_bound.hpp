@@ -77,7 +77,7 @@ namespace flychams::common
             common::RowVectorXi nk = common::RowVectorXi::Zero(m);
             for (int k = 0; k < m; k++)
             {
-                nk(k) = solvers[k]->getUnitCount() - 1;
+                nk(k) = solvers[k]->getUnitCount();
             }
 
             // Create agent vector
@@ -306,27 +306,16 @@ namespace flychams::common
 
             // If the assignment has not been calculated previously:
             // Calculate observation cost
-            // Get cluster centers and radii matrices for all units (accounting for the central unit)
             common::Matrix3Xr tab_P = common::Matrix3Xr::Zero(3, nk);
             common::RowVectorXr tab_r = common::RowVectorXr::Zero(nk);
-            // Tracking units
             for (int t = 0; t < nk; t++)
             {
                 tab_P.col(t) = Tk[t].C;
                 tab_r(t) = Tk[t].r;
             }
-            // Central unit (mean of all selected clusters and maximum radius)
-            const auto& [central_P, central_r] = computeCentralCluster(tab_P, tab_r);
-            // Create new matrices with central unit
-            common::Matrix3Xr tab_P_central = common::Matrix3Xr::Zero(3, nk + 1);
-            common::RowVectorXr tab_r_central = common::RowVectorXr::Zero(nk + 1);
-            tab_P_central.col(0) = central_P;
-            tab_P_central.block(0, 1, 3, nk) = tab_P;
-            tab_r_central(0) = central_r;
-            tab_r_central.tail(nk) = tab_r;
             // Run solver to get optimal position
             float Jo;
-            common::Vector3r x_opt = solver->run(tab_P_central, tab_r_central, x, Jo);
+            common::Vector3r x_opt = solver->run(tab_P, tab_r, x, Jo);
 
             // Calculate distance cost
             float Jd = (x - x_opt).norm();
@@ -443,30 +432,6 @@ namespace flychams::common
             }
 
             return P;
-        }
-
-        std::pair<common::Vector3r, float> computeCentralCluster(const common::Matrix3Xr& tab_P, const common::RowVectorXr& tab_r)
-        {
-            // Get number of tracking units
-            int n = tab_P.cols();
-
-            // Compute mean of all available clusters
-            common::Vector3r z_mean = common::Vector3r::Zero();
-            for (int i = 0; i < n; i++)
-            {
-                z_mean += tab_P.col(i);
-            }
-            z_mean /= static_cast<float>(n);
-
-            // Get the largest possible radius
-            float r_max = 0.0f;
-            for (int i = 0; i < n; i++)
-            {
-                r_max = std::max(r_max, (z_mean - tab_P.col(i)).norm() + tab_r(i));
-            }
-
-            // Return central cluster and radius
-            return std::make_pair(z_mean, r_max);
         }
     };
 

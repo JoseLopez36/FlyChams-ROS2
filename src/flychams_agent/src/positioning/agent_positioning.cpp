@@ -191,7 +191,7 @@ PositionSolver::SharedPtr AgentPositioning::createSolver(const std::string& agen
 
     // Get cost parameters for each tracking unit
     CostFunctions::CostParameters cost_params;
-    cost_params.n_o = tracking_params.n_o;
+    cost_params.n_t = tracking_params.n_t;
     cost_params.units = createUnitParameters(tracking_params);
 
     // Get space constraints
@@ -218,9 +218,12 @@ std::vector<CostFunctions::UnitCostParameters> AgentPositioning::createUnitParam
 {
     std::vector<CostFunctions::UnitCostParameters> params_vector;
 
-    // Get unit parameters each observation unit
+    // Get unit parameters for each tracking unit
     for (const auto& unit_params : tracking_params.observation_units_params)
     {
+        if (unit_params.role == ObservationRole::Central)
+            continue;
+
         CostFunctions::UnitCostParameters unit_cost_params;
 
         // Set unit parameters
