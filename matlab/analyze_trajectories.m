@@ -30,7 +30,7 @@ function analyze_trajectories(bag_path, t_start, t_end)
     if nargin < 3, t_end   =  inf; end
 
     data = load_bag(bag_path, t_start, t_end);
-    [~, stem] = fileparts(bag_path);
+    stem = analysis_common('bag_label', bag_path);
     plot_bag(data, stem);
 end
 
@@ -106,52 +106,46 @@ end
 % ============================================================
 
 function plot_bag(data, label)
-    palette = agent_palette();
-    style = paper_style();
-    out_dir = ensure_figures_dir();
+    palette = analysis_common('palette');
+    style = analysis_common('style');
+    out_fig_dir = analysis_common('figures_dir');
+    out_stats_dir = analysis_common('stats_dir');
 
     fig = figure('Name', sprintf('Top-Down Trajectories - %s', label), ...
                  'NumberTitle', 'off', 'Color', [1 1 1], ...
                  'Units', 'inches', 'Position', [0, 0, style.double_width, style.tall_height]);
 
-    ax = paper_ax(fig, 1, 1, 1);
+    ax = analysis_common('axis', fig, 1, 1, 1);
     hold(ax,'on'); grid(ax,'on'); axis(ax,'equal');
     xlabel(ax, '$x\,[m]$', 'Interpreter','latex');
     ylabel(ax, '$y\,[m]$', 'Interpreter','latex');
     plot_xy(ax, data, palette, style);
-    export_paper_figure(fig, out_dir, label, 'top_down_trajectories');
+    analysis_common('export_figure', fig, out_fig_dir, label, 'top_down_trajectories');
 
     fig = figure('Name', sprintf('3-D Trajectories - %s', label), ...
                  'NumberTitle', 'off', 'Color', [1 1 1], ...
                  'Units', 'inches', 'Position', [0, 0, style.double_width, style.tall_height]);
 
-    ax = paper_ax(fig, 1, 1, 1);
+    ax = analysis_common('axis', fig, 1, 1, 1);
     hold(ax,'on'); grid(ax,'on'); view(ax, 3);
     xlabel(ax, '$x\,[m]$', 'Interpreter','latex');
     ylabel(ax, '$y\,[m]$', 'Interpreter','latex');
     zlabel(ax, '$z\,[m]$', 'Interpreter','latex');
     plot_xyz(ax, data, palette, style);
-    export_paper_figure(fig, out_dir, label, '3d_trajectories');
+    analysis_common('export_figure', fig, out_fig_dir, label, '3d_trajectories');
 
     fig = figure('Name', sprintf('Agent Movement - %s', label), ...
                  'NumberTitle', 'off', 'Color', [1 1 1], ...
                  'Units', 'inches', 'Position', [0, 0, style.double_width, style.short_height]);
 
-    ax = paper_ax(fig, 1, 1, 1);
+    ax = analysis_common('axis', fig, 1, 1, 1);
     hold(ax,'on'); grid(ax,'on');
     xlabel(ax, '$time\,[s]$', 'Interpreter','latex');
     plot_motion(ax, data, palette, style);
-    export_paper_figure(fig, out_dir, label, 'agent_movement');
+    analysis_common('export_figure', fig, out_fig_dir, label, 'agent_movement');
 
-    fig = figure('Name', sprintf('Trajectory Statistics - %s', label), ...
-                 'NumberTitle', 'off', 'Color', [1 1 1], ...
-                 'Units', 'inches', 'Position', [0, 0, style.single_width, style.tall_height]);
-
-    ax = paper_ax(fig, 1, 1, 1);
-    axis(ax, 'off');
     txt = summary_lines(data);
-    text(ax, 0.03, 0.98, txt, 'Units','normalized','VerticalAlignment','top', ...
-         'Color',[0.10 0.10 0.10], 'FontSize',style.text_font_size, 'FontName','Monospaced');
+    analysis_common('export_stats', out_stats_dir, label, 'trajectories', txt);
 
     fprintf('\n=== %s ===\n', label);
     fprintf('%s\n', strjoin(txt, newline));
@@ -173,7 +167,7 @@ function plot_xy(ax, data, palette, style)
             'MarkerSize', style.marker_size, 'LineWidth', 1.4, 'HandleVisibility','off');
 
         c = data.agents(a).centers;
-        light_col = lighten_color(col, 0.55);
+        light_col = analysis_common('lighten_color', col, 0.55);
         for u = 1:size(c, 2)
             p = squeeze(c(:,u,:));
             plot(ax, p(:,1), p(:,2), '--', 'Color', light_col, 'LineWidth', style.line_width, ...
@@ -193,7 +187,7 @@ function plot_xyz(ax, data, palette, style)
         plot3(ax, p(:,1), p(:,2), p(:,3), '-', 'Color', col, 'LineWidth', style.line_width);
         c = data.agents(a).centers;
         for u = 1:size(c, 2)
-            plot3(ax, c(:,u,1), c(:,u,2), c(:,u,3), '--', 'Color', lighten_color(col, 0.55), 'LineWidth', 1.0);
+            plot3(ax, c(:,u,1), c(:,u,2), c(:,u,3), '--', 'Color', analysis_common('lighten_color', col, 0.55), 'LineWidth', 1.0);
         end
     end
 end
@@ -275,62 +269,4 @@ function [vals, t] = crop_centers(vals, t_raw, t_start, t_end)
     mask = t_raw >= t_start & t_raw <= t_end;
     vals = vals(mask,:,:);
     t = t_raw(mask) - t_raw(find(mask,1));
-end
-
-function colors = agent_palette()
-    colors = [
-        0.00 0.85 1.00
-        0.20 0.80 0.40
-        1.00 0.78 0.00
-        0.55 0.20 1.00
-        1.00 0.65 0.40
-        0.00 0.55 1.00
-        0.00 0.80 0.65
-        0.85 0.00 0.85
-    ];
-end
-
-function col = lighten_color(col, amount)
-    col = col + amount * (1.0 - col);
-end
-
-function ax = paper_ax(fig, rows, cols, idx)
-    style = paper_style();
-    ax = subplot(rows, cols, idx, 'Parent', fig);
-    set(ax, 'Color',     [1.0  1.0  1.0 ], ...
-            'XColor',    [0.10 0.10 0.10], ...
-            'YColor',    [0.10 0.10 0.10], ...
-            'GridColor', [0.75 0.75 0.75], ...
-            'GridAlpha', 0.45, ...
-            'LineWidth', style.axis_width, ...
-            'FontSize',  style.axis_font_size, ...
-            'TickLabelInterpreter', 'latex', ...
-            'Box', 'on');
-end
-
-function style = paper_style()
-    style.single_width = 3.45;
-    style.double_width = 7.15;
-    style.short_height = 2.65;
-    style.tall_height = 4.20;
-    style.line_width = 1.4;
-    style.axis_width = 1.0;
-    style.axis_font_size = 12;
-    style.text_font_size = 12;
-    style.marker_size = 5;
-    style.blue = 1/255 * [0, 113, 188];
-    style.orange = 1/255 * [216, 82, 24];
-end
-
-function out_dir = ensure_figures_dir()
-    out_dir = fullfile(pwd, 'figures');
-    if ~exist(out_dir, 'dir')
-        mkdir(out_dir);
-    end
-end
-
-function export_paper_figure(fig, out_dir, label, name)
-    set(fig, 'PaperPositionMode', 'auto');
-    drawnow;
-    exportgraphics(fig, fullfile(out_dir, sprintf('%s_%s.png', label, name)), 'Resolution', 300);
 end

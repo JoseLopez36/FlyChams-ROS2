@@ -74,14 +74,15 @@ analyze_fleet('../recordings/my_run/my_run_0.mcap', 20.0, 110.0)
 ## 3. Typical Workflow
 
 ```matlab
-% 1. Generate custom message stubs (once)
+% Generate custom message stubs (once)
 ros2genmsg('../src/')
 
-% 2. Load a recording
-bag = '../recordings/my_run/my_run_0.mcap';
-
-% 3. Run individual plots
-analyze_trajectories(bag);
-analyze_tracking(bag);
-analyze_fleet(bag);
+% Analyse each recording
+for i = 1:9
+    bag = sprintf('../recordings/Heterogeneous-Benchmark-%d/Heterogeneous-Benchmark-%d_0.mcap', i, i);
+    analyze_trajectories(bag, 30.0, 120.0);
+    analyze_tracking(bag, 30.0, 120.0);
+    analyze_fleet(bag, 30.0, 120.0);
+    close all;
+end
 ```

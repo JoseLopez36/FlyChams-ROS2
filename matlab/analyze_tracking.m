@@ -29,7 +29,7 @@ function analyze_tracking(bag_path, t_start, t_end)
     if nargin < 3, t_end   =  inf; end
 
     data = load_bag(bag_path, t_start, t_end);
-    [~, stem] = fileparts(bag_path);
+    stem = analysis_common('bag_label', bag_path);
     plot_bag(data, stem);
 end
 
@@ -78,44 +78,38 @@ end
 % ============================================================
 
 function plot_bag(data, label)
-    palette = agent_palette();
-    style = paper_style();
-    out_dir = ensure_figures_dir();
+    palette = analysis_common('palette');
+    style = analysis_common('style');
+    out_fig_dir = analysis_common('figures_dir');
+    out_stats_dir = analysis_common('stats_dir');
 
     fig = figure('Name', sprintf('Tracking Upsilon - %s', label), ...
                  'NumberTitle', 'off', 'Color', [1 1 1], ...
                  'Units', 'inches', 'Position', [0, 0, style.double_width, style.short_height]);
 
-    ax = paper_ax(fig, 1, 1, 1);
+    ax = analysis_common('axis', fig, 1, 1, 1);
     hold(ax,'on'); grid(ax,'on');
     xlabel(ax, '$time\,[s]$', 'Interpreter','latex');
     ylabel(ax, '$\lambda$', 'Interpreter','latex', 'Color', style.orange);
     set(ax, 'YColor', style.orange);
     plot_units(ax, data, 'upsilons_norm', palette, style);
     ylim(ax, [0 1]);
-    export_paper_figure(fig, out_dir, label, 'tracking_lambda');
+    analysis_common('export_figure', fig, out_fig_dir, label, 'tracking_lambda');
 
     fig = figure('Name', sprintf('Tracking Apparent Size - %s', label), ...
                  'NumberTitle', 'off', 'Color', [1 1 1], ...
                  'Units', 'inches', 'Position', [0, 0, style.double_width, style.short_height]);
 
-    ax = paper_ax(fig, 1, 1, 1);
+    ax = analysis_common('axis', fig, 1, 1, 1);
     hold(ax,'on'); grid(ax,'on');
     xlabel(ax, '$time\,[s]$', 'Interpreter','latex');
     ylabel(ax, '$s_{pix}\,[pix]$', 'Interpreter','latex', 'Color', style.blue);
     set(ax, 'YColor', style.blue);
     plot_units(ax, data, 'apparent_target_sizes', palette, style);
-    export_paper_figure(fig, out_dir, label, 'tracking_apparent_size');
+    analysis_common('export_figure', fig, out_fig_dir, label, 'tracking_apparent_size');
 
-    fig = figure('Name', sprintf('Tracking Statistics - %s', label), ...
-                 'NumberTitle', 'off', 'Color', [1 1 1], ...
-                 'Units', 'inches', 'Position', [0, 0, style.single_width, style.tall_height]);
-
-    ax = paper_ax(fig, 1, 1, 1);
-    axis(ax, 'off');
     txt = summary_lines(data);
-    text(ax, 0.03, 0.98, txt, 'Units','normalized','VerticalAlignment','top', ...
-         'Color',[0.10 0.10 0.10], 'FontSize',style.text_font_size, 'FontName','Monospaced');
+    analysis_common('export_stats', out_stats_dir, label, 'tracking', txt);
 
     fprintf('\n=== %s ===\n', label);
     fprintf('%s\n', strjoin(txt, newline));
@@ -193,58 +187,4 @@ function [vals, t] = crop_matrix(vals, t_raw, t_start, t_end)
     mask = t_raw >= t_start & t_raw <= t_end;
     vals = vals(mask,:);
     t = t_raw(mask) - t_raw(find(mask,1));
-end
-
-function colors = agent_palette()
-    colors = [
-        0.00 0.85 1.00
-        0.20 0.80 0.40
-        1.00 0.78 0.00
-        0.55 0.20 1.00
-        1.00 0.65 0.40
-        0.00 0.55 1.00
-        0.00 0.80 0.65
-        0.85 0.00 0.85
-    ];
-end
-
-function ax = paper_ax(fig, rows, cols, idx)
-    style = paper_style();
-    ax = subplot(rows, cols, idx, 'Parent', fig);
-    set(ax, 'Color',     [1.0  1.0  1.0 ], ...
-            'XColor',    [0.10 0.10 0.10], ...
-            'YColor',    [0.10 0.10 0.10], ...
-            'GridColor', [0.75 0.75 0.75], ...
-            'GridAlpha', 0.45, ...
-            'LineWidth', style.axis_width, ...
-            'FontSize',  style.axis_font_size, ...
-            'TickLabelInterpreter', 'latex', ...
-            'Box', 'on');
-end
-
-function style = paper_style()
-    style.single_width = 3.45;
-    style.double_width = 7.15;
-    style.short_height = 2.65;
-    style.tall_height = 4.20;
-    style.line_width = 1.4;
-    style.axis_width = 1.0;
-    style.axis_font_size = 12;
-    style.text_font_size = 12;
-    style.marker_size = 5;
-    style.blue = 1/255 * [0, 113, 188];
-    style.orange = 1/255 * [216, 82, 24];
-end
-
-function out_dir = ensure_figures_dir()
-    out_dir = fullfile(pwd, 'figures');
-    if ~exist(out_dir, 'dir')
-        mkdir(out_dir);
-    end
-end
-
-function export_paper_figure(fig, out_dir, label, name)
-    set(fig, 'PaperPositionMode', 'auto');
-    drawnow;
-    exportgraphics(fig, fullfile(out_dir, sprintf('%s_%s.png', label, name)), 'Resolution', 300);
 end
