@@ -36,7 +36,7 @@ Generates multi-target trajectory sets compatible with the `flychams_simulation`
 2. Run the script.
 3. Point the relevant Excel configuration sheet to the new folder name.
 
-Available motion primitives: `lissajous`, `spiral`, `random_walk`, `figure8`, `circle`, `waypoint`. Targets are organised into clusters with configurable centre, radius, and dispersion.
+Available motion primitives: `lissajous`, `spiral`, `random_walk`, `figure8`, `circle`, `waypoint`. Targets are organised into clusters with configurable centre, radius, and dispersion. Built-in cluster layouts include `default`, `complex-mixed`, `complex-dispersed`, and `complex-concentrated`.
 
 ### `analyze_trajectories.m`
 

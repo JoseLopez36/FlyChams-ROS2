@@ -45,20 +45,22 @@ clear; clc; close all;
 
 % --- Output --------------------------------------------------
 OUTPUT_ROOT = '../src/flychams_common/config/trajectories';
-CONFIGURATION_NAME = 'Default';
+CONFIGURATION_NAME = 'test';  % Leave as 'test' to derive the folder name from CLUSTER_SETUP.
 
 % --- Time axis -----------------------------------------------
-T_TOTAL   = 1000.0;  % Total trajectory duration (s)
+T_TOTAL   = 120.0;  % Total trajectory duration (s)
 DT        = 0.05;    % Sample period (s) — must match TrajectoryParser expectation
 
 % --- Cluster setup selector ----------------------------------
 % Choose a named cluster layout defined in get_cluster_setup() below.
 %
 % Available setups:
-%   'default'             — 4 clusters, 4 targets each (default demo)
-%   'complex'             — 6 clusters for 3 agents × 2 tracking units; mixed dispersion and overlapping geometry
+%   'default'             — 4 clusters: 2 dispersed, 2 concentrated
+%   'complex-dispersed'   — 6 dispersed clusters
+%   'complex-concentrated'— 6 concentrated clusters
+%   'complex-mixed'       — 6 clusters: 3 dispersed, 3 concentrated
 %
-CLUSTER_SETUP = 'default';
+CLUSTER_SETUP = 'complex-mixed';
 
 [CLUSTERS, CONFIGURATION_NAME] = get_cluster_setup(CLUSTER_SETUP, CONFIGURATION_NAME);
 
@@ -72,6 +74,9 @@ DISPERSION_FACTOR = 0.6;
 % --- Motion parameters (applied per cluster) -----------------
 % All motion prims use these as defaults; override per-cluster below.
 MP = struct();
+
+% Global multiplier for survivor and sea-current speeds.
+SPEED_MULTIPLIER = 3.0;
 
 % Lissajous
 MP.lissajous.A      = 1.0;   % Amplitude multiplier (relative to cluster radius)
@@ -88,7 +93,7 @@ MP.spiral.omega     = 0.02;  % Angular velocity (rad/s)
 MP.spiral.T_radial  = 200;   % Radial oscillation period (s)
 
 % Random walk
-MP.random_walk.speed       = 0.5;  % Mean speed (m/s)
+MP.random_walk.speed       = 0.25 * SPEED_MULTIPLIER; % Mean survivor drift/swim speed (m/s)
 MP.random_walk.turn_rate   = 0.3;  % Max turn rate (rad/s)
 MP.random_walk.boundary    = 1.0;  % Boundary multiplier (relative to cluster radius)
 MP.random_walk.smooth_win  = 21;   % Smoothing window length (samples, odd)
@@ -104,7 +109,13 @@ MP.circle.T    = 80;    % Period (s)
 
 % Waypoint (default — each target gets random waypoints within cluster)
 MP.waypoint.n_wp     = 8;    % Number of waypoints
-MP.waypoint.v_cruise = 1.5;  % Cruise speed (m/s)
+MP.waypoint.v_cruise = 0.35 * SPEED_MULTIPLIER; % Slow survivor drift/swim cruise speed (m/s)
+
+% Cluster centre drift (sea-current advection)
+ENABLE_CLUSTER_DRIFT = true;
+MP.cluster_drift.speed      = 0.12 * SPEED_MULTIPLIER; % Mean sea-current drift speed (m/s)
+MP.cluster_drift.turn_rate  = 0.05; % Slow current direction variation (rad/s)
+MP.cluster_drift.smooth_win = 301;  % Long smoothing window for coherent drift
 
 % --- 3-D motion ----------------------------------------------
 % Set to true to generate non-zero Z profiles.
@@ -131,8 +142,9 @@ t = (0 : DT : T_TOTAL - DT)';
 N_samples = length(t);
 
 % Collect all trajectories
-all_traj   = {};   % cell array of [N_samples x 3] matrices
-target_idx = 0;
+all_traj             = {};   % cell array of [N_samples x 3] matrices
+cluster_center_traj  = {};   % cell array of [N_samples x 2] matrices
+target_idx           = 0;
 
 for c = 1 : size(CLUSTERS, 1)
     cx       = CLUSTERS(c, 1);
@@ -141,6 +153,14 @@ for c = 1 : size(CLUSTERS, 1)
     radius   = CLUSTERS(c, 4);
     n_tgts   = CLUSTERS(c, 5);
     mtype    = CLUSTERS(c, 6);
+
+    if ENABLE_CLUSTER_DRIFT
+        center_xy = gen_cluster_drift(t, cx, cy, MP.cluster_drift, RNG_SEED + 1000 + c);
+    else
+        center_xy = [cx * ones(N_samples, 1), cy * ones(N_samples, 1)];
+    end
+    cluster_center_traj{c} = center_xy;
+    center_delta = center_xy - [cx * ones(N_samples, 1), cy * ones(N_samples, 1)];
 
     for k = 1 : n_tgts
         target_idx = target_idx + 1;
@@ -172,6 +192,7 @@ for c = 1 : size(CLUSTERS, 1)
             otherwise
                 error('Unknown motion type index %d for cluster %d', mtype, c);
         end
+        xy = xy + center_delta;
 
         % Generate Z motion
         if ENABLE_Z_MOTION
@@ -237,12 +258,20 @@ if VISUALISE
         cy     = CLUSTERS(c, 2);
         radius = CLUSTERS(c, 4);
         n_tgts = CLUSTERS(c, 5);
+        center_xy = cluster_center_traj{c};
 
         % Draw cluster enclosing circle
         if PLOT_CLUSTERS
             ang = linspace(0, 2*pi, 180);
             plot(ax, cx + radius*cos(ang), cy + radius*sin(ang), '--', ...
                  'Color', [0.6 0.6 0.6], 'LineWidth', 0.8);
+            if ENABLE_CLUSTER_DRIFT
+                plot(ax, center_xy(:,1), center_xy(:,2), ':', ...
+                     'Color', [0.5 0.7 1.0], 'LineWidth', 0.9);
+                plot(ax, center_xy(end,1) + radius*cos(ang), ...
+                     center_xy(end,2) + radius*sin(ang), '--', ...
+                     'Color', [0.5 0.7 1.0], 'LineWidth', 0.8);
+            end
             text(ax, cx, cy, sprintf('C%d', c), 'Color', [0.6 0.6 0.6], ...
                  'HorizontalAlignment', 'center', 'FontSize', 8);
         end
@@ -303,8 +332,8 @@ end
 
 function [clusters, config_name] = get_cluster_setup(name, config_name)
     % Returns the CLUSTERS matrix for the requested named setup.
-    % If config_name is already non-default ('test'), it is preserved;
-    % otherwise it is replaced with the setup name.
+    % If config_name is left as 'test', it is replaced with the setup
+    % display name; otherwise the caller-provided folder name is preserved.
 
     % Column layout:
     %   [centre_x, centre_y, centre_z, radius, n_targets, motion_type_index]
@@ -318,62 +347,91 @@ function [clusters, config_name] = get_cluster_setup(name, config_name)
         % --------------------------------------------------------
         case 'default'
         % --------------------------------------------------------
-        % Original demonstration setup — 4 clusters of 4 targets.
-        % Well-separated, no intentional overlap.
+        % Smaller mixed setup — 4 clusters: two concentrated (r=6)
+        % and two dispersed (r=14).
         %
-        %  Cluster 1 — Lissajous   (cx= 50, cy= 30, r=15, 4 tgts)
-        %  Cluster 2 — Figure-8    (cx=-30, cy= 60, r=12, 4 tgts)
-        %  Cluster 3 — Random walk (cx= 20, cy=-40, r=18, 4 tgts)
-        %  Cluster 4 — Circle      (cx=-50, cy=-20, r=10, 4 tgts)
+        % Motion is split between Random walk and Waypoint patterns.
 
             clusters = [
             %  cx    cy   cz  radius  n_tgts  motion
-               50,   30,   0,   15,     4,      1;   % C1 — Lissajous
-              -30,   60,   0,   12,     4,      4;   % C2 — Figure-8
-               20,  -40,   0,   18,     4,      3;   % C3 — Random walk
-              -50,  -20,   0,   10,     4,      5;   % C4 — Circle
+               35,   30,   0,    6,     2,      3;   % C1 C — Random walk
+              -35,   30,   0,   14,     4,      6;   % C2 D — Waypoint
+               35,  -30,   0,   14,     4,      3;   % C3 D — Random walk
+              -35,  -30,   0,    6,     2,      6;   % C4 C — Waypoint
             ];
             if strcmp(config_name, 'test'), config_name = 'default'; end
 
         % --------------------------------------------------------
-        case 'complex'
+        case 'complex-dispersed'
+        % --------------------------------------------------------
+        % Scenario: 3 agents, each with 2 tracking units → 6 clusters.
+        % All clusters are dispersed (r=14) and use Random walk or
+        % Waypoint motion patterns.
+
+            clusters = [
+            %  cx    cy   cz  radius  n_tgts  motion
+            % --- Agent A ---
+               10,   40,   0,   14,     4,      3;   % A1 D — Random walk
+              -20,   15,   0,   14,     4,      6;   % A2 D — Waypoint
+            % --- Agent B ---
+               10,    0,   0,   14,     4,      3;   % B1 D — Random walk
+               45,   25,   0,   14,     4,      6;   % B2 D — Waypoint
+            % --- Agent C ---
+              -45,  -15,   0,   14,     4,      3;   % C1 D — Random walk
+               25,  -40,   0,   14,     4,      6;   % C2 D — Waypoint
+            ];
+            if strcmp(config_name, 'test'), config_name = 'Complex-Dispersed'; end
+
+        % --------------------------------------------------------
+        case 'complex-concentrated'
+        % --------------------------------------------------------
+        % Scenario: 3 agents, each with 2 tracking units → 6 clusters.
+        % All clusters are concentrated (r=6) and use Random walk or
+        % Waypoint motion patterns.
+
+            clusters = [
+            %  cx    cy   cz  radius  n_tgts  motion
+            % --- Agent A ---
+               10,   40,   0,    6,     2,      3;   % A1 C — Random walk
+              -20,   15,   0,    6,     2,      6;   % A2 C — Waypoint
+            % --- Agent B ---
+               10,    0,   0,    6,     2,      3;   % B1 C — Random walk
+               45,   25,   0,    6,     2,      6;   % B2 C — Waypoint
+            % --- Agent C ---
+              -45,  -15,   0,    6,     2,      3;   % C1 C — Random walk
+               25,  -40,   0,    6,     2,      6;   % C2 C — Waypoint
+            ];
+            if strcmp(config_name, 'test'), config_name = 'Complex-Concentrated'; end
+
+        % --------------------------------------------------------
+        case 'complex-mixed'
         % --------------------------------------------------------
         % Scenario: 3 agents, each with 2 tracking units → 6 clusters.
         %
         % Design intent:
-        %   - Agent A (units A1, A2): one tight low-dispersion cluster
-        %     (lissajous, r=7) + one medium cluster (random walk, r=14).
-        %     A2 intentionally overlaps B1 to create one assignment
-        %     ambiguity — the only deliberate interference in this setup.
+        %   - Mixed cluster dispersion: three concentrated clusters
+        %     (r=6) and three dispersed clusters (r=14).
         %
-        %   - Agent B (units B1, B2): one medium circle cluster (r=12)
-        %     that partially overlaps A2 + one compact figure-8 cluster
-        %     (r=8) well-separated from all others.
+        %   - Motion is split between Random walk and Waypoint patterns
+        %     to vary local target dynamics without changing the global
+        %     cluster layout.
         %
-        %   - Agent C (units C1, C2): one tight spiral cluster (r=7)
-        %     and one wide waypoint cluster (r=16), both clearly
-        %     separated from A and B clusters.
-        %
-        % Overlap summary:
-        %   A2 ↔ B1  : slight edge-graze (centres ~25 m apart, r=10+9)
-        %              — the only intentional interference
-        %
-        %  Notation in comments: r=radius, d=tight(low) or L=loose(high)
+        %  Notation in comments: r=radius, C=concentrated, D=dispersed
         %                         n=n_targets per cluster
 
             clusters = [
             %  cx    cy   cz  radius  n_tgts  motion
             % --- Agent A ---
-               10,   40,   0,    6,     2,      1;   % A1 tight  — Lissajous   d
-              -20,   15,   0,   10,     3,      3;   % A2 medium — Random walk   (grazes B1)
+               10,   40,   0,    6,     2,      3;   % A1 C — Random walk
+              -20,   15,   0,   14,     4,      6;   % A2 D — Waypoint
             % --- Agent B ---
-               10,    0,   0,    9,     3,      5;   % B1 medium — Circle        (grazes A2)
-               45,   25,   0,    7,     2,      4;   % B2 compact— Figure-8
+               10,    0,   0,   14,     4,      3;   % B1 D — Random walk
+               45,   25,   0,    6,     2,      6;   % B2 C — Waypoint
             % --- Agent C ---
-              -45,  -15,   0,    6,     2,      2;   % C1 tight  — Spiral      d
-               25,  -40,   0,   12,     4,      6;   % C2 wide   — Waypoint    L
+              -45,  -15,   0,    6,     2,      3;   % C1 C — Random walk
+               25,  -40,   0,   14,     4,      6;   % C2 D — Waypoint
             ];
-            if strcmp(config_name, 'test'), config_name = 'complex'; end
+            if strcmp(config_name, 'test'), config_name = 'Complex-Mixed'; end
 
         otherwise
             error('get_cluster_setup: unknown setup name ''%s''.', name);
@@ -443,6 +501,8 @@ function xy = gen_random_walk(t, x0, y0, radius, p, seed)
     hw = floor(p.smooth_win / 2);
     px = smooth_signal(px, hw);
     py = smooth_signal(py, hw);
+    px = px - px(1) + x0;
+    py = py - py(1) + y0;
 
     xy = [px, py];
 end
@@ -489,6 +549,32 @@ function xy = gen_waypoint(t, x0, y0, radius, p, seed)
     t_mod = mod(t, loop_T);
     px = interp1(wp_t, wp_x, t_mod, 'linear');
     py = interp1(wp_t, wp_y, t_mod, 'linear');
+
+    xy = [px, py];
+end
+
+function xy = gen_cluster_drift(t, x0, y0, p, seed)
+    % Slow, smooth advection of an entire cluster by changing sea currents.
+    rng(seed);
+    N  = length(t);
+    dt = t(2) - t(1);
+
+    theta = zeros(N, 1);
+    theta(1) = 2*pi * rand();
+    px = zeros(N, 1); px(1) = x0;
+    py = zeros(N, 1); py(1) = y0;
+
+    for s = 2 : N
+        theta(s) = theta(s-1) + p.turn_rate * dt * (2*rand()-1);
+        px(s) = px(s-1) + p.speed * dt * cos(theta(s));
+        py(s) = py(s-1) + p.speed * dt * sin(theta(s));
+    end
+
+    hw = floor(p.smooth_win / 2);
+    px = smooth_signal(px, hw);
+    py = smooth_signal(py, hw);
+    px = px - px(1) + x0;
+    py = py - py(1) + y0;
 
     xy = [px, py];
 end
