@@ -76,7 +76,7 @@ DISPERSION_FACTOR = 0.6;
 MP = struct();
 
 % Global multiplier for survivor and sea-current speeds.
-SPEED_MULTIPLIER = 3.0;
+SPEED_MULTIPLIER = 2.0;
 
 % Lissajous
 MP.lissajous.A      = 1.0;   % Amplitude multiplier (relative to cluster radius)
@@ -116,6 +116,7 @@ ENABLE_CLUSTER_DRIFT = true;
 MP.cluster_drift.speed      = 0.12 * SPEED_MULTIPLIER; % Mean sea-current drift speed (m/s)
 MP.cluster_drift.turn_rate  = 0.05; % Slow current direction variation (rad/s)
 MP.cluster_drift.smooth_win = 301;  % Long smoothing window for coherent drift
+MP.cluster_drift.local_gain = 0.25; % Per-cluster variation around the shared current
 
 % --- 3-D motion ----------------------------------------------
 % Set to true to generate non-zero Z profiles.
@@ -146,6 +147,12 @@ all_traj             = {};   % cell array of [N_samples x 3] matrices
 cluster_center_traj  = {};   % cell array of [N_samples x 2] matrices
 target_idx           = 0;
 
+if ENABLE_CLUSTER_DRIFT
+    shared_center_drift = gen_cluster_drift(t, 0, 0, MP.cluster_drift, RNG_SEED + 1000);
+else
+    shared_center_drift = zeros(N_samples, 2);
+end
+
 for c = 1 : size(CLUSTERS, 1)
     cx       = CLUSTERS(c, 1);
     cy       = CLUSTERS(c, 2);
@@ -155,7 +162,10 @@ for c = 1 : size(CLUSTERS, 1)
     mtype    = CLUSTERS(c, 6);
 
     if ENABLE_CLUSTER_DRIFT
-        center_xy = gen_cluster_drift(t, cx, cy, MP.cluster_drift, RNG_SEED + 1000 + c);
+        local_center_xy = gen_cluster_drift(t, cx, cy, MP.cluster_drift, RNG_SEED + 1000 + c);
+        local_delta = local_center_xy - [cx * ones(N_samples, 1), cy * ones(N_samples, 1)];
+        center_xy = [cx * ones(N_samples, 1), cy * ones(N_samples, 1)] + ...
+                    shared_center_drift + MP.cluster_drift.local_gain * local_delta;
     else
         center_xy = [cx * ones(N_samples, 1), cy * ones(N_samples, 1)];
     end
@@ -354,10 +364,10 @@ function [clusters, config_name] = get_cluster_setup(name, config_name)
 
             clusters = [
             %  cx    cy   cz  radius  n_tgts  motion
-               42,   36,   0,    6,     2,      3;   % C1 C — Random walk
-              -42,   36,   0,   14,     4,      6;   % C2 D — Waypoint
-               42,  -36,   0,   14,     4,      3;   % C3 D — Random walk
-              -42,  -36,   0,    6,     2,      6;   % C4 C — Waypoint
+               38,   33,   0,    6,     2,      3;   % C1 C — Random walk
+              -38,   33,   0,   14,     4,      6;   % C2 D — Waypoint
+               38,  -33,   0,   14,     4,      3;   % C3 D — Random walk
+              -38,  -33,   0,    6,     2,      6;   % C4 C — Waypoint
             ];
             if strcmp(config_name, 'test'), config_name = 'Default'; end
 
@@ -371,14 +381,14 @@ function [clusters, config_name] = get_cluster_setup(name, config_name)
             clusters = [
             %  cx    cy   cz  radius  n_tgts  motion
             % --- Agent A ---
-               10,   50,   0,   14,     4,      3;   % A1 D — Random walk
-              -30,   20,   0,   14,     4,      6;   % A2 D — Waypoint
+               -4,   36,   0,   14,     4,      3;   % A1 D — Random walk
+              -24,   13,   0,   14,     4,      6;   % A2 D — Waypoint
             % --- Agent B ---
-               15,   -5,   0,   14,     4,      3;   % B1 D — Random walk
-               55,   30,   0,   14,     4,      6;   % B2 D — Waypoint
+               16,   -1,   0,   14,     4,      3;   % B1 D — Random walk
+               40,   23,   0,   14,     4,      6;   % B2 D — Waypoint
             % --- Agent C ---
-              -55,  -20,   0,   14,     4,      3;   % C1 D — Random walk
-               30,  -50,   0,   14,     4,      6;   % C2 D — Waypoint
+              -40,  -15,   0,   14,     4,      3;   % C1 D — Random walk
+               27,  -36,   0,   14,     4,      6;   % C2 D — Waypoint
             ];
             if strcmp(config_name, 'test'), config_name = 'Complex-Dispersed'; end
 
@@ -392,14 +402,14 @@ function [clusters, config_name] = get_cluster_setup(name, config_name)
             clusters = [
             %  cx    cy   cz  radius  n_tgts  motion
             % --- Agent A ---
-               10,   50,   0,    6,     2,      3;   % A1 C — Random walk
-              -30,   20,   0,    6,     2,      6;   % A2 C — Waypoint
+               -4,   36,   0,    6,     2,      3;   % A1 C — Random walk
+              -24,   13,   0,    6,     2,      6;   % A2 C — Waypoint
             % --- Agent B ---
-               15,   -5,   0,    6,     2,      3;   % B1 C — Random walk
-               55,   30,   0,    6,     2,      6;   % B2 C — Waypoint
+               16,   -1,   0,    6,     2,      3;   % B1 C — Random walk
+               40,   23,   0,    6,     2,      6;   % B2 C — Waypoint
             % --- Agent C ---
-              -55,  -20,   0,    6,     2,      3;   % C1 C — Random walk
-               30,  -50,   0,    6,     2,      6;   % C2 C — Waypoint
+              -40,  -15,   0,    6,     2,      3;   % C1 C — Random walk
+               27,  -36,   0,    6,     2,      6;   % C2 C — Waypoint
             ];
             if strcmp(config_name, 'test'), config_name = 'Complex-Concentrated'; end
 
@@ -416,20 +426,24 @@ function [clusters, config_name] = get_cluster_setup(name, config_name)
         %     to vary local target dynamics without changing the global
         %     cluster layout.
         %
+        %   - Concentrated clusters are slightly biased left and dispersed
+        %     clusters right, helping heterogeneous camera/window setups
+        %     without preventing pure camera/window runs.
+        %
         %  Notation in comments: r=radius, C=concentrated, D=dispersed
         %                         n=n_targets per cluster
 
             clusters = [
             %  cx    cy   cz  radius  n_tgts  motion
             % --- Agent A ---
-               10,   50,   0,    6,     2,      3;   % A1 C — Random walk
-              -30,   20,   0,    6,     2,      6;   % A2 C — Waypoint
+               -4,   36,   0,    6,     2,      3;   % A1 C — Random walk
+              -24,   13,   0,    6,     2,      6;   % A2 C — Waypoint
             % --- Agent B ---
-               15,   -5,   0,   14,     4,      3;   % B1 D — Random walk
-               55,   30,   0,   14,     4,      6;   % B2 D — Waypoint
+               16,   -1,   0,   14,     4,      3;   % B1 D — Random walk
+               40,   23,   0,   14,     4,      6;   % B2 D — Waypoint
             % --- Agent C ---
-              -55,  -20,   0,    6,     2,      3;   % C1 C — Random walk
-               30,  -50,   0,   14,     4,      6;   % C2 D — Waypoint
+              -40,  -15,   0,    6,     2,      3;   % C1 C — Random walk
+               27,  -36,   0,   14,     4,      6;   % C2 D — Waypoint
             ];
             if strcmp(config_name, 'test'), config_name = 'Complex-Mixed'; end
 

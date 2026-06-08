@@ -30,8 +30,8 @@
       ini_bonding_coef: 1.0           # Initial bonding coefficient
       max_bonding_coef: 1.0           # Maximum bonding coefficient
       bonding_coef_time_to_max: 100.0 # Time from 0 to max bonding coefficient (s)
-      max_hysteresis_ratio: 0.8       # Maximum hysteresis ratio
-      min_hysteresis_ratio: 0.4       # Minimum hysteresis ratio
+      max_hysteresis_ratio: 1.6       # Maximum hysteresis ratio
+      min_hysteresis_ratio: 0.8       # Minimum hysteresis ratio
       change_cooldown_time: 30.0      # Minimum time between assignment changes (s)
 
 /**/cluster_analysis_node:
@@ -57,8 +57,8 @@
       # 0: GREEDY, 1: EXHAUSTIVE_SEARCH, 2: BRANCH_AND_BOUND
       solver_mode: 2
       # Optimization weights
-      observation_weight: 5.0
-      distance_weight: 25.0
+      observation_weight: 1.0
+      distance_weight: 10.0
       switch_weight: 5000.0
 
     # Positioning parameters

@@ -292,7 +292,7 @@ void AirsimSettingsCreator::writeVehiclesSection(const MissionConfigPtr& config_
             vehicles[agent_id]["ControlPortRemote"] = 14580 + instance;
             vehicles[agent_id]["LocalHostIp"] = "172.17.0.1";
             vehicles[agent_id]["Parameters"] = {
-                {"MPC_TILTMAX_AIR", 5.0},
+                {"MPC_XY_VEL_MAX", 2.5},
                 {"NAV_RCL_ACT", 0},
                 {"NAV_DLL_ACT", 0},
                 {"COM_OBL_RC_ACT", 1},
