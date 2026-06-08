@@ -359,7 +359,7 @@ function [clusters, config_name] = get_cluster_setup(name, config_name)
                35,  -30,   0,   14,     4,      3;   % C3 D — Random walk
               -35,  -30,   0,    6,     2,      6;   % C4 C — Waypoint
             ];
-            if strcmp(config_name, 'test'), config_name = 'default'; end
+            if strcmp(config_name, 'test'), config_name = 'Default'; end
 
         % --------------------------------------------------------
         case 'complex-dispersed'
