@@ -41,6 +41,7 @@ Available motion primitives: `lissajous`, `spiral`, `random_walk`, `figure8`, `c
 ### `analyze_trajectories.m`
 
 Plots agent trajectories, assigned cluster-center trajectories, speed, goal distance, and travel-distance statistics from a FlyChams MCAP recording.
+The figures are formatted for two-column papers and exported as 300 dpi PNG files under `figures/`.
 
 **Usage:**
 
@@ -53,6 +54,7 @@ The plot uses the same per-agent color palette as the operator visualisation.
 ### `analyze_tracking.m`
 
 Plots and summarises per-tracking-unit zoom factor and apparent target size from `AgentMetrics`. The central unit is skipped.
+The figures are formatted for two-column papers and exported as 300 dpi PNG files under `figures/`.
 
 ```matlab
 analyze_tracking('../recordings/my_run/my_run_0.mcap', 20.0, 110.0)
@@ -61,6 +63,7 @@ analyze_tracking('../recordings/my_run/my_run_0.mcap', 20.0, 110.0)
 ### `analyze_fleet.m`
 
 Plots and summarises fleet-level travel distance, assignment swap count, assignment solve duration, mean speed, and goal-distance metrics.
+The figures are formatted for two-column papers and exported as 300 dpi PNG files under `figures/`.
 
 ```matlab
 analyze_fleet('../recordings/my_run/my_run_0.mcap', 20.0, 110.0)

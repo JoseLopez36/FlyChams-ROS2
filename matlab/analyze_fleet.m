@@ -93,69 +93,65 @@ end
 
 function plot_bag(data, label)
     palette = agent_palette();
+    style = paper_style();
+    out_dir = ensure_figures_dir();
 
     fig = figure('Name', sprintf('Fleet Assignment - %s', label), ...
                  'NumberTitle', 'off', 'Color', [1 1 1], ...
-                 'Position', [100, 100, 1100, 650]);
+                 'Units', 'inches', 'Position', [0, 0, style.double_width, style.short_height]);
 
     ax = paper_ax(fig, 1, 1, 1);
     hold(ax,'on'); grid(ax,'on');
-    title(ax, 'Fleet Assignment', 'FontSize',12);
-    xlabel(ax, 'Time (s)', 'FontSize',10);
+    xlabel(ax, '$time\,[s]$', 'Interpreter','latex');
     yyaxis(ax, 'left');
-    ylabel(ax, 'Swap count', 'FontSize',10);
-    plot(ax, data.t_fleet, data.assignment_swap_count, '-', 'Color', [0.85 0.33 0.10], 'LineWidth', 1.8);
+    ylabel(ax, '$N_{swaps}$', 'Interpreter','latex', 'Color', style.orange);
+    plot(ax, data.t_fleet, data.assignment_swap_count, '-', 'Color', style.orange, 'LineWidth', style.line_width);
     yyaxis(ax, 'right');
-    ylabel(ax, 'Solve duration (ms)', 'FontSize',10);
-    plot(ax, data.t_fleet, data.assignment_solve_duration, '-', 'Color', [0.00 0.45 0.74], 'LineWidth', 1.6);
-    sgtitle(fig, sprintf('Fleet Assignment  |  %s', label), 'FontSize',13);
+    ylabel(ax, '$t_{solve}\,[ms]$', 'Interpreter','latex', 'Color', style.blue);
+    plot(ax, data.t_fleet, data.assignment_solve_duration, '-', 'Color', style.blue, 'LineWidth', style.line_width);
+    export_paper_figure(fig, out_dir, label, 'fleet_assignment');
 
     fig = figure('Name', sprintf('Agent Travel Distance - %s', label), ...
                  'NumberTitle', 'off', 'Color', [1 1 1], ...
-                 'Position', [160, 120, 1100, 650]);
+                 'Units', 'inches', 'Position', [0, 0, style.double_width, style.short_height]);
 
     ax = paper_ax(fig, 1, 1, 1);
     hold(ax,'on'); grid(ax,'on');
-    title(ax, 'Agent Travel Distance', 'FontSize',12);
-    xlabel(ax, 'Time (s)', 'FontSize',10);
-    ylabel(ax, 'Distance (m)', 'FontSize',10);
+    xlabel(ax, '$time\,[s]$', 'Interpreter','latex');
+    ylabel(ax, '$d\,[m]$', 'Interpreter','latex');
     for a = 1:numel(data.agents)
         col = palette(1 + mod(a-1, size(palette,1)), :);
         plot(ax, data.agents(a).t, data.agents(a).distance_traveled, '-', ...
-            'Color', col, 'LineWidth', 1.8, 'DisplayName', data.agents(a).id);
+            'Color', col, 'LineWidth', style.line_width, 'DisplayName', data.agents(a).id);
     end
-    legend(ax, 'Location','best', 'FontSize',7, 'Box','off');
-    sgtitle(fig, sprintf('Agent Travel Distance  |  %s', label), 'FontSize',13);
+    export_paper_figure(fig, out_dir, label, 'agent_travel_distance');
 
     fig = figure('Name', sprintf('Fleet Motion and Goal Error - %s', label), ...
                  'NumberTitle', 'off', 'Color', [1 1 1], ...
-                 'Position', [220, 140, 1100, 650]);
+                 'Units', 'inches', 'Position', [0, 0, style.double_width, style.short_height]);
 
     ax = paper_ax(fig, 1, 1, 1);
     hold(ax,'on'); grid(ax,'on');
-    title(ax, 'Fleet Motion and Goal Error', 'FontSize',12);
-    xlabel(ax, 'Time (s)', 'FontSize',10);
+    xlabel(ax, '$time\,[s]$', 'Interpreter','latex');
     yyaxis(ax, 'left');
-    ylabel(ax, 'Mean speed (m/s)', 'FontSize',10);
+    ylabel(ax, '$\bar{v}\,[m/s]$', 'Interpreter','latex', 'Color', style.green);
     [t, mean_speed] = mean_agent_series(data.agents, 'speed');
-    plot(ax, t, mean_speed, '-', 'Color', [0.20 0.80 0.40], 'LineWidth', 1.8);
+    plot(ax, t, mean_speed, '-', 'Color', style.green, 'LineWidth', style.line_width);
     yyaxis(ax, 'right');
-    ylabel(ax, 'Mean distance to goal (m)', 'FontSize',10);
+    ylabel(ax, '$\bar{e}_{goal}\,[m]$', 'Interpreter','latex', 'Color', style.purple);
     [t, mean_goal] = mean_agent_series(data.agents, 'distance_to_goal');
-    plot(ax, t, mean_goal, '-', 'Color', [0.55 0.20 1.00], 'LineWidth', 1.8);
-    sgtitle(fig, sprintf('Fleet Motion and Goal Error  |  %s', label), 'FontSize',13);
+    plot(ax, t, mean_goal, '-', 'Color', style.purple, 'LineWidth', style.line_width);
+    export_paper_figure(fig, out_dir, label, 'fleet_motion_goal_error');
 
     fig = figure('Name', sprintf('Fleet Statistics - %s', label), ...
                  'NumberTitle', 'off', 'Color', [1 1 1], ...
-                 'Position', [280, 160, 900, 900]);
+                 'Units', 'inches', 'Position', [0, 0, style.single_width, style.tall_height]);
 
     ax = paper_ax(fig, 1, 1, 1);
     axis(ax, 'off');
-    title(ax, 'Summary Statistics', 'FontSize',12);
     txt = summary_lines(data);
     text(ax, 0.03, 0.98, txt, 'Units','normalized','VerticalAlignment','top', ...
-         'Color',[0.10 0.10 0.10], 'FontSize',10, 'FontName','Monospaced');
-    sgtitle(fig, sprintf('Fleet Statistics  |  %s', label), 'FontSize',13);
+         'Color',[0.10 0.10 0.10], 'FontSize',style.text_font_size, 'FontName','Monospaced');
 
     fprintf('\n=== %s ===\n', label);
     fprintf('%s\n', strjoin(txt, newline));
@@ -244,12 +240,44 @@ function colors = agent_palette()
 end
 
 function ax = paper_ax(fig, rows, cols, idx)
+    style = paper_style();
     ax = subplot(rows, cols, idx, 'Parent', fig);
     set(ax, 'Color',     [1.0  1.0  1.0 ], ...
             'XColor',    [0.10 0.10 0.10], ...
             'YColor',    [0.10 0.10 0.10], ...
             'GridColor', [0.75 0.75 0.75], ...
             'GridAlpha', 0.45, ...
-            'LineWidth', 0.8, ...
-            'FontSize',  8);
+            'LineWidth', style.axis_width, ...
+            'FontSize',  style.axis_font_size, ...
+            'TickLabelInterpreter', 'latex', ...
+            'Box', 'on');
+end
+
+function style = paper_style()
+    style.single_width = 3.45;
+    style.double_width = 7.15;
+    style.short_height = 2.65;
+    style.tall_height = 4.20;
+    style.line_width = 1.4;
+    style.axis_width = 1.0;
+    style.axis_font_size = 12;
+    style.text_font_size = 12;
+    style.marker_size = 5;
+    style.blue = 1/255 * [0, 113, 188];
+    style.orange = 1/255 * [216, 82, 24];
+    style.green = 1/255 * [0, 176, 80];
+    style.purple = [0.55, 0.20, 1.00];
+end
+
+function out_dir = ensure_figures_dir()
+    out_dir = fullfile(pwd, 'figures');
+    if ~exist(out_dir, 'dir')
+        mkdir(out_dir);
+    end
+end
+
+function export_paper_figure(fig, out_dir, label, name)
+    set(fig, 'PaperPositionMode', 'auto');
+    drawnow;
+    exportgraphics(fig, fullfile(out_dir, sprintf('%s_%s.png', label, name)), 'Resolution', 300);
 end

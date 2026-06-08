@@ -107,55 +107,51 @@ end
 
 function plot_bag(data, label)
     palette = agent_palette();
+    style = paper_style();
+    out_dir = ensure_figures_dir();
 
     fig = figure('Name', sprintf('Top-Down Trajectories - %s', label), ...
                  'NumberTitle', 'off', 'Color', [1 1 1], ...
-                 'Position', [100, 100, 1100, 900]);
+                 'Units', 'inches', 'Position', [0, 0, style.double_width, style.tall_height]);
 
     ax = paper_ax(fig, 1, 1, 1);
     hold(ax,'on'); grid(ax,'on'); axis(ax,'equal');
-    title(ax, 'Top-Down Trajectories', 'FontSize',12);
-    xlabel(ax, 'X (m)', 'FontSize',10);
-    ylabel(ax, 'Y (m)', 'FontSize',10);
-    plot_xy(ax, data, palette);
-    sgtitle(fig, sprintf('Top-Down Trajectories  |  %s', label), 'FontSize',13);
+    xlabel(ax, '$x\,[m]$', 'Interpreter','latex');
+    ylabel(ax, '$y\,[m]$', 'Interpreter','latex');
+    plot_xy(ax, data, palette, style);
+    export_paper_figure(fig, out_dir, label, 'top_down_trajectories');
 
     fig = figure('Name', sprintf('3-D Trajectories - %s', label), ...
                  'NumberTitle', 'off', 'Color', [1 1 1], ...
-                 'Position', [160, 120, 1100, 900]);
+                 'Units', 'inches', 'Position', [0, 0, style.double_width, style.tall_height]);
 
     ax = paper_ax(fig, 1, 1, 1);
     hold(ax,'on'); grid(ax,'on'); view(ax, 3);
-    title(ax, '3-D Trajectories', 'FontSize',12);
-    xlabel(ax, 'X (m)', 'FontSize',10);
-    ylabel(ax, 'Y (m)', 'FontSize',10);
-    zlabel(ax, 'Z (m)', 'FontSize',10);
-    plot_xyz(ax, data, palette);
-    sgtitle(fig, sprintf('3-D Trajectories  |  %s', label), 'FontSize',13);
+    xlabel(ax, '$x\,[m]$', 'Interpreter','latex');
+    ylabel(ax, '$y\,[m]$', 'Interpreter','latex');
+    zlabel(ax, '$z\,[m]$', 'Interpreter','latex');
+    plot_xyz(ax, data, palette, style);
+    export_paper_figure(fig, out_dir, label, '3d_trajectories');
 
     fig = figure('Name', sprintf('Agent Movement - %s', label), ...
                  'NumberTitle', 'off', 'Color', [1 1 1], ...
-                 'Position', [220, 140, 1100, 650]);
+                 'Units', 'inches', 'Position', [0, 0, style.double_width, style.short_height]);
 
     ax = paper_ax(fig, 1, 1, 1);
     hold(ax,'on'); grid(ax,'on');
-    title(ax, 'Agent Movement', 'FontSize',12);
-    xlabel(ax, 'Time (s)', 'FontSize',10);
-    ylabel(ax, 'Distance / Speed', 'FontSize',10);
-    plot_motion(ax, data, palette);
-    sgtitle(fig, sprintf('Agent Movement  |  %s', label), 'FontSize',13);
+    xlabel(ax, '$time\,[s]$', 'Interpreter','latex');
+    plot_motion(ax, data, palette, style);
+    export_paper_figure(fig, out_dir, label, 'agent_movement');
 
     fig = figure('Name', sprintf('Trajectory Statistics - %s', label), ...
                  'NumberTitle', 'off', 'Color', [1 1 1], ...
-                 'Position', [280, 160, 900, 900]);
+                 'Units', 'inches', 'Position', [0, 0, style.single_width, style.tall_height]);
 
     ax = paper_ax(fig, 1, 1, 1);
     axis(ax, 'off');
-    title(ax, 'Summary Statistics', 'FontSize',12);
     txt = summary_lines(data);
     text(ax, 0.03, 0.98, txt, 'Units','normalized','VerticalAlignment','top', ...
-         'Color',[0.10 0.10 0.10], 'FontSize',10, 'FontName','Monospaced');
-    sgtitle(fig, sprintf('Trajectory Statistics  |  %s', label), 'FontSize',13);
+         'Color',[0.10 0.10 0.10], 'FontSize',style.text_font_size, 'FontName','Monospaced');
 
     fprintf('\n=== %s ===\n', label);
     fprintf('%s\n', strjoin(txt, newline));
@@ -165,60 +161,58 @@ end
 %  HELPERS
 % ============================================================
 
-function plot_xy(ax, data, palette)
+function plot_xy(ax, data, palette, style)
     for a = 1:numel(data.agents)
         col = palette(1 + mod(a-1, size(palette,1)), :);
         p = data.agents(a).position;
-        plot(ax, p(:,1), p(:,2), '-', 'Color', col, 'LineWidth', 2.4, ...
+        plot(ax, p(:,1), p(:,2), '-', 'Color', col, 'LineWidth', style.line_width, ...
             'DisplayName', sprintf('%s agent', data.agents(a).id));
         plot(ax, p(1,1), p(1,2), 'o', 'Color', col, 'MarkerFaceColor', [1 1 1], ...
-            'MarkerSize', 7, 'LineWidth', 1.3, 'HandleVisibility','off');
+            'MarkerSize', style.marker_size, 'LineWidth', 1.2, 'HandleVisibility','off');
         plot(ax, p(end,1), p(end,2), 'x', 'Color', col, ...
-            'MarkerSize', 8, 'LineWidth', 1.5, 'HandleVisibility','off');
+            'MarkerSize', style.marker_size, 'LineWidth', 1.4, 'HandleVisibility','off');
 
         c = data.agents(a).centers;
         light_col = lighten_color(col, 0.55);
         for u = 1:size(c, 2)
             p = squeeze(c(:,u,:));
-            plot(ax, p(:,1), p(:,2), '-', 'Color', light_col, 'LineWidth', 1.6, ...
+            plot(ax, p(:,1), p(:,2), '--', 'Color', light_col, 'LineWidth', style.line_width, ...
                 'DisplayName', sprintf('%s cluster u%d', data.agents(a).id, u));
             plot(ax, p(1,1), p(1,2), 'o', 'Color', light_col, 'MarkerFaceColor', [1 1 1], ...
-                'MarkerSize', 7, 'LineWidth', 1.0, 'HandleVisibility','off');
+                'MarkerSize', style.marker_size, 'LineWidth', 1.0, 'HandleVisibility','off');
             plot(ax, p(end,1), p(end,2), 'x', 'Color', light_col, ...
-                'MarkerSize', 8, 'LineWidth', 1.2, 'HandleVisibility','off');
+                'MarkerSize', style.marker_size, 'LineWidth', 1.2, 'HandleVisibility','off');
         end
     end
-    legend(ax, 'Location','bestoutside', 'FontSize',7, 'Box','off');
 end
 
-function plot_xyz(ax, data, palette)
+function plot_xyz(ax, data, palette, style)
     for a = 1:numel(data.agents)
         col = palette(1 + mod(a-1, size(palette,1)), :);
         p = data.agents(a).position;
-        plot3(ax, p(:,1), p(:,2), p(:,3), '-', 'Color', col, 'LineWidth', 1.6);
+        plot3(ax, p(:,1), p(:,2), p(:,3), '-', 'Color', col, 'LineWidth', style.line_width);
         c = data.agents(a).centers;
         for u = 1:size(c, 2)
-            plot3(ax, c(:,u,1), c(:,u,2), c(:,u,3), '--', 'Color', col, 'LineWidth', 1.0);
+            plot3(ax, c(:,u,1), c(:,u,2), c(:,u,3), '--', 'Color', lighten_color(col, 0.55), 'LineWidth', 1.0);
         end
     end
 end
 
-function plot_motion(ax, data, palette)
+function plot_motion(ax, data, palette, style)
     yyaxis(ax, 'left');
-    ylabel(ax, 'Travel distance (m)', 'FontSize',9);
+    ylabel(ax, '$d\,[m]$', 'Interpreter','latex', 'Color', style.blue);
     for a = 1:numel(data.agents)
         col = palette(1 + mod(a-1, size(palette,1)), :);
         plot(ax, data.agents(a).t_agent, data.agents(a).distance_traveled, '-', ...
-            'Color', col, 'LineWidth', 1.3, 'DisplayName', [data.agents(a).id ' distance']);
+            'Color', col, 'LineWidth', style.line_width, 'DisplayName', [data.agents(a).id ' distance']);
     end
     yyaxis(ax, 'right');
-    ylabel(ax, 'Speed (m/s)', 'FontSize',9);
+    ylabel(ax, '$v\,[m/s]$', 'Interpreter','latex', 'Color', style.orange);
     for a = 1:numel(data.agents)
         col = palette(1 + mod(a-1, size(palette,1)), :);
         plot(ax, data.agents(a).t_agent, data.agents(a).speed, ':', ...
-            'Color', col, 'LineWidth', 1.1, 'DisplayName', [data.agents(a).id ' speed']);
+            'Color', col, 'LineWidth', style.line_width, 'DisplayName', [data.agents(a).id ' speed']);
     end
-    legend(ax, 'Location','best', 'FontSize',7, 'Box','off');
 end
 
 function txt = summary_lines(data)
@@ -301,12 +295,42 @@ function col = lighten_color(col, amount)
 end
 
 function ax = paper_ax(fig, rows, cols, idx)
+    style = paper_style();
     ax = subplot(rows, cols, idx, 'Parent', fig);
     set(ax, 'Color',     [1.0  1.0  1.0 ], ...
             'XColor',    [0.10 0.10 0.10], ...
             'YColor',    [0.10 0.10 0.10], ...
             'GridColor', [0.75 0.75 0.75], ...
             'GridAlpha', 0.45, ...
-            'LineWidth', 0.8, ...
-            'FontSize',  8);
+            'LineWidth', style.axis_width, ...
+            'FontSize',  style.axis_font_size, ...
+            'TickLabelInterpreter', 'latex', ...
+            'Box', 'on');
+end
+
+function style = paper_style()
+    style.single_width = 3.45;
+    style.double_width = 7.15;
+    style.short_height = 2.65;
+    style.tall_height = 4.20;
+    style.line_width = 1.4;
+    style.axis_width = 1.0;
+    style.axis_font_size = 12;
+    style.text_font_size = 12;
+    style.marker_size = 5;
+    style.blue = 1/255 * [0, 113, 188];
+    style.orange = 1/255 * [216, 82, 24];
+end
+
+function out_dir = ensure_figures_dir()
+    out_dir = fullfile(pwd, 'figures');
+    if ~exist(out_dir, 'dir')
+        mkdir(out_dir);
+    end
+end
+
+function export_paper_figure(fig, out_dir, label, name)
+    set(fig, 'PaperPositionMode', 'auto');
+    drawnow;
+    exportgraphics(fig, fullfile(out_dir, sprintf('%s_%s.png', label, name)), 'Resolution', 300);
 end

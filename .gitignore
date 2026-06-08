@@ -20,6 +20,7 @@ __pycache__/
 recordings/
 
 # Ignore MATLAB files
+figures/
 matlab_msg_gen_R2026a/
 *.asv
 
