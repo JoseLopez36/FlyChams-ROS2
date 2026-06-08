@@ -48,6 +48,7 @@ namespace flychams::common
             float bonding_coef_time_to_max;
             float max_hysteresis_ratio;
             float min_hysteresis_ratio;
+            float change_cooldown_time;
         };
 
 	private: // Parameters
@@ -56,6 +57,7 @@ namespace flychams::common
 	private: // Data
 		// Persistence data
 		common::RowVectorXr bonding_coefs_;
+		float change_cooldown_remaining_;
 
     public: // Public methods
         void init(const Parameters& params)
@@ -65,6 +67,7 @@ namespace flychams::common
 
 			// Initialize persistence data
 			bonding_coefs_.resize(0);
+			change_cooldown_remaining_ = 0.0f;
         }
         void destroy()
         {
@@ -113,29 +116,27 @@ namespace flychams::common
 					C = reorderCentroidsConsistently(C, centroids, centroids_prev);
 					centroids = computeCentroids(C, tab_P); // We need to recompute the centroids after reordering
 
-					// 4. Ensure persistence of centroids
-					C = ensureClusterPersistence(C, C_prev, centroids, tab_P, dt);
-
-					// 5. Recover any cluster that persistence left empty
-					int n_pts = tab_P.cols();
-					for (int k = 0; k < K; k++)
+					// Block successive changes while the cooldown is active
+					if (change_cooldown_remaining_ > 0.0f)
 					{
-						bool has_points = (C.array() == k).any();
-						if (!has_points)
-						{
-							float max_d = -1.0f;
-							int farthest_idx = 0;
-							for (int i = 0; i < n_pts; i++)
-							{
-								float d = (tab_P.col(i) - centroids.col(C(i))).norm();
-								if (d > max_d)
-								{
-									max_d = d;
-									farthest_idx = i;
-								}
-							}
-							C(farthest_idx) = k;
-						}
+						change_cooldown_remaining_ = std::max(change_cooldown_remaining_ - dt, 0.0f);
+						C = C_prev;
+						bonding_coefs_.setConstant(params_.max_bonding_coef);
+						break;
+					}
+
+					// 4. Ensure persistence of centroids
+					common::RowVectorXi C_candidate = C;
+					bool persistence_broken = false;
+					C = ensureClusterPersistence(C, C_prev, centroids, tab_P, dt, persistence_broken);
+					if (persistence_broken)
+					{
+						C = C_candidate;
+					}
+					if ((C.array() != C_prev.array()).any())
+					{
+						bonding_coefs_.setConstant(params_.max_bonding_coef);
+						change_cooldown_remaining_ = params_.change_cooldown_time;
 					}
 					break;
 				}
@@ -362,7 +363,7 @@ namespace flychams::common
 			for (int i = 0; i < n; i++)
 			{
 				int new_index = 0;
-				for (int j = 0; j < n; j++)
+				for (int j = 0; j < K; j++)
 				{
 					if (associations(j) == C(i))
 					{
@@ -436,12 +437,11 @@ namespace flychams::common
 		}
 
 	private: // Persistence implementation. Cluster persistence
-		common::RowVectorXi ensureClusterPersistence(const common::RowVectorXi& C, const common::RowVectorXi& C_prev, const common::Matrix3Xr& centroids, const common::Matrix3Xr& tab_P, const float& dt)
+		common::RowVectorXi ensureClusterPersistence(const common::RowVectorXi& C, const common::RowVectorXi& C_prev, const common::Matrix3Xr& centroids, const common::Matrix3Xr& tab_P, const float& dt, bool& persistence_broken)
 	    {
 			// Function that ensures the persistence of centroids over time
-			// Get number of points and clusters
+			// Get number of points
 			int n = C.size();
-			int K = centroids.cols();
 
 			// Initialize assignments with input assignments
 			common::RowVectorXi C_persistent = C;
@@ -458,9 +458,6 @@ namespace flychams::common
 
 			// Calculate the slope for incrementing the bonding coefficient
 			float bonding_coef_incr_slope = params_.max_bonding_coef / params_.bonding_coef_time_to_max;
-
-			// Flag to track if hysteresis has been applied (bonding mechanism active)
-			bool bonding_active = false;
 
 			// For each point, check if its assignment has changed
 			for (int i = 0; i < n; i++)
@@ -502,12 +499,12 @@ namespace flychams::common
 					if ((dist_to_prev_cluster - dist_to_curr_cluster) / dist_between_clusters <= hysteresis_ratio)
 					{
 						C_persistent(i) = c_prev;
-						bonding_active = true; // Indicate that hysteresis has been applied
 					}
 					else
 					{
 						// If the point should change to the new cluster, reset its bonding coefficient
 						bonding_coefs_(i) = params_.ini_bonding_coef;
+						persistence_broken = true;
 					}
 				}
 			}

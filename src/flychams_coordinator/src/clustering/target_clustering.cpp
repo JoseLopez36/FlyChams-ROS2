@@ -19,6 +19,7 @@ void TargetClustering::onModuleInit()
 	float bonding_coef_time_to_max = node_->getParameterOr<float>("persistence.bonding_coef_time_to_max", 100.0f);
 	float max_hysteresis_ratio = node_->getParameterOr<float>("persistence.max_hysteresis_ratio", 0.4f);
 	float min_hysteresis_ratio = node_->getParameterOr<float>("persistence.min_hysteresis_ratio", 0.2f);
+	float change_cooldown_time = node_->getParameterOr<float>("persistence.change_cooldown_time", 3.0f);
 
 	// Compute command timeout
 	cmd_timeout_ = (1.0f / update_rate_) * 1.25f;
@@ -39,6 +40,7 @@ void TargetClustering::onModuleInit()
 	solver_params.bonding_coef_time_to_max = bonding_coef_time_to_max;
 	solver_params.max_hysteresis_ratio = max_hysteresis_ratio;
 	solver_params.min_hysteresis_ratio = min_hysteresis_ratio;
+	solver_params.change_cooldown_time = change_cooldown_time;
 	k_means_solver_->init(solver_params);
 
 	// Set update timer
