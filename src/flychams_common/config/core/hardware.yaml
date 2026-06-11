@@ -4,3 +4,4 @@ agents:
     host: "192.168.1.100"
     user: "jetson1"
     workspace: "~/FlyChams-ROS2"
+    serial_device: "/dev/ttyACM0"

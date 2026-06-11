@@ -94,9 +94,29 @@ GPU_VENDOR=jetson scripts/docker/build_agent.sh
 
 ### Micro-XRCE-DDS Agent for Hardware Mode
 
-When using the [GCS hardware mode](gcs.md), the Jetson must also run the Micro-XRCE-DDS Agent to bridge PX4 autopilot to ROS2. This runs as a separate Docker container. Build the image on the Jetson following `autopilot.md` — Micro-XRCE-DDS Agent.
+When using the [GCS hardware mode](gcs.md), the Jetson must also run the Micro-XRCE-DDS Agent to bridge PX4 autopilot to ROS2. This runs as a separate Docker container. Build the image on the Jetson following [autopilot.md — Micro-XRCE-DDS Agent](autopilot.md#2-micro-xrce-dds-agent).
 
-The Micro-XRCE-DDS Agent runs on port `8888 + agent_idx` (e.g., 8888 for AGENT00, 8889 for AGENT01).
+On hardware, PX4 is connected over USB serial. Launch the agent against the autopilot device (commonly `/dev/ttyACM0`):
+
+```bash
+# List serial devices if unsure
+ls -la /dev/ttyACM* /dev/ttyUSB*
+
+# Launch over serial (default baud 921600 — must match PX4 UXRCE_DDS_CFG)
+XRCE_SERIAL_DEVICE=/dev/ttyACM0 scripts/launch_micro_xrce_dds.sh
+
+# Detached (background)
+DETACH=true XRCE_SERIAL_DEVICE=/dev/ttyACM0 scripts/launch_micro_xrce_dds.sh
+```
+
+Ensure your user can access the serial port (`dialout` group):
+
+```bash
+sudo usermod -aG dialout $USER
+newgrp dialout
+```
+
+For SITL or UDP-based setups, use `XRCE_PORT=8888 scripts/launch_micro_xrce_dds.sh` instead (simulation default).
 
 ---
 

@@ -20,7 +20,7 @@ Each UAV runs two services via Docker, launched remotely via SSH using existing 
 | Service | Container | Launch Script | Purpose |
 |---|---|---|---|
 | flychams_agent | `flychams-agent-<ID>` | `launch_agent.sh` | Per-UAV control, tracking, positioning |
-| Micro-XRCE-DDS Agent | `flychams-micro-xrce-dds` | `launch_micro_xrce_dds.sh` | Bridges ROS2 DDS to PX4 autopilot (port 8888+idx) |
+| Micro-XRCE-DDS Agent | `flychams-micro-xrce-dds` | `launch_micro_xrce_dds.sh` | Bridges ROS2 DDS to PX4 autopilot (serial or UDP) |
 
 The GCS executes these scripts on each Jetson via SSH, reusing the same launch tooling used in simulation.
 
@@ -46,10 +46,12 @@ agents:
     host: "192.168.1.100"
     user: "jetson"
     workspace: "~/FlyChams-ROS2"
+    serial_device: "/dev/ttyACM0"
   AGENT01:
     host: "192.168.1.101"
     user: "jetson"
     workspace: "~/FlyChams-ROS2"
+    serial_device: "/dev/ttyACM0"
 ```
 
 Each agent in `mission.yaml` needs a matching entry in `hardware.yaml`.
@@ -109,7 +111,7 @@ Services start in this order:
 1. Operator (Foxglove on port 8765)
 2. Coordinator
 3. On each UAV via SSH:
-   - Micro-XRCE-DDS Agent (port 8888 + agent_idx)
+   - Micro-XRCE-DDS Agent (serial device from `hardware.yaml`, or UDP port `8888 + agent_idx`)
    - flychams_agent
 
 Press **Enter** to stop all services. UAV services are also stopped via SSH.

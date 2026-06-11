@@ -91,6 +91,9 @@ All containers inherit these from the host:
 | `PX4_AUTOPILOT_PATH` | — | PX4 source tree (see [autopilot.md](autopilot.md)) |
 | `Micro_XRCE_DDS_AGENT_PATH` | — | Micro-XRCE-DDS-Agent source tree (see [autopilot.md](autopilot.md)) |
 | `GPU_VENDOR` | `auto` | `nvidia` / `amd` / `none` — override GPU auto-detection |
+| `XRCE_SERIAL_DEVICE` | — | PX4 serial device for Micro-XRCE-DDS (e.g. `/dev/ttyACM0`); enables serial transport |
+| `XRCE_BAUDRATE` | `921600` | Baud rate when using `XRCE_SERIAL_DEVICE` |
+| `XRCE_PORT` | `8888` | UDP port for Micro-XRCE-DDS (simulation / UDP hardware setups) |
 | `FOXGLOVE_PORT` | `8765` | WebSocket port for Foxglove Bridge |
 
 Override inline:

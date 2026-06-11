@@ -144,11 +144,22 @@ def launch_hardware(agent_ids: list, record: bool = False, record_name: str = ""
             workspace = cfg.get("workspace")
             idx = load_agent_idx(agent_id)
             xrce_port = 8888 + idx
+            serial_device = cfg.get("serial_device", "")
 
             if host:
                 # Launch Micro-XRCE-DDS Agent
-                remote_xrce_cmd = f"cd {workspace} && DETACH=true XRCE_PORT={xrce_port} scripts/launch_micro_xrce_dds.sh"
-                print(f"Launching Micro-XRCE-DDS for {agent_id} on {host}:{xrce_port}...")
+                if serial_device:
+                    remote_xrce_cmd = (
+                        f"cd {workspace} && DETACH=true "
+                        f"XRCE_SERIAL_DEVICE={serial_device} scripts/launch_micro_xrce_dds.sh"
+                    )
+                    print(f"Launching Micro-XRCE-DDS for {agent_id} on {host} ({serial_device})...")
+                else:
+                    remote_xrce_cmd = (
+                        f"cd {workspace} && DETACH=true "
+                        f"XRCE_PORT={xrce_port} scripts/launch_micro_xrce_dds.sh"
+                    )
+                    print(f"Launching Micro-XRCE-DDS for {agent_id} on {host}:{xrce_port}...")
                 run_ssh(host, user, remote_xrce_cmd)
                 time.sleep(0.5)
 
