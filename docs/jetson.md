@@ -56,22 +56,15 @@ More info on [NVIDIA Docker Setup](https://docs.nvidia.com/jetson/orin-nano-devk
 
 ### 2. Verify Tegra Devices
 
-Ensure the Jetson V4L2 video decoder/encoder devices are accessible:
+Ensure Tegra device nodes are present (names vary by JetPack and platform):
 
 ```bash
 ls -la /dev/nvhost-*
 ```
 
-Expected output:
-```
-/dev/nvhost-ctrl
-/dev/nvhost-ctrl-gpu
-/dev/nvhost-nvdec   # H.265 decoder
-/dev/nvhost-nvenc   # H.265 encoder
-/dev/nvhost-vic     # Video Image Compositor
-```
+On Orin (JetPack 6.x) you typically see GPU nodes such as `/dev/nvhost-gpu`, `/dev/nvhost-ctrl-gpu`, and `/dev/nvhost-as-gpu`. Older Xavier/TX2 images may instead expose `/dev/nvhost-nvdec`, `/dev/nvhost-nvenc`, and `/dev/nvhost-vic`. Either layout is fine — `run_agent.sh` mounts every `/dev/nvhost-*` node it finds.
 
-If devices are missing, check that the `nvidia` kernel modules are loaded:
+If no `nvhost` devices appear, check that the `nvidia` kernel modules are loaded:
 
 ```bash
 lsmod | grep nvhost
@@ -197,7 +190,7 @@ Common errors:
 | Error | Cause | Solution |
 |---|---|---|
 | `nvv4l2decoder not found` | Host GStreamer plugins missing | Install `nvidia-l4t-gstreamer` on the Jetson host, then restart the agent container |
-| `Failed to open device` | Tegra devices not accessible | Check `/dev/nvhost-nvdec` exists, verify Docker device mounts |
+| `Failed to open device` | Tegra devices not accessible | Run `ls /dev/nvhost-*` on the host; restart the agent container so `run_agent.sh` remounts them |
 | `Could not negotiate format` | Color space mismatch | Verify `nvvidconv` and `videoconvert` are in pipeline |
 
 ### Check hardware acceleration is active

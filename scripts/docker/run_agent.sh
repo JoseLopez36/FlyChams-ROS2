@@ -39,21 +39,11 @@ elif [ "$GPU_VENDOR" = "amd" ]; then
 elif [ "$GPU_VENDOR" = "jetson" ]; then
     echo "Using Jetson (Tegra) GPU"
     GPU_FLAGS="--runtime nvidia -e NVIDIA_DRIVER_CAPABILITIES=all"
-    if [ -e /dev/nvhost-ctrl ]; then
-        GPU_FLAGS="${GPU_FLAGS} --device /dev/nvhost-ctrl"
-    fi
-    if [ -e /dev/nvhost-ctrl-gpu ]; then
-        GPU_FLAGS="${GPU_FLAGS} --device /dev/nvhost-ctrl-gpu"
-    fi
-    if [ -e /dev/nvhost-vic ]; then
-        GPU_FLAGS="${GPU_FLAGS} --device /dev/nvhost-vic"
-    fi
-    if [ -e /dev/nvhost-nvdec ]; then
-        GPU_FLAGS="${GPU_FLAGS} --device /dev/nvhost-nvdec"
-    fi
-    if [ -e /dev/nvhost-nvenc ]; then
-        GPU_FLAGS="${GPU_FLAGS} --device /dev/nvhost-nvenc"
-    fi
+    shopt -s nullglob
+    for nvhost_dev in /dev/nvhost-*; do
+        GPU_FLAGS="${GPU_FLAGS} --device ${nvhost_dev}"
+    done
+    shopt -u nullglob
     if getent group video >/dev/null 2>&1; then
         VIDEO_GID=$(getent group video | cut -d: -f3)
         GPU_FLAGS="${GPU_FLAGS} --group-add ${VIDEO_GID}"
