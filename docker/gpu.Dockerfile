@@ -30,9 +30,5 @@ RUN if [ "$GPU_VENDOR" = "nvidia" ]; then \
             mesa-va-drivers \
         && sudo rm -rf /var/lib/apt/lists/* && sudo apt-get clean; \
     elif [ "$GPU_VENDOR" = "jetson" ]; then \
-        sudo apt-get update && sudo apt-get install -y \
-            gstreamer1.0-plugins-bad \
-            gstreamer1.0-nvvideo4linux2 \
-            libnvidia-encode-470 \
-        && sudo rm -rf /var/lib/apt/lists/* && sudo apt-get clean; \
+        :; \
     fi

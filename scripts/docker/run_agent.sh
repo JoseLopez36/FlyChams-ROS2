@@ -58,6 +58,14 @@ elif [ "$GPU_VENDOR" = "jetson" ]; then
         VIDEO_GID=$(getent group video | cut -d: -f3)
         GPU_FLAGS="${GPU_FLAGS} --group-add ${VIDEO_GID}"
     fi
+    if [ -d /usr/lib/aarch64-linux-gnu/tegra ]; then
+        GPU_FLAGS="${GPU_FLAGS} -v /usr/lib/aarch64-linux-gnu/tegra:/usr/lib/aarch64-linux-gnu/tegra:ro"
+    fi
+    shopt -s nullglob
+    for nv_plugin in /usr/lib/aarch64-linux-gnu/gstreamer-1.0/libgstnv*.so; do
+        GPU_FLAGS="${GPU_FLAGS} -v ${nv_plugin}:${nv_plugin}:ro"
+    done
+    shopt -u nullglob
 fi
 
 if docker ps -a --format '{{.Names}}' | grep -q "^${CONTAINER_NAME}$"; then
