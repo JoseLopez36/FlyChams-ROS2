@@ -76,36 +76,30 @@ function plot_bag(data, label)
     col_dur = style.orange;
     col_cnt = style.blue;
 
-    fig = figure('Name', sprintf('Assignment Solve Duration - %s', label), ...
-                 'NumberTitle', 'off', 'Color', [1 1 1], ...
-                 'Units', 'inches', 'Position', [0, 0, style.double_width, style.short_height]);
-
     ms = data.duration_ms(:);
     t  = data.t_duration(:);
+    nc = data.node_count(:);
+    tc = data.t_count(:);
 
-    ax = analysis_common('axis', fig, 1, 1, 1);
+    fig = figure('Name', sprintf('Assignment Solvers - %s', label), ...
+                 'NumberTitle', 'off', 'Color', [1 1 1], ...
+                 'Units', 'inches', 'Position', [0, 0, style.double_width, style.tall_height]);
+
+    ax = analysis_common('axis', fig, 2, 1, 1);
     hold(ax,'on'); grid(ax,'on');
-    xlabel(ax, '$time\,[s]$', 'Interpreter','latex');
     ylabel(ax, '$t_{solve}\,[ms]$', 'Interpreter','latex');
     plot(ax, t, ms, '-', 'Color', col_dur, 'LineWidth', style.line_width);
     yline(ax, mean(ms),       '--', 'Color', col_dur,   'LineWidth', 1.0);
     yline(ax, prctile(ms,99), ':',  'Color', style.red, 'LineWidth', 1.0);
-    analysis_common('export_figure', fig, out_fig_dir, label, 'assignment_solve_duration');
 
-    fig = figure('Name', sprintf('Assignment Node Count - %s', label), ...
-                 'NumberTitle', 'off', 'Color', [1 1 1], ...
-                 'Units', 'inches', 'Position', [0, 0, style.double_width, style.short_height]);
-
-    ax = analysis_common('axis', fig, 1, 1, 1);
+    ax = analysis_common('axis', fig, 2, 1, 2);
     hold(ax,'on'); grid(ax,'on');
     xlabel(ax, '$time\,[s]$', 'Interpreter','latex');
     ylabel(ax, '$N_{nodes}$', 'Interpreter','latex');
-    nc = data.node_count(:);
-    tc = data.t_count(:);
     plot(ax, tc, nc, '-', 'Color', col_cnt, 'LineWidth', style.line_width);
     yline(ax, mean(nc),       '--', 'Color', col_cnt,   'LineWidth', 1.0);
     yline(ax, prctile(nc,99), ':',  'Color', style.red, 'LineWidth', 1.0);
-    analysis_common('export_figure', fig, out_fig_dir, label, 'assignment_node_count');
+    analysis_common('export_figure', fig, out_fig_dir, label, 'assignment_solvers');
 
     txt = [
         {'--- Solve Duration (ms) ---'};
