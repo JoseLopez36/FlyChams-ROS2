@@ -27,6 +27,7 @@ set(OPERATOR_SRC
   src/markers/cluster_markers.cpp
   # Annotations
   src/annotations/agent_annotations.cpp
+  src/annotations/view_hud.cpp
 )
 add_library(${PROJECT_NAME} SHARED ${OPERATOR_SRC})
 target_include_directories(${PROJECT_NAME} PUBLIC

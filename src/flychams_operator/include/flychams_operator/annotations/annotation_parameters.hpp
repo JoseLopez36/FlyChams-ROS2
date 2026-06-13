@@ -25,7 +25,7 @@ namespace flychams::operator_pkg
     namespace AnnotationScale
     {
         // Min-side of the view sizes the constexpr style values below were tuned for
-        constexpr float kCentralRefMinSide  = 2160.0f;  // 3840×2160
+        constexpr float kCentralRefMinSide  = 540.0f;  // 960×540
         constexpr float kTrackingRefMinSide = 270.0f;  // 480×270
 
         inline float fromView(int view_w, int view_h, float ref_min_side)
@@ -35,55 +35,54 @@ namespace flychams::operator_pkg
     }
 
     // ════════════════════════════════════════════════════════════════════════════
+    // HUD OVERLAY PARAMETERS
+    // ════════════════════════════════════════════════════════════════════════════
+    namespace HudAnnotations
+    {
+        constexpr bool kEnabled = true;
+
+        // Header / footer strips (full view width)
+        constexpr float kBarHeight       = 30.0f;
+        constexpr float kBarAccentThick  = 1.5f;
+        constexpr float kBarPadX         = 10.0f;
+        constexpr float kBarFontSize     = 17.0f;
+        constexpr float kBarRoleFontSize = 16.0f;
+        constexpr float kTextWidthFactor = 0.58f;
+        constexpr float kTextWidthNarrow = 0.78f;
+        constexpr float kTextWidthDegree = 1.05f;   // ° and × render wider than ASCII
+        constexpr float kTextWidthRightSlack = 0.25f;
+
+        // Crosshair
+        constexpr float kCrosshairArmFrac  = 0.045f;
+        constexpr float kCrosshairGapFrac  = 0.013f;
+        constexpr float kCrosshairThick    = 1.75f;
+
+        // Centre reticle dot
+        constexpr float kCentreDotDiam     = 6.0f;
+        constexpr float kCentreDotOutline  = 1.0f;
+
+        // Colors (accent is agent palette colour at draw time)
+        inline const Color kBarFill    = withAlpha(Colors::kBlack, 0.62f);
+        inline const Color kBarText = withAlpha(Colors::kWhite,  0.70f);
+        constexpr float    kRoleTextAlpha = 1.0f;
+        inline const Color kCross   = withAlpha(Colors::kWhite,  0.35f);
+    }
+
+    // ════════════════════════════════════════════════════════════════════════════
     // CAMERA ANNOTATION PARAMETERS
     // ════════════════════════════════════════════════════════════════════════════
     namespace CameraAnnotations
     {
-        // Crosshair
-        constexpr float kCrosshairArmFrac  = 0.04f;
-        constexpr float kCrosshairGapFrac  = 0.012f;
-        constexpr float kCrosshairThick    = 2.0f;
-        // Centre dot
-        constexpr float kCentreDotDiam     = 7.5f;
-        // Role badge text
-        constexpr bool  kShowBadge         = true;
-        constexpr float kBadgeFontSize     = 15.0f;
-        constexpr float kBadgeMarginX      = 5.0f;
-        constexpr float kBadgeMarginY      = 20.0f;
-        // HUD text
-        constexpr bool  kShowHud           = true;
-        constexpr float kHudFontSize       = 15.0f;
-        constexpr float kHudMarginX        = 5.0f;
-        constexpr float kHudMarginY        = 7.5f;
-        // Window-overlay style
+        // Window crop overlay (central view only)
         constexpr bool  kShowWindowsOnCentral = true;
         constexpr float kWinOverlayBoxThick   = 2.0f;
         constexpr float kWinOverlayIdFontSz   = 13.0f;
         constexpr float kWinOverlayIdFontMarginX = -1.0f;
         constexpr float kWinOverlayIdFontMarginY = -5.0f;
         // Colors (agent color is used dynamically from AgentColors palette)
-        inline const Color kBg      = withAlpha(Colors::kBlack,       0.50f);
-        inline const Color kWin     = withAlpha(Colors::kCyan,        0.50f);
-        inline const Color kWinOob  = withAlpha(Colors::kScarlettRed, 0.50f);
-    }
-
-    // ════════════════════════════════════════════════════════════════════════════
-    // WINDOW ANNOTATION PARAMETERS
-    // ════════════════════════════════════════════════════════════════════════════
-    namespace WindowAnnotations
-    {
-        // Role badge text (top-left corner)
-        constexpr bool  kShowBadge      = true;
-        constexpr float kBadgeFontSize  = 15.0f;
-        constexpr float kBadgeMarginX   = 5.0f;
-        constexpr float kBadgeMarginY   = 20.0f;
-        // Info text (bottom-left corner)
-        constexpr bool  kShowHud        = true;
-        constexpr float kHudFontSize    = 15.0f;
-        constexpr float kHudMarginX     = 5.0f;
-        constexpr float kHudMarginY     = 7.5f;
-        // Colors
-        inline const Color kBg      = withAlpha(Colors::kBlack,  0.50f);
+        inline const Color kBg      = withAlpha(Colors::kBlack,       0.70f);
+        inline const Color kWin     = withAlpha(Colors::kCyan,        0.70f);
+        inline const Color kWinOob  = withAlpha(Colors::kScarlettRed, 0.70f);
     }
 
     // ════════════════════════════════════════════════════════════════════════════
@@ -150,6 +149,16 @@ namespace flychams::operator_pkg
         }
 
         inline common::FoxColorMsg makeColor(const Color& c) { return c; }
+
+        inline void addFilledRect(common::FoxImageAnnotationsMsg& msg, const rclcpp::Time& stamp, float x0, float y0, float x1, float y1, common::FoxColorMsg fill)
+        {
+            common::FoxPointsAnnotationMsg rect;
+            rect.type = common::FoxPointsAnnotationMsg::LINE_LOOP;
+            rect.timestamp = stamp;
+            rect.points = {pt(x0, y0), pt(x1, y0), pt(x1, y1), pt(x0, y1)};
+            rect.fill_color = fill;
+            msg.points.push_back(rect);
+        }
     }
 
 } // namespace flychams::operator_pkg

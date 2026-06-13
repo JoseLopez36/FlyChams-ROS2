@@ -1,6 +1,7 @@
 #pragma once
 
 // Utils include
+#include "flychams_operator/annotations/view_hud.hpp"
 #include "flychams_operator/annotations/annotation_parameters.hpp"
 
 // Base module include

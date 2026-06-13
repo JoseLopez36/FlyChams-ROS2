@@ -171,49 +171,31 @@ void AgentAnnotations::publishCameraAnnotations(size_t idx, int view_w, int view
     // Get normalized zoom factor
     const float upsilon_norm = idx < sp.upsilons_norm.size() ? sp.upsilons_norm[idx] : 1.0f;
 
-    FoxImageAnnotationsMsg msg;
-
-    const float W  = static_cast<float>(view_w);
-    const float H  = static_cast<float>(view_h);
-    const float cx = W * 0.5f;
-    const float cy = H * 0.5f;
-    const float side = std::min(W, H);
-
     const uint8_t role = idx < sp.roles.size() ? sp.roles[idx] : 0;
     const bool is_central = (role == 1 /* Central */);
+
+    FoxImageAnnotationsMsg msg;
+
     const float scale = AnnotationScale::fromView(view_w, view_h,
         is_central ? AnnotationScale::kCentralRefMinSide : AnnotationScale::kTrackingRefMinSide);
 
-    // Agent color from palette
-    const FoxColorMsg hud_color = AnnotationHelpers::makeColor(AgentColors::get(agent_idx_));
-    const FoxColorMsg bg     = AnnotationHelpers::makeColor(CameraAnnotations::kBg);
-    const FoxColorMsg white  = AnnotationHelpers::makeColor(Colors::kWhite);
-
-    // ── Crosshair with centre gap ──────────────────────────────────────────
+    // ── HUD (crosshair, header, footer) ─────────────────────────────────────
     {
-        const float arm = side * CameraAnnotations::kCrosshairArmFrac;
-        const float gap = side * CameraAnnotations::kCrosshairGapFrac;
-        // Horizontal: left segment
-        AnnotationHelpers::addLine(msg, stamp, AnnotationHelpers::pt(cx - arm, cy), AnnotationHelpers::pt(cx - gap, cy), hud_color, CameraAnnotations::kCrosshairThick * scale);
-        // Horizontal: right segment
-        AnnotationHelpers::addLine(msg, stamp, AnnotationHelpers::pt(cx + gap, cy), AnnotationHelpers::pt(cx + arm, cy), hud_color, CameraAnnotations::kCrosshairThick * scale);
-        // Vertical: top segment
-        AnnotationHelpers::addLine(msg, stamp, AnnotationHelpers::pt(cx, cy - arm), AnnotationHelpers::pt(cx, cy - gap), hud_color, CameraAnnotations::kCrosshairThick * scale);
-        // Vertical: bottom segment
-        AnnotationHelpers::addLine(msg, stamp, AnnotationHelpers::pt(cx, cy + gap), AnnotationHelpers::pt(cx, cy + arm), hud_color, CameraAnnotations::kCrosshairThick * scale);
-    }
-
-    // ── Centre dot ────────────────────────────────────────────────────────
-    {
-        FoxCircleAnnotationMsg dot;
-        dot.timestamp = stamp;
-        dot.position.x = cx;
-        dot.position.y = cy;
-        dot.diameter = CameraAnnotations::kCentreDotDiam * scale;
-        dot.fill_color = hud_color;
-        dot.outline_color = white;
-        dot.thickness = scale;
-        msg.circles.push_back(dot);
+        ViewHud::CameraSpec hud_spec;
+        hud_spec.layout = {view_w, view_h, scale};
+        hud_spec.agent_id = agent_id_;
+        hud_spec.unit_id = idx < sp.ids.size() ? sp.ids[idx] : "?";
+        hud_spec.role = is_central ? ViewHud::Role::Central : ViewHud::Role::Tracking;
+        hud_spec.upsilon_norm = upsilon_norm;
+        hud_spec.agent_idx = agent_idx_;
+        if (idx < sp.rotations.size())
+        {
+            constexpr float kR2D = 180.0f / static_cast<float>(M_PI);
+            hud_spec.pitch_deg = sp.rotations[idx].y * kR2D;
+            hud_spec.yaw_deg   = sp.rotations[idx].z * kR2D;
+            hud_spec.has_rotation = true;
+        }
+        ViewHud::drawCamera(msg, stamp, hud_spec);
     }
 
     // ── Window crop overlays (central view only) ──────────────────────────
@@ -279,49 +261,6 @@ void AgentAnnotations::publishCameraAnnotations(size_t idx, int view_w, int view
         }
     }
 
-    // ── Role / unit ID badge ───────────────────────────────────
-    if (CameraAnnotations::kShowBadge)
-    {
-        const std::string unit_id = idx < sp.ids.size() ? sp.ids[idx] : "?";
-        const std::string role_str = (role == 1) ? "CENTRAL" : "TRACKING";
-
-        FoxTextAnnotationMsg badge;
-        badge.timestamp = stamp;
-        badge.position.x = CameraAnnotations::kBadgeMarginX * scale;
-        badge.position.y = CameraAnnotations::kBadgeMarginY * scale;
-        badge.text = agent_id_ + " - " + role_str + " - " + unit_id;
-        badge.font_size = CameraAnnotations::kBadgeFontSize * scale;
-        badge.text_color = hud_color;
-        badge.background_color = bg;
-        msg.texts.push_back(badge);
-    }
-
-    // ── HUD text ────────────────────────
-    if (CameraAnnotations::kShowHud)
-    {
-        std::ostringstream oss;
-        oss << std::fixed;
-        oss << "z=" << std::setprecision(3) << upsilon_norm;
-        if (idx < sp.rotations.size())
-        {
-            constexpr float kR2D = 180.0f / static_cast<float>(M_PI);
-            const float pitch_deg = sp.rotations[idx].y * kR2D;
-            const float yaw_deg   = sp.rotations[idx].z * kR2D;
-            oss << "  p=" << std::setprecision(1) << pitch_deg << "\xC2\xB0"
-                << "  y=" << yaw_deg << "\xC2\xB0";
-        }
-
-        FoxTextAnnotationMsg hud;
-        hud.timestamp = stamp;
-        hud.position.x = CameraAnnotations::kHudMarginX * scale;
-        hud.position.y = H - CameraAnnotations::kHudMarginY * scale;
-        hud.text = oss.str();
-        hud.font_size = CameraAnnotations::kHudFontSize * scale;
-        hud.text_color = hud_color;
-        hud.background_color = bg;
-        msg.texts.push_back(hud);
-    }
-
     // ── Cluster overlays ──────────────────────────────────────────────────
     if (has_clusters_)
     {
@@ -345,55 +284,25 @@ void AgentAnnotations::publishWindowAnnotations(size_t idx, int view_w, int view
     const auto& crop = sp.crops[idx];
     FoxImageAnnotationsMsg msg;
 
-    const float y1   = static_cast<float>(view_h);
     const float scale = AnnotationScale::fromView(view_w, view_h, AnnotationScale::kTrackingRefMinSide);
 
     // Get normalized zoom factor
     const float upsilon_norm = idx < sp.upsilons_norm.size() ? sp.upsilons_norm[idx] : 1.0f;
 
     // Get out of bounds flag
-    const bool  oob  = crop.is_out_of_bounds;
+    const bool oob = crop.is_out_of_bounds;
 
-    // Agent color from palette (orange tint when out of bounds)
-    Color agent_color = AgentColors::get(agent_idx_);
-    if (oob)
+    // ── HUD (header, footer) ────────────────────────────────────────────────
     {
-        agent_color = Colors::kOrange;
-    }
-    const FoxColorMsg text_color = AnnotationHelpers::makeColor(agent_color);
-    const FoxColorMsg bg         = AnnotationHelpers::makeColor(WindowAnnotations::kBg);
-
-    // ── Role / unit ID badge (top-left of the window view) ───────────────
-    if (WindowAnnotations::kShowBadge)
-    {
-        const std::string unit_id = idx < sp.ids.size() ? sp.ids[idx] : "?";
-        FoxTextAnnotationMsg badge;
-        badge.timestamp = stamp;
-        badge.position.x = WindowAnnotations::kBadgeMarginX * scale;
-        badge.position.y = WindowAnnotations::kBadgeMarginY * scale;
-        badge.text = "WINDOW - " + unit_id + (oob ? "  [OOB]" : "");
-        badge.font_size = WindowAnnotations::kBadgeFontSize * scale;
-        badge.text_color = text_color;
-        badge.background_color = bg;
-        msg.texts.push_back(badge);
-    }
-
-    // ── HUD text (crop size + lambda, bottom-left corner)
-    if (WindowAnnotations::kShowHud)
-    {
-        std::ostringstream oss;
-        oss << "z=" << std::fixed << std::setprecision(3) << upsilon_norm
-            << "  " << crop.w << "x" << crop.h;
-
-        FoxTextAnnotationMsg hud;
-        hud.timestamp = stamp;
-        hud.position.x = WindowAnnotations::kHudMarginX * scale;
-        hud.position.y = y1 - WindowAnnotations::kHudMarginY * scale;
-        hud.text = oss.str();
-        hud.font_size = WindowAnnotations::kHudFontSize * scale;
-        hud.text_color = text_color;
-        hud.background_color = bg;
-        msg.texts.push_back(hud);
+        ViewHud::WindowSpec hud_spec;
+        hud_spec.layout = {view_w, view_h, scale};
+        hud_spec.unit_id = idx < sp.ids.size() ? sp.ids[idx] : "?";
+        hud_spec.upsilon_norm = upsilon_norm;
+        hud_spec.crop_w = crop.w;
+        hud_spec.crop_h = crop.h;
+        hud_spec.out_of_bounds = oob;
+        hud_spec.agent_idx = agent_idx_;
+        ViewHud::drawWindow(msg, stamp, hud_spec);
     }
 
     // ── Cluster overlays (projected into window crop space) ───────────────
