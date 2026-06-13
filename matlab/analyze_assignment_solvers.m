@@ -52,17 +52,17 @@ function data = load_bag(bag_path, t_start, t_end)
     dur_sel          = select(bag, 'Topic', dur_topic);
     dur_msgs         = readMessages(dur_sel);
     data.duration_ms = cellfun(@(m) double(m.data), dur_msgs);
-    t_dur_raw        = bag_timestamps(dur_sel);
+    t_dur_raw        = analysis_common('bag_timestamps', dur_sel);
 
     % Node count
     cnt_sel         = select(bag, 'Topic', cnt_topic);
     cnt_msgs        = readMessages(cnt_sel);
     data.node_count = cellfun(@(m) double(m.data), cnt_msgs);
-    t_cnt_raw       = bag_timestamps(cnt_sel);
+    t_cnt_raw       = analysis_common('bag_timestamps', cnt_sel);
 
     % Crop to [t_start, t_end] and re-zero
-    [data.duration_ms, data.t_duration] = crop(data.duration_ms, t_dur_raw, t_start, t_end);
-    [data.node_count,  data.t_count   ] = crop(data.node_count,  t_cnt_raw, t_start, t_end);
+    [data.duration_ms, data.t_duration] = analysis_common('crop_series', data.duration_ms, t_dur_raw, t_start, t_end, true, 'analyze_assignment_solvers');
+    [data.node_count,  data.t_count   ] = analysis_common('crop_series', data.node_count,  t_cnt_raw, t_start, t_end, true, 'analyze_assignment_solvers');
 end
 
 % ============================================================
@@ -81,9 +81,8 @@ function plot_bag(data, label)
     nc = data.node_count(:);
     tc = data.t_count(:);
 
-    fig = figure('Name', sprintf('Assignment Solvers - %s', label), ...
-                 'NumberTitle', 'off', 'Color', [1 1 1], ...
-                 'Units', 'inches', 'Position', [0, 0, style.double_width, style.tall_height]);
+    fig = analysis_common('paper_figure', style, style.double_width, style.tall_height);
+    fig.Name = sprintf('Assignment Solvers - %s', label);
 
     ax = analysis_common('axis', fig, 2, 1, 1);
     hold(ax,'on'); grid(ax,'on');
@@ -112,27 +111,4 @@ function plot_bag(data, label)
 
     fprintf('\n=== %s ===\n', label);
     fprintf('%s\n', strjoin(txt, newline));
-end
-
-% ============================================================
-%  HELPERS
-% ============================================================
-
-function t = bag_timestamps(sel)
-    % Returns elapsed seconds (double) from the first message in a bag selection
-    tlist = sel.MessageList.Time;           % datetime array
-    t     = seconds(seconds(tlist - tlist(1)));  % double elapsed seconds
-end
-
-function [vals, t] = crop(vals, t_raw, t_start, t_end)
-    mask = t_raw >= t_start & t_raw <= t_end;
-    if ~any(mask)
-        warning('analyze_assignment_solvers: crop [%.1f, %.1f] s yields no samples (bag range: [%.1f, %.1f] s)', ...
-            t_start, t_end, t_raw(1), t_raw(end));
-        vals = [];
-        t    = [];
-        return;
-    end
-    vals = vals(mask);
-    t    = t_raw(mask) - t_raw(find(mask,1));
 end

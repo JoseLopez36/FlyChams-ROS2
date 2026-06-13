@@ -44,15 +44,15 @@ function data = load_bag(bag_path, t_start, t_end)
     fleet_topic = '/flychams/operator/fleet_metrics';
     fleet_sel = select(bag, 'Topic', fleet_topic);
     fleet_msgs = readMessages(fleet_sel);
-    t_fleet_raw = bag_timestamps(fleet_sel);
+    t_fleet_raw = analysis_common('bag_timestamps', fleet_sel);
 
     data.total_agents = cellfun(@(m) double(m.total_agents), fleet_msgs);
     data.assignment_swap_count = cellfun(@(m) double(m.assignment_swap_count), fleet_msgs);
     data.assignment_solve_duration = cellfun(@(m) double(m.assignment_solve_duration), fleet_msgs);
 
-    [data.total_agents, data.t_fleet] = crop_vector(data.total_agents, t_fleet_raw, t_start, t_end);
-    [data.assignment_swap_count, ~] = crop_vector(data.assignment_swap_count, t_fleet_raw, t_start, t_end);
-    [data.assignment_solve_duration, ~] = crop_vector(data.assignment_solve_duration, t_fleet_raw, t_start, t_end);
+    [data.total_agents, data.t_fleet] = analysis_common('crop_series', data.total_agents, t_fleet_raw, t_start, t_end);
+    [data.assignment_swap_count, ~] = analysis_common('crop_series', data.assignment_swap_count, t_fleet_raw, t_start, t_end);
+    [data.assignment_solve_duration, ~] = analysis_common('crop_series', data.assignment_solve_duration, t_fleet_raw, t_start, t_end);
 
     topics = bag_topics(bag);
     metrics_topics = topics(contains(topics, '/flychams/operator/') & endsWith(topics, '/agent_metrics'));
@@ -64,17 +64,17 @@ function data = load_bag(bag_path, t_start, t_end)
 
         sel = select(bag, 'Topic', topic);
         msgs = readMessages(sel);
-        t_raw = bag_timestamps(sel);
+        t_raw = analysis_common('bag_timestamps', sel);
 
         distance = cellfun(@(m) double(m.distance_traveled), msgs);
         speed = cellfun(@(m) double(m.speed), msgs);
         goal = cellfun(@(m) double(m.distance_to_goal), msgs);
         solve = cellfun(@(m) double(m.position_solve_duration), msgs);
 
-        [distance, t] = crop_vector(distance, t_raw, t_start, t_end);
-        [speed, ~] = crop_vector(speed, t_raw, t_start, t_end);
-        [goal, ~] = crop_vector(goal, t_raw, t_start, t_end);
-        [solve, ~] = crop_vector(solve, t_raw, t_start, t_end);
+        [distance, t] = analysis_common('crop_series', distance, t_raw, t_start, t_end);
+        [speed, ~] = analysis_common('crop_series', speed, t_raw, t_start, t_end);
+        [goal, ~] = analysis_common('crop_series', goal, t_raw, t_start, t_end);
+        [solve, ~] = analysis_common('crop_series', solve, t_raw, t_start, t_end);
 
         data.agents(i).id = agent_id;
         data.agents(i).t = t;
@@ -207,15 +207,4 @@ end
 
 function id = extract_agent_id(topic, prefix, suffix)
     id = erase(erase(topic, prefix), suffix);
-end
-
-function t = bag_timestamps(sel)
-    tlist = sel.MessageList.Time;
-    t = seconds(seconds(tlist - tlist(1)));
-end
-
-function [vals, t] = crop_vector(vals, t_raw, t_start, t_end)
-    mask = t_raw >= t_start & t_raw <= t_end;
-    vals = vals(mask);
-    t = t_raw(mask) - t_raw(find(mask,1));
 end

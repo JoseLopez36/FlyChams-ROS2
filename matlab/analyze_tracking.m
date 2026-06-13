@@ -50,7 +50,7 @@ function data = load_bag(bag_path, t_start, t_end)
 
         sel = select(bag, 'Topic', topic);
         msgs = readMessages(sel);
-        t_raw = bag_timestamps(sel);
+        t_raw = analysis_common('bag_timestamps', sel);
 
         max_units = max(cellfun(@(m) max(numel(m.upsilons_norm), numel(m.apparent_target_sizes)), msgs)) - 1;
         ups = nan(numel(msgs), max_units);
@@ -178,13 +178,8 @@ function id = extract_agent_id(topic, prefix, suffix)
     id = erase(erase(topic, prefix), suffix);
 end
 
-function t = bag_timestamps(sel)
-    tlist = sel.MessageList.Time;
-    t = seconds(seconds(tlist - tlist(1)));
-end
-
 function [vals, t] = crop_matrix(vals, t_raw, t_start, t_end)
-    mask = t_raw >= t_start & t_raw <= t_end;
+    mask = analysis_common('trim_mask', t_raw, t_start, t_end);
     vals = vals(mask,:);
     t = t_raw(mask) - t_raw(find(mask,1));
 end

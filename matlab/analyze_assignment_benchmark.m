@@ -5,6 +5,7 @@
 %
 % Outputs:
 %   figures/Assignment-Benchmark-Report/scenario_<N>_per_cycle.{png}
+%   stats/Assignment-Benchmark-Report/scenario_<N>_per_cycle.txt
 %
 % USAGE
 %   analyze_assignment_benchmark
@@ -31,9 +32,48 @@ function analyze_assignment_benchmark(scenario, t_start, t_end)
 
     recordings_dir = fullfile(script_dir, '..', 'recordings');
 
-    methods = method_registry(style);
+    methods = method_registry();
     data = benchmark_data(scenario, recordings_dir, methods);
+    report_window_stats(data, scenario, t_start, t_end, script_dir);
     plot_per_cycle_comparison(data, style, out_dir, scenario, t_start, t_end);
+end
+
+% ============================================================
+%  REPORT
+% ============================================================
+
+function report_window_stats(data, scenario, t_start, t_end, script_dir)
+    all_t = [];
+    for m = 1:numel(data)
+        all_t = [all_t; data(m).t_duration(:); data(m).t_count(:)]; %#ok<AGROW>
+    end
+    [x_lo, x_hi] = analysis_common('trim_limits', all_t, t_start, t_end);
+
+    lines = {
+        sprintf('Scenario %d', scenario);
+        sprintf('Time window: [%.3f, %.3f] s', x_lo, x_hi);
+        ''
+    };
+
+    for m = 1:numel(data)
+        item = data(m);
+        ms_win = analysis_common('values_in_window', item.duration_ms, item.t_duration, t_start, t_end);
+        nc_win = analysis_common('values_in_window', item.node_count, item.t_count, t_start, t_end);
+
+        lines = [lines; ...
+            {item.name}; ...
+            {'  --- Solve Duration (ms) ---'}; ...
+            analysis_common('min_mean_max_lines', ms_win, 'ms'); ...
+            {'  --- Node Count ---'}; ...
+            analysis_common('min_mean_max_lines', nc_win, ''); ...
+            {''}];
+    end
+
+    out_stats_dir = fullfile(script_dir, 'stats', 'Assignment-Benchmark-Report');
+    analysis_common('export_stats', out_stats_dir, '', sprintf('scenario_%d_per_cycle', scenario), lines);
+
+    fprintf('\n=== Assignment benchmark — scenario %d ===\n', scenario);
+    fprintf('%s\n', strjoin(lines, newline));
 end
 
 % ============================================================
@@ -44,7 +84,7 @@ function plot_per_cycle_comparison(data, style, out_dir, scenario, t_start, t_en
     n_methods = numel(data);
     n_rows = 2 * n_methods;
 
-    fig = paper_figure(style, style.double_width, style.tall_height * (n_rows / 2));
+    fig = analysis_common('paper_figure', style, style.double_width, style.tall_height * (n_rows / 2));
 
     for m = 1:n_methods
         item = data(m);
@@ -52,9 +92,8 @@ function plot_per_cycle_comparison(data, style, out_dir, scenario, t_start, t_en
         t_cnt = item.t_count(:);
         ms = item.duration_ms(:);
         nc = item.node_count(:);
-        ms_win = ms(trim_mask(t_dur, t_start, t_end));
-        nc_win = nc(trim_mask(t_cnt, t_start, t_end));
-        [x_lo, x_hi] = trim_limits([t_dur; t_cnt], t_start, t_end);
+        ms_win = analysis_common('values_in_window', ms, t_dur, t_start, t_end);
+        nc_win = analysis_common('values_in_window', nc, t_cnt, t_start, t_end);
 
         row_dur = 2 * m - 1;
         row_cnt = 2 * m;
@@ -62,32 +101,32 @@ function plot_per_cycle_comparison(data, style, out_dir, scenario, t_start, t_en
         ax = analysis_common('axis', fig, n_rows, 1, row_dur);
         hold(ax, 'on'); grid(ax, 'on');
         plot(ax, t_dur, ms, '-', 'Color', style.orange, 'LineWidth', style.line_width);
-        plot_stat_lines(ax, ms_win, style.orange);
-        set_padded_ylim(ax, ms_win);
-        xlim(ax, [x_lo, x_hi]);
+        analysis_common('plot_min_mean_max', ax, ms_win, style.orange);
+        analysis_common('padded_ylim', ax, ms_win);
+        analysis_common('apply_trim_xlim', ax, t_dur, t_start, t_end);
         ylabel(ax, '$t_{solve}\,[ms]$', 'Interpreter', 'latex');
         title(ax, item.name, 'Interpreter', 'latex');
 
         ax = analysis_common('axis', fig, n_rows, 1, row_cnt);
         hold(ax, 'on'); grid(ax, 'on');
         plot(ax, t_cnt, nc, '-', 'Color', style.blue, 'LineWidth', style.line_width);
-        plot_stat_lines(ax, nc_win, style.blue);
-        set_padded_ylim(ax, nc_win);
-        xlim(ax, [x_lo, x_hi]);
+        analysis_common('plot_min_mean_max', ax, nc_win, style.blue);
+        analysis_common('padded_ylim', ax, nc_win);
+        analysis_common('apply_trim_xlim', ax, t_cnt, t_start, t_end);
         ylabel(ax, '$N_{nodes}$', 'Interpreter', 'latex');
         if m == n_methods
             xlabel(ax, '$time\,[s]$', 'Interpreter', 'latex');
         end
     end
 
-    export_report_figure(fig, out_dir, sprintf('scenario_%d_per_cycle', scenario));
+    analysis_common('export_report_figure', fig, out_dir, sprintf('scenario_%d_per_cycle', scenario));
 end
 
 % ============================================================
 %  DATA
 % ============================================================
 
-function methods = method_registry(style)
+function methods = method_registry()
     methods = struct( ...
         'suffix', {'BB', 'Exhaustive'}, ...
         'name',   {'Branch-and-Bound', 'Exhaustive search'});
@@ -136,79 +175,10 @@ function data = load_bag(bag_path)
     dur_sel          = select(bag, 'Topic', dur_topic);
     dur_msgs         = readMessages(dur_sel);
     data.duration_ms = cellfun(@(m) double(m.data), dur_msgs);
-    data.t_duration  = bag_timestamps(dur_sel);
+    data.t_duration  = analysis_common('bag_timestamps', dur_sel);
 
     cnt_sel         = select(bag, 'Topic', cnt_topic);
     cnt_msgs        = readMessages(cnt_sel);
     data.node_count = cellfun(@(m) double(m.data), cnt_msgs);
-    data.t_count    = bag_timestamps(cnt_sel);
-end
-
-% ============================================================
-%  HELPERS
-% ============================================================
-
-function fig = paper_figure(style, width, height)
-    fig = figure('NumberTitle', 'off', 'Color', [1 1 1], ...
-                 'Units', 'inches', 'Position', [0, 0, width, height]);
-    set(fig, 'DefaultAxesFontSize', style.axis_font_size);
-end
-
-function plot_stat_lines(ax, values, color)
-    values = values(:);
-    values = values(~isnan(values));
-    if isempty(values)
-        return;
-    end
-    yline(ax, min(values),  '--',  'Color', color, 'LineWidth', 1.0);
-    yline(ax, mean(values), '--', 'Color', color, 'LineWidth', 1.0);
-    yline(ax, max(values), '--', 'Color', color, 'LineWidth', 1.0);
-end
-
-function set_padded_ylim(ax, values, pad_fraction)
-    if nargin < 3, pad_fraction = 0.10; end
-    values = values(:);
-    values = values(~isnan(values));
-    if isempty(values)
-        return;
-    end
-    ymin = min(values);
-    ymax = max(values);
-    span = ymax - ymin;
-    if span == 0
-        pad = max(abs(ymin) * pad_fraction, 1.0);
-    else
-        pad = pad_fraction * span;
-    end
-    ylim(ax, [ymin - pad, ymax + pad]);
-end
-
-function export_report_figure(fig, out_dir, name)
-    set(fig, 'PaperPositionMode', 'auto');
-    drawnow;
-    exportgraphics(fig, fullfile(out_dir, sprintf('%s.png', name)), 'Resolution', 300);
-end
-
-function mask = trim_mask(t, t_start, t_end)
-    mask = true(size(t));
-    if isfinite(t_start), mask = mask & (t >= t_start); end
-    if isfinite(t_end),   mask = mask & (t <= t_end);   end
-end
-
-function [lo, hi] = trim_limits(t, t_start, t_end)
-    t = t(:);
-    if isempty(t)
-        lo = 0;
-        hi = 1;
-        return;
-    end
-    lo = t_start;
-    hi = t_end;
-    if ~isfinite(lo), lo = min(t); end
-    if ~isfinite(hi), hi = max(t); end
-end
-
-function t = bag_timestamps(sel)
-    tlist = sel.MessageList.Time;
-    t     = seconds(seconds(tlist - tlist(1)));
+    data.t_count    = analysis_common('bag_timestamps', cnt_sel);
 end

@@ -52,7 +52,7 @@ function data = load_bag(bag_path, t_start, t_end)
 
         met_sel = select(bag, 'Topic', metrics_topic);
         met_msgs = readMessages(met_sel);
-        t_met_raw = bag_timestamps(met_sel);
+        t_met_raw = analysis_common('bag_timestamps', met_sel);
 
         pos = zeros(numel(met_msgs), 3);
         setp = zeros(numel(met_msgs), 3);
@@ -75,7 +75,7 @@ function data = load_bag(bag_path, t_start, t_end)
 
         clu_sel = select(bag, 'Topic', clusters_topic);
         clu_msgs = readMessages(clu_sel);
-        t_clu_raw = bag_timestamps(clu_sel);
+        t_clu_raw = analysis_common('bag_timestamps', clu_sel);
         max_units = max(cellfun(@(m) numel(m.centers), clu_msgs));
         centers = nan(numel(clu_msgs), max_units, 3);
         radii = nan(numel(clu_msgs), max_units);
@@ -116,10 +116,14 @@ function plot_bag(data, label)
                  'Units', 'inches', 'Position', [0, 0, style.double_width, style.tall_height]);
 
     ax = analysis_common('axis', fig, 1, 1, 1);
-    hold(ax,'on'); grid(ax,'on'); axis(ax,'equal');
+    hold(ax,'on'); grid(ax,'on');
     xlabel(ax, '$x\,[m]$', 'Interpreter','latex');
     ylabel(ax, '$y\,[m]$', 'Interpreter','latex');
     plot_xy(ax, data, palette, style);
+    [xs, ys] = trajectory_xy(data);
+    analysis_common('padded_xlim', ax, xs, 0.05);
+    analysis_common('padded_ylim', ax, ys, 0.05);
+    axis(ax, 'equal');
     analysis_common('export_figure', fig, out_fig_dir, label, 'top_down_trajectories');
 
     fig = figure('Name', sprintf('3-D Trajectories - %s', label), ...
@@ -155,6 +159,24 @@ end
 %  HELPERS
 % ============================================================
 
+function [x, y] = trajectory_xy(data)
+    x = [];
+    y = [];
+    for a = 1:numel(data.agents)
+        p = data.agents(a).position;
+        x = [x; p(:,1)]; %#ok<AGROW>
+        y = [y; p(:,2)]; %#ok<AGROW>
+        c = data.agents(a).centers;
+        for u = 1:size(c, 2)
+            pts = squeeze(c(:, u, :));
+            x = [x; pts(:,1)]; %#ok<AGROW>
+            y = [y; pts(:,2)]; %#ok<AGROW>
+        end
+    end
+    x = x(~isnan(x));
+    y = y(~isnan(y));
+end
+
 function plot_xy(ax, data, palette, style)
     for a = 1:numel(data.agents)
         col = palette(1 + mod(a-1, size(palette,1)), :);
@@ -167,10 +189,10 @@ function plot_xy(ax, data, palette, style)
             'MarkerSize', style.marker_size, 'LineWidth', 1.4, 'HandleVisibility','off');
 
         c = data.agents(a).centers;
-        light_col = analysis_common('lighten_color', col, 0.55);
+        light_col = analysis_common('lighten_color', col, 0.35);
         for u = 1:size(c, 2)
             p = squeeze(c(:,u,:));
-            plot(ax, p(:,1), p(:,2), '--', 'Color', light_col, 'LineWidth', style.line_width, ...
+            plot(ax, p(:,1), p(:,2), ':', 'Color', light_col, 'LineWidth', style.line_width, ...
                 'DisplayName', sprintf('%s cluster u%d', data.agents(a).id, u));
             plot(ax, p(1,1), p(1,2), 'o', 'Color', light_col, 'MarkerFaceColor', [1 1 1], ...
                 'MarkerSize', style.marker_size, 'LineWidth', 1.0, 'HandleVisibility','off');
@@ -248,25 +270,18 @@ function id = extract_agent_id(topic, prefix, suffix)
     id = erase(erase(topic, prefix), suffix);
 end
 
-function t = bag_timestamps(sel)
-    tlist = sel.MessageList.Time;
-    t = seconds(seconds(tlist - tlist(1)));
-end
-
 function [vals, t] = crop_vector(vals, t_raw, t_start, t_end)
-    mask = t_raw >= t_start & t_raw <= t_end;
-    vals = vals(mask);
-    t = t_raw(mask) - t_raw(find(mask,1));
+    [vals, t] = analysis_common('crop_series', vals, t_raw, t_start, t_end);
 end
 
 function [vals, t] = crop_matrix(vals, t_raw, t_start, t_end)
-    mask = t_raw >= t_start & t_raw <= t_end;
+    mask = analysis_common('trim_mask', t_raw, t_start, t_end);
     vals = vals(mask,:);
     t = t_raw(mask) - t_raw(find(mask,1));
 end
 
 function [vals, t] = crop_centers(vals, t_raw, t_start, t_end)
-    mask = t_raw >= t_start & t_raw <= t_end;
+    mask = analysis_common('trim_mask', t_raw, t_start, t_end);
     vals = vals(mask,:,:);
     t = t_raw(mask) - t_raw(find(mask,1));
 end

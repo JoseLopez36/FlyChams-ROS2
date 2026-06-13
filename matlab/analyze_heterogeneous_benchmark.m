@@ -45,7 +45,7 @@ function plot_observation_quality(data, style, out_dir)
     zoom_p95 = metric_grid(data, clusters, fleets, 'zoom_p95');
     size_mean = metric_grid(data, clusters, fleets, 'size_mean');
 
-    fig = paper_figure(style, style.double_width, style.tall_height);
+    fig = analysis_common('paper_figure', style, style.double_width, style.tall_height);
 
     ax = analysis_common('axis', fig, 2, 1, 1);
     bar(ax, categorical(clusters), zoom_p95, 'grouped');
@@ -63,7 +63,7 @@ function plot_observation_quality(data, style, out_dir)
     yline(ax, 216, '--', 'Color', style.green, 'LineWidth', 1.0, 'Interpreter','latex');
     title(ax, 'Apparent target size (mean)', 'Interpreter','latex');
 
-    export_report_figure(fig, out_dir, 'observation_quality');
+    analysis_common('export_report_figure', fig, out_dir, 'observation_quality');
 end
 
 function plot_deployment_efficiency(data, style, out_dir)
@@ -71,7 +71,7 @@ function plot_deployment_efficiency(data, style, out_dir)
     fleets = unique_stable({data.fleet});
     markers = {'o', 's', '^'};
 
-    fig = paper_figure(style, style.double_width, style.short_height);
+    fig = analysis_common('paper_figure', style, style.double_width, style.short_height);
     ax = analysis_common('axis', fig, 1, 1, 1);
     hold(ax, 'on'); grid(ax, 'on');
 
@@ -88,7 +88,7 @@ function plot_deployment_efficiency(data, style, out_dir)
     title(ax, 'Deployment efficiency (travel distance vs. zoom)', 'Interpreter','latex');
     legend(ax, 'Location','southeast', 'Interpreter','latex');
 
-    export_report_figure(fig, out_dir, 'deployment_efficiency');
+    analysis_common('export_report_figure', fig, out_dir, 'deployment_efficiency');
 end
 
 function plot_control_stability(data, style, out_dir)
@@ -98,7 +98,7 @@ function plot_control_stability(data, style, out_dir)
     goal_mean = metric_grid(data, clusters, fleets, 'goal_mean');
     travel_std = metric_grid(data, clusters, fleets, 'travel_std');
 
-    fig = paper_figure(style, style.double_width, style.tall_height);
+    fig = analysis_common('paper_figure', style, style.double_width, style.tall_height);
 
     ax = analysis_common('axis', fig, 2, 1, 1);
     bar(ax, categorical(clusters), goal_mean, 'grouped');
@@ -113,7 +113,7 @@ function plot_control_stability(data, style, out_dir)
     ylabel(ax, '$\sigma_d\,[m]$', 'Interpreter','latex');
     title(ax, 'Inter-agent travel balance', 'Interpreter','latex');
 
-    export_report_figure(fig, out_dir, 'control_stability');
+    analysis_common('export_report_figure', fig, out_dir, 'control_stability');
 end
 
 function plot_compute_latency(data, style, out_dir)
@@ -121,7 +121,7 @@ function plot_compute_latency(data, style, out_dir)
     fleets = unique_stable({data.fleet});
     assign_p95 = metric_grid(data, clusters, fleets, 'assign_p95');
 
-    fig = paper_figure(style, style.double_width, style.short_height);
+    fig = analysis_common('paper_figure', style, style.double_width, style.short_height);
     ax = analysis_common('axis', fig, 1, 1, 1);
     bar(ax, categorical(clusters), assign_p95, 'grouped');
     grid(ax, 'on');
@@ -129,7 +129,7 @@ function plot_compute_latency(data, style, out_dir)
     title(ax, 'Assignment solver latency (p95)', 'Interpreter','latex');
     legend(ax, fleets, 'Location','northoutside', 'Orientation','horizontal', 'Interpreter','latex');
 
-    export_report_figure(fig, out_dir, 'compute_latency');
+    analysis_common('export_report_figure', fig, out_dir, 'compute_latency');
 end
 
 % ============================================================
@@ -171,18 +171,6 @@ end
 % ============================================================
 %  HELPERS
 % ============================================================
-
-function fig = paper_figure(style, width, height)
-    fig = figure('NumberTitle', 'off', 'Color', [1 1 1], ...
-                 'Units', 'inches', 'Position', [0, 0, width, height]);
-    set(fig, 'DefaultAxesFontSize', style.axis_font_size);
-end
-
-function export_report_figure(fig, out_dir, name)
-    set(fig, 'PaperPositionMode', 'auto');
-    drawnow;
-    exportgraphics(fig, fullfile(out_dir, sprintf('%s.png', name)), 'Resolution', 300);
-end
 
 function values = metric_grid(data, clusters, fleets, field)
     values = nan(numel(clusters), numel(fleets));
