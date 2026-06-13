@@ -42,15 +42,15 @@ namespace flychams::operator_pkg
         constexpr bool kEnabled = true;
 
         // Header / footer strips (full view width)
-        constexpr float kBarHeight       = 30.0f;
+        constexpr float kBarHeight       = 23.0f;
         constexpr float kBarAccentThick  = 1.5f;
         constexpr float kBarPadX         = 10.0f;
-        constexpr float kBarFontSize     = 17.0f;
-        constexpr float kBarRoleFontSize = 16.0f;
+        constexpr float kBarFontSize     = 13.0f;
+        constexpr float kBarRoleFontSize = 13.0f;
         constexpr float kTextWidthFactor = 0.58f;
         constexpr float kTextWidthNarrow = 0.78f;
-        constexpr float kTextWidthDegree = 1.05f;   // ° and × render wider than ASCII
-        constexpr float kTextWidthRightSlack = 0.25f;
+        constexpr float kTextWidthDegree = 1.05f;   // ° render wider than ASCII
+        constexpr float kTextWidthRightSlack = 0.35f;
 
         // Crosshair
         constexpr float kCrosshairArmFrac  = 0.045f;
