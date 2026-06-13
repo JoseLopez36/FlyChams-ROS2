@@ -245,11 +245,6 @@ float ViewHud::estimateTextWidth(const std::string& text, float font_sz)
             width += HudAnnotations::kTextWidthDegree * font_sz;
             continue;
         }
-        if (seq == 2 && c == 0xC3 && i < text.size() && static_cast<unsigned char>(text[i]) == 0x97)
-        {
-            width += HudAnnotations::kTextWidthDegree * font_sz;
-            continue;
-        }
 
         float factor = HudAnnotations::kTextWidthFactor;
         if (c == ' ' || c == '.' || c == ':' || c == '+' || c == '-')
