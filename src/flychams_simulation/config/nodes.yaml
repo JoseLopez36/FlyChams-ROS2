@@ -25,7 +25,7 @@
 /**/simulation_stream_node:
   ros__parameters:
     # Stream parameters
-    stream_delay_ms: 500
+    stream_delay_ms: 2000
     # RTSP host (AirSim server address)
     rtsp_host: "127.0.0.1"
     # RTSP port (AirSim streaming port)

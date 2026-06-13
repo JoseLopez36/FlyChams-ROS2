@@ -115,83 +115,51 @@ void SimulationStream::onModuleShutdown()
 }
 
 // ════════════════════════════════════════════════════════════════════════════
-// STREAM CONFIGURATION
-// ════════════════════════════════════════════════════════════════════════════
-
-std::string SimulationStream::buildSourcePipeline(const std::string& rtsp_url) const
-{
-    const std::string source =
-        "rtspsrc location=" + rtsp_url + " latency=0 protocols=tcp timeout=5000000 "
-        "! rtph265depay ! h265parse ";
-
-    if (hw_vendor_ == "nvidia")
-    {
-        // NVDEC hardware-accelerated H.265 decode
-        return source +
-            "! nvh265dec ! videoconvert ! video/x-raw,format=BGR "
-            "! appsink drop=true max-buffers=1 sync=false";
-    }
-    else if (hw_vendor_ == "amd")
-    {
-        // VA-API hardware-accelerated H.265 decode
-        return source +
-            "! vah265dec ! vapostproc ! videoconvert ! video/x-raw,format=BGR "
-            "! appsink drop=true max-buffers=1 sync=false";
-    }
-    else
-    {
-        // Software decode H.265 decode
-        return source +
-            "! avdec_h265 ! videoconvert ! video/x-raw,format=BGR "
-            "! appsink drop=true max-buffers=1 sync=false";
-    }
-}
-
-// ════════════════════════════════════════════════════════════════════════════
 // STREAM MANAGEMENT
 // ════════════════════════════════════════════════════════════════════════════
 
 void SimulationStream::streamPipeline(const std::shared_ptr<StreamUnit>& unit)
 {
-    cv::VideoCapture capture;
     cv::Mat frame, low_res_frame;
 
     RCLCPP_INFO(node_->get_logger(), "Simulation stream: Opening stream for camera %s: %s",
         unit->camera_id.c_str(), unit->pipeline.c_str());
 
-    const std::string gst_pipeline = buildSourcePipeline(unit->pipeline);
-    RCLCPP_INFO(node_->get_logger(), "Simulation stream: GStreamer pipeline: %s", gst_pipeline.c_str());
-
-    while (unit->running && !capture.isOpened())
+    while (unit->running)
     {
-        capture.open(gst_pipeline, cv::CAP_GSTREAMER);
-        if (!capture.isOpened())
+        cv::VideoCapture capture;
+        std::string decoder_used;
+        if (!StreamUtils::openCapture(capture, unit->pipeline, hw_vendor_, decoder_used))
         {
-            capture.release();
             RCLCPP_WARN(node_->get_logger(), "Simulation stream: Could not open stream for camera %s, retrying in 5s...",
                 unit->camera_id.c_str());
             std::this_thread::sleep_for(std::chrono::seconds(5));
+            continue;
         }
-    }
 
-    if (!capture.isOpened())
-        return;
+        RCLCPP_INFO(node_->get_logger(), "Simulation stream: Stream opened for camera %s (decoder: %s)",
+            unit->camera_id.c_str(), decoder_used.c_str());
 
-    RCLCPP_INFO(node_->get_logger(), "Simulation stream: Stream opened for camera %s",
-        unit->camera_id.c_str());
+        while (unit->running)
+        {
+            if (!capture.read(frame) || frame.empty())
+                break;
 
-    while (unit->running)
-    {
-        if (!capture.read(frame) || frame.empty())
+            // Downscale frame
+            cv::resize(frame, low_res_frame, cv::Size(unit->output_width, unit->output_height), 0, 0, cv::INTER_NEAREST);
+            auto img_msg = makeImage(low_res_frame, unit->view_id);
+            unit->image_pub.publish(img_msg);
+        }
+
+        capture.release();
+
+        if (!unit->running)
             break;
-        
-        // Downscale frame
-        cv::resize(frame, low_res_frame, cv::Size(unit->output_width, unit->output_height), 0, 0, cv::INTER_NEAREST);
-        auto img_msg = makeImage(low_res_frame, unit->view_id);
-        unit->image_pub.publish(img_msg);
-    }
 
-    capture.release();
+        RCLCPP_WARN(node_->get_logger(), "Simulation stream: Stream lost for camera %s, reconnecting in 5s...",
+            unit->camera_id.c_str());
+        std::this_thread::sleep_for(std::chrono::seconds(5));
+    }
 }
 
 // ════════════════════════════════════════════════════════════════════════════

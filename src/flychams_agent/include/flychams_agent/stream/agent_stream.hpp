@@ -8,6 +8,9 @@
 // OpenCV includes
 #include <cv_bridge/cv_bridge.h>
 
+// Utils include
+#include "flychams_common/utils/stream_utils.hpp"
+
 // Base module include
 #include "flychams_common/base/base_module.hpp"
 
@@ -88,9 +91,6 @@ namespace flychams::agent
 
     private: // Callbacks
         void observationSetpointsCallback(const common::ObservationSetpointsMsg::SharedPtr msg);
-
-    private: // Stream configuration
-        std::string buildSourcePipeline(const std::string& rtsp_url) const;
 
     private: // Stream management
         void streamPipeline(const std::shared_ptr<StreamUnit>& unit);

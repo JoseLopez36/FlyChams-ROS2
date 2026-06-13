@@ -152,122 +152,90 @@ void AgentStream::observationSetpointsCallback(const ObservationSetpointsMsg::Sh
 }
 
 // ════════════════════════════════════════════════════════════════════════════
-// STREAM CONFIGURATION
-// ════════════════════════════════════════════════════════════════════════════
-
-std::string AgentStream::buildSourcePipeline(const std::string& rtsp_url) const
-{
-    const std::string source =
-        "rtspsrc location=" + rtsp_url + " latency=0 protocols=tcp timeout=5000000 "
-        "! rtph265depay ! h265parse ";
-
-    if (hw_vendor_ == "nvidia")
-    {
-        // NVDEC hardware-accelerated H.265 decode
-        return source +
-            "! nvh265dec ! videoconvert ! video/x-raw,format=BGR "
-            "! appsink drop=true max-buffers=1 sync=false";
-    }
-    else if (hw_vendor_ == "amd")
-    {
-        // VA-API hardware-accelerated H.265 decode
-        return source +
-            "! vah265dec ! vapostproc ! videoconvert ! video/x-raw,format=BGR "
-            "! appsink drop=true max-buffers=1 sync=false";
-    }
-    else
-    {
-        // Software decode H.265 decode
-        return source +
-            "! avdec_h265 ! videoconvert ! video/x-raw,format=BGR "
-            "! appsink drop=true max-buffers=1 sync=false";
-    }
-}
-
-// ════════════════════════════════════════════════════════════════════════════
 // STREAM MANAGEMENT
 // ════════════════════════════════════════════════════════════════════════════
 
 void AgentStream::streamPipeline(const std::shared_ptr<StreamUnit>& unit)
 {
-    cv::VideoCapture capture;
     cv::Mat frame, low_res_frame, low_res_crop;
 
     RCLCPP_INFO(node_->get_logger(), "Agent stream: Opening stream for camera %s: %s",
         unit->config->id.c_str(), unit->pipeline.c_str());
 
-    const std::string gst_pipeline = buildSourcePipeline(unit->pipeline);
-    RCLCPP_INFO(node_->get_logger(), "Agent stream: GStreamer pipeline: %s", gst_pipeline.c_str());
-
-    while (unit->running && !capture.isOpened())
+    while (unit->running)
     {
-        capture.open(gst_pipeline, cv::CAP_GSTREAMER);
-        if (!capture.isOpened())
+        cv::VideoCapture capture;
+        std::string decoder_used;
+        if (!StreamUtils::openCapture(capture, unit->pipeline, hw_vendor_, decoder_used))
         {
-            capture.release();
             RCLCPP_WARN(node_->get_logger(), "Agent stream: Could not open stream for camera %s, retrying in 5s...",
                 unit->config->id.c_str());
             std::this_thread::sleep_for(std::chrono::seconds(5));
+            continue;
         }
-    }
 
-    if (!capture.isOpened())
-        return;
+        RCLCPP_INFO(node_->get_logger(), "Agent stream: Stream opened for camera %s (decoder: %s)",
+            unit->config->id.c_str(), decoder_used.c_str());
 
-    RCLCPP_INFO(node_->get_logger(), "Agent stream: Stream opened for camera %s",
-        unit->config->id.c_str());
+        while (unit->running)
+        {
+            if (!capture.read(frame) || frame.empty())
+                break;
 
-    while (unit->running)
-    {
-        if (!capture.read(frame) || frame.empty())
+            // Downscale frame
+            cv::resize(frame, low_res_frame, cv::Size(unit->output_width, unit->output_height), 0, 0, cv::INTER_AREA);
+            auto img_msg = makeImage(low_res_frame, unit->frame_id);
+            CameraInfoMsg ci_snapshot;
+            {
+                std::lock_guard<std::mutex> lock(unit->camera_info_mutex);
+                ci_snapshot = unit->camera_info;
+            }
+            auto ci_msg = std::make_shared<CameraInfoMsg>(ci_snapshot);
+            ci_msg->header = img_msg->header;
+            unit->image_pub.publish(img_msg, ci_msg);
+
+            if (unit->enable_crops)
+            {
+                // Update crops cache only when the mutex is immediately available
+                if (unit->crops_mutex.try_lock())
+                {
+                    unit->crops_cache = unit->crops;
+                    unit->crops_mutex.unlock();
+                }
+
+                // Get and create crop rectangles
+                const cv::Rect frame_rect(0, 0, frame.cols, frame.rows);
+                const size_t n_crops = std::min(unit->crops_cache.size(), unit->crop_pubs.size());
+                for (size_t i = 0; i < n_crops; i++)
+                {
+                    const auto& crop = unit->crops_cache[i];
+
+                    cv::Rect rect(crop.x, crop.y, crop.w, crop.h);
+                    rect &= frame_rect;
+                    if (rect.width <= 0 || rect.height <= 0)
+                        continue;
+
+                    // Scale crop
+                    cv::resize(frame(rect), low_res_crop, cv::Size(unit->crop_output_width, unit->crop_output_height), 0, 0, cv::INTER_AREA);
+                    auto crop_img = makeImage(low_res_crop, unit->frame_id);
+                    auto crop_ci = std::make_shared<CameraInfoMsg>(unit->camera_info);
+                    crop_ci->header = crop_img->header;
+                    crop_ci->width = unit->crop_output_width;
+                    crop_ci->height = unit->crop_output_height;
+                    unit->crop_pubs[i].publish(crop_img, crop_ci);
+                }
+            }
+        }
+
+        capture.release();
+
+        if (!unit->running)
             break;
 
-        // Downscale frame
-        cv::resize(frame, low_res_frame, cv::Size(unit->output_width, unit->output_height), 0, 0, cv::INTER_AREA);
-        auto img_msg = makeImage(low_res_frame, unit->frame_id);
-        CameraInfoMsg ci_snapshot;
-        {
-            std::lock_guard<std::mutex> lock(unit->camera_info_mutex);
-            ci_snapshot = unit->camera_info;
-        }
-        auto ci_msg = std::make_shared<CameraInfoMsg>(ci_snapshot);
-        ci_msg->header = img_msg->header;
-        unit->image_pub.publish(img_msg, ci_msg);
-
-        if (unit->enable_crops)
-        {
-            // Update crops cache only when the mutex is immediately available
-            if (unit->crops_mutex.try_lock())
-            {
-                unit->crops_cache = unit->crops;
-                unit->crops_mutex.unlock();
-            }
-
-            // Get and create crop rectangles
-            const cv::Rect frame_rect(0, 0, frame.cols, frame.rows);
-            const size_t n_crops = std::min(unit->crops_cache.size(), unit->crop_pubs.size());
-            for (size_t i = 0; i < n_crops; i++)
-            {
-                const auto& crop = unit->crops_cache[i];
-
-                cv::Rect rect(crop.x, crop.y, crop.w, crop.h);
-                rect &= frame_rect;
-                if (rect.width <= 0 || rect.height <= 0)
-                    continue;
-
-                // Scale crop
-                cv::resize(frame(rect), low_res_crop, cv::Size(unit->crop_output_width, unit->crop_output_height), 0, 0, cv::INTER_AREA);
-                auto crop_img = makeImage(low_res_crop, unit->frame_id);
-                auto crop_ci = std::make_shared<CameraInfoMsg>(unit->camera_info);
-                crop_ci->header = crop_img->header;
-                crop_ci->width = unit->crop_output_width;
-                crop_ci->height = unit->crop_output_height;
-                unit->crop_pubs[i].publish(crop_img, crop_ci);
-            }
-        }
+        RCLCPP_WARN(node_->get_logger(), "Agent stream: Stream lost for camera %s, reconnecting in 5s...",
+            unit->config->id.c_str());
+        std::this_thread::sleep_for(std::chrono::seconds(5));
     }
-
-    capture.release();
 }
 
 // ════════════════════════════════════════════════════════════════════════════

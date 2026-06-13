@@ -8,6 +8,9 @@
 // OpenCV includes
 #include <cv_bridge/cv_bridge.h>
 
+// Utils include
+#include "flychams_common/utils/stream_utils.hpp"
+
 // Base module include
 #include "flychams_common/base/base_module.hpp"
 
@@ -87,9 +90,6 @@ namespace flychams::simulation
     private: // Data
         // Stream units keyed by camera_id
         std::unordered_map<common::ID, std::shared_ptr<StreamUnit>> stream_units_;
-
-    private: // Stream configuration
-        std::string buildSourcePipeline(const std::string& rtsp_url) const;
 
     private: // Stream management
         void streamPipeline(const std::shared_ptr<StreamUnit>& unit);

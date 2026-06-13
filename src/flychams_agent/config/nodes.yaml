@@ -81,4 +81,4 @@
       width: 640
       height: 360
     # Stream parameters
-    stream_delay_ms: 500
+    stream_delay_ms: 1000

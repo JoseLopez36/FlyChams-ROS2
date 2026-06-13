@@ -23,7 +23,8 @@ fi
 GPU_FLAGS=""
 if [ "$GPU_VENDOR" = "nvidia" ]; then
     echo "Using NVIDIA GPU"
-    GPU_FLAGS="--runtime nvidia --gpus all -e NVIDIA_DRIVER_CAPABILITIES=all -e NVIDIA_VISIBLE_DEVICES=all"
+    VIDEO_GID=$(getent group video  | cut -d: -f3)
+    GPU_FLAGS="--runtime nvidia --gpus all --device /dev/dri --group-add ${VIDEO_GID} -e NVIDIA_DRIVER_CAPABILITIES=all -e NVIDIA_VISIBLE_DEVICES=all"
 elif [ "$GPU_VENDOR" = "amd" ]; then
     echo "Using AMD GPU"
     VIDEO_GID=$(getent group video  | cut -d: -f3)

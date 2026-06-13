@@ -50,7 +50,8 @@ add_library(${PROJECT_NAME} SHARED
   # Utils
   src/utils/math_utils.cpp
   src/utils/vision_utils.cpp
-  src/utils/frame_utils.cpp  
+  src/utils/frame_utils.cpp
+  src/utils/stream_utils.cpp
   # Base
   src/base/base_node.cpp
   src/base/base_status_node.cpp
