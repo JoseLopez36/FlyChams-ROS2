@@ -20,6 +20,21 @@
 namespace flychams::operator_pkg
 {
     // ════════════════════════════════════════════════════════════════════════════
+    // RESOLUTION SCALING
+    // ════════════════════════════════════════════════════════════════════════════
+    namespace AnnotationScale
+    {
+        // Min-side of the view sizes the constexpr style values below were tuned for
+        constexpr float kCentralRefMinSide  = 2160.0f;  // 3840×2160
+        constexpr float kTrackingRefMinSide = 270.0f;  // 480×270
+
+        inline float fromView(int view_w, int view_h, float ref_min_side)
+        {
+            return static_cast<float>(std::min(view_w, view_h)) / ref_min_side;
+        }
+    }
+
+    // ════════════════════════════════════════════════════════════════════════════
     // CAMERA ANNOTATION PARAMETERS
     // ════════════════════════════════════════════════════════════════════════════
     namespace CameraAnnotations

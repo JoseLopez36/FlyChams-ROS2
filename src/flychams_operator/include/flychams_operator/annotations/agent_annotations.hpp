@@ -86,8 +86,8 @@ namespace flychams::operator_pkg
     private: // Annotation helpers
         void publishCameraAnnotations(size_t idx, int view_w, int view_h) const;
         void publishWindowAnnotations(size_t idx, int view_w, int view_h) const;
-        void appendClusterOverlays(common::FoxImageAnnotationsMsg& msg, const rclcpp::Time& stamp, const common::ID& camera_id, int view_w, int view_h, bool only_show_assigned) const;
-        void appendClusterOverlaysWindow(common::FoxImageAnnotationsMsg& msg, const rclcpp::Time& stamp, const common::ID& camera_id, size_t sp_idx, int view_w, int view_h, bool only_show_assigned) const;
+        void appendClusterOverlays(common::FoxImageAnnotationsMsg& msg, const rclcpp::Time& stamp, const common::ID& camera_id, int view_w, int view_h, bool only_show_assigned, float scale) const;
+        void appendClusterOverlaysWindow(common::FoxImageAnnotationsMsg& msg, const rclcpp::Time& stamp, const common::ID& camera_id, size_t sp_idx, int view_w, int view_h, bool only_show_assigned, float scale) const;
         common::Matrix4r buildWTc(const common::TransformMsg& tf) const;
         common::Matrix3r buildK(const Intrinsics& intr) const;
         std::vector<common::FoxPoint2Msg> projectRim(const common::Vector3r& wP, float radius, const common::Matrix4r& wTc, const common::Matrix3r& K, int n_pts = 64) const;

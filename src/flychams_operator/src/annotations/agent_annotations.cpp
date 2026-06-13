@@ -179,6 +179,11 @@ void AgentAnnotations::publishCameraAnnotations(size_t idx, int view_w, int view
     const float cy = H * 0.5f;
     const float side = std::min(W, H);
 
+    const uint8_t role = idx < sp.roles.size() ? sp.roles[idx] : 0;
+    const bool is_central = (role == 1 /* Central */);
+    const float scale = AnnotationScale::fromView(view_w, view_h,
+        is_central ? AnnotationScale::kCentralRefMinSide : AnnotationScale::kTrackingRefMinSide);
+
     // Agent color from palette
     const FoxColorMsg hud_color = AnnotationHelpers::makeColor(AgentColors::get(agent_idx_));
     const FoxColorMsg bg     = AnnotationHelpers::makeColor(CameraAnnotations::kBg);
@@ -189,13 +194,13 @@ void AgentAnnotations::publishCameraAnnotations(size_t idx, int view_w, int view
         const float arm = side * CameraAnnotations::kCrosshairArmFrac;
         const float gap = side * CameraAnnotations::kCrosshairGapFrac;
         // Horizontal: left segment
-        AnnotationHelpers::addLine(msg, stamp, AnnotationHelpers::pt(cx - arm, cy), AnnotationHelpers::pt(cx - gap, cy), hud_color, CameraAnnotations::kCrosshairThick);
+        AnnotationHelpers::addLine(msg, stamp, AnnotationHelpers::pt(cx - arm, cy), AnnotationHelpers::pt(cx - gap, cy), hud_color, CameraAnnotations::kCrosshairThick * scale);
         // Horizontal: right segment
-        AnnotationHelpers::addLine(msg, stamp, AnnotationHelpers::pt(cx + gap, cy), AnnotationHelpers::pt(cx + arm, cy), hud_color, CameraAnnotations::kCrosshairThick);
+        AnnotationHelpers::addLine(msg, stamp, AnnotationHelpers::pt(cx + gap, cy), AnnotationHelpers::pt(cx + arm, cy), hud_color, CameraAnnotations::kCrosshairThick * scale);
         // Vertical: top segment
-        AnnotationHelpers::addLine(msg, stamp, AnnotationHelpers::pt(cx, cy - arm), AnnotationHelpers::pt(cx, cy - gap), hud_color, CameraAnnotations::kCrosshairThick);
+        AnnotationHelpers::addLine(msg, stamp, AnnotationHelpers::pt(cx, cy - arm), AnnotationHelpers::pt(cx, cy - gap), hud_color, CameraAnnotations::kCrosshairThick * scale);
         // Vertical: bottom segment
-        AnnotationHelpers::addLine(msg, stamp, AnnotationHelpers::pt(cx, cy + gap), AnnotationHelpers::pt(cx, cy + arm), hud_color, CameraAnnotations::kCrosshairThick);
+        AnnotationHelpers::addLine(msg, stamp, AnnotationHelpers::pt(cx, cy + gap), AnnotationHelpers::pt(cx, cy + arm), hud_color, CameraAnnotations::kCrosshairThick * scale);
     }
 
     // ── Centre dot ────────────────────────────────────────────────────────
@@ -204,16 +209,14 @@ void AgentAnnotations::publishCameraAnnotations(size_t idx, int view_w, int view
         dot.timestamp = stamp;
         dot.position.x = cx;
         dot.position.y = cy;
-        dot.diameter = CameraAnnotations::kCentreDotDiam;
+        dot.diameter = CameraAnnotations::kCentreDotDiam * scale;
         dot.fill_color = hud_color;
         dot.outline_color = white;
-        dot.thickness = 1.0f;
+        dot.thickness = scale;
         msg.circles.push_back(dot);
     }
 
     // ── Window crop overlays (central view only) ──────────────────────────
-    const uint8_t role = idx < sp.roles.size() ? sp.roles[idx] : 0;
-    const bool is_central = (role == 1 /* Central */);
     if (is_central && CameraAnnotations::kShowWindowsOnCentral)
     {
         const size_t n = sp.ids.size();
@@ -256,7 +259,7 @@ void AgentAnnotations::publishCameraAnnotations(size_t idx, int view_w, int view
                     AnnotationHelpers::pt(wx1, wy1), AnnotationHelpers::pt(wx0, wy1)
                 };
                 rect.outline_color = win_color;
-                rect.thickness = CameraAnnotations::kWinOverlayBoxThick;
+                rect.thickness = CameraAnnotations::kWinOverlayBoxThick * scale;
                 msg.points.push_back(rect);
             }
 
@@ -265,10 +268,10 @@ void AgentAnnotations::publishCameraAnnotations(size_t idx, int view_w, int view
                 const std::string unit_id = j < sp.ids.size() ? sp.ids[j] : "?";
                 FoxTextAnnotationMsg label;
                 label.timestamp = stamp;
-                label.position.x = wx0 + CameraAnnotations::kWinOverlayIdFontMarginX;
-                label.position.y = wy0 + CameraAnnotations::kWinOverlayIdFontMarginY;
+                label.position.x = wx0 + CameraAnnotations::kWinOverlayIdFontMarginX * scale;
+                label.position.y = wy0 + CameraAnnotations::kWinOverlayIdFontMarginY * scale;
                 label.text = unit_id;
-                label.font_size = CameraAnnotations::kWinOverlayIdFontSz;
+                label.font_size = CameraAnnotations::kWinOverlayIdFontSz * scale;
                 label.text_color = win_color;
                 label.background_color = AnnotationHelpers::makeColor(CameraAnnotations::kBg);
                 msg.texts.push_back(label);
@@ -280,15 +283,14 @@ void AgentAnnotations::publishCameraAnnotations(size_t idx, int view_w, int view
     if (CameraAnnotations::kShowBadge)
     {
         const std::string unit_id = idx < sp.ids.size() ? sp.ids[idx] : "?";
-        const uint8_t role = idx < sp.roles.size() ? sp.roles[idx] : 0;
         const std::string role_str = (role == 1) ? "CENTRAL" : "TRACKING";
 
         FoxTextAnnotationMsg badge;
         badge.timestamp = stamp;
-        badge.position.x = CameraAnnotations::kBadgeMarginX;
-        badge.position.y = CameraAnnotations::kBadgeMarginY;
+        badge.position.x = CameraAnnotations::kBadgeMarginX * scale;
+        badge.position.y = CameraAnnotations::kBadgeMarginY * scale;
         badge.text = agent_id_ + " - " + role_str + " - " + unit_id;
-        badge.font_size = CameraAnnotations::kBadgeFontSize;
+        badge.font_size = CameraAnnotations::kBadgeFontSize * scale;
         badge.text_color = hud_color;
         badge.background_color = bg;
         msg.texts.push_back(badge);
@@ -311,10 +313,10 @@ void AgentAnnotations::publishCameraAnnotations(size_t idx, int view_w, int view
 
         FoxTextAnnotationMsg hud;
         hud.timestamp = stamp;
-        hud.position.x = CameraAnnotations::kHudMarginX;
-        hud.position.y = H - CameraAnnotations::kHudMarginY;
+        hud.position.x = CameraAnnotations::kHudMarginX * scale;
+        hud.position.y = H - CameraAnnotations::kHudMarginY * scale;
         hud.text = oss.str();
-        hud.font_size = CameraAnnotations::kHudFontSize;
+        hud.font_size = CameraAnnotations::kHudFontSize * scale;
         hud.text_color = hud_color;
         hud.background_color = bg;
         msg.texts.push_back(hud);
@@ -324,7 +326,7 @@ void AgentAnnotations::publishCameraAnnotations(size_t idx, int view_w, int view
     if (has_clusters_)
     {
         const ID& camera_id = sp.ids[idx];
-        appendClusterOverlays(msg, stamp, camera_id, view_w, view_h, !is_central);
+        appendClusterOverlays(msg, stamp, camera_id, view_w, view_h, !is_central, scale);
     }
 
     annotation_pubs_.at(sp.ids[idx])->publish(msg);
@@ -344,6 +346,7 @@ void AgentAnnotations::publishWindowAnnotations(size_t idx, int view_w, int view
     FoxImageAnnotationsMsg msg;
 
     const float y1   = static_cast<float>(view_h);
+    const float scale = AnnotationScale::fromView(view_w, view_h, AnnotationScale::kTrackingRefMinSide);
 
     // Get normalized zoom factor
     const float upsilon_norm = idx < sp.upsilons_norm.size() ? sp.upsilons_norm[idx] : 1.0f;
@@ -366,10 +369,10 @@ void AgentAnnotations::publishWindowAnnotations(size_t idx, int view_w, int view
         const std::string unit_id = idx < sp.ids.size() ? sp.ids[idx] : "?";
         FoxTextAnnotationMsg badge;
         badge.timestamp = stamp;
-        badge.position.x = WindowAnnotations::kBadgeMarginX;
-        badge.position.y = WindowAnnotations::kBadgeMarginY;
+        badge.position.x = WindowAnnotations::kBadgeMarginX * scale;
+        badge.position.y = WindowAnnotations::kBadgeMarginY * scale;
         badge.text = "WINDOW - " + unit_id + (oob ? "  [OOB]" : "");
-        badge.font_size = WindowAnnotations::kBadgeFontSize;
+        badge.font_size = WindowAnnotations::kBadgeFontSize * scale;
         badge.text_color = text_color;
         badge.background_color = bg;
         msg.texts.push_back(badge);
@@ -384,10 +387,10 @@ void AgentAnnotations::publishWindowAnnotations(size_t idx, int view_w, int view
 
         FoxTextAnnotationMsg hud;
         hud.timestamp = stamp;
-        hud.position.x = WindowAnnotations::kHudMarginX;
-        hud.position.y = y1 - WindowAnnotations::kHudMarginY;
+        hud.position.x = WindowAnnotations::kHudMarginX * scale;
+        hud.position.y = y1 - WindowAnnotations::kHudMarginY * scale;
         hud.text = oss.str();
-        hud.font_size = WindowAnnotations::kHudFontSize;
+        hud.font_size = WindowAnnotations::kHudFontSize * scale;
         hud.text_color = text_color;
         hud.background_color = bg;
         msg.texts.push_back(hud);
@@ -408,7 +411,7 @@ void AgentAnnotations::publishWindowAnnotations(size_t idx, int view_w, int view
         }
         if (!central_camera_id.empty())
         {
-            appendClusterOverlaysWindow(msg, stamp, central_camera_id, idx, view_w, view_h, true);
+            appendClusterOverlaysWindow(msg, stamp, central_camera_id, idx, view_w, view_h, true, scale);
         }
     }
 
@@ -419,7 +422,7 @@ void AgentAnnotations::publishWindowAnnotations(size_t idx, int view_w, int view
 // CLUSTER OVERLAY HELPERS
 // ════════════════════════════════════════════════════════════════════════════
 
-void AgentAnnotations::appendClusterOverlays(FoxImageAnnotationsMsg& msg, const rclcpp::Time& stamp, const ID& camera_id, int view_w, int view_h, bool only_show_assigned) const
+void AgentAnnotations::appendClusterOverlays(FoxImageAnnotationsMsg& msg, const rclcpp::Time& stamp, const ID& camera_id, int view_w, int view_h, bool only_show_assigned, float scale) const
 {
     const auto it = intrinsics_.find(camera_id);
     if (it == intrinsics_.end() || !it->second.valid)
@@ -476,13 +479,13 @@ void AgentAnnotations::appendClusterOverlays(FoxImageAnnotationsMsg& msg, const 
             continue;
 
         AnnotationHelpers::addDashedPolyline(msg, stamp, rim, dash_color,
-                                             ClusterAnnotations::kThickness,
+                                             ClusterAnnotations::kThickness * scale,
                                              ClusterAnnotations::kNDashes,
                                              ClusterAnnotations::kDashFrac);
     }
 }
 
-void AgentAnnotations::appendClusterOverlaysWindow(FoxImageAnnotationsMsg& msg, const rclcpp::Time& stamp, const ID& camera_id, size_t sp_idx, int view_w, int view_h, bool only_show_assigned) const
+void AgentAnnotations::appendClusterOverlaysWindow(FoxImageAnnotationsMsg& msg, const rclcpp::Time& stamp, const ID& camera_id, size_t sp_idx, int view_w, int view_h, bool only_show_assigned, float scale) const
 {
     const auto it = intrinsics_.find(camera_id);
     if (it == intrinsics_.end() || !it->second.valid)
@@ -544,7 +547,7 @@ void AgentAnnotations::appendClusterOverlaysWindow(FoxImageAnnotationsMsg& msg, 
             continue;
 
         AnnotationHelpers::addDashedPolyline(msg, stamp, rim, dash_color,
-                                             ClusterAnnotations::kThickness,
+                                             ClusterAnnotations::kThickness * scale,
                                              ClusterAnnotations::kNDashes,
                                              ClusterAnnotations::kDashFrac);
     }
