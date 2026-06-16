@@ -145,8 +145,14 @@ void SimulationStream::streamPipeline(const std::shared_ptr<StreamUnit>& unit)
             if (!capture.read(frame) || frame.empty())
                 break;
 
-            // Downscale frame
-            cv::resize(frame, low_res_frame, cv::Size(unit->output_width, unit->output_height), 0, 0, cv::INTER_NEAREST);
+            // Crop encoder padding then resize to output dimensions
+            const int crop_w = std::min(unit->output_width,  frame.cols);
+            const int crop_h = std::min(unit->output_height, frame.rows);
+            cv::Mat cropped = frame(cv::Rect(0, 0, crop_w, crop_h));
+            if (crop_w == unit->output_width && crop_h == unit->output_height)
+                low_res_frame = cropped;
+            else
+                cv::resize(cropped, low_res_frame, cv::Size(unit->output_width, unit->output_height), 0, 0, cv::INTER_LINEAR);
             auto img_msg = makeImage(low_res_frame, unit->view_id);
             unit->image_pub.publish(img_msg);
         }
