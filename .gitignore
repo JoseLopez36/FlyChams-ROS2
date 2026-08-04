@@ -6,11 +6,8 @@ build/
 install/
 log/
 
-# Ignore IDE files
-.vscode/
-.cursor/
-.windsurf/
-.devin/
+# Ignore agent files
+.agents/
 AGENTS.md
 
 # Ignore python cache
