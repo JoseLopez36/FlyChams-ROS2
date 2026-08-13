@@ -194,10 +194,20 @@ void AgentTracking::update()
         }
         agent_.observation_setpoints.apparent_target_sizes[unit_idx] = apparent_size;
         // Calculate normalized upsilon
-        float range = unit.upsilon_max - unit.upsilon_min;
+        // Camera: upsilon = f, limits = static focal limits
+        // Window: upsilon = lambda*xi, limits = lambda_min/max*xi (measured), so xi cancels out:
+        //         upsilon_norm = (lambda - lambda_min) / (lambda_max - lambda_min) in [0, 1]
+        float upsilon_min = unit.upsilon_min;
+        float upsilon_max = unit.upsilon_max;
+        if (unit.type == ObservationType::Window)
+        {
+            upsilon_min = unit.window_params.lambda_min * xi;
+            upsilon_max = unit.window_params.lambda_max * xi;
+        }
+        float range = upsilon_max - upsilon_min;
         if (range > 0.0f)
         {
-            agent_.observation_setpoints.upsilons_norm[unit_idx] = (upsilon - unit.upsilon_min) / range;
+            agent_.observation_setpoints.upsilons_norm[unit_idx] = (upsilon - upsilon_min) / range;
         }
         else
         {

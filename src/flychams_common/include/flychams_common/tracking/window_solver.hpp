@@ -113,14 +113,11 @@ namespace flychams::common
             // Clamp the resolution factor within limits
             lambda = std::max(std::min(lambda, lambda_max), lambda_min);
 
-            // Compute upsilon (lambda*f for windows)
-            const float upsilon = lambda * f_ref;
-
-            // Compute offset corrected upsilon (lambda*xi)
-            const float upsilon_xi = lambda * xi;
+            // Compute upsilon (lambda*xi for windows)
+            const float upsilon = lambda * xi;
 
             // Compute apparent target size
-            const float apparent_size = ZoomUtils::computeApparentSize(r, upsilon_xi, d, rho);
+            const float apparent_size = ZoomUtils::computeApparentSize(r, upsilon, d, rho);
 
             // Compute window size using the resolution factor
             common::Vector2i size(0, 0);
