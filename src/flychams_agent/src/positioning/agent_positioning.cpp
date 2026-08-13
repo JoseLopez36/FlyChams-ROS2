@@ -13,6 +13,8 @@ void AgentPositioning::onModuleInit()
     // Get parameters from parameter server
     // Get update rate
     update_rate_ = node_->getParameterOr<float>("positioning_rate", 1.0f);
+    // Get freeze correction factor flag
+    freeze_correction_ = node_->getParameterOr<bool>("positioning.freeze_correction", true);
     // Get solver parameters
     solver_mode_ = static_cast<PositionSolver::SolverMode>(node_->getParameterOr<uint8_t>("positioning.solver_mode", 0));
     // Get generic solver parameters
@@ -58,6 +60,8 @@ void AgentPositioning::onModuleInit()
         std::bind(&AgentPositioning::positionCallback, this, std::placeholders::_1), node_->getSubscriptionOptions());
     agent_.clusters_sub = node_->createAgentClustersSubscriber(agent_id_,
         std::bind(&AgentPositioning::clustersCallback, this, std::placeholders::_1), node_->getSubscriptionOptions());
+    agent_.observation_setpoints_sub = node_->createObservationSetpointsSubscriber(agent_id_,
+        std::bind(&AgentPositioning::observationSetpointsCallback, this, std::placeholders::_1), node_->getSubscriptionOptions());
 
     // Create publisher for agent setpoint
     agent_.setpoint_pub = node_->createAgentPositionSetpointPublisher(agent_id_);
@@ -77,6 +81,7 @@ void AgentPositioning::onModuleShutdown()
     agent_.status_sub.reset();
     agent_.position_sub.reset();
     agent_.clusters_sub.reset();
+    agent_.observation_setpoints_sub.reset();
     agent_.setpoint_pub.reset();
     agent_.solve_duration_pub.reset();
     // Destroy update timer
@@ -108,6 +113,16 @@ void AgentPositioning::clustersCallback(const AgentClustersMsg::SharedPtr msg)
     agent_.has_clusters = true;
 }
 
+void AgentPositioning::observationSetpointsCallback(const ObservationSetpointsMsg::SharedPtr msg)
+{
+    // Cache the measured correction factor for each tracking unit
+    const size_t n = std::min(msg->ids.size(), msg->correction_factors.size());
+    for (size_t i = 0; i < n; i++)
+    {
+        correction_factors_[msg->ids[i]] = msg->correction_factors[i];
+    }
+}
+
 // ════════════════════════════════════════════════════════════════════════════
 // UPDATE: Update positioning
 // ════════════════════════════════════════════════════════════════════════════
@@ -131,6 +146,9 @@ void AgentPositioning::update()
         tab_P.col(i) = node_->fromMsg(agent_.clusters.centers[i]);
         tab_r(i) = agent_.clusters.radii[i];
     }
+
+    // Update the cost function parameters with the frozen correction factors
+    updateCostParameters();
 
     // Solve agent positioning
     float J;
@@ -199,9 +217,8 @@ PositionSolver::SharedPtr AgentPositioning::createSolver(const std::string& agen
     const auto& tracking_params = node_->getSettings()->getTrackingParameters(agent_id);
 
     // Get cost parameters for each tracking unit
-    CostFunctions::CostParameters cost_params;
-    cost_params.n_t = tracking_params.n_t;
-    cost_params.units = createUnitParameters(tracking_params);
+    cost_params_.n_t = tracking_params.n_t;
+    cost_params_.units = createUnitParameters(tracking_params);
 
     // Get space constraints
     float min_horizontal = config_ptr->horizontal_constraint(0);
@@ -213,7 +230,7 @@ PositionSolver::SharedPtr AgentPositioning::createSolver(const std::string& agen
 
     // Create solver parameters
     PositionSolver::Parameters params = solver_params;
-    params.cost_params = cost_params;
+    params.cost_params = cost_params_;
     params.x_min = x_min;
     params.x_max = x_max;
 
@@ -245,4 +262,43 @@ std::vector<CostFunctions::UnitCostParameters> AgentPositioning::createUnitParam
     }
 
     return params_vector;
+}
+
+void AgentPositioning::updateCostParameters()
+{
+    // Skip if the frozen correction factor is disabled
+    if (!freeze_correction_)
+    {
+        return;
+    }
+
+    // Start from the base cost parameters (static upsilon limits as fallback)
+    CostFunctions::CostParameters updated_cost_params = cost_params_;
+
+    // Apply the correction factor measured in the previous cycle to each window unit
+    for (auto& unit_cost_params : updated_cost_params.units)
+    {
+        auto& unit_params = unit_cost_params.params;
+        if (unit_params.type != ObservationType::Window)
+        {
+            continue;
+        }
+
+        // Get the correction factor cached for this unit
+        const auto it = correction_factors_.find(unit_params.id);
+        if (it == correction_factors_.end() || it->second <= 0.0f)
+        {
+            // Fallback to static limits: upsilon = lambda * f_ref
+            continue;
+        }
+
+        // Freeze the correction factor: upsilon = lambda * xi(t-1)
+        const float xi_prev = it->second;
+        unit_params.upsilon_min = unit_params.window_params.lambda_min * xi_prev;
+        unit_params.upsilon_max = unit_params.window_params.lambda_max * xi_prev;
+        unit_params.upsilon_ref = unit_params.window_params.lambda_ref * xi_prev;
+    }
+
+    // Update the solver cost function parameters
+    solver_->setCostParameters(updated_cost_params);
 }

@@ -81,6 +81,11 @@ namespace flychams::common
             ellipsoid_.A0(1, 1) = 3.0f * pow((params_.x_max(1) - params_.x_min(1)) / 2.0f, 2);
             ellipsoid_.A0(2, 2) = 3.0f * pow((params_.x_max(2) - params_.x_min(2)) / 2.0f, 2);
         }
+        void setCostParameters(const CostFunctions::CostParameters& cost_params)
+        {
+            // Update cost function parameters
+            data_.cost_params = cost_params;
+        }
         void destroy()
         {
             // Nothing to destroy

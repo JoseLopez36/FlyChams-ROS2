@@ -82,6 +82,11 @@ namespace flychams::common
             rng_ = std::mt19937(std::random_device{}());
             normal_dist_ = std::normal_distribution<float>(0.0f, 1.0f);
         }
+        void setCostParameters(const CostFunctions::CostParameters& cost_params)
+        {
+            // Update cost function parameters
+            data_.cost_params = cost_params;
+        }
         void destroy()
         {
             // Nothing to destroy

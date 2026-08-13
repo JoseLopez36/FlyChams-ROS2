@@ -94,6 +94,11 @@ namespace flychams::common
             // Initialize particles
             particles_.resize(params_.num_particles);
         }
+        void setCostParameters(const CostFunctions::CostParameters& cost_params)
+        {
+            // Update cost function parameters
+            data_.cost_params = cost_params;
+        }
         void destroy()
         {
             // Destroy particles

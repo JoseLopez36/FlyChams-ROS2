@@ -48,6 +48,7 @@ void AgentTracking::onModuleInit()
         agent_.observation_setpoints.upsilons_norm.push_back(0.0f);
         agent_.observation_setpoints.focals.push_back(0.0f);
         agent_.observation_setpoints.lambdas.push_back(0.0f);
+        agent_.observation_setpoints.xis.push_back(0.0f);
         agent_.observation_setpoints.rotations.push_back(Vector3Msg());
         agent_.observation_setpoints.crops.push_back(CropMsg());
         agent_.observation_setpoints.apparent_target_sizes.push_back(0.0f);
@@ -151,12 +152,13 @@ void AgentTracking::update()
     {
         // Initialize variables
         float upsilon = 0.0f;
-        float focal = 0.0f;
-        float lambda = 0.0f;
+        float focal = 0.0f; // Only for Camera type
         Vector3r rotation; // Only for Camera type
-        Crop crop;         // Only for Window type
-        float apparent_size = 0.0f;
-
+        float lambda = 0.0f; // Only for Window type
+        float xi = 1.0f; // Only for Window type
+        Crop crop; // Only for Window type
+        float apparent_size = 0.0f; 
+        
         // Solve based on unit type
         if (unit.type == ObservationType::Camera && unit.role == ObservationRole::Central)
         {
@@ -171,7 +173,7 @@ void AgentTracking::update()
         }
         else if (unit.type == ObservationType::Window)
         {
-            std::tie(upsilon, lambda, crop, apparent_size) = updateWindow(tab_P.col(cluster_idx), tab_r(cluster_idx), tab_T[0], central_focal, solvers_[unit_idx]);
+            std::tie(upsilon, lambda, crop, apparent_size, xi) = updateWindow(tab_P.col(cluster_idx), tab_r(cluster_idx), tab_T[0], central_focal, solvers_[unit_idx]);
             cluster_idx++;
         }
 
@@ -180,6 +182,7 @@ void AgentTracking::update()
         agent_.observation_setpoints.upsilons[unit_idx] = upsilon;
         agent_.observation_setpoints.focals[unit_idx] = focal;
         agent_.observation_setpoints.lambdas[unit_idx] = lambda;
+        agent_.observation_setpoints.xis[unit_idx] = xi;
         // Spatial data
         if (unit.type == ObservationType::Camera)
         {
@@ -294,8 +297,8 @@ std::tuple<float, float, Vector3r, float> AgentTracking::updateCamera(const Vect
     return std::make_tuple(upsilon, focal, wRPYc, apparent_size);
 }
 
-std::tuple<float, float, Crop, float> AgentTracking::updateWindow(const Vector3r& P, const float& r, const Matrix4r& T, const float& f, ObservationSolver::SharedPtr solver)
+std::tuple<float, float, Crop, float, float> AgentTracking::updateWindow(const Vector3r& P, const float& r, const Matrix4r& T, const float& f, ObservationSolver::SharedPtr solver)
 {
-    // Compute window setpoint and return upsilon, lambda, crop and apparent size
+    // Compute window setpoint and return upsilon, lambda, crop, apparent size and correction factor
     return solver->runWindow(P, r, T, f);
 }

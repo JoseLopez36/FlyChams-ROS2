@@ -80,6 +80,11 @@ namespace flychams::common
             nlopt_set_xtol_rel(opt_, static_cast<double>(params_.tol)); // Set convergence tolerance
             nlopt_set_maxeval(opt_, params_.max_iter);                  // Maximum number of function evaluations
         }
+        void setCostParameters(const CostFunctions::CostParameters& cost_params)
+        {
+            // Update cost function parameters
+            data_.cost_params = cost_params;
+        }
         void destroy()
         {
             if (opt_)

@@ -272,6 +272,61 @@ namespace flychams::common
             }
         }
 
+        void setCostParameters(const CostFunctions::CostParameters& cost_params)
+        {
+            // Store parameters
+            params_.cost_params = cost_params;
+
+            // Update the cost function parameters of the active solver algorithm
+            switch (mode_)
+            {
+            case SolverMode::ELLIPSOID_METHOD:
+            {
+                ellipsoid_method_.setCostParameters(cost_params);
+                break;
+            }
+
+            case SolverMode::NELDER_MEAD_NLOPT:
+            {
+                nelder_mead_nlopt_.setCostParameters(cost_params);
+                break;
+            }
+
+            case SolverMode::NESTEROV_ALGORITHM:
+            {
+                nesterov_algorithm_.setCostParameters(cost_params);
+                break;
+            }
+
+            case SolverMode::L_BFGS_NLOPT:
+            {
+                l_bfgs_nlopt_.setCostParameters(cost_params);
+                break;
+            }
+
+            case SolverMode::PSO_ALGORITHM:
+            {
+                pso_algorithm_.setCostParameters(cost_params);
+                break;
+            }
+
+            case SolverMode::ALC_PSO_ALGORITHM:
+            {
+                alc_pso_algorithm_.setCostParameters(cost_params);
+                break;
+            }
+
+            case SolverMode::CMA_ES_ALGORITHM:
+            {
+                cma_es_algorithm_.setCostParameters(cost_params);
+                break;
+            }
+
+            default:
+                throw std::invalid_argument("Invalid solver mode");
+            }
+        }
+
         // Getters
         int getUnitCount() const { return params_.cost_params.n_t; }
 

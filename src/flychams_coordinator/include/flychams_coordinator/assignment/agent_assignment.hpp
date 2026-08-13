@@ -47,13 +47,15 @@ namespace flychams::coordinator
             bool has_position;
             // Subscribers
             common::SubscriberPtr<common::PointStampedMsg> position_sub;
+            common::SubscriberPtr<common::ObservationSetpointsMsg> observation_setpoints_sub;
             // Publisher
             common::PublisherPtr<common::AgentAssignmentMsg> assignment_pub;
             // Position solver
             common::PositionSolver::SharedPtr position_solver;
             // Constructor
             Agent()
-                : tracking_unit_ids(), position(), has_position(false), position_sub(), assignment_pub(), position_solver()
+                : tracking_unit_ids(), position(), has_position(false), position_sub(), observation_setpoints_sub(),
+                assignment_pub(), position_solver()
             {
             }
             // Destructor
@@ -83,6 +85,8 @@ namespace flychams::coordinator
     private: // Parameters
         float update_rate_;
         float min_assignment_rate_;
+        // Freeze correction factor between solves
+        bool freeze_correction_;
         // Position solver parameters
         common::PositionSolver::SolverMode position_solver_mode_;
         common::PositionSolver::Parameters position_solver_params_;
@@ -95,6 +99,8 @@ namespace flychams::coordinator
         // Clusters
         std::unordered_map<common::ID, Cluster> clusters_;
         std::set<common::ID> T_;
+        // Last measured correction factors per agent and tracking unit ID (m)
+        std::unordered_map<common::ID, std::unordered_map<std::string, float>> correction_factors_;
         // Assignment data
         common::RowVectorXi X_prev_;
         // Assignment solver
@@ -109,6 +115,7 @@ namespace flychams::coordinator
     private: // Callbacks
         void clusterGeometryCallback(const common::ID& cluster_id, const common::ClusterGeometryMsg::SharedPtr msg);
         void agentPositionCallback(const common::ID& agent_id, const common::PointStampedMsg::SharedPtr msg);
+        void agentObservationSetpointsCallback(const common::ID& agent_id, const common::ObservationSetpointsMsg::SharedPtr msg);
 
     private: // Assignment management
         void update();
@@ -118,6 +125,7 @@ namespace flychams::coordinator
     private: // Utility methods
         common::PositionSolver::SharedPtr createPositionSolver(const std::string& agent_id, const common::PositionSolver::Parameters& solver_params, const common::PositionSolver::SolverMode& solver_mode);
         std::vector<common::CostFunctions::UnitCostParameters> createUnitParameters(const common::TrackingParameters& tracking_params);
+        void updatePositionSolverCostParameters(const common::ID& agent_id);
 
     private: // Async solve state
         std::future<std::tuple<common::RowVectorXi, float, int>> async_future_;

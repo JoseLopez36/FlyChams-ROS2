@@ -51,6 +51,7 @@ namespace flychams::agent
             common::SubscriberPtr<common::AgentStatusMsg> status_sub;
             common::SubscriberPtr<common::PointStampedMsg> position_sub;
             common::SubscriberPtr<common::AgentClustersMsg> clusters_sub;
+            common::SubscriberPtr<common::ObservationSetpointsMsg> observation_setpoints_sub;
             // Publishers
             common::PublisherPtr<common::PointStampedMsg> setpoint_pub;
             common::PublisherPtr<common::Float32Msg> solve_duration_pub;
@@ -58,7 +59,7 @@ namespace flychams::agent
             Agent()
                 : status(), has_status(false), position(), has_position(false), clusters(),
                 has_clusters(false), setpoint(), status_sub(), position_sub(), clusters_sub(),
-                setpoint_pub()
+                observation_setpoints_sub(), setpoint_pub()
             {
             }
         };
@@ -66,6 +67,8 @@ namespace flychams::agent
     private: // Parameters
         common::ID agent_id_;
         float update_rate_;
+        // Freeze correction factor between solves
+        bool freeze_correction_;
         // Position solver parameters
         common::PositionSolver::SolverMode solver_mode_;
         common::PositionSolver::Parameters solver_params_;
@@ -76,11 +79,16 @@ namespace flychams::agent
         Agent agent_;
         // Position solver
         common::PositionSolver::SharedPtr solver_;
+        // Base cost function parameters (static upsilon limits as fallback)
+        common::CostFunctions::CostParameters cost_params_;
+        // Last measured correction factors per tracking unit ID (m)
+        std::unordered_map<std::string, float> correction_factors_;
 
     private: // Callbacks
         void statusCallback(const common::AgentStatusMsg::SharedPtr msg);
         void positionCallback(const common::PointStampedMsg::SharedPtr msg);
         void clustersCallback(const common::AgentClustersMsg::SharedPtr msg);
+        void observationSetpointsCallback(const common::ObservationSetpointsMsg::SharedPtr msg);
 
     private: // Positioning management
         void update();
@@ -89,6 +97,7 @@ namespace flychams::agent
     private: // Positioning methods
         common::PositionSolver::SharedPtr createSolver(const std::string& agent_id, const common::PositionSolver::Parameters& solver_params, const common::PositionSolver::SolverMode& solver_mode);
         std::vector<common::CostFunctions::UnitCostParameters> createUnitParameters(const common::TrackingParameters& tracking_params);
+        void updateCostParameters();
 
     private: // ROS components
         // Timer

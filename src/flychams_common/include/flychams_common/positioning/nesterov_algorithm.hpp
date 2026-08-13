@@ -74,6 +74,11 @@ namespace flychams::common
             data_.tab_r = common::RowVectorXr::Zero(data_.cost_params.n_t);
             data_.x_hat = common::Vector3r::Zero();
         }
+        void setCostParameters(const CostFunctions::CostParameters& cost_params)
+        {
+            // Update cost function parameters
+            data_.cost_params = cost_params;
+        }
         void destroy()
         {
             // Nothing to destroy
