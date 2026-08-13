@@ -116,10 +116,10 @@ void AgentPositioning::clustersCallback(const AgentClustersMsg::SharedPtr msg)
 void AgentPositioning::observationSetpointsCallback(const ObservationSetpointsMsg::SharedPtr msg)
 {
     // Cache the measured correction factor for each tracking unit
-    const size_t n = std::min(msg->ids.size(), msg->correction_factors.size());
+    const size_t n = std::min(msg->ids.size(), msg->xis.size());
     for (size_t i = 0; i < n; i++)
     {
-        correction_factors_[msg->ids[i]] = msg->correction_factors[i];
+        correction_factors_[msg->ids[i]] = msg->xis[i];
     }
 }
 

@@ -194,10 +194,10 @@ void AgentAssignment::agentPositionCallback(const ID& agent_id, const PointStamp
 void AgentAssignment::agentObservationSetpointsCallback(const ID& agent_id, const ObservationSetpointsMsg::SharedPtr msg)
 {
     // Cache the measured correction factor for each tracking unit
-    const size_t n = std::min(msg->ids.size(), msg->correction_factors.size());
+    const size_t n = std::min(msg->ids.size(), msg->xis.size());
     for (size_t i = 0; i < n; i++)
     {
-        correction_factors_[agent_id][msg->ids[i]] = msg->correction_factors[i];
+        correction_factors_[agent_id][msg->ids[i]] = msg->xis[i];
     }
 }
 
