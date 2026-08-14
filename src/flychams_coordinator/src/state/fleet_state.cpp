@@ -117,15 +117,22 @@ void FleetState::update()
 
 bool FleetState::checkStatus()
 {
-	// Check 1: All agents must have a valid status
-	for (const auto& [agent_id, agent] : agents_)
-	{
-		if (!agent.has_status)
-		{
-			RCLCPP_INFO(node_->get_logger(), "Fleet state: Agent %s has no status", agent_id.c_str());
-			return false;
-		}
-	}
+    // Check 0: Fleet must have at least one agent (empty fleet is never ready)
+    if (agents_.empty())
+    {
+        RCLCPP_INFO(node_->get_logger(), "Fleet state: No agents registered, fleet not ready");
+        return false;
+    }
+
+    // Check 1: All agents must have a valid status
+    for (const auto& [agent_id, agent] : agents_)
+    {
+        if (!agent.has_status)
+        {
+            RCLCPP_INFO(node_->get_logger(), "Fleet state: Agent %s has no status", agent_id.c_str());
+            return false;
+        }
+    }
 
     return true;
 }
@@ -136,6 +143,12 @@ bool FleetState::checkStatus()
 
 FleetStatus FleetState::computeFleetStatus() const
 {
+    // Empty fleet is never ACTIVE (avoid vacuous truth over an empty agent set)
+    if (agents_.empty())
+    {
+        return FleetStatus::IDLE;
+    }
+
     bool all_idle = true;
     bool all_active = true;
     bool any_error = false;

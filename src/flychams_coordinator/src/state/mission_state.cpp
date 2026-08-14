@@ -83,8 +83,10 @@ void MissionState::fleetStatusCallback(const FleetStatusMsg::SharedPtr msg)
     fleet_status_ = static_cast<FleetStatus>(msg->status);
     has_fleet_status_ = true;
 
-    // Fleet is ready when all agents are active
-    fleet_ready_ = msg->all_agents_active;
+    // Fleet is ready only when all agents are active AND the fleet is non-empty.
+    // An empty agent list would vacuously satisfy all_agents_active, which must
+    // never be interpreted as a ready fleet.
+    fleet_ready_ = msg->all_agents_active && !msg->agent_ids.empty();
 
     // Auto-start mission if enabled and conditions are met
     if (mission_autostart_ && fleet_ready_ && !autostart_triggered_ &&
